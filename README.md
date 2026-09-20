@@ -55,6 +55,7 @@ The personal fork keeps Hermes Agent as the core agent framework while adding:
 | Project | What It Contributes |
 |---|---|
 | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | Core upstream agent framework |
+| [Volmarr's Older Hermes Agent Hacks](https://github.com/hrabanazviking/hermes-agent-outdated-mod1) | Some useful mods to pull from this one |
 | [Verðandi](https://github.com/hrabanazviking/Verdandi) | Real-time AI nervous-system event bus |
 | [Project A.E.S.I.R.](https://github.com/hrabanazviking/RuneForgeAI-Project-Aesir) | Experimental native local inference backend |
 | [MindSpark: ThoughtForge](https://github.com/hrabanazviking/MindSpark_ThoughtForge) | Small-model cognition and local reflex concepts |
