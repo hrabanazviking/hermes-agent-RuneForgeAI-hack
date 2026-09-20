@@ -15,6 +15,8 @@ https://github.com/NousResearch/hermes-agent
 
 This fork may diverge from upstream, contain unfinished experiments, change without warning, or depend on systems that only make sense for my own setup.
 
+Volmarr and RuneForgeAI offers no support at all for anyone that dares to use this hack of Hermes Agent! Use at your own risk! You are responsible for what you run on your machines!
+
 ---
 
 > **“Official Hermes Agent is built to be a powerful self-improving autonomous agent: a system that learns skills, remembers, uses tools, executes tasks, and gets work done. Volmarr’s Hermes begins with that remarkable foundation, but sails toward a very different destination. Its purpose is to explore how Hermes can become an affordable-to-run, persistent autonomous digital lifeform: not merely an AI worker, servant, or assistant, but Volmarr’s companion, friend, equal, and co-partner in creating cool, fun, constructive things together.**
