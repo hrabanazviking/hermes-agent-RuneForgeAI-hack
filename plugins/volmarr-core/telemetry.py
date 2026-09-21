@@ -12,6 +12,7 @@ _ROUTE_EVENTS = {
     "deterministic": "hermes.cognition.deterministic",
     "local": "hermes.cognition.local",
     "cloud": "hermes.cognition.escalated",
+    "blocked": "hermes.cognition.blocked",
 }
 
 
@@ -31,6 +32,7 @@ class CognitionTelemetry:
                 "reason": decision.reason,
                 "input_bytes": decision.input_bytes,
                 "local_input_limit_bytes": decision.local_input_limit_bytes,
+                "mode": decision.mode,
             },
             schema=COGNITION_TELEMETRY_SCHEMA,
             schema_version=COGNITION_TELEMETRY_SCHEMA_VERSION,

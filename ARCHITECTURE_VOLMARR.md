@@ -129,6 +129,17 @@ Telemetry contains only the operation identifier, selected tier, stable reason c
 size, and configured local limit. It contains no prompt, message, response, model credential, or
 user content. Verðandi transport failure remains fail-open and cannot change the route decision.
 
+### Slice 6: Manual Route Modes
+
+Routing schema v2 adds `mode: auto | local | deep` while continuing to accept v1 auto-mode
+requests unchanged. `deep` explicitly selects the cloud-capable tier and leaves provider choice to
+Hermes. `local` overrides complexity and deterministic shortcuts, but it cannot override physical
+capability or safety bounds.
+
+A forced-local request becomes `blocked` when it needs tools, vision, external data, exceeds the
+local input limit, or follows a failed local attempt. This is a hard invariant: forced-local never
+means "try local, then spend cloud resources without asking."
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

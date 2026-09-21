@@ -28,6 +28,7 @@ This ledger records intentional differences from `NousResearch/hermes-agent`.
 | Cognition endpoint | `hermes volmarr cognition health [--json]` validates a profile-scoped, loopback-only A.E.S.I.R. model catalog and credential file | General plugin CLI registration plus external HTTP protocol adapter | Real loopback server with A→B→A profile isolation and remote-host refusal | Low; no Hermes provider or core patch |
 | Cognition routing | Versioned metadata-only contract chooses deterministic, local, or cloud capability tiers without inspecting content or selecting cloud providers | General plugin CLI registration and internal application contract | Real discovery, precedence table, bounds, strict types, and content-field rejection | Low; additive plugin modules only |
 | Cognition telemetry | Accepted route decisions emit versioned, content-free deterministic/local/cloud events through Verðandi | Existing plugin CLI and Verðandi adapter | Event-type mapping, versioned schema, privacy contract, and fail-open transport | Low; reuses the existing external-service boundary |
+| Manual cognition modes | Routing schema v2 adds truthful `auto`, forced-`local`, and forced-`deep` modes while retaining v1 compatibility; impossible forced-local requests are blocked instead of escalated | Existing cognition routing contract | Compatibility, precedence, local-capability conflict, failure, and input-bound contracts | Low; no main-loop or provider mutation |
 
 Every future entry must name:
 

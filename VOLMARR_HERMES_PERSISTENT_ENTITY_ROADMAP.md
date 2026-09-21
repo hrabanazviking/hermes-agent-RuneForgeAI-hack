@@ -1757,8 +1757,8 @@ loopback-only OpenAI-compatible catalog through the profile-scoped `volmarr-core
 versioned routing contract now chooses deterministic, local, or cloud capability tiers from bounded
 metadata while leaving actual cloud-provider resolution to Hermes. Each accepted decision now emits
 content-free deterministic/local/cloud telemetry through Verðandi. Execution outcome telemetry and
-manual route modes remain later slices; A.E.S.I.R. is not advertised as a tool-capable Hermes
-provider.
+schema-v2 manual `local`/`deep` route modes are available without breaking v1 auto requests.
+Execution remains the next slice; A.E.S.I.R. is not advertised as a tool-capable Hermes provider.
 
 ## Milestone 3: Memory Fabric
 

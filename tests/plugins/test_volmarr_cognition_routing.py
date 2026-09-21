@@ -183,3 +183,71 @@ def test_route_contract_rejects_non_boolean_capability_flags(tmp_path, capsys):
         assert error["detail"] == "requires_tools must be a boolean"
     finally:
         manager.unload()
+
+
+@pytest.mark.parametrize(
+    ("request_overrides", "route", "reason"),
+    [
+        (
+            {"mode": "deep", "deterministic_available": True},
+            "cloud",
+            "mode.deep",
+        ),
+        ({"mode": "local", "complexity": "high"}, "local", "mode.local"),
+        (
+            {"mode": "local", "requires_tools": True},
+            "blocked",
+            "mode.local_unsupported_capability",
+        ),
+        (
+            {"mode": "local", "local_failures": 1},
+            "blocked",
+            "mode.local_previous_failure",
+        ),
+        (
+            {"mode": "local", "input_bytes": 101},
+            "blocked",
+            "mode.local_input_over_limit",
+        ),
+    ],
+)
+def test_version_two_manual_modes_never_silently_violate_the_requested_tier(
+    tmp_path,
+    capsys,
+    request_overrides,
+    route,
+    reason,
+):
+    manager = _load_router_plugin()
+    payload = {
+        "schema_version": 2,
+        "operation": "event.classification",
+        "input_bytes": 42,
+        **request_overrides,
+    }
+    try:
+        assert _invoke_route(manager, tmp_path, payload) == 0
+        decision = json.loads(capsys.readouterr().out)
+        assert decision["schema_version"] == 2
+        assert decision["mode"] == request_overrides["mode"]
+        assert decision["route"] == route
+        assert decision["reason"] == reason
+    finally:
+        manager.unload()
+
+
+def test_version_one_rejects_the_version_two_mode_field(tmp_path, capsys):
+    manager = _load_router_plugin()
+    payload = {
+        "schema_version": 1,
+        "operation": "event.classification",
+        "input_bytes": 42,
+        "mode": "deep",
+    }
+    try:
+        assert _invoke_route(manager, tmp_path, payload) == 2
+        error = json.loads(capsys.readouterr().err)
+        assert error["error"] == "invalid_routing_request"
+        assert "mode" in error["detail"]
+    finally:
+        manager.unload()
