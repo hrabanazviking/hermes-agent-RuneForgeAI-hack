@@ -25,6 +25,7 @@ This ledger records intentional differences from `NousResearch/hermes-agent`.
 |---|---|---|---|---|
 | Events | Opt-in `volmarr-core` plugin publishes versioned session, turn, and tool lifecycle metadata to Verðandi on Unix-socket-capable hosts; native Windows safely drops events until Verðandi gains a compatible transport | General plugin hooks only | Real discovery, privacy contract, offline-hub and unsupported-platform fail-open tests | Low; additive plugin directory, no core patch |
 | Health | `hermes volmarr health [--json]` proves Verðandi responsiveness with a bounded `ping`/`pong` exchange scoped to the active profile | General plugin CLI registration | Real discovery, valid-pong and protocol-error contracts | Low; additive command owned by the plugin |
+| Cognition endpoint | `hermes volmarr cognition health [--json]` validates a profile-scoped, loopback-only A.E.S.I.R. model catalog and credential file | General plugin CLI registration plus external HTTP protocol adapter | Real loopback server with A→B→A profile isolation and remote-host refusal | Low; no Hermes provider or core patch |
 
 Every future entry must name:
 

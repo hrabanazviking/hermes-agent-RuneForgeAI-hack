@@ -1752,6 +1752,10 @@ reports `unsupported` without affecting Hermes execution.
 
 **Done when:** routine test conversations and event classification run locally while difficult tasks can escalate.
 
+**Implementation status:** in progress. The first slice attaches A.E.S.I.R.'s authenticated,
+loopback-only OpenAI-compatible catalog through the profile-scoped `volmarr-core` adapter. It does
+not yet route cognitive requests or advertise A.E.S.I.R. as a tool-capable Hermes provider.
+
 ## Milestone 3: Memory Fabric
 
 - make Bifröst the central bridge;

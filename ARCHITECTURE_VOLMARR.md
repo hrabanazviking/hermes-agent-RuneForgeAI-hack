@@ -91,6 +91,21 @@ is not considered healthy.
 The probe uses the same profile-aware path and bounded timeout as lifecycle publishing. It never
 starts, stops, repairs, or imports Verðandi, and it never invokes an LLM.
 
+## Milestone 2: Local Reflex Cognition
+
+### Slice 3: A.E.S.I.R. Endpoint Attachment
+
+`hermes volmarr cognition health` attaches the first local reflex endpoint through A.E.S.I.R.'s
+bounded OpenAI-compatible model catalog. The adapter accepts only explicit `http://127.0.0.1:PORT/v1`
+URLs, reads the bearer key from a non-symlink credential file resolved at call time against the
+active Hermes profile, bounds both timeout and response size, and never prints the key.
+
+This adapter is intentionally not registered as Hermes' primary model provider. A.E.S.I.R.'s
+current text surface does not accept Hermes tool definitions, so advertising it as a full agent
+provider would create a false capability claim. The next slice may route bounded, tool-free reflex
+operations through this adapter; ordinary Hermes provider resolution remains authoritative for
+agent turns and later cloud escalation.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

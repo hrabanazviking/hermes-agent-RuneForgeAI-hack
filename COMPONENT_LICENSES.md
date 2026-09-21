@@ -8,6 +8,7 @@ It does not replace the original license text.
 | Hermes Agent | `NousResearch/hermes-agent` | Current runtime, applications, tests, documentation, and build infrastructure | MIT | Copyright 2025 Nous Research; see `LICENSE` |
 | Volmarr / RuneForgeAI project documents | Authored for `hrabanazviking/hermes-agent-RuneForgeAI-hack` | Personal README, roadmap, philosophy, operating rules, and architecture records | Not separately declared | Do not infer MIT solely from repository placement; declare terms before external reuse |
 | Verðandi | `hrabanazviking/Verdandi` at `dc7139416ef4bb67c9ba29c1148615d0d259b7db` | JSON-line event protocol integration; no Verðandi source copied | MIT | Copyright 2026 Volmarr Wyrd and Runa Gridweaver Freyjasdottir |
+| Project A.E.S.I.R. | `hrabanazviking/RuneForgeAI-Project-Aesir` at `c1a4410ca254fa388e45936b02230999d0906a4c` | OpenAI-compatible loopback protocol integration; no A.E.S.I.R. source copied | AGPL-3.0 | Copyright 2026 Volmarr Wyrd; A.E.S.I.R. remains an external service |
 
 ## Import Rule
 

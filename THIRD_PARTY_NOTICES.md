@@ -18,10 +18,21 @@ Copyright (c) 2026 Volmarr Wyrd and Runa Gridweaver Freyjasdottir
 
 No Verðandi source file is copied into this repository by the initial lifecycle bridge.
 
+## Project A.E.S.I.R.
+
+The `volmarr-core` plugin can probe the loopback OpenAI-compatible interface exposed by Project
+A.E.S.I.R., which is distributed under the GNU Affero General Public License, version 3.
+
+```text
+Copyright (c) 2026 Volmarr Wyrd
+```
+
+A.E.S.I.R. remains a separate process and repository. No A.E.S.I.R. source file is copied into
+this repository by the local reflex endpoint adapter.
+
 ## Future Components
 
-No other third-party runtime component has been incorporated into the personal fork at this
-stage.
+No other third-party runtime component has been incorporated into the personal fork at this stage.
 
 When a component is copied or adapted, its required notices must be added here and its exact
 provenance must be recorded in `COMPONENT_LICENSES.md` before the change is merged.
