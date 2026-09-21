@@ -1790,7 +1790,13 @@ start a server or enable retrieval and writes ahead of their policy slices. Herm
 now explicitly preserved as the sole canonical transcript authority through a fixed,
 active-profile `state.db` audit that is read-only, performs no migration, creates no missing store,
 and proves lifecycle hooks leave canonical history byte-for-byte unchanged. External memory stores
-remain derived or secondary; no shadow transcript database is introduced.
+remain derived or secondary; no shadow transcript database is introduced. The bounded context
+packet contract is also implemented as the single prompt-facing memory assembly point. It accepts
+typed, provenance-bearing items in the planned memory sections, deterministically orders and
+deduplicates them, applies per-section counts and a hard whole-packet character ceiling, escapes
+fence-shaped recalled text, and injects one versioned envelope on the user side only. Present State
+is the first enabled producer. Precise episodic and durable retrieval remain the next explicit
+policy connections rather than being silently activated by the attachment probes.
 
 ## Milestone 4: Affective Continuity
 
