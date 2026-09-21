@@ -1808,21 +1808,24 @@ policy connections rather than being silently activated by the attachment probes
 
 **Done when:** state survives restart and changes predictably from real events.
 
-**Implementation status:** in progress. The complete schema-v9 deterministic affective regulator
+**Implementation status:** complete. The complete schema-v9 deterministic affective regulator
 from the earlier personal Hermes fork is preserved in the opt-in `volmarr-core` plugin without
 restoring its former core patches. Its profile-local atomic state, decay, schema upgrades, bounded
 reward/accountability/safety/continuity gauges, and explicit synthetic-state safety language remain
 intact. Plugin hooks stage LLM and tool outcomes and commit regulation changes only for completed,
 non-failed, non-interrupted turns. Compact state enters the existing central user-side context
-packet as a typed producer, never as a separate system-prompt mutation. Verðandi event stimuli and
-the orthogonal PAD layer remain the next ordered slices. Verðandi stimuli are now attached through
-the official bounded recent-event socket contract with a durable profile-local sequence cursor.
+packet as a typed producer, never as a separate system-prompt mutation. Verðandi stimuli are
+attached through the official bounded recent-event socket contract with a durable profile-local
+sequence cursor.
 The adapter accepts only known official source/type pairs, maps numeric metadata into bounded
 regulatory events, and never stores external free text. First contact establishes a non-replaying
 baseline, later polls apply unseen event sequences within the configured catch-up window, and
 offline or malformed responses leave both turns and cursors untouched. Normal retries are cursor
 deduplicated; a crash between the separate atomic state and cursor commits may replay the final
-bounded batch rather than lose it. A compact PAD emotional layer is the next ordered slice.
+bounded batch rather than lose it. The orthogonal PAD layer now persists bounded valence, energy,
+and agency coordinates, decays them toward explicit baselines, and updates them only from those
+already-classified completed-turn or Verðandi events. It survives restart, follows active profiles,
+recovers corrupt state, and contributes one compact, explicitly synthetic user-side packet item.
 
 ## Milestone 5: World Model
 
@@ -1832,6 +1835,12 @@ bounded batch rather than lose it. A compact PAD emotional layer is the next ord
 - publish world changes.
 
 **Done when:** deterministic world facts survive sessions and do not depend on LLM memory.
+
+**Implementation status:** in progress. The first slice attaches the official WYRD v1 service at a
+read-only, loopback-only HTTP boundary. `hermes volmarr world health` validates the current official
+liveness response (and the version-bearing form in its published API guide) with bounded time and
+bytes, no redirects, no proxies, and no credentials. It does not yet read world facts, register
+world tools, mutate WYRD, publish world changes, or add world state to the context packet.
 
 ## Milestone 6: Entity Lifecycle
 

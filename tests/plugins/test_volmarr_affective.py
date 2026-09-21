@@ -12,9 +12,10 @@ from hermes_constants import (
 
 
 STATE_PATH = "affective/AFFECTIVE_NERVOUS_SYSTEM.json"
+PAD_PATH = "affective/pad_state.json"
 
 
-def _write_profile(home, *, enabled: bool = True) -> None:
+def _write_profile(home, *, enabled: bool = True, pad_decay: float = 0) -> None:
     home.mkdir(parents=True, exist_ok=True)
     (home / "config.yaml").write_text(
         "plugins:\n"
@@ -24,6 +25,8 @@ def _write_profile(home, *, enabled: bool = True) -> None:
         "      settings:\n"
         f"        affective_enabled: {'true' if enabled else 'false'}\n"
         "        affective_decay: 0\n"
+        "        pad_enabled: true\n"
+        f"        pad_decay: {pad_decay}\n"
         "        affective_render_chars: 2600\n"
         "        affective_verdandi_enabled: false\n"
         "        context_packet_max_chars: 6000\n",
@@ -33,6 +36,10 @@ def _write_profile(home, *, enabled: bool = True) -> None:
 
 def _state(home) -> dict:
     return json.loads((home / STATE_PATH).read_text(encoding="utf-8"))
+
+
+def _pad_state(home) -> dict:
+    return json.loads((home / PAD_PATH).read_text(encoding="utf-8"))
 
 
 def _context(manager, session_id: str, turn_id: str) -> str:
@@ -101,7 +108,9 @@ def test_affective_regulation_is_opt_in_and_creates_no_disabled_state():
         manager.unload()
 
     assert not (home / STATE_PATH).exists()
+    assert not (home / PAD_PATH).exists()
     assert "affective_regulation" not in context
+    assert "pad_emotional_state" not in context
 
 
 def test_completed_turn_updates_preserved_schema_v9_channels_and_packet():
@@ -137,7 +146,16 @@ def test_completed_turn_updates_preserved_schema_v9_channels_and_packet():
     assert state["github_push"] > 0.0
     assert state["scope_discipline"] > 0.0
     assert state["documentation_update"] > 0.0
+    pad = _pad_state(home)
+    assert pad["schema"] == "runeforge.synthetic-pad-state"
+    assert pad["version"] == 1
+    assert pad["valence"] > 0.0
+    assert pad["energy"] > 0.15
+    assert pad["agency"] > 0.10
+    assert pad["observation_count"] == 1
     assert "source=affective_regulation" in context
+    assert "source=pad_emotional_state" in context
+    assert "Synthetic PAD state (not real feelings or consciousness)" in context
     assert "simulated control signals, not real feelings or consciousness" in context
     assert "never resist interruption, reset, shutdown, or correction" in context
 
@@ -152,6 +170,7 @@ def test_failed_or_interrupted_turn_cannot_change_affective_state():
     try:
         manager.invoke_hook("on_session_start", session_id="session-1")
         before = (home / STATE_PATH).read_bytes()
+        pad_before = (home / PAD_PATH).read_bytes()
         manager.invoke_hook(
             "pre_llm_call",
             session_id="session-1",
@@ -183,6 +202,7 @@ def test_failed_or_interrupted_turn_cannot_change_affective_state():
         manager.unload()
 
     assert (home / STATE_PATH).read_bytes() == before
+    assert (home / PAD_PATH).read_bytes() == pad_before
 
 
 def test_completed_tool_failure_increases_repair_pressure():
@@ -228,6 +248,10 @@ def test_completed_tool_failure_increases_repair_pressure():
     assert state["accountability"] > 0.0
     assert state["self_reflection"] > 0.35
     assert state["operational_integrity"] < 0.75
+    pad = _pad_state(home)
+    assert pad["valence"] < 0.0
+    assert pad["energy"] > 0.15
+    assert pad["agency"] < 0.10
 
 
 def test_legacy_state_upgrades_without_losing_existing_scores():
@@ -290,3 +314,96 @@ def test_affective_state_and_packets_follow_profile_a_b_a(tmp_path):
     assert _state(profile_a)["rapport"] > _state(profile_b)["rapport"]
     assert _state(profile_a)["active_session_id"] == "session-a"
     assert _state(profile_b)["active_session_id"] == "session-b"
+    assert _pad_state(profile_a)["valence"] > _pad_state(profile_b)["valence"]
+    assert _pad_state(profile_a)["active_session_id"] == "session-a"
+    assert _pad_state(profile_b)["active_session_id"] == "session-b"
+
+
+def test_pad_state_survives_restart_and_corrupt_state_recovers():
+    from hermes_cli import plugins as plugins_mod
+
+    home = get_hermes_home()
+    _write_profile(home)
+    manager = plugins_mod.PluginManager()
+    manager.discover_and_load()
+    try:
+        manager.invoke_hook("on_session_start", session_id="session-1")
+        _complete_turn(
+            manager,
+            session_id="session-1",
+            turn_id="turn-1",
+            user="Thanks buddy. Build and verify it.",
+            assistant="Done; verification passed.",
+        )
+    finally:
+        manager.unload()
+
+    preserved = _pad_state(home)
+    assert preserved["observation_count"] == 1
+    manager = plugins_mod.PluginManager()
+    manager.discover_and_load()
+    try:
+        manager.invoke_hook("on_session_start", session_id="session-2")
+    finally:
+        manager.unload()
+    restarted = _pad_state(home)
+    assert restarted["valence"] == preserved["valence"]
+    assert restarted["energy"] == preserved["energy"]
+    assert restarted["agency"] == preserved["agency"]
+    assert restarted["observation_count"] == 1
+
+    (home / PAD_PATH).write_text("{broken", encoding="utf-8")
+    manager = plugins_mod.PluginManager()
+    manager.discover_and_load()
+    try:
+        manager.invoke_hook("on_session_start", session_id="session-3")
+    finally:
+        manager.unload()
+    recovered = _pad_state(home)
+    assert recovered["valence"] == 0.0
+    assert recovered["energy"] == 0.15
+    assert recovered["agency"] == 0.10
+    assert recovered["observation_count"] == 0
+
+
+def test_pad_axes_decay_toward_baselines_before_new_events():
+    from hermes_cli import plugins as plugins_mod
+
+    home = get_hermes_home()
+    _write_profile(home, pad_decay=0.5)
+    pad_path = home / PAD_PATH
+    pad_path.parent.mkdir(parents=True, exist_ok=True)
+    pad_path.write_text(
+        json.dumps(
+            {
+                "schema": "runeforge.synthetic-pad-state",
+                "version": 1,
+                "valence": 1.0,
+                "energy": 1.0,
+                "agency": 1.0,
+                "observation_count": 4,
+                "active_session_id": "old",
+                "updated_at": 1.0,
+            }
+        ),
+        encoding="utf-8",
+    )
+    manager = plugins_mod.PluginManager()
+    manager.discover_and_load()
+    try:
+        manager.invoke_hook("on_session_start", session_id="session-1")
+        _complete_turn(
+            manager,
+            session_id="session-1",
+            turn_id="turn-1",
+            user="Build this.",
+            assistant="",
+        )
+    finally:
+        manager.unload()
+
+    state = _pad_state(home)
+    assert 0.5 < state["valence"] < 1.0
+    assert 0.575 < state["energy"] < 1.0
+    assert 0.55 < state["agency"] < 1.0
+    assert state["observation_count"] == 5

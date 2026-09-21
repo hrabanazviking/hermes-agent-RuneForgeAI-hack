@@ -77,6 +77,8 @@ def _write_profile(home) -> None:
         "        timeout_ms: 25\n"
         "        affective_enabled: true\n"
         "        affective_decay: 0\n"
+        "        pad_enabled: true\n"
+        "        pad_decay: 0\n"
         "        affective_verdandi_enabled: true\n"
         "        affective_verdandi_recent_count: 16\n",
         encoding="utf-8",
@@ -167,6 +169,9 @@ def test_real_plugin_applies_only_unseen_allowlisted_metadata(monkeypatch):
         manager.unload()
 
     state = json.loads(state_before_repeat)
+    pad_path = home / "affective" / "pad_state.json"
+    pad_before_repeat = pad_path.read_bytes()
+    pad = json.loads(pad_before_repeat)
     serialized = state_before_repeat.decode("utf-8")
     contexts = [row["context"] for row in first if isinstance(row, dict)]
     cursor = json.loads(
@@ -179,11 +184,16 @@ def test_real_plugin_applies_only_unseen_allowlisted_metadata(monkeypatch):
     ]
 
     assert state_path.read_bytes() == state_before_repeat
+    assert pad_path.read_bytes() == pad_before_repeat
     assert state["reward"] > 0.0
     assert state["github_push"] > 0.0
     assert 0.0 < state["discomfort"] < 0.05
     assert state["issue_repair"] > 0.0
     assert state["follow_through"] > 0.0
+    assert pad["observation_count"] == 1
+    assert pad["valence"] > 0.0
+    assert pad["energy"] > 0.15
+    assert pad["agency"] > 0.10
     assert "private-nerve-content" not in serialized
     assert "private-repo-name" not in serialized
     assert "must-not-apply" not in serialized
@@ -202,6 +212,7 @@ def test_real_plugin_applies_only_unseen_allowlisted_metadata(monkeypatch):
     ]
     assert len(contexts) == 1
     assert "source=affective_regulation" in contexts[0]
+    assert "source=pad_emotional_state" in contexts[0]
     assert all(call.timeout == 0.025 for call in factory.calls)
     assert all(call.path == str(home / "state" / "runa.sock") for call in factory.calls)
 
@@ -292,7 +303,16 @@ def test_verdandi_cursor_and_stimuli_follow_profile_a_b_a(monkeypatch, tmp_path)
             encoding="utf-8"
         )
     )
+    pad_a = json.loads(
+        (profile_a / "affective" / "pad_state.json").read_text(encoding="utf-8")
+    )
+    pad_b = json.loads(
+        (profile_b / "affective" / "pad_state.json").read_text(encoding="utf-8")
+    )
     assert cursor_a["last_seq"] == 2
     assert cursor_b["last_seq"] == 10
     assert state_a["reward"] > 0.0
     assert state_b["reward"] == 0.0
+    assert pad_a["valence"] > pad_b["valence"]
+    assert pad_a["active_session_id"] == "session-a"
+    assert pad_b["active_session_id"] == "session-b"

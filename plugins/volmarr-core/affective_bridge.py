@@ -10,6 +10,7 @@ from hermes_constants import get_hermes_home
 
 from .affective import AffectiveNervousSystem, load_affective_config
 from .context_packet import ContextItem
+from .pad import PadEmotionalLayer
 from .verdandi_stimuli import VerdandiStimulusBridge
 
 
@@ -25,6 +26,18 @@ def _bounded_int(value: Any, default: int, minimum: int, maximum: int) -> int:
     except (TypeError, ValueError, OverflowError):
         return default
     return min(maximum, max(minimum, parsed))
+
+
+def _as_bool(value: Any, default: bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().casefold()
+        if normalized in {"true", "yes", "on", "1"}:
+            return True
+        if normalized in {"false", "no", "off", "0", ""}:
+            return False
+    return default
 
 
 class AffectiveBridge:
@@ -50,6 +63,11 @@ class AffectiveBridge:
             }
         )
         self._system = AffectiveNervousSystem(config)
+        self._pad = PadEmotionalLayer(
+            enabled=config.enabled
+            and _as_bool(ctx.get_config("pad_enabled", True), True),
+            decay=ctx.get_config("pad_decay", 0.08),
+        )
         self._stimuli = VerdandiStimulusBridge(ctx)
         self._pending: OrderedDict[tuple[str, str, str], dict[str, Any]] = (
             OrderedDict()
@@ -76,7 +94,8 @@ class AffectiveBridge:
     def on_session_start(self, *, session_id: str = "", **_: Any) -> None:
         if self.enabled:
             self._system.initialize(session_id)
-            self._stimuli.sync(self._system, session_id)
+            self._pad.initialize(session_id)
+            self._stimuli.sync(self._system, session_id, pad=self._pad)
 
     def pre_llm_call(
         self,
@@ -88,7 +107,7 @@ class AffectiveBridge:
     ) -> None:
         if not self.enabled:
             return
-        self._stimuli.sync(self._system, session_id)
+        self._stimuli.sync(self._system, session_id, pad=self._pad)
         key = self._key(session_id, turn_id)
         with self._pending_lock:
             pending = self._pending.setdefault(
@@ -168,21 +187,23 @@ class AffectiveBridge:
             pending = self._pending.pop(key, None)
         if not pending or not completed or failed or interrupted:
             return
-        self._system.observe_turn(
+        events = self._system.observe_turn(
             user_content=pending.get("user"),
             assistant_content=pending.get("assistant"),
             messages=pending.get("messages", []),
             session_id=session_id,
             interrupted=False,
         )
+        self._pad.observe_events(events, session_id=session_id)
 
     def packet_items(self, session_id: str) -> list[ContextItem]:
         if not self.enabled:
             return []
+        items = self._pad.packet_items(session_id)
         context = self._system.render_context(session_id=session_id)
         if not context:
-            return []
-        return [
+            return items
+        items.append(
             ContextItem(
                 section="current_state",
                 content=context,
@@ -190,4 +211,5 @@ class AffectiveBridge:
                 record_id="profile-state-v9",
                 priority=2.0,
             )
-        ]
+        )
+        return items
