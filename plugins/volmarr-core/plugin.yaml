@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-core
-version: "0.19.0"
+version: "0.20.0"
 description: "Volmarr's opt-in Hermes composition plugin, beginning with the Verðandi lifecycle bridge."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/hermes-agent-RuneForgeAI-hack

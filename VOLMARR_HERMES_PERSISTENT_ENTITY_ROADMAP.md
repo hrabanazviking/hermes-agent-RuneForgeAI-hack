@@ -1846,7 +1846,13 @@ conversation-history update, or memory writeback. The third slice adds
 profile-opt-in relevant retrieval: a configured persona's Passive Oracle render is bounded and
 submitted as one typed `WORLD STATE` item to the existing user-side context packet. It remains
 disabled by default, uses no writeback or WYRD turn loop, escapes untrusted fences centrally, and
-does not alter the cached system prompt. Mutation tools and change publication remain later slices.
+does not alter the cached system prompt. The fourth slice adds the two official WYRD v1 mutations:
+canonical facts through `world_set` and
+observations through `world_observe`. Writes require explicit WYRD acknowledgement; only then does
+the plugin emit a versioned, content-free Verðandi signal. Entity IDs, fact keys/values, titles,
+and summaries are excluded from the signal. The official API has no move or history route, so this
+integration does not invent one. End-to-end persistence across a real WYRD restart remains the
+final Milestone 5 acceptance check.
 
 ## Milestone 6: Entity Lifecycle
 

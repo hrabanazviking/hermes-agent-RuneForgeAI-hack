@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import threading
 from contextlib import contextmanager
@@ -68,6 +69,7 @@ class _LeakDetectorHandler(BaseHTTPRequestHandler):
 class _WorldHandler(BaseHTTPRequestHandler):
     requests: list[dict] = []
     query_response = "WORLD STATE\nSigrid is in the hall."
+    event_ack = True
 
     def do_GET(self) -> None:  # noqa: N802 - stdlib handler contract
         type(self).requests.append(
@@ -110,6 +112,8 @@ class _WorldHandler(BaseHTTPRequestHandler):
         )
         if self.path == "/query":
             self._send({"response": type(self).query_response})
+        elif self.path == "/event":
+            self._send({"ok": type(self).event_ack})
         else:
             self._send({"error": "not found"}, status=404)
 
@@ -541,3 +545,165 @@ def test_wyrd_context_render_budget_and_profile_a_b_a(tmp_path):
     assert "A" * 255 + "…" in contexts[2]
     assert "B" * 20 not in contexts[0]
     assert "A" * 20 not in contexts[1]
+
+
+def test_world_write_tools_publish_content_free_events_only_after_confirmation(
+    monkeypatch,
+):
+    from hermes_cli import plugins as plugins_mod
+    from tools.registry import registry
+
+    _WorldHandler.requests = []
+    published = []
+    with _server(_WorldHandler) as server:
+        _write_profile(get_hermes_home(), server.server_address[1])
+        manager = plugins_mod.PluginManager()
+        manager.discover_and_load()
+        loaded = manager._plugins["volmarr-core"]
+        telemetry_module = importlib.import_module(
+            f"{loaded.module.__package__}.world_telemetry"
+        )
+
+        def capture_publish(
+            _self,
+            _ctx,
+            event_type,
+            context,
+            *,
+            schema,
+            schema_version,
+        ):
+            published.append(
+                {
+                    "event_type": event_type,
+                    "context": context,
+                    "schema": schema,
+                    "schema_version": schema_version,
+                }
+            )
+            return True
+
+        monkeypatch.setattr(
+            telemetry_module.VerdandiPublisher,
+            "publish",
+            capture_publish,
+        )
+        try:
+            assert {"world_set", "world_observe"}.issubset(
+                loaded.tools_registered
+            )
+            fact = json.loads(
+                registry.dispatch(
+                    "world_set",
+                    {
+                        "subject_id": "sigrid",
+                        "key": "location",
+                        "value": "private_hall_name",
+                        "confidence": 0.9,
+                        "domain": "spatial",
+                    },
+                    scope=manager.scope_key,
+                )
+            )
+            observation = json.loads(
+                registry.dispatch(
+                    "world_observe",
+                    {
+                        "title": "private raven title",
+                        "summary": "private observation summary",
+                    },
+                    scope=manager.scope_key,
+                )
+            )
+        finally:
+            manager.unload()
+
+    assert fact == {
+        "success": True,
+        "write": "fact",
+        "event_published": True,
+    }
+    assert observation == {
+        "success": True,
+        "write": "observation",
+        "event_published": True,
+    }
+    event_requests = [row for row in _WorldHandler.requests if row["path"] == "/event"]
+    assert [row["body"] for row in event_requests] == [
+        {
+            "event_type": "fact",
+            "payload": {
+                "subject_id": "sigrid",
+                "key": "location",
+                "value": "private_hall_name",
+                "confidence": 0.9,
+                "domain": "spatial",
+            },
+        },
+        {
+            "event_type": "observation",
+            "payload": {
+                "title": "private raven title",
+                "summary": "private observation summary",
+            },
+        },
+    ]
+    assert [row["event_type"] for row in published] == [
+        "hermes.world.fact_changed",
+        "hermes.world.observation_recorded",
+    ]
+    assert all(row["schema"] == "runeforge.wyrd.change" for row in published)
+    assert all(row["schema_version"] == 1 for row in published)
+    serialized = json.dumps(published)
+    assert "sigrid" not in serialized
+    assert "location" not in serialized
+    assert "private_hall_name" not in serialized
+    assert "private raven title" not in serialized
+    assert "private observation summary" not in serialized
+
+
+def test_failed_or_invalid_world_writes_do_not_publish(monkeypatch):
+    from hermes_cli import plugins as plugins_mod
+    from tools.registry import registry
+
+    class RejectWrites(_WorldHandler):
+        requests = []
+        event_ack = False
+
+    published = []
+    with _server(RejectWrites) as server:
+        _write_profile(get_hermes_home(), server.server_address[1])
+        manager = plugins_mod.PluginManager()
+        manager.discover_and_load()
+        loaded = manager._plugins["volmarr-core"]
+        telemetry_module = importlib.import_module(
+            f"{loaded.module.__package__}.world_telemetry"
+        )
+        monkeypatch.setattr(
+            telemetry_module.VerdandiPublisher,
+            "publish",
+            lambda *_args, **_kwargs: published.append(True) or True,
+        )
+        try:
+            rejected = json.loads(
+                registry.dispatch(
+                    "world_set",
+                    {"subject_id": "sigrid", "key": "role", "value": "völva"},
+                    scope=manager.scope_key,
+                )
+            )
+            invalid = json.loads(
+                registry.dispatch(
+                    "world_observe",
+                    {"title": "", "summary": "not sent"},
+                    scope=manager.scope_key,
+                )
+            )
+        finally:
+            manager.unload()
+
+    assert "error" in rejected
+    assert "error" in invalid
+    assert len(RejectWrites.requests) == 1
+    assert RejectWrites.requests[0]["path"] == "/event"
+    assert published == []
