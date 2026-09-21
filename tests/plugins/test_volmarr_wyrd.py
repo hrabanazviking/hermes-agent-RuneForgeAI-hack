@@ -65,6 +65,65 @@ class _LeakDetectorHandler(BaseHTTPRequestHandler):
         return None
 
 
+class _WorldHandler(BaseHTTPRequestHandler):
+    requests: list[dict] = []
+
+    def do_GET(self) -> None:  # noqa: N802 - stdlib handler contract
+        type(self).requests.append(
+            {
+                "method": "GET",
+                "path": self.path,
+                "authorization": self.headers.get("Authorization", ""),
+            }
+        )
+        if self.path == "/world":
+            self._send(
+                {
+                    "query_timestamp": "2026-09-21T00:00:00Z",
+                    "world_id": "midgard",
+                    "focus_entities": [],
+                    "location_context": None,
+                    "present_entities": [],
+                    "canonical_facts": {},
+                    "active_policies": [],
+                    "recent_observations": [],
+                    "open_contradiction_count": 0,
+                    "formatted_for_llm": "WORLD STATE\nworld: midgard",
+                }
+            )
+        elif self.path == "/facts?entity_id=sigrid_1":
+            self._send({"facts": [{"record_id": "fact-1"}]})
+        else:
+            self._send({"error": "not found"}, status=404)
+
+    def do_POST(self) -> None:  # noqa: N802 - stdlib handler contract
+        length = int(self.headers.get("Content-Length", "0"))
+        body = json.loads(self.rfile.read(length).decode("utf-8"))
+        type(self).requests.append(
+            {
+                "method": "POST",
+                "path": self.path,
+                "body": body,
+                "authorization": self.headers.get("Authorization", ""),
+            }
+        )
+        if self.path == "/query":
+            self._send({"response": "WORLD STATE\nSigrid is in the hall."})
+        else:
+            self._send({"error": "not found"}, status=404)
+
+    def _send(self, body: dict, *, status: int = 200) -> None:
+        payload = json.dumps(body).encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
+    def log_message(self, _format: str, *_args) -> None:
+        return None
+
+
 @contextmanager
 def _server(handler):
     server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
@@ -209,3 +268,130 @@ def test_wyrd_probe_does_not_follow_redirects(capsys):
 
     assert report["status"] == "protocol_error"
     assert _LeakDetectorHandler.requests == 0
+
+
+def test_read_only_world_tools_use_official_routes_without_credentials():
+    from hermes_cli import plugins as plugins_mod
+    from tools.registry import registry
+
+    _WorldHandler.requests = []
+    with _server(_WorldHandler) as server:
+        _write_profile(get_hermes_home(), server.server_address[1])
+        manager = plugins_mod.PluginManager()
+        manager.discover_and_load()
+        try:
+            loaded = manager._plugins["volmarr-core"]
+            assert {"world_get", "world_query"}.issubset(loaded.tools_registered)
+            snapshot = json.loads(
+                registry.dispatch("world_get", {}, scope=manager.scope_key)
+            )
+            facts = json.loads(
+                registry.dispatch(
+                    "world_get",
+                    {"mode": "facts", "entity_id": "sigrid_1"},
+                    scope=manager.scope_key,
+                )
+            )
+            query = json.loads(
+                registry.dispatch(
+                    "world_query",
+                    {"persona_id": "sigrid_1", "query": "Where is Sigrid?"},
+                    scope=manager.scope_key,
+                )
+            )
+        finally:
+            manager.unload()
+
+    assert snapshot["world"]["world_id"] == "midgard"
+    assert facts["facts"] == [{"record_id": "fact-1"}]
+    assert query["writeback"] is False
+    assert query["context"].startswith("WORLD STATE")
+    assert [(row["method"], row["path"]) for row in _WorldHandler.requests] == [
+        ("GET", "/world"),
+        ("GET", "/facts?entity_id=sigrid_1"),
+        ("POST", "/query"),
+    ]
+    assert _WorldHandler.requests[-1]["body"] == {
+        "persona_id": "sigrid_1",
+        "user_input": "Where is Sigrid?",
+        "use_turn_loop": False,
+    }
+    assert all(not row["authorization"] for row in _WorldHandler.requests)
+
+
+def test_world_tools_resolve_active_profile_a_b_a(tmp_path):
+    from hermes_cli import plugins as plugins_mod
+    from tools.registry import registry
+
+    class WorldA(_WorldHandler):
+        requests = []
+
+        def do_GET(self) -> None:  # noqa: N802 - stdlib handler contract
+            type(self).requests.append(
+                {"method": "GET", "path": self.path, "authorization": ""}
+            )
+            self._send({"world_id": "world-a", "formatted_for_llm": "WORLD A"})
+
+    class WorldB(_WorldHandler):
+        requests = []
+
+        def do_GET(self) -> None:  # noqa: N802 - stdlib handler contract
+            type(self).requests.append(
+                {"method": "GET", "path": self.path, "authorization": ""}
+            )
+            self._send({"world_id": "world-b", "formatted_for_llm": "WORLD B"})
+
+    profile_a = get_hermes_home()
+    profile_b = tmp_path / "profile-b"
+    with _server(WorldA) as server_a, _server(WorldB) as server_b:
+        _write_profile(profile_a, server_a.server_address[1])
+        _write_profile(profile_b, server_b.server_address[1])
+        manager = plugins_mod.PluginManager()
+        manager.discover_and_load()
+        try:
+            world_ids = []
+            for home in (profile_a, profile_b, profile_a):
+                token = set_hermes_home_override(home)
+                try:
+                    result = registry.dispatch(
+                        "world_get", {}, scope=manager.scope_key
+                    )
+                    world_ids.append(json.loads(result)["world"]["world_id"])
+                finally:
+                    reset_hermes_home_override(token)
+        finally:
+            manager.unload()
+
+    assert world_ids == ["world-a", "world-b", "world-a"]
+
+
+def test_world_tools_reject_invalid_ids_and_queries_before_network():
+    from hermes_cli import plugins as plugins_mod
+    from tools.registry import registry
+
+    _WorldHandler.requests = []
+    with _server(_WorldHandler) as server:
+        _write_profile(get_hermes_home(), server.server_address[1])
+        manager = plugins_mod.PluginManager()
+        manager.discover_and_load()
+        try:
+            bad_id = json.loads(
+                registry.dispatch(
+                    "world_get",
+                    {"mode": "facts", "entity_id": "../secret"},
+                    scope=manager.scope_key,
+                )
+            )
+            long_query = json.loads(
+                registry.dispatch(
+                    "world_query",
+                    {"persona_id": "sigrid", "query": "x" * 8_001},
+                    scope=manager.scope_key,
+                )
+            )
+        finally:
+            manager.unload()
+
+    assert "error" in bad_id
+    assert "error" in long_query
+    assert _WorldHandler.requests == []

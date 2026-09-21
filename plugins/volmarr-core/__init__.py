@@ -8,6 +8,7 @@ from .affective_bridge import AffectiveBridge
 from .cli import health_command, register_cli
 from .lifecycle import LifecycleBridge
 from .present_state import PresentStateBridge
+from .wyrd_tools import register_wyrd_tools
 
 
 def register(ctx) -> None:
@@ -24,6 +25,7 @@ def register(ctx) -> None:
     )
     for hook_name, callback in present_state.hooks():
         ctx.register_hook(hook_name, callback)
+    register_wyrd_tools(ctx)
     ctx.register_cli_command(
         name="volmarr",
         help="Inspect Volmarr's Hermes integrations",

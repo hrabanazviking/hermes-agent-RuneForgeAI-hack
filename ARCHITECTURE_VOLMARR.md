@@ -315,6 +315,20 @@ sent. Configuration resolves from the active profile at probe time, preserving A
 World queries, tools, mutations, event publication, and context-packet contribution remain later
 slices; health compatibility alone does not claim that any world data has been integrated.
 
+### Slice 18: Explicit Read-Only World Tools
+
+The plugin registers `world_get` and `world_query` in the `volmarr_world` toolset. `world_get`
+exposes the official `/world` snapshot and `/facts?entity_id=...` contracts. `world_query` invokes
+the official `/query` route only with `use_turn_loop:false`, which selects WYRD's Passive Oracle
+context render without its LLM turn loop, conversation history, or memory writeback. No mutation
+endpoint is registered in this slice.
+
+Tool inputs use strict lowercase entity IDs and bounded query text. Requests are capped at 32 KiB;
+responses at 64 KiB; fact lists at 256 records. Both tools reuse the loopback-only, proxy-free,
+redirect-refusing transport and resolve endpoint configuration from the active profile on every
+call. Returned WYRD data remains an explicit tool result in this slice—it is not automatically
+placed in the prompt or mistaken for Hermes memory.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
