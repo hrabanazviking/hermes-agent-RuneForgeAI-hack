@@ -1783,7 +1783,10 @@ turn without changing the cached system prompt, mirror only successful memory wr
 automatic turn-derived facts only after a successful lifecycle verdict. MemPalace is attached as
 the verbatim episodic store through a read-only official-v3.10.0-or-newer package,
 SQLite-integrity, and drawer-collection probe. Retrieval and ingestion remain disabled pending
-bounded-packet and durable-write slices.
+bounded-packet and durable-write slices. OpenViking is attached through Hermes' existing bundled
+provider plus a profile-scoped, anonymous, loopback-only health attestation for the official
+v0.4.21-or-newer server contract. No second provider is registered, and the attachment does not
+start a server or enable retrieval and writes ahead of their policy slices.
 
 ## Milestone 4: Affective Continuity
 
