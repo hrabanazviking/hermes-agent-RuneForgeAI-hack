@@ -6,6 +6,7 @@ from functools import partial
 
 from .affective_bridge import AffectiveBridge
 from .cli import health_command, register_cli
+from .identity import IdentityBridge
 from .lifecycle import LifecycleBridge
 from .present_state import PresentStateBridge
 from .wyrd_tools import register_wyrd_tools
@@ -16,6 +17,9 @@ def register(ctx) -> None:
     """Register the first Volmarr vertical slice without modifying Hermes core."""
     bridge = LifecycleBridge(ctx)
     for hook_name, callback in bridge.hooks():
+        ctx.register_hook(hook_name, callback)
+    identity = IdentityBridge(ctx)
+    for hook_name, callback in identity.hooks():
         ctx.register_hook(hook_name, callback)
     affective = AffectiveBridge(ctx)
     for hook_name, callback in affective.hooks():

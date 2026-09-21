@@ -10,6 +10,7 @@ from pathlib import Path
 from .cognition import probe_aesir
 from .execution import CognitionExecutionRequest, CognitionExecutor
 from .health import probe_verdandi
+from .identity import probe_identity
 from .memory_fabric import probe_bifrost
 from .mempalace import probe_mempalace
 from .openviking import probe_openviking
@@ -104,6 +105,16 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Validate the official WYRD loopback liveness contract read-only",
     )
     world_health.add_argument("--json", action="store_true", dest="json_output")
+    identity = subcommands.add_parser(
+        "identity",
+        help="Inspect the active profile's stable entity identity",
+    )
+    identity_subcommands = identity.add_subparsers(dest="identity_action")
+    identity_health = identity_subcommands.add_parser(
+        "health",
+        help="Validate the structured entity identity read-only",
+    )
+    identity_health.add_argument("--json", action="store_true", dest="json_output")
 
 
 def _load_json_request(source: str, *, max_bytes: int) -> dict:
@@ -214,8 +225,14 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 2
         report = probe_wyrd(ctx)
         label = "WYRD"
+    elif action == "identity":
+        if getattr(args, "identity_action", None) != "health":
+            print("Usage: hermes volmarr identity health [--json]")
+            return 2
+        report = probe_identity(ctx)
+        label = "Entity identity"
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|identity} ...")
         return 2
 
     if getattr(args, "json_output", False):
@@ -229,6 +246,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             or getattr(report, "mimir_db_path", "")
             or getattr(report, "palace_path", "")
             or getattr(report, "state_db_path", "")
+            or getattr(report, "identity_path", "")
         )
         print(f"Endpoint: {location}")
         if getattr(report, "latency_ms", None) is not None:

@@ -371,6 +371,23 @@ garbage-collects short-lived bridge objects before disposable-directory cleanup 
 official store currently relies on Python object finalization to close its transient SQLite
 connections. This cleanup accommodation does not alter the persistence assertion.
 
+## Milestone 6: Entity Lifecycle
+
+### Slice 22: Stable Structured Identity
+
+`identity.py` establishes one model-independent identity record at
+`entity/entity.yaml` beneath the active Hermes profile. The versioned record owns only the stable
+entity UUID, name, creation time, persona-pack reference, and home-runtime declaration. Hermes'
+`SOUL.md` remains the human-authored persona surface: the identity bridge never creates, copies,
+parses, or rewrites it.
+
+The record is created atomically under a cross-process lock and then treated as create-once state.
+Session IDs, model names, and provider changes cannot rewrite it. Paths are resolved at operation
+time for A→B→A profile isolation, and relative path escapes fall back to the profile-local default.
+A malformed or unsupported existing record is reported by
+`hermes volmarr identity health [--json]` and left byte-for-byte intact; silently minting a
+replacement UUID would destroy continuity. Identity is not injected into prompts in this slice.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

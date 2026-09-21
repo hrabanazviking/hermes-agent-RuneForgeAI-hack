@@ -1867,6 +1867,14 @@ truth therefore survives restart independently of Hermes conversation memory.
 
 **Done when:** restart resumes state, tasks, and identity cleanly.
 
+**Implementation status:** in progress. The identity package now creates one versioned,
+profile-local `entity/entity.yaml` record with a stable UUID and creation time. It is independent
+of session, model, and provider selection, while Hermes `SOUL.md` remains the untouched
+human-authored persona surface. Existing valid identities are never normalized or rewritten;
+malformed or unsupported records fail visibly through `hermes volmarr identity health` and are
+not silently replaced. Relationships, goals, heartbeat, background routines, and
+sleep/consolidation remain later ordered slices.
+
 ## Milestone 7: Secrets and Security
 
 - Kista Secret Source plugin;
