@@ -1752,13 +1752,15 @@ reports `unsupported` without affecting Hermes execution.
 
 **Done when:** routine test conversations and event classification run locally while difficult tasks can escalate.
 
-**Implementation status:** in progress. The first slice attaches A.E.S.I.R.'s authenticated,
-loopback-only OpenAI-compatible catalog through the profile-scoped `volmarr-core` adapter. The
-versioned routing contract now chooses deterministic, local, or cloud capability tiers from bounded
-metadata while leaving actual cloud-provider resolution to Hermes. Each accepted decision now emits
-content-free deterministic/local/cloud telemetry through Verðandi. Execution outcome telemetry and
-schema-v2 manual `local`/`deep` route modes are available without breaking v1 auto requests.
-Execution remains the next slice; A.E.S.I.R. is not advertised as a tool-capable Hermes provider.
+**Implementation status:** application contract complete. A.E.S.I.R.'s authenticated,
+loopback-only OpenAI-compatible text endpoint is attached through the profile-scoped
+`volmarr-core` adapter. The versioned router chooses deterministic, local, or cloud capability
+tiers from bounded metadata, supports truthful schema-v2 `local`/`deep` modes, and keeps v1 auto
+requests compatible. Bounded routine text and event-classification work can execute locally with
+content-free decision and outcome telemetry. Difficult work returns an explicit escalation
+directive while actual cloud-provider resolution remains with Hermes; forced-local failures never
+silently escalate. A.E.S.I.R. is not advertised as a tool-capable Hermes provider, and automatic
+interception of ordinary Hermes agent turns is not claimed.
 
 ## Milestone 3: Memory Fabric
 
