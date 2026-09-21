@@ -1776,8 +1776,11 @@ interception of ordinary Hermes agent turns is not claimed.
 **Implementation status:** in progress. The first slice attaches the external Bifröst package as
 the central bridge boundary and proves that its Mímir and Muninn paths follow the active Hermes
 profile. Initial operation is deliberately Mímir-only: health validation opens the existing store
-read-only, while Huginn, Muninn reinforcement, consolidation, decay, Hermes provider registration,
-and prompt injection remain disabled until their own behavior contracts are implemented.
+read-only, while Huginn, Muninn reinforcement, consolidation, decay, and Hermes provider
+registration remain disabled until their own behavior contracts are implemented. Present State is
+now attached through plugin hooks: bounded current facts persist per profile, enter the current user
+turn without changing the cached system prompt, mirror only successful memory writes, and commit
+automatic turn-derived facts only after a successful lifecycle verdict.
 
 ## Milestone 4: Affective Continuity
 
