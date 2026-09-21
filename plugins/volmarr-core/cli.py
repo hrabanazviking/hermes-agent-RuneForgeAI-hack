@@ -10,6 +10,7 @@ from pathlib import Path
 from .cognition import probe_aesir
 from .health import probe_verdandi
 from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
+from .telemetry import CognitionTelemetry
 
 
 def register_cli(parser: argparse.ArgumentParser) -> None:
@@ -75,6 +76,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     file=sys.stderr,
                 )
                 return 2
+            CognitionTelemetry().record_decision(ctx, decision)
             print(json.dumps(decision.as_dict(), sort_keys=True))
             return 0
         if cognition_action != "health":

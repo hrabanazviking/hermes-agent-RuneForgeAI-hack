@@ -118,6 +118,17 @@ or external-data requirements go to cloud-capable Hermes; a previous local failu
 or an oversized input escalates; otherwise the request is eligible for the local reflex endpoint.
 The router chooses only the capability tier. It neither invokes a model nor selects a cloud provider.
 
+### Slice 5: Route Telemetry
+
+Every accepted route decision publishes one `runeforge.cognition.telemetry` v1 envelope through
+the existing Verðandi adapter. Deterministic, local, and cloud decisions map respectively to
+`hermes.cognition.deterministic`, `hermes.cognition.local`, and
+`hermes.cognition.escalated`.
+
+Telemetry contains only the operation identifier, selected tier, stable reason code, declared input
+size, and configured local limit. It contains no prompt, message, response, model credential, or
+user content. Verðandi transport failure remains fail-open and cannot change the route decision.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

@@ -1755,8 +1755,10 @@ reports `unsupported` without affecting Hermes execution.
 **Implementation status:** in progress. The first slice attaches A.E.S.I.R.'s authenticated,
 loopback-only OpenAI-compatible catalog through the profile-scoped `volmarr-core` adapter. The
 versioned routing contract now chooses deterministic, local, or cloud capability tiers from bounded
-metadata while leaving actual cloud-provider resolution to Hermes. Execution, telemetry, and manual
-route modes remain later slices; A.E.S.I.R. is not advertised as a tool-capable Hermes provider.
+metadata while leaving actual cloud-provider resolution to Hermes. Each accepted decision now emits
+content-free deterministic/local/cloud telemetry through Verðandi. Execution outcome telemetry and
+manual route modes remain later slices; A.E.S.I.R. is not advertised as a tool-capable Hermes
+provider.
 
 ## Milestone 3: Memory Fabric
 

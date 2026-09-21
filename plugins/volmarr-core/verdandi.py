@@ -59,10 +59,16 @@ class VerdandiSettings:
         )
 
 
-def build_envelope(event_type: str, context: Mapping[str, Any]) -> dict[str, Any]:
+def build_envelope(
+    event_type: str,
+    context: Mapping[str, Any],
+    *,
+    schema: str = SCHEMA,
+    schema_version: int = SCHEMA_VERSION,
+) -> dict[str, Any]:
     return {
-        "schema": SCHEMA,
-        "schema_version": SCHEMA_VERSION,
+        "schema": schema,
+        "schema_version": schema_version,
         "event_id": str(uuid4()),
         "occurred_at": datetime.now(timezone.utc).isoformat(),
         "event": event_type,
@@ -73,7 +79,15 @@ def build_envelope(event_type: str, context: Mapping[str, Any]) -> dict[str, Any
 class VerdandiPublisher:
     """Publish one event without allowing transport failure into the agent turn."""
 
-    def publish(self, ctx, event_type: str, context: Mapping[str, Any]) -> bool:
+    def publish(
+        self,
+        ctx,
+        event_type: str,
+        context: Mapping[str, Any],
+        *,
+        schema: str = SCHEMA,
+        schema_version: int = SCHEMA_VERSION,
+    ) -> bool:
         try:
             socket_family = getattr(socket, "AF_UNIX", None)
             if socket_family is None:
@@ -83,7 +97,12 @@ class VerdandiPublisher:
             payload = {
                 "type": event_type,
                 "source": settings.source,
-                "data": build_envelope(event_type, context),
+                "data": build_envelope(
+                    event_type,
+                    context,
+                    schema=schema,
+                    schema_version=schema_version,
+                ),
             }
             encoded = (json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n").encode()
             with socket.socket(socket_family, socket.SOCK_STREAM) as client:

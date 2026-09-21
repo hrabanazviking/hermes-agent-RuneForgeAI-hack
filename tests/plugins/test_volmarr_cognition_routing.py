@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import socket
 
 import pytest
 
@@ -79,6 +80,70 @@ def test_route_contract_selects_the_first_required_capability_tier(
         assert decision["route"] == route
         assert decision["reason"] == reason
         assert decision["local_input_limit_bytes"] == 100
+    finally:
+        manager.unload()
+
+
+class _SocketRecorder:
+    def __init__(self, payloads: list[bytes]) -> None:
+        self._payloads = payloads
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_exc) -> None:
+        return None
+
+    def settimeout(self, _timeout: float) -> None:
+        return None
+
+    def connect(self, _path: str) -> None:
+        return None
+
+    def sendall(self, payload: bytes) -> None:
+        self._payloads.append(payload)
+
+
+def test_route_decisions_publish_versioned_content_free_telemetry(
+    tmp_path,
+    capsys,
+    monkeypatch,
+):
+    payloads: list[bytes] = []
+    monkeypatch.setattr(socket, "AF_UNIX", object(), raising=False)
+    monkeypatch.setattr(socket, "socket", lambda *_args: _SocketRecorder(payloads))
+    manager = _load_router_plugin()
+    try:
+        for route_request in (
+            {
+                "schema_version": 1,
+                "operation": "memory.tagging",
+                "input_bytes": 42,
+            },
+            {
+                "schema_version": 1,
+                "operation": "code.review",
+                "input_bytes": 42,
+                "requires_tools": True,
+            },
+        ):
+            assert _invoke_route(manager, tmp_path, route_request) == 0
+            capsys.readouterr()
+
+        messages = [json.loads(payload.decode()) for payload in payloads]
+        assert [message["type"] for message in messages] == [
+            "hermes.cognition.local",
+            "hermes.cognition.escalated",
+        ]
+        assert all(
+            message["data"]["schema"] == "runeforge.cognition.telemetry"
+            for message in messages
+        )
+        assert all(message["data"]["schema_version"] == 1 for message in messages)
+        serialized = json.dumps(messages)
+        assert "prompt" not in serialized
+        assert "messages" not in serialized
+        assert "response" not in serialized
     finally:
         manager.unload()
 
