@@ -205,6 +205,20 @@ MemPalace v3.10.0 also ships its own full Hermes memory-provider integration; th
 install or duplicate it because provider registration, retrieval, and ingestion remain later,
 separately bounded decisions.
 
+### Slice 11: OpenViking Attachment
+
+Hermes' bundled `openviking` memory provider remains the sole OpenViking runtime integration.
+`hermes volmarr memory openviking health` adds a narrower composition-layer attestation: it first
+confirms that provider is discoverable, then makes one anonymous `GET /health` request to an
+explicit loopback endpoint and requires the official OpenViking v0.4.21-or-newer identity shape.
+The request bypasses proxies, refuses redirects, carries no credentials, caps response bytes, and
+uses a bounded timeout resolved from the active Hermes profile.
+
+This slice does not register another provider, start a server, retrieve context, write resources,
+or invoke OpenViking's extraction pipeline. The bundled provider remains opt-in through Hermes'
+normal `memory.provider` configuration. Its retrieval results will enter Volmarr turns only after
+the bounded context-packet contract exists.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

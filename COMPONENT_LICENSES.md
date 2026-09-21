@@ -12,6 +12,7 @@ It does not replace the original license text.
 | Bifröst | `hrabanazviking/bifrost` at `b66e98cc8a79d4dede22ba11d68a1a5ecd22ebd6` | Python package interface integration; no Bifröst source copied | MIT | Copyright 2025 Runa Gridweaver and Volmarr Viking; Bifröst remains an external package |
 | Earlier Present State work | `hrabanazviking/hermes-agent` at `761a8559084e7f582fe4c205bfa3835c1df9df42` | Present-state data model and behavior adapted into `plugins/volmarr-core/present_state.py`; former Hermes core wiring was not copied | MIT | Original commit authored by Volmarr Wyrd in the personal Hermes fork; root MIT notice remains preserved |
 | MemPalace | Official `MemPalace/mempalace` v3.10.0 at `22fd87f09c19d5ffb2d6966486483353937931c0`; mirrored by `hrabanazviking/mempalace` at `ff1bdf03407bc5d6c571fa85f8c621d7177de616` | Python package identity and read-only Chroma SQLite contract integration; no MemPalace source copied | MIT | Copyright 2026 MemPalace Contributors; MemPalace remains an external package |
+| OpenViking | Official `volcengine/OpenViking` v0.4.21 at `3fca2577520f00b7f580d85d4ac6ae42bb9ba6f1` | Anonymous loopback `/health` protocol attestation; existing Hermes provider reused and no OpenViking source copied by this fork slice | AGPL-3.0 | Copyright belongs to OpenViking contributors; OpenViking remains an external service/package |
 
 ## Import Rule
 

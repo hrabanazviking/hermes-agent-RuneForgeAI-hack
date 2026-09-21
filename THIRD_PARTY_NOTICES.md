@@ -55,6 +55,16 @@ Copyright (c) 2026 MemPalace Contributors
 MemPalace remains a separate package and repository. No MemPalace source file is copied into this
 repository by the episodic-store attachment.
 
+## OpenViking
+
+The `volmarr-core` plugin can attest an external OpenViking v0.4.21-or-newer service through its
+anonymous, read-only loopback health endpoint. OpenViking is distributed under the GNU Affero
+General Public License, version 3. The complete license is available in the official OpenViking
+source repository.
+
+This fork slice reuses Hermes' existing bundled OpenViking provider and adds no copied OpenViking
+source. OpenViking remains a separate service/package.
+
 ## Future Components
 
 No other third-party runtime component has been incorporated into the personal fork at this stage.

@@ -12,6 +12,7 @@ from .execution import CognitionExecutionRequest, CognitionExecutor
 from .health import probe_verdandi
 from .memory_fabric import probe_bifrost
 from .mempalace import probe_mempalace
+from .openviking import probe_openviking
 from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
 from .telemetry import CognitionTelemetry
 
@@ -71,6 +72,16 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Validate the MemPalace package and Chroma SQLite store read-only",
     )
     mempalace_health.add_argument("--json", action="store_true", dest="json_output")
+    openviking = memory_subcommands.add_parser(
+        "openviking",
+        help="Inspect the local OpenViking context service",
+    )
+    openviking_subcommands = openviking.add_subparsers(dest="openviking_action")
+    openviking_health = openviking_subcommands.add_parser(
+        "health",
+        help="Validate the bundled provider and official server contract read-only",
+    )
+    openviking_health.add_argument("--json", action="store_true", dest="json_output")
 
 
 def _load_json_request(source: str, *, max_bytes: int) -> dict:
@@ -151,11 +162,20 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                 return 2
             report = probe_mempalace(ctx)
             label = "MemPalace"
+        elif memory_action == "openviking":
+            if getattr(args, "openviking_action", None) != "health":
+                print("Usage: hermes volmarr memory openviking health [--json]")
+                return 2
+            report = probe_openviking(ctx)
+            label = "OpenViking"
         elif memory_action == "health":
             report = probe_bifrost(ctx)
             label = "Bifröst"
         else:
-            print("Usage: hermes volmarr memory {health|mempalace health} [--json]")
+            print(
+                "Usage: hermes volmarr memory "
+                "{health|mempalace health|openviking health} [--json]"
+            )
             return 2
     elif action == "health":
         report = probe_verdandi(ctx)
@@ -188,6 +208,8 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             print(f"Memories: {report.memory_count}")
         if getattr(report, "package_version", None):
             print(f"Package version: {report.package_version}")
+        if getattr(report, "server_version", None):
+            print(f"Server version: {report.server_version}")
         if report.error_type:
             print(f"Error type: {report.error_type}")
     return 0 if report.healthy else 1
