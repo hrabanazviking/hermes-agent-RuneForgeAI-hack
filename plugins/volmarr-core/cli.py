@@ -11,6 +11,7 @@ from .cognition import probe_aesir
 from .execution import CognitionExecutionRequest, CognitionExecutor
 from .health import probe_verdandi
 from .memory_fabric import probe_bifrost
+from .mempalace import probe_mempalace
 from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
 from .telemetry import CognitionTelemetry
 
@@ -60,6 +61,16 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Validate Bifröst and the active profile's Mímir store",
     )
     memory_health.add_argument("--json", action="store_true", dest="json_output")
+    mempalace = memory_subcommands.add_parser(
+        "mempalace",
+        help="Inspect the profile-scoped MemPalace episodic store",
+    )
+    mempalace_subcommands = mempalace.add_subparsers(dest="mempalace_action")
+    mempalace_health = mempalace_subcommands.add_parser(
+        "health",
+        help="Validate the MemPalace package and Chroma SQLite store read-only",
+    )
+    mempalace_health.add_argument("--json", action="store_true", dest="json_output")
 
 
 def _load_json_request(source: str, *, max_bytes: int) -> dict:
@@ -133,11 +144,19 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
         report = probe_aesir(ctx)
         label = "A.E.S.I.R."
     elif action == "memory":
-        if getattr(args, "memory_action", None) != "health":
-            print("Usage: hermes volmarr memory health [--json]")
+        memory_action = getattr(args, "memory_action", None)
+        if memory_action == "mempalace":
+            if getattr(args, "mempalace_action", None) != "health":
+                print("Usage: hermes volmarr memory mempalace health [--json]")
+                return 2
+            report = probe_mempalace(ctx)
+            label = "MemPalace"
+        elif memory_action == "health":
+            report = probe_bifrost(ctx)
+            label = "Bifröst"
+        else:
+            print("Usage: hermes volmarr memory {health|mempalace health} [--json]")
             return 2
-        report = probe_bifrost(ctx)
-        label = "Bifröst"
     elif action == "health":
         report = probe_verdandi(ctx)
         label = "Verðandi"
@@ -154,6 +173,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             getattr(report, "socket_path", None)
             or getattr(report, "base_url", None)
             or getattr(report, "mimir_db_path", "")
+            or getattr(report, "palace_path", "")
         )
         print(f"Endpoint: {location}")
         if report.latency_ms is not None:
@@ -166,6 +186,8 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             print(f"Models: {', '.join(report.models)}")
         if getattr(report, "memory_count", None) is not None:
             print(f"Memories: {report.memory_count}")
+        if getattr(report, "package_version", None):
+            print(f"Package version: {report.package_version}")
         if report.error_type:
             print(f"Error type: {report.error_type}")
     return 0 if report.healthy else 1

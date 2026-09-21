@@ -1780,7 +1780,10 @@ read-only, while Huginn, Muninn reinforcement, consolidation, decay, and Hermes 
 registration remain disabled until their own behavior contracts are implemented. Present State is
 now attached through plugin hooks: bounded current facts persist per profile, enter the current user
 turn without changing the cached system prompt, mirror only successful memory writes, and commit
-automatic turn-derived facts only after a successful lifecycle verdict.
+automatic turn-derived facts only after a successful lifecycle verdict. MemPalace is attached as
+the verbatim episodic store through a read-only official-v3.10.0-or-newer package,
+SQLite-integrity, and drawer-collection probe. Retrieval and ingestion remain disabled pending
+bounded-packet and durable-write slices.
 
 ## Milestone 4: Affective Continuity
 

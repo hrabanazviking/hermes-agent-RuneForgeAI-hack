@@ -189,6 +189,22 @@ a completed, non-failed, non-interrupted turn. Successful built-in `memory` tool
 through `post_tool_call`; failed writes are ignored. Present State remains immediate context, not a
 verbatim episode archive, world model, or identity authority.
 
+### Slice 10: MemPalace Attachment
+
+`hermes volmarr memory mempalace health` attaches the external MemPalace package and its verbatim
+episodic store without initializing ChromaDB. The palace path is resolved against the active Hermes
+profile, and relative paths may not escape it. The probe requires the officially verified
+MemPalace v3.10.0 contract (or newer),
+opens `chroma.sqlite3` in read-only mode, runs SQLite's quick integrity check, and confirms the
+configured drawer collection exists.
+
+The probe never creates a palace, collection, model cache, or background worker. Retrieval and
+ingestion are not yet enabled; they require separate bounded-packet and durable-write contracts.
+This keeps MemPalace's verbatim promise distinct from Present State's compact fact extraction.
+MemPalace v3.10.0 also ships its own full Hermes memory-provider integration; this slice does not
+install or duplicate it because provider registration, retrieval, and ingestion remain later,
+separately bounded decisions.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
