@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-core
-version: "0.15.0"
+version: "0.16.0"
 description: "Volmarr's opt-in Hermes composition plugin, beginning with the Verðandi lifecycle bridge."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/hermes-agent-RuneForgeAI-hack
@@ -97,6 +97,14 @@ config_schema:
     type: float
     default: 0.04
     description: "Per-observed-turn movement of synthetic gauges toward their baselines (clamped to 0-0.5)."
+  pad_enabled:
+    type: bool
+    default: true
+    description: "Project classified affective events onto a persistent synthetic valence/energy/agency state. Effective only when affective regulation is enabled."
+  pad_decay:
+    type: float
+    default: 0.08
+    description: "Per-event-batch movement of synthetic PAD axes toward their baselines (clamped to 0-0.5)."
   affective_verdandi_enabled:
     type: bool
     default: true

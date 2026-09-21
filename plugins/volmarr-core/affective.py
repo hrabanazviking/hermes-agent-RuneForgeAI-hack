@@ -735,10 +735,10 @@ class AffectiveNervousSystem:
         session_id: str = "",
         interrupted: bool = False,
         response_transformed: bool = False,
-    ) -> None:
+    ) -> List[AffectiveEvent]:
         """Update state from one completed conversation turn."""
         if not self.config.enabled or interrupted:
-            return
+            return []
         user_text = _bounded_text(user_content if isinstance(user_content, str) else "")
         assistant_text = _bounded_text(
             assistant_content if isinstance(assistant_content, str) else ""
@@ -754,9 +754,9 @@ class AffectiveNervousSystem:
             )
         except Exception as exc:
             logger.debug("Affective nervous system event derivation failed: %s", exc)
-            return
+            return []
         if not events:
-            return
+            return []
         try:
             with self._file_lock():
                 state = self._load_unlocked()
@@ -769,8 +769,10 @@ class AffectiveNervousSystem:
                     state.recent_events + [_event_record(e) for e in events]
                 )[-self.config.max_recent_events :]
                 self._write_unlocked(state)
+            return events
         except Exception as exc:
             logger.debug("Affective nervous system observe failed: %s", exc)
+            return []
 
     def observe_events(
         self,

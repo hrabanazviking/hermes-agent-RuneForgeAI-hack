@@ -14,6 +14,7 @@ from hermes_constants import get_hermes_home
 from utils import atomic_json_write
 
 from .affective import AffectiveEvent, AffectiveNervousSystem
+from .pad import PadEmotionalLayer
 from .verdandi import VerdandiSettings
 
 
@@ -219,7 +220,13 @@ class VerdandiStimulusBridge:
     def _cursor_path() -> Path:
         return get_hermes_home().resolve() / CURSOR_PATH
 
-    def sync(self, system: AffectiveNervousSystem, session_id: str) -> None:
+    def sync(
+        self,
+        system: AffectiveNervousSystem,
+        session_id: str,
+        *,
+        pad: PadEmotionalLayer | None = None,
+    ) -> None:
         if not self._enabled:
             return
         batch = self._client.fetch()
@@ -240,6 +247,10 @@ class VerdandiStimulusBridge:
                 unseen.extend(map_stimulus(event, session_id))
             max_seq = max(max_seq, batch.total)
             if unseen and not system.observe_events(unseen, session_id=session_id):
+                return
+            if unseen and pad is not None and not pad.observe_events(
+                unseen, session_id=session_id
+            ):
                 return
             self._write_cursor(max_seq)
 

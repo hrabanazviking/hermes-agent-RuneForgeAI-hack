@@ -260,7 +260,8 @@ The feature is opt-in through `affective_enabled`. When enabled, it contributes 
 item to the central context-packet builder rather than rendering an independent prompt fragment.
 It therefore owns regulatory state and transitions, while the memory fabric continues to own
 prompt assembly. State paths resolve through the active `HERMES_HOME` on every operation, including
-A→B→A profile changes. Verðandi-derived stimuli and a separate PAD layer remain later slices.
+A→B→A profile changes. Verðandi-derived stimuli and a separate PAD layer are attached by the next
+two slices without changing this regulator's ownership.
 
 ### Slice 15: Verðandi Regulatory Stimuli
 
@@ -281,6 +282,24 @@ strictly bounded. Free-text context, repository names, sensations, and conversat
 never retained. The response is capped at 64 KiB and 1–128 recent events; stimuli older than the
 configured catch-up window are deliberately not replayed. The hub remains a dumb pipe—the adapter
 owns classification and the affective regulator owns state transitions.
+
+### Slice 16: Synthetic PAD Emotional Layer
+
+`pad.py` projects the regulator's already-classified events onto three orthogonal, bounded axes:
+valence, energy, and agency. It never inspects raw conversation text and therefore does not create
+a competing classifier. Completed local turns and accepted Verðandi stimuli feed the same event
+mapping; failed or interrupted turns cannot change PAD state.
+
+The versioned `affective/pad_state.json` store is profile-local, atomically replaced, guarded by a
+cross-process lock, clamped to `[-1, 1]`, and decays toward explicit baselines before each applied
+event batch. It survives restart, recovers malformed files to safe defaults, and follows A→B→A
+profile changes because its path is resolved at operation time. `pad_enabled` is effective only
+under the parent opt-in `affective_enabled`; `pad_decay` controls bounded baseline movement.
+
+PAD contributes one short `CURRENT STATE` item through the central context-packet builder. Its text
+explicitly calls the coordinates synthetic and denies real feelings or consciousness. It does not
+modify the system prompt, create needs or self-interest, collect hardware telemetry, or change
+permission and interruption semantics.
 
 ## Verification Standard
 
