@@ -329,6 +329,20 @@ redirect-refusing transport and resolve endpoint configuration from the active p
 call. Returned WYRD data remains an explicit tool result in this slice—it is not automatically
 placed in the prompt or mistaken for Hermes memory.
 
+### Slice 19: Relevant WYRD World Context
+
+`wyrd_context.py` adds an explicitly opt-in packet producer. When `wyrd_context_enabled` is true
+and `wyrd_context_persona_id` is a valid WYRD ID, each LLM turn sends the bounded current user
+query to the loopback Passive Oracle with `use_turn_loop:false`. The resulting context-only render
+is capped by `wyrd_context_render_chars` and submitted as one provenance-bearing `WORLD STATE`
+item to `context_packet.py`.
+
+The feature is disabled by default, performs no persistence or mutation, fails open when WYRD is
+unavailable, and resolves all settings under the active profile on every call. The central builder
+escapes fence-shaped text, applies its section/global budgets, labels the source as untrusted
+recalled data, and injects the single combined packet on the user side. The system prompt and its
+cacheable prefix remain unchanged.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

@@ -9,6 +9,7 @@ from .cli import health_command, register_cli
 from .lifecycle import LifecycleBridge
 from .present_state import PresentStateBridge
 from .wyrd_tools import register_wyrd_tools
+from .wyrd_context import WyrdContextBridge
 
 
 def register(ctx) -> None:
@@ -19,9 +20,10 @@ def register(ctx) -> None:
     affective = AffectiveBridge(ctx)
     for hook_name, callback in affective.hooks():
         ctx.register_hook(hook_name, callback)
+    wyrd_context = WyrdContextBridge(ctx)
     present_state = PresentStateBridge(
         ctx,
-        packet_sources=(affective.packet_items,),
+        packet_sources=(affective.packet_items, wyrd_context.packet_items),
     )
     for hook_name, callback in present_state.hooks():
         ctx.register_hook(hook_name, callback)

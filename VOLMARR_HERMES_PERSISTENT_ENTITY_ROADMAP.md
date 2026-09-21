@@ -1840,10 +1840,13 @@ recovers corrupt state, and contributes one compact, explicitly synthetic user-s
 read-only, loopback-only HTTP boundary. `hermes volmarr world health` validates the current official
 liveness response (and the version-bearing form in its published API guide) with bounded time and
 bytes, no redirects, no proxies, and no credentials. The second slice registers explicit
-`world_get` and `world_query` tools. They read the official
-world/facts routes or request Passive Oracle context with `use_turn_loop:false`, so WYRD performs
-no LLM generation, conversation-history update, or memory writeback. Mutation tools, automatic
-world-context retrieval, and change publication remain later slices.
+`world_get` and `world_query` tools. They read the official world/facts routes or request Passive
+Oracle context with `use_turn_loop:false`, so WYRD performs no LLM generation,
+conversation-history update, or memory writeback. The third slice adds
+profile-opt-in relevant retrieval: a configured persona's Passive Oracle render is bounded and
+submitted as one typed `WORLD STATE` item to the existing user-side context packet. It remains
+disabled by default, uses no writeback or WYRD turn loop, escapes untrusted fences centrally, and
+does not alter the cached system prompt. Mutation tools and change publication remain later slices.
 
 ## Milestone 6: Entity Lifecycle
 
