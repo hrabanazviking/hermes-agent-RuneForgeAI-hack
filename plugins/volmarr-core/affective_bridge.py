@@ -10,6 +10,7 @@ from hermes_constants import get_hermes_home
 
 from .affective import AffectiveNervousSystem, load_affective_config
 from .context_packet import ContextItem
+from .verdandi_stimuli import VerdandiStimulusBridge
 
 
 _MAX_PENDING_TURNS = 256
@@ -49,6 +50,7 @@ class AffectiveBridge:
             }
         )
         self._system = AffectiveNervousSystem(config)
+        self._stimuli = VerdandiStimulusBridge(ctx)
         self._pending: OrderedDict[tuple[str, str, str], dict[str, Any]] = (
             OrderedDict()
         )
@@ -74,6 +76,7 @@ class AffectiveBridge:
     def on_session_start(self, *, session_id: str = "", **_: Any) -> None:
         if self.enabled:
             self._system.initialize(session_id)
+            self._stimuli.sync(self._system, session_id)
 
     def pre_llm_call(
         self,
@@ -85,6 +88,7 @@ class AffectiveBridge:
     ) -> None:
         if not self.enabled:
             return
+        self._stimuli.sync(self._system, session_id)
         key = self._key(session_id, turn_id)
         with self._pending_lock:
             pending = self._pending.setdefault(

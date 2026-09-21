@@ -262,6 +262,26 @@ It therefore owns regulatory state and transitions, while the memory fabric cont
 prompt assembly. State paths resolve through the active `HERMES_HOME` on every operation, including
 A→B→A profile changes. Verðandi-derived stimuli and a separate PAD layer remain later slices.
 
+### Slice 15: Verðandi Regulatory Stimuli
+
+The affective bridge now consumes Verðandi's official bounded `recent` request at session start and
+before LLM calls. A durable profile-local sequence cursor provides restart-safe catch-up without a
+resident subscriber thread that could outlive plugin teardown. First contact establishes a baseline
+without replaying old history; later polls apply only unseen events, and the cursor advances only
+after the classified state transition succeeds. Transport and malformed-response failures remain
+fail-open and do not advance the cursor.
+
+State and cursor are separate atomic files. Normal retries are sequence-deduplicated, but a process
+crash after state commit and before cursor commit can replay the final bounded batch; this design
+prefers a small, clamped duplicate stimulus over silently discarding an event.
+
+Only official type/source pairs are accepted: `runa_reward`, `runa_negative`, `push_reward`, and
+the `blocker`, `blocker_resolved`, and `milestone` forms of `conv_event`. Numeric intensity is
+strictly bounded. Free-text context, repository names, sensations, and conversation content are
+never retained. The response is capped at 64 KiB and 1–128 recent events; stimuli older than the
+configured catch-up window are deliberately not replayed. The hub remains a dumb pipe—the adapter
+owns classification and the affective regulator owns state transitions.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

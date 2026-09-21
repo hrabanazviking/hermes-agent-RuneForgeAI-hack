@@ -16,7 +16,9 @@ distributed under the MIT License:
 Copyright (c) 2026 Volmarr Wyrd and Runa Gridweaver Freyjasdottir
 ```
 
-No Verðandi source file is copied into this repository by the initial lifecycle bridge.
+No Verðandi source file is copied into this repository. The plugin uses its local JSON-line
+publish, health, and bounded recent-event contracts; regulatory classification remains local to
+this fork.
 
 ## Project A.E.S.I.R.
 

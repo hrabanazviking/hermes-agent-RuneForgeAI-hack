@@ -25,6 +25,7 @@ def _write_profile(home, *, enabled: bool = True) -> None:
         f"        affective_enabled: {'true' if enabled else 'false'}\n"
         "        affective_decay: 0\n"
         "        affective_render_chars: 2600\n"
+        "        affective_verdandi_enabled: false\n"
         "        context_packet_max_chars: 6000\n",
         encoding="utf-8",
     )
