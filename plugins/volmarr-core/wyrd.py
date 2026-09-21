@@ -24,6 +24,10 @@ class WyrdConfigurationError(ValueError):
     """The configured service crosses the initial loopback-only boundary."""
 
 
+class WyrdProtocolError(ValueError):
+    """The local service did not satisfy the bounded WYRD HTTP contract."""
+
+
 def _version_tuple(value: str) -> tuple[int, int, int]:
     match = _VERSION_RE.fullmatch(value.strip())
     if not match:
@@ -76,6 +80,58 @@ def _open_local(request: urllib.request.Request, timeout: float):
         _NoRedirect(),
     )
     return opener.open(request, timeout=timeout)
+
+
+def request_wyrd_json(
+    ctx,
+    path: str,
+    *,
+    method: str = "GET",
+    body: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Call one allowlisted local WYRD route with bounded JSON transport."""
+    if not path.startswith("/") or "#" in path:
+        raise WyrdProtocolError("invalid WYRD request path")
+    base_url = _loopback_base_url(ctx.get_config("wyrd_base_url", DEFAULT_BASE_URL))
+    timeout = _bounded_timeout(
+        ctx.get_config("wyrd_probe_timeout_ms", DEFAULT_PROBE_TIMEOUT_MS)
+    )
+    encoded = None
+    headers = {
+        "Accept": "application/json",
+        "User-Agent": "runeforgeai-hermes-wyrd-tools/1",
+    }
+    if body is not None:
+        encoded = json.dumps(body, ensure_ascii=False, separators=(",", ":")).encode(
+            "utf-8"
+        )
+        if len(encoded) > 32 * 1024:
+            raise WyrdProtocolError("WYRD request exceeds 32 KiB")
+        headers["Content-Type"] = "application/json"
+    request = urllib.request.Request(
+        f"{base_url}{path}",
+        data=encoded,
+        method=method,
+        headers=headers,
+    )
+    try:
+        with _open_local(request, timeout) as response:
+            raw = response.read(MAX_HEALTH_BYTES + 1)
+    except urllib.error.HTTPError as exc:
+        if exc.code in {301, 302, 303, 307, 308}:
+            raise WyrdProtocolError("WYRD refused a redirected response") from exc
+        raise WyrdProtocolError(f"WYRD returned HTTP {exc.code}") from exc
+    except Exception as exc:
+        raise WyrdProtocolError("WYRD service is unreachable") from exc
+    if len(raw) > MAX_HEALTH_BYTES:
+        raise WyrdProtocolError("WYRD response exceeds 64 KiB")
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise WyrdProtocolError("WYRD response is not valid UTF-8 JSON") from exc
+    if not isinstance(payload, dict):
+        raise WyrdProtocolError("WYRD response is not an object")
+    return payload
 
 
 @dataclass(frozen=True)
