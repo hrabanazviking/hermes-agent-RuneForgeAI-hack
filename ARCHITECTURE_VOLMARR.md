@@ -63,7 +63,9 @@ integration adapters → external services
 - A generic Hermes extension-surface change is permitted only when a real vertical slice proves
   the existing surface insufficient.
 
-## First Vertical Slice
+## Milestone 1: Nervous System
+
+### Slice 1: Lifecycle Bridge
 
 The first runtime slice is a **Verðandi lifecycle bridge** implemented through existing Hermes
 hooks. It publishes a small, versioned event envelope for session, turn, and tool lifecycle events
@@ -77,6 +79,17 @@ the active profile on every event, sends metadata-only envelopes, and fails open
 offline or the host lacks Unix-domain-socket support. Verðandi's current hub is Unix-only, so the
 transport operates on Linux/WSL and remains inert on native Windows. Hermes core does not import
 the plugin.
+
+### Slice 2: Transport Health
+
+When the plugin is enabled, `hermes volmarr health` performs a read-only Verðandi `ping`/`pong`
+exchange against the active profile's configured socket. It reports a stable, machine-readable
+classification (`healthy`, `unreachable`, `unsupported`, or `protocol_error`) and returns a
+nonzero exit status unless the hub proves protocol-level responsiveness. A socket file by itself
+is not considered healthy.
+
+The probe uses the same profile-aware path and bounded timeout as lifecycle publishing. It never
+starts, stops, repairs, or imports Verðandi, and it never invokes an LLM.
 
 ## Verification Standard
 

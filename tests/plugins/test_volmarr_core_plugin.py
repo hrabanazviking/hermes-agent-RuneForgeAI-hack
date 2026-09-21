@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import socket
 
@@ -9,9 +10,16 @@ from hermes_constants import get_hermes_home
 
 
 class _SocketRecorder:
-    def __init__(self, calls: list[dict], *, failure: Exception | None = None) -> None:
+    def __init__(
+        self,
+        calls: list[dict],
+        *,
+        failure: Exception | None = None,
+        response: bytes = b'{"nerve_type":"pong","seq":0}\n',
+    ) -> None:
         self._calls = calls
         self._failure = failure
+        self._response = response
         self._call: dict = {}
         calls.append(self._call)
 
@@ -31,6 +39,9 @@ class _SocketRecorder:
 
     def sendall(self, payload: bytes) -> None:
         self._call["payload"] = payload
+
+    def recv(self, _size: int) -> bytes:
+        return self._response
 
 
 def _load_plugin(home, monkeypatch, socket_factory, *, socket_path="state/test-runa.sock"):
@@ -191,7 +202,7 @@ def test_transport_failure_is_fail_open_for_the_pre_tool_policy_hook(monkeypatch
         manager.unload()
 
 
-def test_missing_unix_socket_support_is_fail_open(monkeypatch):
+def test_missing_unix_socket_support_is_fail_open(monkeypatch, capsys):
     hermes_home = get_hermes_home()
     calls: list[dict] = []
     manager = _load_plugin(
@@ -210,6 +221,13 @@ def test_missing_unix_socket_support_is_fail_open(monkeypatch):
 
         assert results == []
         assert calls == []
+
+        command = manager._cli_commands["volmarr"]
+        parser = argparse.ArgumentParser()
+        command["setup_fn"](parser)
+        args = parser.parse_args(["health", "--json"])
+        assert command["handler_fn"](args) == 1
+        assert json.loads(capsys.readouterr().out)["status"] == "unsupported"
     finally:
         manager.unload()
 
@@ -228,5 +246,68 @@ def test_relative_socket_path_cannot_escape_the_active_profile(monkeypatch):
 
         assert len(calls) == 1
         assert calls[0]["path"] == str(hermes_home / "state" / "runa.sock")
+    finally:
+        manager.unload()
+
+
+def test_registered_health_cli_requires_a_valid_verdandi_pong(monkeypatch, capsys):
+    hermes_home = get_hermes_home()
+    calls: list[dict] = []
+    response = (
+        b'{"nerve_type":"pong","seq":41,"uptime_s":12.5,"subscribers":3}\n'
+    )
+    manager = _load_plugin(
+        hermes_home,
+        monkeypatch,
+        lambda *_args: _SocketRecorder(calls, response=response),
+    )
+    try:
+        command = manager._cli_commands["volmarr"]
+        parser = argparse.ArgumentParser()
+        command["setup_fn"](parser)
+        args = parser.parse_args(["health", "--json"])
+
+        exit_code = command["handler_fn"](args)
+        report = json.loads(capsys.readouterr().out)
+
+        assert exit_code == 0
+        assert report == {
+            "error_type": None,
+            "healthy": True,
+            "latency_ms": report["latency_ms"],
+            "sequence": 41,
+            "socket_path": str(hermes_home / "state" / "test-runa.sock"),
+            "status": "healthy",
+            "subscribers": 3,
+            "uptime_seconds": 12.5,
+        }
+        assert calls[0]["payload"] == b'{"nerve_type":"ping"}\n'
+    finally:
+        manager.unload()
+
+
+def test_health_cli_rejects_a_non_pong_response(monkeypatch, capsys):
+    hermes_home = get_hermes_home()
+    calls: list[dict] = []
+    manager = _load_plugin(
+        hermes_home,
+        monkeypatch,
+        lambda *_args: _SocketRecorder(
+            calls,
+            response=b'{"nerve_type":"subscribed"}\n',
+        ),
+    )
+    try:
+        command = manager._cli_commands["volmarr"]
+        parser = argparse.ArgumentParser()
+        command["setup_fn"](parser)
+        args = parser.parse_args(["health", "--json"])
+
+        exit_code = command["handler_fn"](args)
+        report = json.loads(capsys.readouterr().out)
+
+        assert exit_code == 1
+        assert report["healthy"] is False
+        assert report["status"] == "protocol_error"
     finally:
         manager.unload()

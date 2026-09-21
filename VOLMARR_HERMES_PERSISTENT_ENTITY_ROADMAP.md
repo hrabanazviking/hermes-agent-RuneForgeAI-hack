@@ -1738,6 +1738,11 @@ This is how the architecture proves whether its central hypothesis is working.
 
 **Done when:** CLI, gateway, cron, and tools emit coherent live events.
 
+**Implementation status:** complete in the opt-in `volmarr-core` plugin. Lifecycle metadata is
+published through stable Hermes hooks, and `hermes volmarr health` verifies the configured hub with
+a protocol-level `ping`/`pong`. The current Verðandi transport remains Unix-only; native Windows
+reports `unsupported` without affecting Hermes execution.
+
 ## Milestone 2: Local Reflex Cognition
 
 - attach local inference endpoint;
