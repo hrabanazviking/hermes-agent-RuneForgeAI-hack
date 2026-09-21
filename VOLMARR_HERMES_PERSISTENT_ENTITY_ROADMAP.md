@@ -1815,7 +1815,14 @@ reward/accountability/safety/continuity gauges, and explicit synthetic-state saf
 intact. Plugin hooks stage LLM and tool outcomes and commit regulation changes only for completed,
 non-failed, non-interrupted turns. Compact state enters the existing central user-side context
 packet as a typed producer, never as a separate system-prompt mutation. Verðandi event stimuli and
-the orthogonal PAD layer remain the next ordered slices.
+the orthogonal PAD layer remain the next ordered slices. Verðandi stimuli are now attached through
+the official bounded recent-event socket contract with a durable profile-local sequence cursor.
+The adapter accepts only known official source/type pairs, maps numeric metadata into bounded
+regulatory events, and never stores external free text. First contact establishes a non-replaying
+baseline, later polls apply unseen event sequences within the configured catch-up window, and
+offline or malformed responses leave both turns and cursors untouched. Normal retries are cursor
+deduplicated; a crash between the separate atomic state and cursor commits may replay the final
+bounded batch rather than lose it. A compact PAD emotional layer is the next ordered slice.
 
 ## Milestone 5: World Model
 

@@ -772,6 +772,36 @@ class AffectiveNervousSystem:
         except Exception as exc:
             logger.debug("Affective nervous system observe failed: %s", exc)
 
+    def observe_events(
+        self,
+        events: List[AffectiveEvent],
+        *,
+        session_id: str = "",
+    ) -> bool:
+        """Apply already-classified local stimuli without retaining source payloads."""
+        if not self.config.enabled:
+            return False
+        safe_events = [event for event in events if isinstance(event, AffectiveEvent)]
+        if not safe_events:
+            return True
+        sid = session_id or self._session_id
+        try:
+            with self._file_lock():
+                state = self._load_unlocked()
+                self._decay_state(state)
+                for event in safe_events:
+                    self._apply_event(state, event)
+                state.active_session_id = sid
+                state.updated_at = time.time()
+                state.recent_events = (
+                    state.recent_events + [_event_record(event) for event in safe_events]
+                )[-self.config.max_recent_events :]
+                self._write_unlocked(state)
+            return True
+        except Exception as exc:
+            logger.debug("Affective nervous system event observe failed: %s", exc)
+            return False
+
     def _derive_events(
         self,
         *,
