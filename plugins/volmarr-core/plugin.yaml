@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-core
-version: "0.21.0"
+version: "0.22.0"
 description: "Volmarr's opt-in Hermes composition plugin, beginning with the Verðandi lifecycle bridge."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/hermes-agent-RuneForgeAI-hack
@@ -157,3 +157,15 @@ config_schema:
     type: str
     default: entity/entity.yaml
     description: "Identity YAML path relative to the active Hermes profile; escaping paths fall back to the default."
+  relationships_enabled:
+    type: bool
+    default: true
+    description: "Create and expose the active entity's explicit relationship ledger."
+  relationships_path:
+    type: str
+    default: entity/relationships.yaml
+    description: "Relationship YAML path relative to the active Hermes profile; escaping paths fall back to the default."
+  relationships_history_limit:
+    type: int
+    default: 100
+    description: "Maximum append-only history events retained per relationship (clamped to 1-500)."

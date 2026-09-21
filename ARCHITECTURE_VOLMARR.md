@@ -388,6 +388,21 @@ A malformed or unsupported existing record is reported by
 `hermes volmarr identity health [--json]` and left byte-for-byte intact; silently minting a
 replacement UUID would destroy continuity. Identity is not injected into prompts in this slice.
 
+### Slice 23: Explicit Relationship Continuity
+
+`relationships.py` adds `entity/relationships.yaml`, a versioned ledger whose owner must match the
+active profile's stable entity UUID. Relationship records are keyed by explicit external entity
+identifiers and retain bounded append-only state history: display name, relationship type,
+active/inactive/archived status, trust, timestamp, and an optional operator-authored note. Records
+are capped at 256 and history at a configurable 1–500 events per relationship.
+
+The `relationship_get` and `relationship_upsert` tools are the only mutation surface in this
+slice. Conversation text is never mined for relationship claims, records are never automatically
+placed in prompts, and continuity is archived rather than deleted. Writes are validated before
+the profile-local file is locked and atomically replaced. Corrupt, oversized, or wrong-owner
+ledgers are refused and preserved for operator repair; disabling identity also disables creation
+of dependent relationship state.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
