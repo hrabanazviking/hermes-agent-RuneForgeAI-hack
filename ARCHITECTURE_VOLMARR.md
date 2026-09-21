@@ -343,6 +343,20 @@ escapes fence-shaped text, applies its section/global budgets, labels the source
 recalled data, and injects the single combined packet on the user side. The system prompt and its
 cacheable prefix remain unchanged.
 
+### Slice 20: Confirmed WYRD Writes and Change Signals
+
+`world_set` and `world_observe` expose the two write forms that official WYRD v1 actually supports:
+canonical `fact` events and bounded `observation` events. Both validate strict identifiers and
+field sizes before transport, call only `POST /event`, and report success only when WYRD returns an
+explicit `{"ok":true}`. This slice does not fabricate `move` or `history` routes absent from the
+official HTTP contract.
+
+After a confirmed write, `world_telemetry.py` emits a versioned Verðandi change event. The signal
+contains only operation kind, character counts, and boolean metadata; entity IDs, fact keys/values,
+observation titles/summaries, and other world content are excluded. A failed WYRD write emits no
+change event, while an unavailable Verðandi hub remains fail-open after the authoritative WYRD
+commit. WYRD owns world persistence; Verðandi remains the content-free signal spine.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

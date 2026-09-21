@@ -9,11 +9,14 @@ from urllib.parse import urlencode
 from tools.registry import tool_error, tool_result
 
 from .wyrd import WyrdProtocolError, request_wyrd_json
+from .world_telemetry import WorldChangeTelemetry
 
 
 _ENTITY_ID_RE = re.compile(r"^[a-z0-9](?:[a-z0-9_]{0,63})$")
 _MAX_QUERY_CHARS = 8_000
 _MAX_FACTS = 256
+_FACT_KEY_RE = re.compile(r"^[a-z][a-z0-9_.-]{0,63}$")
+_DOMAIN_RE = re.compile(r"^[a-z0-9](?:[a-z0-9_.-]{0,63})$")
 
 
 WORLD_GET_SCHEMA = {
@@ -62,6 +65,72 @@ WORLD_QUERY_SCHEMA = {
             },
         },
         "required": ["persona_id", "query"],
+        "additionalProperties": False,
+    },
+}
+
+WORLD_SET_SCHEMA = {
+    "name": "world_set",
+    "description": (
+        "Write one canonical fact through WYRD's official fact event contract. "
+        "Use only for grounded world facts; successful writes emit content-free change metadata."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "subject_id": {
+                "type": "string",
+                "description": "Lowercase WYRD subject/entity ID.",
+                "maxLength": 64,
+            },
+            "key": {
+                "type": "string",
+                "description": "Bounded lowercase fact key.",
+                "maxLength": 64,
+            },
+            "value": {
+                "type": "string",
+                "description": "Grounded fact value.",
+                "maxLength": 2000,
+            },
+            "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Optional confidence; defaults to WYRD's 0.85.",
+            },
+            "domain": {
+                "type": "string",
+                "description": "Optional lowercase world-fact domain.",
+                "maxLength": 64,
+            },
+        },
+        "required": ["subject_id", "key", "value"],
+        "additionalProperties": False,
+    },
+}
+
+WORLD_OBSERVE_SCHEMA = {
+    "name": "world_observe",
+    "description": (
+        "Record one bounded observation through WYRD's official observation event contract. "
+        "Successful writes emit content-free change metadata."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "title": {
+                "type": "string",
+                "description": "Short observation title.",
+                "maxLength": 200,
+            },
+            "summary": {
+                "type": "string",
+                "description": "Grounded observation summary.",
+                "maxLength": 2000,
+            },
+        },
+        "required": ["title", "summary"],
         "additionalProperties": False,
     },
 }
@@ -155,7 +224,115 @@ def build_world_query_handler(ctx):
     return handle
 
 
+def _bounded_text(value: Any, *, maximum: int) -> str | None:
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    return text if text and len(text) <= maximum else None
+
+
+def build_world_set_handler(ctx, telemetry: WorldChangeTelemetry):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        subject_id = _entity_id(args.get("subject_id"))
+        key = _bounded_text(args.get("key"), maximum=64)
+        value = _bounded_text(args.get("value"), maximum=2000)
+        domain = _bounded_text(args.get("domain", ""), maximum=64) or ""
+        if subject_id is None:
+            return tool_error("subject_id must be a valid lowercase WYRD entity ID")
+        if key is None or not _FACT_KEY_RE.fullmatch(key):
+            return tool_error("key must be a valid lowercase WYRD fact key")
+        if value is None:
+            return tool_error("value is required and must not exceed 2000 characters")
+        if domain and not _DOMAIN_RE.fullmatch(domain):
+            return tool_error("domain must be a valid lowercase WYRD domain")
+        payload: dict[str, Any] = {
+            "subject_id": subject_id,
+            "key": key,
+            "value": value,
+        }
+        if domain:
+            payload["domain"] = domain
+        if "confidence" in args:
+            confidence = args.get("confidence")
+            if isinstance(confidence, bool):
+                return tool_error("confidence must be a number from 0 to 1")
+            try:
+                parsed_confidence = float(confidence)
+            except (TypeError, ValueError, OverflowError):
+                return tool_error("confidence must be a number from 0 to 1")
+            if not 0.0 <= parsed_confidence <= 1.0:
+                return tool_error("confidence must be a number from 0 to 1")
+            payload["confidence"] = parsed_confidence
+        try:
+            response = request_wyrd_json(
+                ctx,
+                "/event",
+                method="POST",
+                body={"event_type": "fact", "payload": payload},
+            )
+            if response.get("ok") is not True:
+                raise WyrdProtocolError("WYRD did not confirm the fact write")
+        except WyrdProtocolError as exc:
+            return tool_error(str(exc))
+        published = telemetry.record(
+            ctx,
+            "fact",
+            value_chars=len(value),
+            confidence_supplied="confidence" in payload,
+            domain_supplied=bool(domain),
+        )
+        return tool_result(
+            {
+                "success": True,
+                "write": "fact",
+                "event_published": published,
+            }
+        )
+
+    return handle
+
+
+def build_world_observe_handler(ctx, telemetry: WorldChangeTelemetry):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        title = _bounded_text(args.get("title"), maximum=200)
+        summary = _bounded_text(args.get("summary"), maximum=2000)
+        if title is None:
+            return tool_error("title is required and must not exceed 200 characters")
+        if summary is None:
+            return tool_error("summary is required and must not exceed 2000 characters")
+        try:
+            response = request_wyrd_json(
+                ctx,
+                "/event",
+                method="POST",
+                body={
+                    "event_type": "observation",
+                    "payload": {"title": title, "summary": summary},
+                },
+            )
+            if response.get("ok") is not True:
+                raise WyrdProtocolError("WYRD did not confirm the observation write")
+        except WyrdProtocolError as exc:
+            return tool_error(str(exc))
+        published = telemetry.record(
+            ctx,
+            "observation",
+            title_chars=len(title),
+            summary_chars=len(summary),
+        )
+        return tool_result(
+            {
+                "success": True,
+                "write": "observation",
+                "event_published": published,
+            }
+        )
+
+    return handle
+
+
 def register_wyrd_tools(ctx) -> None:
+    telemetry = WorldChangeTelemetry()
     ctx.register_tool(
         name="world_get",
         toolset="volmarr_world",
@@ -171,4 +348,20 @@ def register_wyrd_tools(ctx) -> None:
         handler=build_world_query_handler(ctx),
         description=WORLD_QUERY_SCHEMA["description"],
         emoji="🔭",
+    )
+    ctx.register_tool(
+        name="world_set",
+        toolset="volmarr_world",
+        schema=WORLD_SET_SCHEMA,
+        handler=build_world_set_handler(ctx, telemetry),
+        description=WORLD_SET_SCHEMA["description"],
+        emoji="🧭",
+    )
+    ctx.register_tool(
+        name="world_observe",
+        toolset="volmarr_world",
+        schema=WORLD_OBSERVE_SCHEMA,
+        handler=build_world_observe_handler(ctx, telemetry),
+        description=WORLD_OBSERVE_SCHEMA["description"],
+        emoji="👁️",
     )
