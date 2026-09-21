@@ -22,6 +22,10 @@ DEFAULT_CONFIG = {
     "model": "",
     "providers": {},
     "fallback_providers": [],
+    # min_switch_reset_seconds: opt-in (0 = off). When a rate-limited primary declares a reset
+    # sooner than this many seconds, stay on it (the retry backoff rides out the window) instead
+    # of switching the turn to a fallback model.
+    "fallback": {"min_switch_reset_seconds": 0},
     "credential_pool_strategies": {},
     "toolsets": ["hermes-cli"],
     # journal_mode: SQLite journal mode for every Hermes DB. "wal" default; use "delete" on
@@ -2315,6 +2319,19 @@ DEFAULT_CONFIG = {
         # request workspace-wide diagnostics (slower).
         "wait_mode": "document",
         "wait_timeout": 5.0,
+        # Budget for the FIRST request against a workspace whose server is not running yet (spawn +
+        # initialize + the server's initial program build; tsserver on a large project can need a
+        # minute). Once the client is up, wait_timeout applies again. 0 = same as wait_timeout.
+        "warmup_timeout": 0.0,
+        # After a server fails (spawn error or outer timeout) its (server, workspace root) pair is
+        # skipped. 0 = for the process lifetime (until `hermes lsp restart`); N = retried after N
+        # seconds, so one transient stall does not silence a workspace forever.
+        "broken_retry_seconds": 0.0,
+        # Workspace roots (glob patterns, ~ expanded; a bare path also matches everything under
+        # it) where no language server runs at all, e.g. one huge monorepo whose server cannot
+        # finish in budget, while every other workspace keeps its diagnostics. Must be a list —
+        # any other shape logs a warning and skips LSP for every workspace until fixed.
+        "exclude_roots": [],
         # Missing server binaries: auto = install via npm/go/pip into <HERMES_HOME>/lsp/bin/ on
         # first use; manual = only binaries on PATH; off = alias for manual.
         "install_strategy": "auto",
