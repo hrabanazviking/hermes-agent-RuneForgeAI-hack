@@ -140,6 +140,24 @@ A forced-local request becomes `blocked` when it needs tools, vision, external d
 local input limit, or follows a failed local attempt. This is a hard invariant: forced-local never
 means "try local, then spend cloud resources without asking."
 
+### Slice 7: Local Reflex Execution
+
+`hermes volmarr cognition execute --request FILE` applies the route decision and may execute one
+bounded, non-streaming, tool-free text completion against A.E.S.I.R. The execution envelope keeps
+route metadata separate from local messages and verifies that the declared `input_bytes` exactly
+matches the UTF-8 message content before any network request is made. Only `model`, `messages`, and
+`max_tokens` are accepted from the caller; the adapter fixes `stream: false` and `n: 1` and never
+sends Hermes tools.
+
+The bearer credential is sent only to an explicit `http://127.0.0.1:PORT/v1` endpoint. Proxy use
+and HTTP redirects are disabled so the credential cannot be forwarded outside that boundary.
+Successful execution emits content-free outcome telemetry with model, latency, token counts, and
+finish reason. It never records prompt or response text.
+
+A cloud route returns `escalation_required`; it does not call a provider. If an automatic local
+attempt fails, the same explicit directive is returned for the caller to handle. A forced-local
+failure returns `failed`, preserving the manual no-cloud invariant.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

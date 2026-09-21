@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from .cognition import probe_aesir
+from .execution import CognitionExecutionRequest, CognitionExecutor
 from .health import probe_verdandi
 from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
 from .telemetry import CognitionTelemetry
@@ -39,15 +40,28 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         default="-",
         help="JSON request file, or - for standard input",
     )
+    cognition_execute = cognition_subcommands.add_parser(
+        "execute",
+        help="Execute an admitted local reflex request or return a route directive",
+    )
+    cognition_execute.add_argument(
+        "--request",
+        default="-",
+        help="JSON execution request file, or - for standard input",
+    )
 
 
-def _load_route_request(source: str) -> dict:
+def _load_json_request(source: str, *, max_bytes: int) -> dict:
     if source == "-":
-        raw = sys.stdin.read(64 * 1024 + 1)
+        raw = sys.stdin.read(max_bytes + 1)
     else:
-        raw = Path(source).read_text(encoding="utf-8")
-    if len(raw.encode("utf-8")) > 64 * 1024:
-        raise RoutingRequestError("routing request exceeds 64 KiB")
+        with Path(source).open("rb") as stream:
+            encoded = stream.read(max_bytes + 1)
+        if len(encoded) > max_bytes:
+            raise RoutingRequestError("JSON request exceeds its size limit")
+        raw = encoded.decode("utf-8")
+    if len(raw.encode("utf-8")) > max_bytes:
+        raise RoutingRequestError("JSON request exceeds its size limit")
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError as exc:
@@ -61,10 +75,33 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
     action = getattr(args, "volmarr_action", None)
     if action == "cognition":
         cognition_action = getattr(args, "cognition_action", None)
+        if cognition_action == "execute":
+            try:
+                execution_request = CognitionExecutionRequest.from_mapping(
+                    _load_json_request(
+                        getattr(args, "request", "-"),
+                        max_bytes=256 * 1024,
+                    )
+                )
+                result = CognitionExecutor(ctx).execute(execution_request)
+            except (OSError, UnicodeError, RoutingRequestError) as exc:
+                print(
+                    json.dumps(
+                        {"error": "invalid_execution_request", "detail": str(exc)},
+                        sort_keys=True,
+                    ),
+                    file=sys.stderr,
+                )
+                return 2
+            print(json.dumps(result.as_dict(), ensure_ascii=False, sort_keys=True))
+            return 1 if result.status in {"blocked", "failed"} else 0
         if cognition_action == "route":
             try:
                 request = CognitionRequest.from_mapping(
-                    _load_route_request(getattr(args, "request", "-"))
+                    _load_json_request(
+                        getattr(args, "request", "-"),
+                        max_bytes=64 * 1024,
+                    )
                 )
                 decision = CognitionRouter.from_plugin_context(ctx).decide(request)
             except (OSError, UnicodeError, RoutingRequestError) as exc:
@@ -80,7 +117,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             print(json.dumps(decision.as_dict(), sort_keys=True))
             return 0
         if cognition_action != "health":
-            print("Usage: hermes volmarr cognition {health|route} [options]")
+            print("Usage: hermes volmarr cognition {health|route|execute} [options]")
             return 2
         report = probe_aesir(ctx)
         label = "A.E.S.I.R."
