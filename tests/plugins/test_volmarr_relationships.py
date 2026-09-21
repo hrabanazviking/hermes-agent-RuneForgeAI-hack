@@ -285,3 +285,4 @@ def test_disabling_identity_prevents_relationship_state_creation():
 
     assert not (home / "entity" / "entity.yaml").exists()
     assert not (home / "entity" / "relationships.yaml").exists()
+    assert not (home / "entity" / "goals.yaml").exists()

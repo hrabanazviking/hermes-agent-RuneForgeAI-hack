@@ -6,6 +6,7 @@ from functools import partial
 
 from .affective_bridge import AffectiveBridge
 from .cli import health_command, register_cli
+from .goals import GoalBridge, register_goal_tools
 from .identity import IdentityBridge
 from .lifecycle import LifecycleBridge
 from .present_state import PresentStateBridge
@@ -25,6 +26,9 @@ def register(ctx) -> None:
     relationships = RelationshipBridge(ctx)
     for hook_name, callback in relationships.hooks():
         ctx.register_hook(hook_name, callback)
+    goals = GoalBridge(ctx)
+    for hook_name, callback in goals.hooks():
+        ctx.register_hook(hook_name, callback)
     affective = AffectiveBridge(ctx)
     for hook_name, callback in affective.hooks():
         ctx.register_hook(hook_name, callback)
@@ -37,6 +41,7 @@ def register(ctx) -> None:
         ctx.register_hook(hook_name, callback)
     register_wyrd_tools(ctx)
     register_relationship_tools(ctx)
+    register_goal_tools(ctx)
     ctx.register_cli_command(
         name="volmarr",
         help="Inspect Volmarr's Hermes integrations",

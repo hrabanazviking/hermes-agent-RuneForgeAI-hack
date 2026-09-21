@@ -1875,8 +1875,11 @@ malformed or unsupported records fail visibly through `hermes volmarr identity h
 not silently replaced. A second versioned ledger at `entity/relationships.yaml` now preserves
 explicit relationship state and bounded per-relationship history under the stable identity.
 Read/update tools require deliberate calls; ordinary conversation is not mined and relationship
-data is not automatically injected into prompts. Goals, heartbeat, background routines, and
-sleep/consolidation remain later ordered slices.
+data is not automatically injected into prompts. A third identity-owned ledger at
+`entity/goals.yaml` now persists explicitly created tasks with priority, next action, lifecycle
+status, completion time, and bounded transition history. Goal tools create, advance, filter,
+complete, and archive this state without mining conversation or deleting continuity. Heartbeat,
+background routines, and sleep/consolidation remain later ordered slices.
 
 ## Milestone 7: Secrets and Security
 

@@ -403,6 +403,20 @@ the profile-local file is locked and atomically replaced. Corrupt, oversized, or
 ledgers are refused and preserved for operator repair; disabling identity also disables creation
 of dependent relationship state.
 
+### Slice 24: Durable Goals and Task State
+
+`goals.py` adds a versioned `entity/goals.yaml` ledger owned by the stable profile identity.
+Goals have generated UUIDs, bounded titles and descriptions, integer priority, an explicit next
+action, planned/active/blocked/completed/archived status, timestamps, and bounded append-only
+transition history. Completion time survives archival, while reactivating a completed goal clears
+the current completion marker without erasing its recorded transition.
+
+The `goal_create`, `goal_update`, and `goal_get` tools provide deliberate state changes and compact,
+priority-ordered reads. There is no conversational goal inference, automatic prompt injection, or
+hard-delete operation. Files are profile-local, owner-checked, size- and record-bounded, locked,
+and atomically replaced. Malformed or wrong-owner state is left intact for repair, and disabling
+identity prevents creation of dependent goal state.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
