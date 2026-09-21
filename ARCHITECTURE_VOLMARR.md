@@ -158,6 +158,22 @@ A cloud route returns `escalation_required`; it does not call a provider. If an 
 attempt fails, the same explicit directive is returned for the caller to handle. A forced-local
 failure returns `failed`, preserving the manual no-cloud invariant.
 
+## Milestone 3: Memory Fabric
+
+### Slice 8: Bifröst Bridge Attachment
+
+`hermes volmarr memory health` establishes the external Bifröst package as the memory-fabric
+bridge without copying its source or registering an incomplete Hermes memory provider. The adapter
+constructs Bifröst at call time with Mímir and Muninn paths resolved against the active Hermes
+profile. Relative paths may not escape that profile.
+
+This first attachment pins Bifröst's default backend to Mímir and disables Hebbian reinforcement,
+automatic consolidation, and decay. Those capabilities remain off until their stores and lifecycle
+semantics receive dedicated slices. The health probe does not call Bifröst's federated health
+method, which could initialize optional remote backends. It instead verifies the external package
+contract and opens the configured Mímir SQLite store read-only to prove the `memories` schema and
+count. A missing package, store, or schema is reported truthfully and nothing is created.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

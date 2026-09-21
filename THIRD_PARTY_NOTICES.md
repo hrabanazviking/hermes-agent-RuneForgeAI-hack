@@ -30,6 +30,18 @@ Copyright (c) 2026 Volmarr Wyrd
 A.E.S.I.R. remains a separate process and repository. No A.E.S.I.R. source file is copied into
 this repository by the local reflex endpoint adapter.
 
+## Bifröst
+
+The `volmarr-core` plugin can construct the external Bifröst memory bridge package through its
+public Python interface. Bifröst is distributed under the MIT License:
+
+```text
+Copyright (c) 2025 Runa Gridweaver & Volmarr Viking
+```
+
+Bifröst remains a separate package and repository. No Bifröst source file is copied into this
+repository by the memory-fabric attachment.
+
 ## Future Components
 
 No other third-party runtime component has been incorporated into the personal fork at this stage.

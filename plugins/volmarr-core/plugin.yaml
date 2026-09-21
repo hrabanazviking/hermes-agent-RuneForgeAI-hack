@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-core
-version: "0.7.0"
+version: "0.8.0"
 description: "Volmarr's opt-in Hermes composition plugin, beginning with the Verðandi lifecycle bridge."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/hermes-agent-RuneForgeAI-hack
@@ -51,3 +51,11 @@ config_schema:
     type: int
     default: 256
     description: "Largest completion token request allowed through the reflex adapter."
+  bifrost_mimir_db_path:
+    type: str
+    default: memory/runa_memory.db
+    description: "Mímir SQLite database path, absolute or relative to the active Hermes profile."
+  bifrost_muninn_db_path:
+    type: str
+    default: memory/muninn_hebbian.db
+    description: "Muninn SQLite database path, absolute or relative to the active Hermes profile."
