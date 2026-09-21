@@ -12,7 +12,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 from hermes_constants import get_hermes_home
 from utils import atomic_json_write
@@ -355,9 +355,15 @@ class PresentStateStore:
 class PresentStateBridge:
     """Attach present state to existing lifecycle hooks without changing Hermes core."""
 
-    def __init__(self, ctx) -> None:
+    def __init__(
+        self,
+        ctx,
+        *,
+        packet_sources: Iterable[Callable[[str], Iterable[ContextItem]]] = (),
+    ) -> None:
         self._store = PresentStateStore(ctx)
         self._packet = ContextPacketBuilder(ctx)
+        self._packet_sources = (self._store.packet_items, *tuple(packet_sources))
         self._pending: OrderedDict[tuple[str, str, str], dict[str, Any]] = OrderedDict()
         self._pending_lock = threading.Lock()
 
@@ -391,7 +397,13 @@ class PresentStateBridge:
             self._pending.move_to_end(key)
             while len(self._pending) > _MAX_PENDING_TURNS:
                 self._pending.popitem(last=False)
-        context = self._packet.build(self._store.packet_items(session_id))
+        items = []
+        for source in self._packet_sources:
+            try:
+                items.extend(source(session_id))
+            except Exception:
+                continue
+        context = self._packet.build(items)
         return {"context": context} if context else None
 
     def post_llm_call(

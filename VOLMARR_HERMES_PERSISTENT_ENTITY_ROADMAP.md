@@ -1808,6 +1808,15 @@ policy connections rather than being silently activated by the attachment probes
 
 **Done when:** state survives restart and changes predictably from real events.
 
+**Implementation status:** in progress. The complete schema-v9 deterministic affective regulator
+from the earlier personal Hermes fork is preserved in the opt-in `volmarr-core` plugin without
+restoring its former core patches. Its profile-local atomic state, decay, schema upgrades, bounded
+reward/accountability/safety/continuity gauges, and explicit synthetic-state safety language remain
+intact. Plugin hooks stage LLM and tool outcomes and commit regulation changes only for completed,
+non-failed, non-interrupted turns. Compact state enters the existing central user-side context
+packet as a typed producer, never as a separate system-prompt mutation. Verðandi event stimuli and
+the orthogonal PAD layer remain the next ordered slices.
+
 ## Milestone 5: World Model
 
 - attach WYRD;

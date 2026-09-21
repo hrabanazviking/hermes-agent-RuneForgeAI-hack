@@ -247,6 +247,21 @@ of rendering prompt text itself. The one assembled packet still travels only thr
 Present State is the only enabled producer in this slice; the MemPalace and OpenViking attachments
 remain read-only attestations until their retrieval policies are connected to this boundary.
 
+### Slice 14: Preserved Affective Regulator
+
+The completed schema-v9 deterministic regulator from the earlier personal Hermes fork is preserved
+in `affective.py`, while its former `agent/` and conversation-loop patches are deliberately not
+restored. `affective_bridge.py` adapts it to stable plugin lifecycle hooks: a turn is staged across
+LLM and tool callbacks and is observed only after a completed, non-failed, non-interrupted verdict.
+The original bounded gauges, decay, legacy-schema upgrade logic, atomic profile-local persistence,
+and safety framing remain intact.
+
+The feature is opt-in through `affective_enabled`. When enabled, it contributes one compact typed
+item to the central context-packet builder rather than rendering an independent prompt fragment.
+It therefore owns regulatory state and transitions, while the memory fabric continues to own
+prompt assembly. State paths resolve through the active `HERMES_HOME` on every operation, including
+A→B→A profile changes. Verðandi-derived stimuli and a separate PAD layer remain later slices.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

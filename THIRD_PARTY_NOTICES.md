@@ -65,6 +65,14 @@ source repository.
 This fork slice reuses Hermes' existing bundled OpenViking provider and adds no copied OpenViking
 source. OpenViking remains a separate service/package.
 
+## Earlier Personal-Fork Affective Work
+
+The schema-v9 synthetic affective regulator in `plugins/volmarr-core/affective.py` is preserved
+from `hrabanazviking/hermes-agent` commit
+`d423b611799d1ad8a05fe6f067ac8de673a0404c`, authored by Volmarr Wyrd. That source repository is
+distributed under the MIT License. Its former Hermes core wiring was not copied; this repository
+adapts the regulator through plugin hooks and the central bounded context packet.
+
 ## Future Components
 
 No other third-party runtime component has been incorporated into the personal fork at this stage.

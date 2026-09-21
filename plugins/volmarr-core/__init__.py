@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from functools import partial
 
+from .affective_bridge import AffectiveBridge
 from .cli import health_command, register_cli
 from .lifecycle import LifecycleBridge
 from .present_state import PresentStateBridge
@@ -14,7 +15,13 @@ def register(ctx) -> None:
     bridge = LifecycleBridge(ctx)
     for hook_name, callback in bridge.hooks():
         ctx.register_hook(hook_name, callback)
-    present_state = PresentStateBridge(ctx)
+    affective = AffectiveBridge(ctx)
+    for hook_name, callback in affective.hooks():
+        ctx.register_hook(hook_name, callback)
+    present_state = PresentStateBridge(
+        ctx,
+        packet_sources=(affective.packet_items,),
+    )
     for hook_name, callback in present_state.hooks():
         ctx.register_hook(hook_name, callback)
     ctx.register_cli_command(
