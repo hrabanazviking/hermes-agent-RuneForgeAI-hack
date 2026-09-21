@@ -4,8 +4,8 @@
 **Roadmap snapshot:** September 18, 2026  
 **Upstream reviewed:** `NousResearch/hermes-agent`  
 **Upstream snapshot commit reviewed:** `f8e2a28d8236b0217eabdf219c58c70c6219c8ea`  
-**Personal fork:** `[hrabanazviking/hermes-agent](https://github.com/hrabanazviking/hermes-agent-RuneForgeAI-hack)`
-**Frozen Older Personal Fork:** `[https://github.com/hrabanazviking/hermes-agent-outdated-mod1](https://github.com/hrabanazviking/hermes-agent-outdated-mod1)`
+**Personal fork:** `hrabanazviking/hermes-agent-RuneForgeAI-hack`
+**Frozen Older Personal Fork:** `hrabanazviking/hermes-agent-outdated-mod1`
 
 > This document is a practical roadmap for turning Volmarr's personal Hermes Agent fork into a continuously persistent, local-first AI entity whose routine cognition runs locally, whose deeper reasoning can escalate to cloud models only when useful, and whose memories, emotional state, world model, skills, identity, and embodiment survive across sessions, machines, and eventually cloud hosts.
 
