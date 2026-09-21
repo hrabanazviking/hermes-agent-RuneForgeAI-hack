@@ -42,6 +42,19 @@ Copyright (c) 2025 Runa Gridweaver & Volmarr Viking
 Bifröst remains a separate package and repository. No Bifröst source file is copied into this
 repository by the memory-fabric attachment.
 
+## MemPalace
+
+The `volmarr-core` plugin can verify an external MemPalace package (official v3.10.0 contract or
+newer) and its local episodic store through a read-only SQLite contract. MemPalace is distributed
+under the MIT License:
+
+```text
+Copyright (c) 2026 MemPalace Contributors
+```
+
+MemPalace remains a separate package and repository. No MemPalace source file is copied into this
+repository by the episodic-store attachment.
+
 ## Future Components
 
 No other third-party runtime component has been incorporated into the personal fork at this stage.
