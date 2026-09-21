@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-core
-version: "0.8.0"
+version: "0.9.0"
 description: "Volmarr's opt-in Hermes composition plugin, beginning with the Verðandi lifecycle bridge."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/hermes-agent-RuneForgeAI-hack
@@ -14,6 +14,8 @@ hooks:
   - on_session_finalize
   - pre_tool_call
   - post_tool_call
+  - pre_llm_call
+  - post_llm_call
 config_schema:
   socket_path:
     type: str
@@ -59,3 +61,19 @@ config_schema:
     type: str
     default: memory/muninn_hebbian.db
     description: "Muninn SQLite database path, absolute or relative to the active Hermes profile."
+  present_state_path:
+    type: str
+    default: memory/present_state.json
+    description: "Live present-state JSON path, absolute or relative to the active Hermes profile."
+  present_state_max_profile_facts:
+    type: int
+    default: 40
+    description: "Maximum retained profile-scoped present-state facts (clamped to 1-200)."
+  present_state_max_session_facts:
+    type: int
+    default: 20
+    description: "Maximum retained facts per session (clamped to 1-100)."
+  present_state_render_chars:
+    type: int
+    default: 4000
+    description: "Maximum present-state context characters per turn (clamped to 256-12000)."

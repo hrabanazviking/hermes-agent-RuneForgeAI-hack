@@ -174,6 +174,21 @@ method, which could initialize optional remote backends. It instead verifies the
 contract and opens the configured Mímir SQLite store read-only to prove the `memories` schema and
 count. A missing package, store, or schema is reported truthfully and nothing is created.
 
+### Slice 9: Present State Attachment
+
+The earlier personal-fork Present State design is adapted into `volmarr-core` rather than restored
+as a Hermes core patch. It stores a compact, versioned set of profile and session facts at
+`memory/present_state.json` under the active profile. Writes are atomic, privately permissioned,
+cross-process locked, capped by configured fact counts, and resolved against `HERMES_HOME` at each
+operation.
+
+Existing hooks provide the whole integration. `pre_llm_call` injects at most ten current facts into
+the current user turn inside a memory-context fence, preserving the cached system prompt.
+`post_llm_call` stages the response, while the later `on_session_end` verdict commits facts only for
+a completed, non-failed, non-interrupted turn. Successful built-in `memory` tool writes are mirrored
+through `post_tool_call`; failed writes are ignored. Present State remains immediate context, not a
+verbatim episode archive, world model, or identity authority.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

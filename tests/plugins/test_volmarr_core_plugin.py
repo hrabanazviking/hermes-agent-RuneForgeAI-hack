@@ -84,6 +84,8 @@ def test_real_discovery_publishes_versioned_metadata_without_sensitive_content(
             "on_session_finalize",
             "pre_tool_call",
             "post_tool_call",
+            "pre_llm_call",
+            "post_llm_call",
         }
 
         manager.invoke_hook(
