@@ -98,7 +98,11 @@ class PresentStateStore:
             state["active_session_id"] = session_id
             state["updated_at"] = time.time()
 
-    def packet_items(self, session_id: str) -> list[ContextItem]:
+    def packet_items(
+        self,
+        session_id: str,
+        _user_message: Any = "",
+    ) -> list[ContextItem]:
         with self._locked_state(write=False) as state:
             profile = self._facts(state.get("profile_facts"))
             session_row = state.get("sessions", {}).get(session_id, {})
@@ -359,7 +363,7 @@ class PresentStateBridge:
         self,
         ctx,
         *,
-        packet_sources: Iterable[Callable[[str], Iterable[ContextItem]]] = (),
+        packet_sources: Iterable[Callable[[str, Any], Iterable[ContextItem]]] = (),
     ) -> None:
         self._store = PresentStateStore(ctx)
         self._packet = ContextPacketBuilder(ctx)
@@ -400,7 +404,7 @@ class PresentStateBridge:
         items = []
         for source in self._packet_sources:
             try:
-                items.extend(source(session_id))
+                items.extend(source(session_id, user_message))
             except Exception:
                 continue
         context = self._packet.build(items)

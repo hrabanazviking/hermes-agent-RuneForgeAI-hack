@@ -196,7 +196,11 @@ class AffectiveBridge:
         )
         self._pad.observe_events(events, session_id=session_id)
 
-    def packet_items(self, session_id: str) -> list[ContextItem]:
+    def packet_items(
+        self,
+        session_id: str,
+        _user_message: Any = "",
+    ) -> list[ContextItem]:
         if not self.enabled:
             return []
         items = self._pad.packet_items(session_id)
