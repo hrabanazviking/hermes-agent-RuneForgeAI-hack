@@ -357,6 +357,20 @@ observation titles/summaries, and other world content are excluded. A failed WYR
 change event, while an unavailable Verðandi hub remains fail-open after the authoritative WYRD
 commit. WYRD owns world persistence; Verðandi remains the content-free signal spine.
 
+### Slice 21: Real WYRD Restart Acceptance
+
+`scripts/verify_wyrd_persistence.py` exercises the installed official `wyrdforge>=1.0.0` package
+against a newly created disposable SQLite database. It writes one unique canonical fact through
+`PythonRPGBridge`, releases that bridge, reconstructs a second bridge over the same database, and
+requires the Passive Oracle to recover the fact exactly once. No configured profile, live WYRD
+database, LLM, or network service is touched.
+
+The acceptance run passed against official WYRD v1.0.0 at commit
+`9884ce8a9e683dc20f372a91eb66ba5b02561300` on Windows. The verifier explicitly releases and
+garbage-collects short-lived bridge objects before disposable-directory cleanup because the
+official store currently relies on Python object finalization to close its transient SQLite
+connections. This cleanup accommodation does not alter the persistence assertion.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

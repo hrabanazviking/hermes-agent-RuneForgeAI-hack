@@ -1836,7 +1836,7 @@ recovers corrupt state, and contributes one compact, explicitly synthetic user-s
 
 **Done when:** deterministic world facts survive sessions and do not depend on LLM memory.
 
-**Implementation status:** in progress. The first slice attaches the official WYRD v1 service at a
+**Implementation status:** complete. The first slice attaches the official WYRD v1 service at a
 read-only, loopback-only HTTP boundary. `hermes volmarr world health` validates the current official
 liveness response (and the version-bearing form in its published API guide) with bounded time and
 bytes, no redirects, no proxies, and no credentials. The second slice registers explicit
@@ -1851,8 +1851,10 @@ canonical facts through `world_set` and
 observations through `world_observe`. Writes require explicit WYRD acknowledgement; only then does
 the plugin emit a versioned, content-free Verðandi signal. Entity IDs, fact keys/values, titles,
 and summaries are excluded from the signal. The official API has no move or history route, so this
-integration does not invent one. End-to-end persistence across a real WYRD restart remains the
-final Milestone 5 acceptance check.
+integration does not invent one. The final acceptance verifier passed against official WYRD v1.0.0
+commit `9884ce8a9e683dc20f372a91eb66ba5b02561300`: a unique canonical fact written to a disposable
+SQLite store was recovered exactly once after the bridge was destroyed and reconstructed. World
+truth therefore survives restart independently of Hermes conversation memory.
 
 ## Milestone 6: Entity Lifecycle
 
