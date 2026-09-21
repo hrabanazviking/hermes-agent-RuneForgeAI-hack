@@ -10,6 +10,7 @@ from pathlib import Path
 from .cognition import probe_aesir
 from .execution import CognitionExecutionRequest, CognitionExecutor
 from .health import probe_verdandi
+from .memory_fabric import probe_bifrost
 from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
 from .telemetry import CognitionTelemetry
 
@@ -49,6 +50,16 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         default="-",
         help="JSON execution request file, or - for standard input",
     )
+    memory = subcommands.add_parser(
+        "memory",
+        help="Inspect the Bifröst memory-fabric attachment",
+    )
+    memory_subcommands = memory.add_subparsers(dest="memory_action")
+    memory_health = memory_subcommands.add_parser(
+        "health",
+        help="Validate Bifröst and the active profile's Mímir store",
+    )
+    memory_health.add_argument("--json", action="store_true", dest="json_output")
 
 
 def _load_json_request(source: str, *, max_bytes: int) -> dict:
@@ -121,6 +132,12 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 2
         report = probe_aesir(ctx)
         label = "A.E.S.I.R."
+    elif action == "memory":
+        if getattr(args, "memory_action", None) != "health":
+            print("Usage: hermes volmarr memory health [--json]")
+            return 2
+        report = probe_bifrost(ctx)
+        label = "Bifröst"
     elif action == "health":
         report = probe_verdandi(ctx)
         label = "Verðandi"
@@ -133,7 +150,11 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
     else:
         mark = "healthy" if report.healthy else report.status.replace("_", " ")
         print(f"{label}: {mark}")
-        location = getattr(report, "socket_path", None) or getattr(report, "base_url", "")
+        location = (
+            getattr(report, "socket_path", None)
+            or getattr(report, "base_url", None)
+            or getattr(report, "mimir_db_path", "")
+        )
         print(f"Endpoint: {location}")
         if report.latency_ms is not None:
             print(f"Latency: {report.latency_ms} ms")
@@ -143,6 +164,8 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             print(f"Uptime: {report.uptime_seconds} s")
         if getattr(report, "models", ()):
             print(f"Models: {', '.join(report.models)}")
+        if getattr(report, "memory_count", None) is not None:
+            print(f"Memories: {report.memory_count}")
         if report.error_type:
             print(f"Error type: {report.error_type}")
     return 0 if report.healthy else 1

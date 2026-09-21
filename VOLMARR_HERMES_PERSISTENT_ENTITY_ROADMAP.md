@@ -1773,6 +1773,12 @@ interception of ordinary Hermes agent turns is not claimed.
 
 **Done when:** the entity can retrieve precise old episodes and current facts without sending huge histories to the LLM.
 
+**Implementation status:** in progress. The first slice attaches the external Bifröst package as
+the central bridge boundary and proves that its Mímir and Muninn paths follow the active Hermes
+profile. Initial operation is deliberately Mímir-only: health validation opens the existing store
+read-only, while Huginn, Muninn reinforcement, consolidation, decay, Hermes provider registration,
+and prompt injection remain disabled until their own behavior contracts are implemented.
+
 ## Milestone 4: Affective Continuity
 
 - port current affective nervous system;
