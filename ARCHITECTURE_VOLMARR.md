@@ -106,6 +106,18 @@ provider would create a false capability claim. The next slice may route bounded
 operations through this adapter; ordinary Hermes provider resolution remains authoritative for
 agent turns and later cloud escalation.
 
+### Slice 4: Routing Contract
+
+`hermes volmarr cognition route --request FILE` exposes the versioned
+`runeforge.cognition.route` decision contract. Requests contain operation metadata and byte counts,
+never prompts or messages. Unknown fields are rejected so content cannot silently become routing
+telemetry.
+
+Decision precedence is structural: an available deterministic implementation wins; tool, vision,
+or external-data requirements go to cloud-capable Hermes; a previous local failure, high complexity,
+or an oversized input escalates; otherwise the request is eligible for the local reflex endpoint.
+The router chooses only the capability tier. It neither invokes a model nor selects a cloud provider.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

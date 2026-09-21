@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
+from pathlib import Path
 
 from .cognition import probe_aesir
 from .health import probe_verdandi
+from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
 
 
 def register_cli(parser: argparse.ArgumentParser) -> None:
@@ -26,13 +29,56 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Probe the configured A.E.S.I.R. model catalog",
     )
     cognition_health.add_argument("--json", action="store_true", dest="json_output")
+    cognition_route = cognition_subcommands.add_parser(
+        "route",
+        help="Choose a cognition tier from a metadata-only JSON request",
+    )
+    cognition_route.add_argument(
+        "--request",
+        default="-",
+        help="JSON request file, or - for standard input",
+    )
+
+
+def _load_route_request(source: str) -> dict:
+    if source == "-":
+        raw = sys.stdin.read(64 * 1024 + 1)
+    else:
+        raw = Path(source).read_text(encoding="utf-8")
+    if len(raw.encode("utf-8")) > 64 * 1024:
+        raise RoutingRequestError("routing request exceeds 64 KiB")
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise RoutingRequestError("routing request is not valid JSON") from exc
+    if not isinstance(payload, dict):
+        raise RoutingRequestError("routing request must be a JSON object")
+    return payload
 
 
 def health_command(args: argparse.Namespace, *, ctx) -> int:
     action = getattr(args, "volmarr_action", None)
     if action == "cognition":
-        if getattr(args, "cognition_action", None) != "health":
-            print("Usage: hermes volmarr cognition health [--json]")
+        cognition_action = getattr(args, "cognition_action", None)
+        if cognition_action == "route":
+            try:
+                request = CognitionRequest.from_mapping(
+                    _load_route_request(getattr(args, "request", "-"))
+                )
+                decision = CognitionRouter.from_plugin_context(ctx).decide(request)
+            except (OSError, UnicodeError, RoutingRequestError) as exc:
+                print(
+                    json.dumps(
+                        {"error": "invalid_routing_request", "detail": str(exc)},
+                        sort_keys=True,
+                    ),
+                    file=sys.stderr,
+                )
+                return 2
+            print(json.dumps(decision.as_dict(), sort_keys=True))
+            return 0
+        if cognition_action != "health":
+            print("Usage: hermes volmarr cognition {health|route} [options]")
             return 2
         report = probe_aesir(ctx)
         label = "A.E.S.I.R."
