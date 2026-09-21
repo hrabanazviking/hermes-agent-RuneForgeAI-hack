@@ -16,6 +16,7 @@ from .openviking import probe_openviking
 from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
 from .sessiondb import probe_sessiondb
 from .telemetry import CognitionTelemetry
+from .wyrd import probe_wyrd
 
 
 def register_cli(parser: argparse.ArgumentParser) -> None:
@@ -93,6 +94,16 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Audit SessionDB integrity and transcript ownership read-only",
     )
     sessiondb_health.add_argument("--json", action="store_true", dest="json_output")
+    world = subcommands.add_parser(
+        "world",
+        help="Inspect the WYRD world-model attachment",
+    )
+    world_subcommands = world.add_subparsers(dest="world_action")
+    world_health = world_subcommands.add_parser(
+        "health",
+        help="Validate the official WYRD loopback liveness contract read-only",
+    )
+    world_health.add_argument("--json", action="store_true", dest="json_output")
 
 
 def _load_json_request(source: str, *, max_bytes: int) -> dict:
@@ -197,8 +208,14 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
     elif action == "health":
         report = probe_verdandi(ctx)
         label = "Verðandi"
+    elif action == "world":
+        if getattr(args, "world_action", None) != "health":
+            print("Usage: hermes volmarr world health [--json]")
+            return 2
+        report = probe_wyrd(ctx)
+        label = "WYRD"
     else:
-        print("Usage: hermes volmarr {health|cognition health} [--json]")
+        print("Usage: hermes volmarr {health|cognition|memory|world} ...")
         return 2
 
     if getattr(args, "json_output", False):

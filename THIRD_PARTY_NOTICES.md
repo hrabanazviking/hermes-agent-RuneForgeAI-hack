@@ -75,6 +75,17 @@ from `hrabanazviking/hermes-agent` commit
 distributed under the MIT License. Its former Hermes core wiring was not copied; this repository
 adapts the regulator through plugin hooks and the central bounded context packet.
 
+## WYRD Protocol
+
+The `volmarr-core` plugin can probe the official WYRD Protocol v1 HTTP service through its
+anonymous, read-only, loopback `/health` endpoint. WYRD Protocol is distributed under the Creative
+Commons Attribution 4.0 International license and was created by Volmarr Wyrd / RuneForgeAI. The
+official project is available at
+`hrabanazviking/WYRD-Protocol-World-Yielding-Real-time-Data-AI-world-model`.
+
+No WYRD source file is copied into this repository. WYRD remains a separate service/package; this
+slice implements only the public HTTP compatibility boundary.
+
 ## Future Components
 
 No other third-party runtime component has been incorporated into the personal fork at this stage.

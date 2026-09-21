@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-core
-version: "0.16.0"
+version: "0.17.0"
 description: "Volmarr's opt-in Hermes composition plugin, beginning with the Verðandi lifecycle bridge."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/hermes-agent-RuneForgeAI-hack
@@ -129,3 +129,11 @@ config_schema:
     type: int
     default: 2000
     description: "OpenViking health timeout in milliseconds (clamped to 50-10000)."
+  wyrd_base_url:
+    type: str
+    default: http://127.0.0.1:8765
+    description: "Loopback URL of the official local WYRD HTTP world-model service."
+  wyrd_probe_timeout_ms:
+    type: int
+    default: 2000
+    description: "WYRD health timeout in milliseconds (clamped to 50-10000)."

@@ -301,6 +301,20 @@ explicitly calls the coordinates synthetic and denies real feelings or conscious
 modify the system prompt, create needs or self-interest, collect hardware telemetry, or change
 permission and interruption semantics.
 
+### Slice 17: WYRD Service Attachment
+
+`wyrd.py` establishes the first World Model boundary through the official WYRD v1 HTTP liveness
+contract. `hermes volmarr world health [--json]` probes only `GET /health`; it neither constructs a
+second world model nor reads, writes, starts, or migrates WYRD storage. The adapter accepts the
+official implementation's `{"status":"ok"}` response and the version-bearing form published in
+its API guide. When a version is reported, it must be valid and at least `1.0.0`.
+
+The endpoint is restricted to explicit plain HTTP on `127.0.0.1`, response size and timeout are
+bounded, proxy environment variables are ignored, redirects are refused, and no credentials are
+sent. Configuration resolves from the active profile at probe time, preserving A→B→A isolation.
+World queries, tools, mutations, event publication, and context-packet contribution remain later
+slices; health compatibility alone does not claim that any world data has been integrated.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

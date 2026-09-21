@@ -1836,6 +1836,12 @@ recovers corrupt state, and contributes one compact, explicitly synthetic user-s
 
 **Done when:** deterministic world facts survive sessions and do not depend on LLM memory.
 
+**Implementation status:** in progress. The first slice attaches the official WYRD v1 service at a
+read-only, loopback-only HTTP boundary. `hermes volmarr world health` validates the current official
+liveness response (and the version-bearing form in its published API guide) with bounded time and
+bytes, no redirects, no proxies, and no credentials. It does not yet read world facts, register
+world tools, mutate WYRD, publish world changes, or add world state to the context packet.
+
 ## Milestone 6: Entity Lifecycle
 
 - identity package;
