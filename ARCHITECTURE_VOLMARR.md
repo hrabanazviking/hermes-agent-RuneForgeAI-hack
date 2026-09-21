@@ -219,6 +219,34 @@ or invoke OpenViking's extraction pipeline. The bundled provider remains opt-in 
 normal `memory.provider` configuration. Its retrieval results will enter Volmarr turns only after
 the bounded context-packet contract exists.
 
+### Slice 12: Hermes SessionDB Preservation
+
+Hermes' profile-local `state.db` remains the sole canonical transcript store. The composition
+layer does not copy messages into a shadow database, replace `SessionDB`, own schema migrations,
+or route history through an external memory backend. MemPalace, OpenViking, and later memory
+systems remain derived or secondary stores rather than competing transcript authorities.
+
+`hermes volmarr memory sessiondb health` audits the active profile's fixed `state.db` path through
+a read-only SQLite connection. It checks integrity, required canonical tables, schema version,
+foreign-key consistency, and transcript counts without opening a Hermes writer or creating a
+missing store. The path is intentionally not configurable: resolving it through `HERMES_HOME` at
+call time preserves profile A→B→A isolation and keeps ownership with Hermes.
+
+### Slice 13: Bounded Context Packets
+
+`context_packet.py` is the single assembly boundary for prompt-facing memory. Producers submit
+typed items into the fixed `CURRENT STATE`, `RELEVANT EPISODES`, `DURABLE KNOWLEDGE`,
+`ASSOCIATIONS`, or `WORLD STATE` sections; the builder applies section limits, deterministic
+priority ordering, content deduplication, provenance labels, and a hard whole-packet character
+ceiling. It emits only complete items inside one versioned `<memory-context>` fence and escapes
+fence-shaped text from untrusted memory.
+
+The completed-turn lifecycle remains unchanged, but Present State now supplies typed items instead
+of rendering prompt text itself. The one assembled packet still travels only through Hermes'
+`pre_llm_call` user-context channel, so the system prompt and its cache prefix remain untouched.
+Present State is the only enabled producer in this slice; the MemPalace and OpenViking attachments
+remain read-only attestations until their retrieval policies are connected to this boundary.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

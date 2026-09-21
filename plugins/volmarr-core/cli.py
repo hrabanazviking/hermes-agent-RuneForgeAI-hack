@@ -14,6 +14,7 @@ from .memory_fabric import probe_bifrost
 from .mempalace import probe_mempalace
 from .openviking import probe_openviking
 from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
+from .sessiondb import probe_sessiondb
 from .telemetry import CognitionTelemetry
 
 
@@ -82,6 +83,16 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Validate the bundled provider and official server contract read-only",
     )
     openviking_health.add_argument("--json", action="store_true", dest="json_output")
+    sessiondb = memory_subcommands.add_parser(
+        "sessiondb",
+        help="Inspect Hermes' canonical profile session store",
+    )
+    sessiondb_subcommands = sessiondb.add_subparsers(dest="sessiondb_action")
+    sessiondb_health = sessiondb_subcommands.add_parser(
+        "health",
+        help="Audit SessionDB integrity and transcript ownership read-only",
+    )
+    sessiondb_health.add_argument("--json", action="store_true", dest="json_output")
 
 
 def _load_json_request(source: str, *, max_bytes: int) -> dict:
@@ -168,13 +179,19 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                 return 2
             report = probe_openviking(ctx)
             label = "OpenViking"
+        elif memory_action == "sessiondb":
+            if getattr(args, "sessiondb_action", None) != "health":
+                print("Usage: hermes volmarr memory sessiondb health [--json]")
+                return 2
+            report = probe_sessiondb(ctx)
+            label = "Hermes SessionDB"
         elif memory_action == "health":
             report = probe_bifrost(ctx)
             label = "Bifröst"
         else:
             print(
                 "Usage: hermes volmarr memory "
-                "{health|mempalace health|openviking health} [--json]"
+                "{health|mempalace health|openviking health|sessiondb health} [--json]"
             )
             return 2
     elif action == "health":
@@ -194,9 +211,10 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             or getattr(report, "base_url", None)
             or getattr(report, "mimir_db_path", "")
             or getattr(report, "palace_path", "")
+            or getattr(report, "state_db_path", "")
         )
         print(f"Endpoint: {location}")
-        if report.latency_ms is not None:
+        if getattr(report, "latency_ms", None) is not None:
             print(f"Latency: {report.latency_ms} ms")
         if getattr(report, "sequence", None) is not None:
             print(f"Sequence: {report.sequence}")
@@ -210,6 +228,12 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             print(f"Package version: {report.package_version}")
         if getattr(report, "server_version", None):
             print(f"Server version: {report.server_version}")
+        if getattr(report, "schema_version", None) is not None:
+            print(f"Schema version: {report.schema_version}")
+        if getattr(report, "session_count", None) is not None:
+            print(f"Sessions: {report.session_count}")
+        if getattr(report, "message_count", None) is not None:
+            print(f"Messages: {report.message_count}")
         if report.error_type:
             print(f"Error type: {report.error_type}")
     return 0 if report.healthy else 1
