@@ -219,6 +219,19 @@ or invoke OpenViking's extraction pipeline. The bundled provider remains opt-in 
 normal `memory.provider` configuration. Its retrieval results will enter Volmarr turns only after
 the bounded context-packet contract exists.
 
+### Slice 12: Hermes SessionDB Preservation
+
+Hermes' profile-local `state.db` remains the sole canonical transcript store. The composition
+layer does not copy messages into a shadow database, replace `SessionDB`, own schema migrations,
+or route history through an external memory backend. MemPalace, OpenViking, and later memory
+systems remain derived or secondary stores rather than competing transcript authorities.
+
+`hermes volmarr memory sessiondb health` audits the active profile's fixed `state.db` path through
+a read-only SQLite connection. It checks integrity, required canonical tables, schema version,
+foreign-key consistency, and transcript counts without opening a Hermes writer or creating a
+missing store. The path is intentionally not configurable: resolving it through `HERMES_HOME` at
+call time preserves profile A→B→A isolation and keeps ownership with Hermes.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

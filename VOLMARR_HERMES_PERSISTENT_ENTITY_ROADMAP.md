@@ -1786,7 +1786,11 @@ SQLite-integrity, and drawer-collection probe. Retrieval and ingestion remain di
 bounded-packet and durable-write slices. OpenViking is attached through Hermes' existing bundled
 provider plus a profile-scoped, anonymous, loopback-only health attestation for the official
 v0.4.21-or-newer server contract. No second provider is registered, and the attachment does not
-start a server or enable retrieval and writes ahead of their policy slices.
+start a server or enable retrieval and writes ahead of their policy slices. Hermes SessionDB is
+now explicitly preserved as the sole canonical transcript authority through a fixed,
+active-profile `state.db` audit that is read-only, performs no migration, creates no missing store,
+and proves lifecycle hooks leave canonical history byte-for-byte unchanged. External memory stores
+remain derived or secondary; no shadow transcript database is introduced.
 
 ## Milestone 4: Affective Continuity
 
