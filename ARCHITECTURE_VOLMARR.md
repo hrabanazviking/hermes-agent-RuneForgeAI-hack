@@ -532,6 +532,21 @@ stderr stream. The canary must occur in none of them. This adds no new storage p
 authority: an absent memory database remains absent, rather than being invented solely for a
 security test.
 
+### Slice 31: Vault Permission Gate
+
+An initialized Kista vault must pass a read-only permission audit before the adapter invokes the
+CLI. On POSIX, the vault directory, `.vault_key`, and `vault.json.enc` must be owned by the current
+effective user and expose no group or world permission bits. On Windows, the adapter reads the real
+NTFS DACL in SID form and permits allow entries only for the current user, LocalSystem, and the
+built-in Administrators group. Conditional allow entries and unverifiable ACLs fail closed; Unix
+mode bits are never treated as proof of Windows isolation.
+
+The directory and both required files must be real filesystem objects, not symbolic links,
+junctions, or other reparse points. An incomplete initialized vault is refused before any helper
+process starts. A wholly absent vault still reaches Kista so its canonical initialization error and
+remediation remain authoritative. The audit changes no ACL or mode and never reads secret bytes;
+operators retain ownership of intentionally hardening their vault storage.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

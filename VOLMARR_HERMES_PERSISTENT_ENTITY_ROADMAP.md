@@ -1922,7 +1922,15 @@ and the logging boundary. The test proves that only a redacted result reaches Se
 reopens history and byte-scans all profile databases and SQLite sidecars. Captured Verðandi
 lifecycle events, cognition telemetry, formatted logs, stdout, and stderr are also required to be
 canary-free. No fake memory authority is introduced: stores that do not exist remain absent.
-Milestone 7 remains open only for vault-permission enforcement.
+Slice 31 completes vault-permission enforcement. Initialized vault directories, key files, and
+ciphertext must be non-linked real objects. POSIX ownership and owner-only modes are verified;
+Windows uses the actual NTFS DACL in SID form and rejects grants beyond the current user,
+LocalSystem, and built-in Administrators. Unverifiable or conditional permissions fail closed
+before Kista executes, while the adapter remains read-only and never rewrites operator ACLs.
+
+**Milestone 7 is complete:** Kista is attached only through the Secret Source API, applied values
+join the profile-scoped exact redactor, the cross-surface canary matrix proves containment, and
+vault storage must pass a native permission gate before credentials are read.
 
 ## Milestone 8: Personal Tool Suite
 

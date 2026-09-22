@@ -5,6 +5,8 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import shutil
+import stat
 import subprocess
 from pathlib import Path
 
@@ -166,6 +168,126 @@ def test_vault_path_cannot_escape_active_profile(
     assert not called
 
 
+def _initialized_vault(root: Path) -> Path:
+    vault = root / "credentials"
+    vault.mkdir()
+    (vault / ".vault_key").write_text("fixture-key", encoding="utf-8")
+    (vault / "vault.json.enc").write_text("fixture-vault", encoding="utf-8")
+    return vault
+
+
+def test_fetch_refuses_an_unsafe_initialized_vault_before_invoking_kista(
+    source, source_module, tmp_path, monkeypatch
+):
+    vault = _initialized_vault(tmp_path)
+    called = False
+
+    def forbidden(_path):
+        nonlocal called
+        called = True
+        return None, None
+
+    monkeypatch.setattr(
+        source_module,
+        "_validate_vault_security",
+        lambda path: "unsafe vault" if path == vault else None,
+    )
+    monkeypatch.setattr(source_module, "_resolve_command", forbidden)
+
+    result = source.fetch(
+        {"env": {"API_KEY": "kista://service/key"}},
+        tmp_path,
+    )
+
+    assert not result.ok
+    assert result.error_kind == ErrorKind.NOT_CONFIGURED
+    assert result.error == "unsafe vault"
+    assert not called
+
+
+def test_windows_sddl_accepts_only_user_system_and_administrators(source_module):
+    user = "S-1-5-21-111-222-333-1001"
+    private = (
+        "D:PAI"
+        f"(A;;FA;;;{user})"
+        "(A;;FA;;;SY)"
+        "(A;;FA;;;BA)"
+    )
+    broad = private + "(A;;FR;;;S-1-1-0)"
+    another_user = private + "(A;;FR;;;S-1-5-21-111-222-333-1002)"
+
+    assert source_module._sddl_is_private(private, user)
+    assert not source_module._sddl_is_private(broad, user)
+    assert not source_module._sddl_is_private(another_user, user)
+    assert not source_module._sddl_is_private("D:PAI(A;;FA;;;SY)", user)
+
+
+def test_windows_audit_checks_directory_key_and_ciphertext(
+    source_module, tmp_path, monkeypatch
+):
+    vault = _initialized_vault(tmp_path)
+    checked = []
+    monkeypatch.setattr(source_module, "_uses_windows_acls", lambda: True)
+    monkeypatch.setattr(
+        source_module, "_windows_current_sid", lambda: "S-1-5-21-1-2-3-1001"
+    )
+    monkeypatch.setattr(
+        source_module,
+        "_windows_acl_is_private",
+        lambda path, _sid: checked.append(path) or path.name != "vault.json.enc",
+    )
+
+    error = source_module._validate_vault_security(vault)
+
+    assert "ACL" in error
+    assert checked == [vault, vault / ".vault_key", vault / "vault.json.enc"]
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows ACL contract")
+def test_windows_audit_reads_real_acl_and_rejects_everyone_grant(source_module, tmp_path):
+    executable = shutil.which("icacls")
+    if executable is None:
+        pytest.skip("icacls is unavailable")
+    vault = _initialized_vault(tmp_path)
+    grant = subprocess.run(
+        [executable, str(vault), "/grant", "*S-1-1-0:(RX)"],
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        timeout=5,
+        check=False,
+    )
+    if grant.returncode != 0:
+        pytest.skip("the test filesystem does not permit ACL changes")
+
+    assert "ACL" in source_module._validate_vault_security(vault)
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX ownership and mode contract")
+def test_posix_audit_requires_private_directory_and_file_modes(source_module, tmp_path):
+    vault = _initialized_vault(tmp_path)
+    vault.chmod(0o700)
+    (vault / ".vault_key").chmod(0o600)
+    (vault / "vault.json.enc").chmod(0o600)
+    assert stat.S_IMODE(vault.stat().st_mode) == 0o700
+    assert source_module._validate_vault_security(vault) is None
+
+    (vault / "vault.json.enc").chmod(0o640)
+    assert "group or world" in source_module._validate_vault_security(vault)
+
+
+def test_initialized_vault_rejects_linked_key(source_module, tmp_path):
+    vault = _initialized_vault(tmp_path)
+    target = tmp_path / "outside-key"
+    target.write_text("fixture-key", encoding="utf-8")
+    (vault / ".vault_key").unlink()
+    try:
+        (vault / ".vault_key").symlink_to(target)
+    except OSError:
+        pytest.skip("symlink creation is unavailable on this host")
+
+    assert "links" in source_module._validate_vault_security(vault)
+
+
 def test_real_subprocess_keeps_a_b_a_vaults_isolated(source, tmp_path):
     helper = tmp_path / "fake_kista.py"
     helper.write_text(
@@ -184,7 +306,10 @@ def test_real_subprocess_keeps_a_b_a_vaults_isolated(source, tmp_path):
         "env": {"PROFILE_API_KEY": "kista://service/key"},
     }
 
-    values = [source.fetch(cfg, home).secrets["PROFILE_API_KEY"] for home in (home_a, home_b, home_a)]
+    values = [
+        source.fetch(cfg, home).secrets["PROFILE_API_KEY"]
+        for home in (home_a, home_b, home_a)
+    ]
 
     assert values == ["secret-for-profile-a", "secret-for-profile-b", "secret-for-profile-a"]
 
