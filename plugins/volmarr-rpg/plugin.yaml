@@ -1,9 +1,14 @@
 manifest_version: 2
 name: volmarr-rpg
-version: "0.4.0"
-description: "Deterministic tabletop RPG mechanics for Volmarr's personal Hermes fork."
+version: "0.5.0"
+description: "Deterministic tabletop RPG mechanics and external SRD lookup for Volmarr's personal Hermes fork."
 author: Volmarr Wyrd / RuneForgeAI
 tags:
   - runeforgeai
   - rpg
   - local
+config_schema:
+  srd_root:
+    type: str
+    default: ""
+    description: "Absolute path to the official dnd-5e-srd checkout containing json/12 conditions.json."

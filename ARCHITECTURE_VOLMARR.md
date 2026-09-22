@@ -790,6 +790,19 @@ The table is ephemeral call input: the plugin does not name, persist, merge, wei
 narrate entries. Per-entry and table-size bounds keep the result finite, and strict field refusal
 prevents accidental expansion into campaign storage or a hidden table language.
 
+### Slice 50: External SRD Condition Lookup
+
+`rpg_condition_lookup` reads one named condition from `json/12 conditions.json` in a configured
+external `dnd-5e-srd` checkout. The root is resolved from the active profile at call time, so
+profile switches cannot retain another profile's rules source. Hermes bundles no SRD prose and
+does not rewrite or persist the returned definition.
+
+The adapter accepts only one short condition name, matches it case-insensitively, bounds both the
+source file and selected definition, and reports the external corpus file plus OGL 1.0a
+provenance. The currently verified official fork is commit
+`2e62e0413061c2443e21369cdc074c7a7356a857`; alternate configured checkouts remain explicit
+operator choices rather than silently embedded dependencies.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

@@ -3,15 +3,41 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
-from hermes_constants import get_hermes_home
+from hermes_constants import (
+    get_hermes_home,
+    reset_hermes_home_override,
+    set_hermes_home_override,
+)
 
 
-def _enable_plugin() -> None:
-    home = get_hermes_home()
+def _enable_plugin(*, home: Path | None = None, srd_root: Path | None = None) -> None:
+    home = home or get_hermes_home()
     home.mkdir(parents=True, exist_ok=True)
-    (home / "config.yaml").write_text(
-        "plugins:\n  enabled: [volmarr-rpg]\n",
+    config = "plugins:\n  enabled: [volmarr-rpg]\n"
+    if srd_root is not None:
+        config += (
+            "  entries:\n"
+            "    volmarr-rpg:\n"
+            "      settings:\n"
+            f"        srd_root: {json.dumps(str(srd_root))}\n"
+        )
+    (home / "config.yaml").write_text(config, encoding="utf-8")
+
+
+def _fake_srd(root: Path, condition_name: str, rule: str) -> None:
+    data_dir = root / "json"
+    data_dir.mkdir(parents=True)
+    (data_dir / "12 conditions.json").write_text(
+        json.dumps(
+            {
+                "Appendix PH-A: Conditions": {
+                    "content": ["Condition introduction."],
+                    condition_name: [rule],
+                }
+            }
+        ),
         encoding="utf-8",
     )
 
@@ -31,6 +57,7 @@ def test_real_discovery_roll_is_replayable_and_exposes_arithmetic():
             "rpg_skill_check",
             "rpg_oracle",
             "rpg_random_table",
+            "rpg_condition_lookup",
         }
         args = {"count": 4, "sides": 6, "modifier": 3, "seed": 0}
         first = json.loads(registry.dispatch("dice_roll", args, scope=manager.scope_key))
@@ -249,6 +276,103 @@ def test_random_table_rejects_empty_oversized_and_extra_inputs():
             invalid.append(
                 json.loads(
                     registry.dispatch("rpg_random_table", args, scope=manager.scope_key)
+                )
+            )
+    finally:
+        manager.unload()
+
+    assert all("error" in result for result in invalid)
+
+
+def test_condition_lookup_reads_configured_external_srd_with_provenance(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    srd_root = tmp_path / "srd"
+    _fake_srd(srd_root, "Blinded", "Sight-based checks fail.")
+    _enable_plugin(srd_root=srd_root)
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch(
+                "rpg_condition_lookup",
+                {"condition": " blinded "},
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert result["condition"] == "Blinded"
+    assert result["definition"] == ["Sight-based checks fail."]
+    assert result["source"] == {
+        "corpus": "System Reference Document 5.0",
+        "file": "json/12 conditions.json",
+        "license": "OGL-1.0a",
+    }
+
+
+def test_condition_lookup_resolves_active_profile_a_b_a(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home_a = get_hermes_home()
+    home_b = tmp_path / "home-b"
+    srd_a = tmp_path / "srd-a"
+    srd_b = tmp_path / "srd-b"
+    _fake_srd(srd_a, "Prone", "Rule from profile A.")
+    _fake_srd(srd_b, "Prone", "Rule from profile B.")
+    _enable_plugin(home=home_a, srd_root=srd_a)
+    _enable_plugin(home=home_b, srd_root=srd_b)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        definitions = []
+        for home in (home_a, home_b, home_a):
+            token = set_hermes_home_override(home)
+            try:
+                result = json.loads(
+                    registry.dispatch(
+                        "rpg_condition_lookup",
+                        {"condition": "Prone"},
+                        scope=manager.scope_key,
+                    )
+                )
+                definitions.append(result["definition"][0])
+            finally:
+                reset_hermes_home_override(token)
+    finally:
+        manager.unload()
+
+    assert definitions == [
+        "Rule from profile A.",
+        "Rule from profile B.",
+        "Rule from profile A.",
+    ]
+
+
+def test_condition_lookup_rejects_missing_source_unknown_and_extra_fields(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    missing_root = tmp_path / "missing"
+    _enable_plugin(srd_root=missing_root)
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        invalid = []
+        for args in (
+            {"condition": "Blinded"},
+            {"condition": ""},
+            {"condition": "Blinded", "character": "private"},
+        ):
+            invalid.append(
+                json.loads(
+                    registry.dispatch(
+                        "rpg_condition_lookup", args, scope=manager.scope_key
+                    )
                 )
             )
     finally:

@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import json
 import random
+from pathlib import Path
 from typing import Any
 
 from tools.registry import tool_error, tool_result
 
 
 _MAX_SEED = 2**31 - 1
+_MAX_SRD_FILE_BYTES = 64 * 1024
 _ORACLE_YES_CHANCES = {
     "impossible": 0,
     "no_way": 5,
@@ -106,11 +109,70 @@ RPG_RANDOM_TABLE_SCHEMA = {
     },
 }
 
+RPG_CONDITION_LOOKUP_SCHEMA = {
+    "name": "rpg_condition_lookup",
+    "description": (
+        "Look up one condition in a configured external SRD 5 checkout. Returns the "
+        "source definition and license provenance without bundling SRD content in Hermes."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "condition": {"type": "string", "minLength": 1, "maxLength": 60},
+        },
+        "required": ["condition"],
+        "additionalProperties": False,
+    },
+}
+
 
 def _integer(value: Any, *, minimum: int, maximum: int) -> int | None:
     if isinstance(value, bool) or not isinstance(value, int):
         return None
     return value if minimum <= value <= maximum else None
+
+
+def _configured_conditions_file(value: Any) -> Path | None:
+    if not isinstance(value, str) or not value.strip() or "\x00" in value:
+        return None
+    candidate = Path(value.strip()).expanduser()
+    if not candidate.is_absolute():
+        return None
+    try:
+        root = candidate.resolve()
+        conditions_file = root / "json" / "12 conditions.json"
+        size = conditions_file.stat().st_size
+    except OSError:
+        return None
+    if not root.is_dir() or not conditions_file.is_file():
+        return None
+    if not 1 <= size <= _MAX_SRD_FILE_BYTES:
+        return None
+    return conditions_file
+
+
+def _load_conditions(ctx) -> dict[str, Any] | None:
+    conditions_file = _configured_conditions_file(ctx.get_config("srd_root", ""))
+    if conditions_file is None:
+        return None
+    try:
+        payload = json.loads(conditions_file.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, dict) or len(payload) != 1:
+        return None
+    section = next(iter(payload.values()))
+    if not isinstance(section, dict):
+        return None
+    conditions = {
+        name: definition
+        for name, definition in section.items()
+        if name != "content"
+        and isinstance(name, str)
+        and name.strip()
+        and isinstance(definition, (list, dict))
+    }
+    return conditions or None
 
 
 def build_dice_roll_handler():
@@ -282,6 +344,46 @@ def build_random_table_handler():
     return handle
 
 
+def build_condition_lookup_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if set(args) != {"condition"}:
+            return tool_error("condition is required")
+        query = args.get("condition")
+        if not isinstance(query, str) or not query.strip() or len(query) > 60:
+            return tool_error("condition must be a non-blank string of at most 60 characters")
+        conditions = _load_conditions(ctx)
+        if conditions is None:
+            return tool_error(
+                "Configure volmarr-rpg srd_root as an absolute path to the official SRD checkout."
+            )
+        by_normalized_name = {name.casefold(): name for name in conditions}
+        canonical_name = by_normalized_name.get(query.strip().casefold())
+        if canonical_name is None:
+            return tool_error("condition was not found in the configured SRD checkout")
+        definition = conditions[canonical_name]
+        try:
+            encoded_definition = json.dumps(definition, ensure_ascii=False)
+        except (TypeError, ValueError):
+            return tool_error("the configured SRD condition has an invalid structure")
+        if len(encoded_definition.encode("utf-8")) > 16 * 1024:
+            return tool_error("the configured SRD condition is too large")
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "rpg_condition_lookup",
+                "condition": canonical_name,
+                "definition": definition,
+                "source": {
+                    "corpus": "System Reference Document 5.0",
+                    "file": "json/12 conditions.json",
+                    "license": "OGL-1.0a",
+                },
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         ("dice_roll", DICE_ROLL_SCHEMA, build_dice_roll_handler(), "🎲"),
@@ -297,6 +399,12 @@ def register_tools(ctx) -> None:
             RPG_RANDOM_TABLE_SCHEMA,
             build_random_table_handler(),
             "📜",
+        ),
+        (
+            "rpg_condition_lookup",
+            RPG_CONDITION_LOOKUP_SCHEMA,
+            build_condition_lookup_handler(ctx),
+            "📖",
         ),
     ):
         ctx.register_tool(

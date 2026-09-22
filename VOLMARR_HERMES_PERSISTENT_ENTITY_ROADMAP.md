@@ -2049,7 +2049,11 @@ accepts no question or campaign state. No Mythic GME table or NorseSagaEngine so
 
 Slice 49 adds `rpg_random_table`, selecting one short entry from a bounded caller-owned table with
 an explicit seed and auditable dN-style roll. The plugin bundles no setting or rules tables and
-persists none of the supplied content. SRD condition lookup is next.
+persists none of the supplied content.
+
+Slice 50 adds `rpg_condition_lookup`, resolving the active profile's configured external SRD
+checkout at call time and returning one bounded condition definition with its OGL 1.0a provenance.
+No SRD rules prose is copied into Hermes. Minimal reusable character structure is next.
 
 ## Milestone 9: Embodiment
 
