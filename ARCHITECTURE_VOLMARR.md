@@ -930,6 +930,17 @@ was not launched and no images were created.
 The view catalog remains owned by the external engine and is resolved from the active profile at
 call time. This creates a safe planning surface without granting render or filesystem authority.
 
+### Slice 62: Bounded Seiðr-Smiðja Gate Structural Check
+
+`smidja_gate_check` admits one relative `.vrm` beneath an active-profile artifact root and invokes
+the official `gate.check` API for a bounded target set and VRChat tier. The adapter returns the
+official pass value and sanitized rule findings without echoing artifact-derived values.
+
+The current upstream reader inspects only the glTF JSON header. Polygon and texture rules remain
+advisory and explicitly surface in `unevaluated_rule_ids`; consequently the adapter always reports
+`certification_complete: false` and names its scope `official_gate_structural_header`. It creates no
+output, launches no Blender process, and enforces path containment plus a 128 MiB input ceiling.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

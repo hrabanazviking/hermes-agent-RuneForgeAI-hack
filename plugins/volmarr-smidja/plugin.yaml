@@ -1,7 +1,7 @@
 manifest_version: 2
 name: volmarr-smidja
 version: "0.1.0"
-description: "Read-only Loom, Hoard, Gate, and Oracle Eye diagnostics through Seidr-Smidja APIs."
+description: "Read-only Loom, Hoard, Gate, and Oracle Eye preflight through Seidr-Smidja APIs."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/Seidr-Smidja
 tags:
@@ -18,6 +18,10 @@ config_schema:
     type: str
     default: ""
     description: "Absolute root containing Loom YAML or JSON specs allowed for validation."
+  artifact_root:
+    type: str
+    default: ""
+    description: "Absolute root containing VRM artifacts allowed for read-only Gate checks."
   python_path:
     type: str
     default: ""

@@ -123,6 +123,51 @@ def _render_views(engine_root: Path) -> int:
     return 0
 
 
+def _gate_check(
+    engine_root: Path,
+    artifact_path: Path,
+    targets_json: str,
+    vrchat_tier: str,
+) -> int:
+    sys.path.insert(0, str(engine_root / "src"))
+    try:
+        targets = json.loads(targets_json)
+        if not isinstance(targets, list) or any(not isinstance(item, str) for item in targets):
+            return 2
+        from seidr_smidja.gate import check
+
+        report = check(
+            vrm_path=artifact_path,
+            targets=targets,
+            rules_dir=engine_root / "data" / "gate",
+            vrchat_tier=vrchat_tier,
+        )
+    except Exception:
+        return 2
+    _emit(
+        {
+            "passed": report.passed,
+            "targets": [target.value for target in report.targets_checked],
+            "results": {
+                target: {
+                    "passed": result.passed,
+                    "violations": [
+                        {
+                            "rule_id": violation.rule_id,
+                            "severity": violation.severity.value,
+                            "field_path": violation.field_path,
+                            "description": violation.description,
+                        }
+                        for violation in result.violations[:101]
+                    ],
+                }
+                for target, result in report.results.items()
+            },
+        }
+    )
+    return 0
+
+
 def main() -> int:
     if len(sys.argv) == 4 and sys.argv[1] == "validate":
         return _validate(Path(sys.argv[2]).resolve(), Path(sys.argv[3]).resolve())
@@ -132,6 +177,13 @@ def main() -> int:
         return _gate_rules(Path(sys.argv[2]).resolve(), sys.argv[3])
     if len(sys.argv) == 3 and sys.argv[1] == "render-views":
         return _render_views(Path(sys.argv[2]).resolve())
+    if len(sys.argv) == 6 and sys.argv[1] == "gate-check":
+        return _gate_check(
+            Path(sys.argv[2]).resolve(),
+            Path(sys.argv[3]).resolve(),
+            sys.argv[4],
+            sys.argv[5],
+        )
     return 2
 
 

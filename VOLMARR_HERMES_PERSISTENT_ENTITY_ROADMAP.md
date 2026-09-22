@@ -2106,6 +2106,11 @@ Slice 61 adds `smidja_render_views`, exposing the official ordered Oracle Eye vi
 launching Blender or creating output. The next clean slice audits Seiðr-Smiðja's remaining
 read-only planning surfaces before any artifact-processing authority is considered.
 
+Slice 62 adds `smidja_gate_check`, bounded to relative VRM files beneath an active-profile artifact
+root. It preserves the official Gate verdict while explicitly reporting header-only scope,
+unevaluated rules, and incomplete certification; it creates no output and launches no Blender
+process. Read-only local Hoard resolution readiness is next.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
