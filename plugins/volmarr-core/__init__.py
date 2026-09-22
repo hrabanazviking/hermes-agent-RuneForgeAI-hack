@@ -6,9 +6,12 @@ from functools import partial
 
 from .affective_bridge import AffectiveBridge
 from .cli import health_command, register_cli
+from .goals import GoalBridge, register_goal_tools
+from .heartbeat import HeartbeatBridge, register_heartbeat_tool
 from .identity import IdentityBridge
 from .lifecycle import LifecycleBridge
 from .present_state import PresentStateBridge
+from .relationships import RelationshipBridge, register_relationship_tools
 from .wyrd_tools import register_wyrd_tools
 from .wyrd_context import WyrdContextBridge
 
@@ -21,6 +24,15 @@ def register(ctx) -> None:
     identity = IdentityBridge(ctx)
     for hook_name, callback in identity.hooks():
         ctx.register_hook(hook_name, callback)
+    relationships = RelationshipBridge(ctx)
+    for hook_name, callback in relationships.hooks():
+        ctx.register_hook(hook_name, callback)
+    goals = GoalBridge(ctx)
+    for hook_name, callback in goals.hooks():
+        ctx.register_hook(hook_name, callback)
+    heartbeat = HeartbeatBridge(ctx)
+    for hook_name, callback in heartbeat.hooks():
+        ctx.register_hook(hook_name, callback)
     affective = AffectiveBridge(ctx)
     for hook_name, callback in affective.hooks():
         ctx.register_hook(hook_name, callback)
@@ -32,6 +44,9 @@ def register(ctx) -> None:
     for hook_name, callback in present_state.hooks():
         ctx.register_hook(hook_name, callback)
     register_wyrd_tools(ctx)
+    register_relationship_tools(ctx)
+    register_goal_tools(ctx)
+    register_heartbeat_tool(ctx)
     ctx.register_cli_command(
         name="volmarr",
         help="Inspect Volmarr's Hermes integrations",

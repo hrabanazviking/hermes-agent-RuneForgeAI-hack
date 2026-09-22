@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-core
-version: "0.21.0"
+version: "0.24.0"
 description: "Volmarr's opt-in Hermes composition plugin, beginning with the Verðandi lifecycle bridge."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/hermes-agent-RuneForgeAI-hack
@@ -157,3 +157,39 @@ config_schema:
     type: str
     default: entity/entity.yaml
     description: "Identity YAML path relative to the active Hermes profile; escaping paths fall back to the default."
+  relationships_enabled:
+    type: bool
+    default: true
+    description: "Create and expose the active entity's explicit relationship ledger."
+  relationships_path:
+    type: str
+    default: entity/relationships.yaml
+    description: "Relationship YAML path relative to the active Hermes profile; escaping paths fall back to the default."
+  relationships_history_limit:
+    type: int
+    default: 100
+    description: "Maximum append-only history events retained per relationship (clamped to 1-500)."
+  goals_enabled:
+    type: bool
+    default: true
+    description: "Create and expose the active entity's durable explicit goal ledger."
+  goals_path:
+    type: str
+    default: entity/goals.yaml
+    description: "Goal YAML path relative to the active Hermes profile; escaping paths fall back to the default."
+  goals_history_limit:
+    type: int
+    default: 100
+    description: "Maximum append-only transition events retained per goal (clamped to 1-500)."
+  heartbeat_enabled:
+    type: bool
+    default: true
+    description: "Enable the entity continuity heartbeat receipt; recurring scheduling remains owned by Hermes cron."
+  continuity_path:
+    type: str
+    default: entity/continuity.json
+    description: "Continuity state path relative to the active Hermes profile; escaping paths fall back to the default."
+  heartbeat_stale_after_seconds:
+    type: int
+    default: 900
+    description: "Age after which a recorded entity heartbeat is stale (clamped to 60-86400 seconds)."

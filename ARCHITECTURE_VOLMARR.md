@@ -388,6 +388,51 @@ A malformed or unsupported existing record is reported by
 `hermes volmarr identity health [--json]` and left byte-for-byte intact; silently minting a
 replacement UUID would destroy continuity. Identity is not injected into prompts in this slice.
 
+### Slice 23: Explicit Relationship Continuity
+
+`relationships.py` adds `entity/relationships.yaml`, a versioned ledger whose owner must match the
+active profile's stable entity UUID. Relationship records are keyed by explicit external entity
+identifiers and retain bounded append-only state history: display name, relationship type,
+active/inactive/archived status, trust, timestamp, and an optional operator-authored note. Records
+are capped at 256 and history at a configurable 1–500 events per relationship.
+
+The `relationship_get` and `relationship_upsert` tools are the only mutation surface in this
+slice. Conversation text is never mined for relationship claims, records are never automatically
+placed in prompts, and continuity is archived rather than deleted. Writes are validated before
+the profile-local file is locked and atomically replaced. Corrupt, oversized, or wrong-owner
+ledgers are refused and preserved for operator repair; disabling identity also disables creation
+of dependent relationship state.
+
+### Slice 24: Durable Goals and Task State
+
+`goals.py` adds a versioned `entity/goals.yaml` ledger owned by the stable profile identity.
+Goals have generated UUIDs, bounded titles and descriptions, integer priority, an explicit next
+action, planned/active/blocked/completed/archived status, timestamps, and bounded append-only
+transition history. Completion time survives archival, while reactivating a completed goal clears
+the current completion marker without erasing its recorded transition.
+
+The `goal_create`, `goal_update`, and `goal_get` tools provide deliberate state changes and compact,
+priority-ordered reads. There is no conversational goal inference, automatic prompt injection, or
+hard-delete operation. Files are profile-local, owner-checked, size- and record-bounded, locked,
+and atomically replaced. Malformed or wrong-owner state is left intact for repair, and disabling
+identity prevents creation of dependent goal state.
+
+### Slice 25: Continuity Heartbeat Receipt
+
+`heartbeat.py` adds the deterministic pulse receiver that recurring lifecycle work can call; it
+does not create a resident timer or compete with Hermes cron. The profile-local
+`entity/continuity.json` record is versioned, owned by the stable entity UUID, and contains only a
+monotonic pulse sequence, last-pulse timestamp, and bounded source classification. Session start
+creates an idle record but does not pretend that a scheduled pulse occurred.
+
+`entity_heartbeat` records an explicit tool pulse, while
+`hermes volmarr heartbeat pulse --source {manual,cron}` gives operators and future Hermes cron
+scripts a deterministic non-LLM entrypoint. `heartbeat status` reports idle, fresh, stale, missing,
+or invalid state without writing. A pulse after the configured stale window is classified as a
+resume. Successful durable pulses emit only sequence/source/resume metadata to Verðandi under the
+`runeforge.entity.heartbeat` contract; entity IDs, session IDs, prompts, and state content are
+excluded. Corrupt and wrong-owner continuity files are never replaced.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

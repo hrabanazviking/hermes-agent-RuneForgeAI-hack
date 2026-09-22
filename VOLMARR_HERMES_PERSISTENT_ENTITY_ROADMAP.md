@@ -1867,13 +1867,22 @@ truth therefore survives restart independently of Hermes conversation memory.
 
 **Done when:** restart resumes state, tasks, and identity cleanly.
 
-**Implementation status:** in progress. The identity package now creates one versioned,
+**Implementation status:** in progress. The identity package creates one versioned,
 profile-local `entity/entity.yaml` record with a stable UUID and creation time. It is independent
 of session, model, and provider selection, while Hermes `SOUL.md` remains the untouched
 human-authored persona surface. Existing valid identities are never normalized or rewritten;
 malformed or unsupported records fail visibly through `hermes volmarr identity health` and are
-not silently replaced. Relationships, goals, heartbeat, background routines, and
-sleep/consolidation remain later ordered slices.
+not silently replaced. A second versioned ledger at `entity/relationships.yaml` now preserves
+explicit relationship state and bounded per-relationship history under the stable identity.
+Read/update tools require deliberate calls; ordinary conversation is not mined and relationship
+data is not automatically injected into prompts. A third identity-owned ledger at
+`entity/goals.yaml` now persists explicitly created tasks with priority, next action, lifecycle
+status, completion time, and bounded transition history. Goal tools create, advance, filter,
+complete, and archive this state without mining conversation or deleting continuity. The heartbeat
+receipt is now implemented in `entity/continuity.json`: explicit tool or CLI pulses advance a durable
+sequence, report freshness/staleness, recognize a post-stale resume, and emit content-free
+Verðandi metadata. It deliberately starts no scheduler; Hermes cron remains the cadence owner for
+the next slice. Background routines and sleep/consolidation remain later ordered slices.
 
 ## Milestone 7: Secrets and Security
 
