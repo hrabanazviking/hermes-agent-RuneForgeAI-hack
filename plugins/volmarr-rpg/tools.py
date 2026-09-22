@@ -23,6 +23,14 @@ _ORACLE_YES_CHANCES = {
     "near_certain": 95,
     "certain": 100,
 }
+_ABILITY_NAMES = (
+    "strength",
+    "dexterity",
+    "constitution",
+    "intelligence",
+    "wisdom",
+    "charisma",
+)
 
 DICE_ROLL_SCHEMA = {
     "name": "dice_roll",
@@ -121,6 +129,22 @@ RPG_CONDITION_LOOKUP_SCHEMA = {
             "condition": {"type": "string", "minLength": 1, "maxLength": 60},
         },
         "required": ["condition"],
+        "additionalProperties": False,
+    },
+}
+
+RPG_RANDOM_CHARACTER_SCHEMA = {
+    "name": "rpg_random_character",
+    "description": (
+        "Generate a replayable system-neutral character ability skeleton: six named "
+        "scores from 4d6 drop-lowest, with every die and derived modifier exposed."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "seed": {"type": "integer", "minimum": 0, "maximum": _MAX_SEED},
+        },
+        "required": ["seed"],
         "additionalProperties": False,
     },
 }
@@ -384,6 +408,42 @@ def build_condition_lookup_handler(ctx):
     return handle
 
 
+def build_random_character_handler():
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if set(args) != {"seed"}:
+            return tool_error("seed is required")
+        seed = _integer(args.get("seed"), minimum=0, maximum=_MAX_SEED)
+        if seed is None:
+            return tool_error(f"seed must be an integer from 0 to {_MAX_SEED}")
+
+        rng = random.Random(seed)
+        abilities = {}
+        for name in _ABILITY_NAMES:
+            rolls = [rng.randint(1, 6) for _ in range(4)]
+            dropped_index = rolls.index(min(rolls))
+            kept = [roll for index, roll in enumerate(rolls) if index != dropped_index]
+            score = sum(kept)
+            abilities[name] = {
+                "rolls": rolls,
+                "dropped_index": dropped_index,
+                "dropped_roll": rolls[dropped_index],
+                "score": score,
+                "modifier": (score - 10) // 2,
+            }
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "rpg_random_character",
+                "seed": seed,
+                "generation_method": "4d6_drop_lowest",
+                "character_complete": False,
+                "abilities": abilities,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         ("dice_roll", DICE_ROLL_SCHEMA, build_dice_roll_handler(), "🎲"),
@@ -405,6 +465,12 @@ def register_tools(ctx) -> None:
             RPG_CONDITION_LOOKUP_SCHEMA,
             build_condition_lookup_handler(ctx),
             "📖",
+        ),
+        (
+            "rpg_random_character",
+            RPG_RANDOM_CHARACTER_SCHEMA,
+            build_random_character_handler(),
+            "🧙",
         ),
     ):
         ctx.register_tool(

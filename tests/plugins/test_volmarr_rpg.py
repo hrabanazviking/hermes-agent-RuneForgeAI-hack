@@ -58,6 +58,7 @@ def test_real_discovery_roll_is_replayable_and_exposes_arithmetic():
             "rpg_oracle",
             "rpg_random_table",
             "rpg_condition_lookup",
+            "rpg_random_character",
         }
         args = {"count": 4, "sides": 6, "modifier": 3, "seed": 0}
         first = json.loads(registry.dispatch("dice_roll", args, scope=manager.scope_key))
@@ -372,6 +373,75 @@ def test_condition_lookup_rejects_missing_source_unknown_and_extra_fields(tmp_pa
                 json.loads(
                     registry.dispatch(
                         "rpg_condition_lookup", args, scope=manager.scope_key
+                    )
+                )
+            )
+    finally:
+        manager.unload()
+
+    assert all("error" in result for result in invalid)
+
+
+def test_random_character_replays_six_auditable_ability_scores():
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    _enable_plugin()
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        args = {"seed": 0}
+        first = json.loads(
+            registry.dispatch("rpg_random_character", args, scope=manager.scope_key)
+        )
+        replay = json.loads(
+            registry.dispatch("rpg_random_character", args, scope=manager.scope_key)
+        )
+    finally:
+        manager.unload()
+
+    assert first == replay
+    assert first["generation_method"] == "4d6_drop_lowest"
+    assert first["character_complete"] is False
+    assert list(first["abilities"]) == [
+        "strength",
+        "dexterity",
+        "constitution",
+        "intelligence",
+        "wisdom",
+        "charisma",
+    ]
+    for ability in first["abilities"].values():
+        assert len(ability["rolls"]) == 4
+        assert all(1 <= roll <= 6 for roll in ability["rolls"])
+        dropped_index = ability["dropped_index"]
+        assert ability["dropped_roll"] == ability["rolls"][dropped_index]
+        assert ability["dropped_roll"] == min(ability["rolls"])
+        kept = [
+            roll for index, roll in enumerate(ability["rolls"]) if index != dropped_index
+        ]
+        assert ability["score"] == sum(kept)
+        assert ability["modifier"] == (ability["score"] - 10) // 2
+
+
+def test_random_character_rejects_boolean_seed_and_character_content():
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    _enable_plugin()
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        invalid = []
+        for args in (
+            {"seed": True},
+            {"seed": -1},
+            {"seed": 1, "name": "private"},
+        ):
+            invalid.append(
+                json.loads(
+                    registry.dispatch(
+                        "rpg_random_character", args, scope=manager.scope_key
                     )
                 )
             )

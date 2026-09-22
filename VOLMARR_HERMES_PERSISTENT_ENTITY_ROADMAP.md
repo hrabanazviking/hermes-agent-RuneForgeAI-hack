@@ -2053,7 +2053,12 @@ persists none of the supplied content.
 
 Slice 50 adds `rpg_condition_lookup`, resolving the active profile's configured external SRD
 checkout at call time and returning one bounded condition definition with its OGL 1.0a provenance.
-No SRD rules prose is copied into Hermes. Minimal reusable character structure is next.
+No SRD rules prose is copied into Hermes.
+
+Slice 51 adds `rpg_random_character` as an ability-only skeleton: six fixed named scores generated
+by seeded 4d6-drop-lowest, with every die, dropped die, score, and modifier exposed. It deliberately
+generates no identity, ancestry, class, personality, equipment, or narrative. Encounter initiative
+is next.
 
 ## Milestone 9: Embodiment
 

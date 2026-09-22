@@ -803,6 +803,18 @@ provenance. The currently verified official fork is commit
 `2e62e0413061c2443e21369cdc074c7a7356a857`; alternate configured checkouts remain explicit
 operator choices rather than silently embedded dependencies.
 
+### Slice 51: Replayable Character Ability Skeleton
+
+`rpg_random_character` creates only a mechanical ability skeleton: Strength, Dexterity,
+Constitution, Intelligence, Wisdom, and Charisma are each rolled with a fixed 4d6-drop-lowest
+method. Every die, the exact dropped index and value, resulting score, and floor-derived modifier
+are returned under an explicit seed.
+
+The tool marks `character_complete: false` because abilities are not a character identity. It
+does not choose or accept a name, ancestry, class, culture, gender, alignment, personality,
+equipment, biography, art prompt, or campaign state. Those semantic layers remain separate from
+the finite random mechanic and no catalog content is copied from the SRD or NorseSagaEngine.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
