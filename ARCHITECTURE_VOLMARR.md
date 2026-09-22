@@ -516,6 +516,22 @@ vendor prefix. Profile A's registered bytes neither redact nor disclose matches 
 registry stores no reference, service name, environment-variable name, or persistent copy, and the
 Kista plugin still owns no prompt, transcript, event, telemetry, or log integration.
 
+### Slice 30: Cross-Surface Canary Containment
+
+The security contract now follows one synthetic, deliberately prefix-less Kista value from real
+plugin discovery and subprocess retrieval through the Secret Source orchestrator and the Volmarr
+runtime. Raw copies are injected into lifecycle hook arguments, tool results, and tool errors to
+prove that Verðandi lifecycle and cognition telemetry remain metadata-only. The actual terminal
+output boundary applies the profile-scoped exact redactor before the result is admitted to Hermes
+session history, and the canonical redacting formatter protects log output.
+
+After the run, the contract reopens session history and scans every SQLite database, WAL, and SHM
+sidecar created beneath the active profile, including any memory database created by enabled
+hooks. It also inspects every captured Verðandi payload, cognition event, log record, stdout, and
+stderr stream. The canary must occur in none of them. This adds no new storage path or memory
+authority: an absent memory database remains absent, rather than being invented solely for a
+security test.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
