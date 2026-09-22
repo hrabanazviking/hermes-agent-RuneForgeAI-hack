@@ -13,13 +13,14 @@ from hermes_constants import (
 )
 
 
-def _profile(home: Path, engine: Path, specs: Path) -> None:
+def _profile(home: Path, engine: Path, specs: Path, artifacts: Path | None = None) -> None:
     home.mkdir(parents=True, exist_ok=True)
     (home / "config.yaml").write_text(
         "plugins:\n  enabled: [volmarr-smidja]\n  entries:\n    volmarr-smidja:\n"
         "      settings:\n"
         f"        engine_root: {json.dumps(str(engine))}\n"
         f"        spec_root: {json.dumps(str(specs))}\n"
+        f"        artifact_root: {json.dumps(str(artifacts or specs))}\n"
         f"        python_path: {json.dumps(sys.executable)}\n",
         encoding="utf-8",
     )
@@ -50,6 +51,9 @@ def _engine(root: Path) -> None:
         encoding="utf-8",
     )
     (hoard / "__init__.py").write_text("", encoding="utf-8")
+    (hoard / "exceptions.py").write_text(
+        "class AssetNotFoundError(LookupError): pass\n", encoding="utf-8"
+    )
     (hoard / "port.py").write_text(
         "from dataclasses import dataclass\n"
         "@dataclass\n"
@@ -60,13 +64,21 @@ def _engine(root: Path) -> None:
     )
     (hoard / "local.py").write_text(
         "import json\nfrom types import SimpleNamespace\n"
+        "from seidr_smidja.hoard.exceptions import AssetNotFoundError\n"
         "class LocalHoardAdapter:\n"
         "    def __init__(self, catalog_path, bases_dir): self.catalog_path=catalog_path; self.bases_dir=bases_dir\n"
         "    def list_assets(self, filter):\n"
         "        values=json.loads(self.catalog_path.read_text(encoding='utf-8'))\n"
         "        return [SimpleNamespace(**item) for item in values "
         "if (not filter.asset_type or item['asset_type']==filter.asset_type) "
-        "and all(tag in item['tags'] for tag in (filter.tags or []))]\n",
+        "and all(tag in item['tags'] for tag in (filter.tags or []))]\n"
+        "    def resolve(self, asset_id):\n"
+        "        values=json.loads(self.catalog_path.read_text(encoding='utf-8'))\n"
+        "        item=next((item for item in values if item['asset_id']==asset_id), None)\n"
+        "        if item is None: raise AssetNotFoundError(asset_id)\n"
+        "        path=self.bases_dir / item['filename']\n"
+        "        if not path.is_file(): raise AssetNotFoundError(asset_id)\n"
+        "        return path.resolve()\n",
         encoding="utf-8",
     )
     catalog = root / "data" / "hoard" / "catalog.yaml"
@@ -79,6 +91,7 @@ def _engine(root: Path) -> None:
                     "asset_id": "vroid/sample_a",
                     "display_name": "Sample A",
                     "asset_type": "vrm_base",
+                    "filename": "sample_a.vrm",
                     "tags": ["feminine", "sample"],
                     "vrm_version": "1.0",
                     "file_size_bytes": 128,
@@ -88,6 +101,7 @@ def _engine(root: Path) -> None:
                     "asset_id": "vroid/sample_b",
                     "display_name": "Sample B",
                     "asset_type": "vrm_base",
+                    "filename": "sample_b.vrm",
                     "tags": ["masculine", "sample"],
                     "vrm_version": "0.0",
                     "file_size_bytes": None,
@@ -97,6 +111,7 @@ def _engine(root: Path) -> None:
         ),
         encoding="utf-8",
     )
+    (bases / "sample_a.vrm").write_bytes(b"local-vrm")
     (gate / "gate.py").write_text("", encoding="utf-8")
     (gate / "__init__.py").write_text(
         "import json\nfrom enum import Enum\nfrom types import SimpleNamespace\n"
@@ -106,7 +121,21 @@ def _engine(root: Path) -> None:
         "def list_rules(target, rules_dir):\n"
         "    values=json.loads((rules_dir / (target.value + '.json')).read_text(encoding='utf-8'))\n"
         "    return [SimpleNamespace(**{k:v for k,v in item.items() if k!='severity'}, "
-        "severity=SimpleNamespace(value=item['severity'])) for item in values]\n",
+        "severity=SimpleNamespace(value=item['severity'])) for item in values]\n"
+        "def check(vrm_path, targets, rules_dir, vrchat_tier):\n"
+        "    invalid=vrm_path.read_text(encoding='utf-8').startswith('INVALID')\n"
+        "    enums=[ComplianceTarget(item) for item in targets]\n"
+        "    results={}\n"
+        "    for target in enums:\n"
+        "        violations=[]\n"
+        "        if invalid: violations.append(SimpleNamespace(rule_id='fixture.invalid', "
+        "severity=SimpleNamespace(value='ERROR'), field_path='humanoid.bones', "
+        "description='Required structure is missing.'))\n"
+        "        elif target is ComplianceTarget.VRCHAT: violations.append(SimpleNamespace("
+        "rule_id='vrchat.polycount', severity=SimpleNamespace(value='WARNING'), "
+        "field_path='mesh.polycount', description='Rule not evaluated in structural mode.'))\n"
+        "        results[target.value]=SimpleNamespace(passed=not invalid, violations=violations)\n"
+        "    return SimpleNamespace(passed=not invalid, targets_checked=enums, results=results)\n",
         encoding="utf-8",
     )
     rules_dir = root / "data" / "gate"
@@ -158,6 +187,8 @@ def test_real_discovery_validates_and_reports_failures_without_forge(tmp_path):
             "smidja_assets",
             "smidja_gate_rules",
             "smidja_render_views",
+            "smidja_gate_check",
+            "smidja_asset_probe",
         ]
         valid = json.loads(registry.dispatch("smidja_spec_validate", {"spec_path": "valid.yaml"}, scope=manager.scope_key))
         invalid = json.loads(registry.dispatch("smidja_spec_validate", {"spec_path": "invalid.yaml"}, scope=manager.scope_key))
@@ -200,6 +231,61 @@ def test_validation_rejects_escape_absolute_extra_and_oversized_inputs(tmp_path)
     finally:
         manager.unload()
     assert all("error" in item for item in rejected)
+
+
+def test_asset_probe_withholds_paths_and_resolves_active_profile_a_b_a(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home_a = get_hermes_home()
+    home_b = tmp_path / "home-b-probe"
+    engine_a = tmp_path / "smidja-probe-a"
+    engine_b = tmp_path / "smidja-probe-b"
+    specs_a = tmp_path / "specs-probe-a"
+    specs_b = tmp_path / "specs-probe-b"
+    _engine(engine_a)
+    _engine(engine_b)
+    specs_a.mkdir()
+    specs_b.mkdir()
+    (engine_b / "data" / "hoard" / "bases" / "sample_a.vrm").unlink()
+    _profile(home_a, engine_a, specs_a)
+    _profile(home_b, engine_b, specs_b)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        probes = []
+        for home in (home_a, home_b, home_a):
+            token = set_hermes_home_override(home)
+            try:
+                probes.append(
+                    json.loads(
+                        registry.dispatch(
+                            "smidja_asset_probe",
+                            {"asset_id": "vroid/sample_a"},
+                            scope=manager.scope_key,
+                        )
+                    )
+                )
+            finally:
+                reset_hermes_home_override(token)
+        rejected = json.loads(
+            registry.dispatch(
+                "smidja_asset_probe",
+                {"asset_id": "vroid/sample_a", "fetch": True},
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert [probe["available"] for probe in probes] == [True, False, True]
+    assert probes[0]["file_type"] == "vrm" and probes[0]["size_bytes"] > 0
+    assert all("path" not in probe or probe["path_withheld"] is True for probe in probes)
+    assert all(probe["asset_opened"] is False for probe in probes)
+    assert all(probe["asset_fetched"] is False for probe in probes)
+    assert all(probe["hoard_bootstrapped"] is False for probe in probes)
+    assert "error" in rejected
 
 
 def test_validation_resolves_active_profile_a_b_a(tmp_path):
@@ -280,6 +366,97 @@ def test_asset_discovery_filters_metadata_without_resolving_or_bootstrapping(tmp
     assert result["asset_fetched"] is False
     assert result["hoard_bootstrapped"] is False
     assert "error" in rejected
+
+
+def test_gate_check_is_bounded_honest_and_profile_scoped(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home_a = get_hermes_home()
+    home_b = tmp_path / "home-b-check"
+    engine_a = tmp_path / "smidja-check-a"
+    engine_b = tmp_path / "smidja-check-b"
+    specs_a = tmp_path / "specs-check-a"
+    specs_b = tmp_path / "specs-check-b"
+    artifacts_a = tmp_path / "artifacts-a"
+    artifacts_b = tmp_path / "artifacts-b"
+    _engine(engine_a)
+    _engine(engine_b)
+    specs_a.mkdir()
+    specs_b.mkdir()
+    artifacts_a.mkdir()
+    artifacts_b.mkdir()
+    (artifacts_a / "avatar.vrm").write_text("VALID A", encoding="utf-8")
+    (artifacts_b / "avatar.vrm").write_text("INVALID B", encoding="utf-8")
+    _profile(home_a, engine_a, specs_a, artifacts_a)
+    _profile(home_b, engine_b, specs_b, artifacts_b)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        reports = []
+        for home in (home_a, home_b, home_a):
+            token = set_hermes_home_override(home)
+            try:
+                reports.append(
+                    json.loads(
+                        registry.dispatch(
+                            "smidja_gate_check",
+                            {"artifact_path": "avatar.vrm", "targets": ["VRCHAT"]},
+                            scope=manager.scope_key,
+                        )
+                    )
+                )
+            finally:
+                reset_hermes_home_override(token)
+    finally:
+        manager.unload()
+
+    assert [report["official_gate_passed"] for report in reports] == [True, False, True]
+    assert reports[0]["unevaluated_rule_ids"] == ["vrchat.polycount"]
+    assert reports[1]["results"]["VRCHAT"]["violations"][0]["severity"] == "ERROR"
+    assert all(report["certification_complete"] is False for report in reports)
+    assert all(report["blender_launched"] is False for report in reports)
+    assert all(report["output_created"] is False for report in reports)
+
+
+def test_gate_check_rejects_unbounded_or_escaping_artifacts(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    engine = tmp_path / "smidja-check"
+    specs = tmp_path / "specs-check"
+    artifacts = tmp_path / "artifacts"
+    _engine(engine)
+    specs.mkdir()
+    artifacts.mkdir()
+    outside = tmp_path / "outside.vrm"
+    outside.write_text("outside", encoding="utf-8")
+    huge = artifacts / "huge.vrm"
+    with huge.open("wb") as stream:
+        stream.seek(128 * 1024 * 1024)
+        stream.write(b"x")
+    _profile(get_hermes_home(), engine, specs, artifacts)
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        rejected = [
+            json.loads(
+                registry.dispatch("smidja_gate_check", args, scope=manager.scope_key)
+            )
+            for args in (
+                {"artifact_path": "../outside.vrm"},
+                {"artifact_path": str(outside.resolve())},
+                {"artifact_path": "huge.vrm"},
+                {"artifact_path": "avatar.glb"},
+                {"artifact_path": "missing.vrm", "write": True},
+                {"artifact_path": "missing.vrm", "targets": [["VRCHAT"]]},
+            )
+        ]
+    finally:
+        manager.unload()
+
+    assert all("error" in item for item in rejected)
 
 
 def test_render_view_discovery_is_non_rendering_and_profile_scoped(tmp_path):

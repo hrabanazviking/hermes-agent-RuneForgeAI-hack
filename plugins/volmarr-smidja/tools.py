@@ -87,6 +87,50 @@ SMIDJA_RENDER_VIEWS_SCHEMA = {
     "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
 }
 
+SMIDJA_GATE_CHECK_SCHEMA = {
+    "name": "smidja_gate_check",
+    "description": (
+        "Run Seidr-Smidja's bounded, read-only Gate header checks on one VRM artifact. "
+        "The result exposes structural findings and does not claim full geometry certification."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "artifact_path": {"type": "string", "minLength": 1, "maxLength": 240},
+            "targets": {
+                "type": "array",
+                "items": {"type": "string", "enum": ["VRCHAT", "VTUBE_STUDIO"]},
+                "minItems": 1,
+                "maxItems": 2,
+            },
+            "vrchat_tier": {
+                "type": "string",
+                "enum": ["Excellent", "Good", "Medium", "Poor"],
+            },
+        },
+        "required": ["artifact_path"],
+        "additionalProperties": False,
+    },
+}
+
+SMIDJA_ASSET_PROBE_SCHEMA = {
+    "name": "smidja_asset_probe",
+    "description": (
+        "Probe whether one Seidr-Smidja Hoard asset resolves to an existing local file. "
+        "The read-only result withholds its filesystem path and never fetches or bootstraps."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "asset_id": {"type": "string", "minLength": 1, "maxLength": 200}
+        },
+        "required": ["asset_id"],
+        "additionalProperties": False,
+    },
+}
+
+_MAX_ARTIFACT_BYTES = 128 * 1024 * 1024
+
 
 def _root(value: Any, marker: str | None = None) -> Path | None:
     if not isinstance(value, str) or not value.strip() or "\x00" in value:
@@ -402,6 +446,196 @@ def build_render_views_handler(ctx):
     return handle
 
 
+def _gate_report(payload: Any) -> dict[str, Any] | None:
+    if not isinstance(payload, dict) or set(payload) != {"passed", "targets", "results"}:
+        return None
+    targets = payload["targets"]
+    results = payload["results"]
+    if (
+        not isinstance(payload["passed"], bool)
+        or not isinstance(targets, list)
+        or not 1 <= len(targets) <= 2
+        or any(
+            not isinstance(target, str)
+            or target not in {"VRCHAT", "VTUBE_STUDIO"}
+            for target in targets
+        )
+        or len(set(targets)) != len(targets)
+        or not isinstance(results, dict)
+        or set(results) != set(targets)
+    ):
+        return None
+    for target, result in results.items():
+        if not isinstance(result, dict) or set(result) != {"passed", "violations"}:
+            return None
+        violations = result["violations"]
+        if (
+            not isinstance(result["passed"], bool)
+            or not isinstance(violations, list)
+            or len(violations) > 100
+        ):
+            return None
+        for violation in violations:
+            if not isinstance(violation, dict) or set(violation) != {
+                "rule_id",
+                "severity",
+                "field_path",
+                "description",
+            }:
+                return None
+            if any(
+                not isinstance(violation[key], str) or len(violation[key]) > 1000
+                for key in violation
+            ) or violation["severity"] not in {"ERROR", "WARNING"}:
+                return None
+        if target not in {"VRCHAT", "VTUBE_STUDIO"}:
+            return None
+    return payload
+
+
+def build_gate_check_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if set(args) - {"artifact_path", "targets", "vrchat_tier"} or "artifact_path" not in args:
+            return tool_error("artifact_path is required; only targets and vrchat_tier are optional")
+        engine = _root(
+            ctx.get_config("engine_root", ""), marker="src/seidr_smidja/gate/gate.py"
+        )
+        artifact_root = _root(ctx.get_config("artifact_root", ""))
+        python = _python(ctx.get_config("python_path", "") or sys.executable)
+        if engine is None or artifact_root is None or python is None or not _RUNNER.is_file():
+            return tool_error("Configure volmarr-smidja engine_root, artifact_root, and Python.")
+        value = args.get("artifact_path")
+        if not isinstance(value, str) or not value.strip() or len(value) > 240 or "\x00" in value:
+            return tool_error("artifact_path must be a bounded relative VRM path")
+        relative = Path(value.strip())
+        if relative.is_absolute() or relative.suffix.casefold() != ".vrm":
+            return tool_error("artifact_path must be a bounded relative VRM path")
+        try:
+            artifact = (artifact_root / relative).resolve()
+            artifact.relative_to(artifact_root)
+            size = artifact.stat().st_size
+        except (OSError, ValueError):
+            return tool_error("artifact_path must remain within artifact_root")
+        if not artifact.is_file() or not 1 <= size <= _MAX_ARTIFACT_BYTES:
+            return tool_error("artifact_path must name a VRM file from 1 byte to 128 MiB")
+        targets = args.get("targets", ["VRCHAT", "VTUBE_STUDIO"])
+        if (
+            not isinstance(targets, list)
+            or not 1 <= len(targets) <= 2
+            or any(
+                not isinstance(target, str)
+                or target not in {"VRCHAT", "VTUBE_STUDIO"}
+                for target in targets
+            )
+            or len(set(targets)) != len(targets)
+        ):
+            return tool_error("targets must contain one or both supported targets without duplicates")
+        tier = args.get("vrchat_tier", "Good")
+        if tier not in {"Excellent", "Good", "Medium", "Poor"}:
+            return tool_error("vrchat_tier must be Excellent, Good, Medium, or Poor")
+        payload = _run(
+            ctx,
+            python,
+            ["gate-check", str(engine), str(artifact), json.dumps(targets), tier],
+        )
+        report = _gate_report(payload)
+        if report is None:
+            return tool_error("Seidr-Smidja Gate check could not complete")
+        unevaluated = [
+            violation["rule_id"]
+            for result in report["results"].values()
+            for violation in result["violations"]
+            if "not evaluated" in violation["description"].casefold()
+        ]
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "smidja_gate_check",
+                "artifact_path": relative.as_posix(),
+                "artifact_size_bytes": size,
+                "vrchat_tier": tier,
+                "official_gate_passed": report["passed"],
+                "targets_checked": report["targets"],
+                "results": report["results"],
+                "compliance_scope": "official_gate_structural_header",
+                "certification_complete": False,
+                "unevaluated_rule_ids": list(dict.fromkeys(unevaluated)),
+                "blender_launched": False,
+                "output_created": False,
+                "source": {
+                    "engine": "Seidr-Smidja",
+                    "api": "gate.check",
+                    "license_metadata": "CONFLICT: root Apache-2.0; pyproject MIT",
+                },
+            }
+        )
+
+    return handle
+
+
+def build_asset_probe_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if set(args) != {"asset_id"}:
+            return tool_error("asset_id is required")
+        asset_id = args.get("asset_id")
+        if (
+            not isinstance(asset_id, str)
+            or not asset_id.strip()
+            or len(asset_id) > 200
+            or "\x00" in asset_id
+        ):
+            return tool_error("asset_id must be a bounded non-empty string")
+        engine = _root(
+            ctx.get_config("engine_root", ""), marker="src/seidr_smidja/hoard/local.py"
+        )
+        python = _python(ctx.get_config("python_path", "") or sys.executable)
+        if engine is None or python is None or not _RUNNER.is_file():
+            return tool_error("Configure volmarr-smidja engine_root and Python.")
+        clean_id = asset_id.strip()
+        payload = _run(ctx, python, ["asset-probe", str(engine), clean_id])
+        if (
+            not isinstance(payload, dict)
+            or set(payload) != {"available", "file_type", "size_bytes"}
+            or not isinstance(payload["available"], bool)
+            or (
+                payload["file_type"] is not None
+                and (
+                    not isinstance(payload["file_type"], str)
+                    or len(payload["file_type"]) > 20
+                )
+            )
+            or (
+                payload["size_bytes"] is not None
+                and (
+                    not isinstance(payload["size_bytes"], int)
+                    or isinstance(payload["size_bytes"], bool)
+                    or payload["size_bytes"] < 0
+                )
+            )
+            or (payload["available"] and payload["size_bytes"] is None)
+        ):
+            return tool_error("Seidr-Smidja Hoard resolution probe could not complete")
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "smidja_asset_probe",
+                "asset_id": clean_id,
+                **payload,
+                "path_withheld": True,
+                "asset_opened": False,
+                "asset_fetched": False,
+                "hoard_bootstrapped": False,
+                "source": {
+                    "engine": "Seidr-Smidja",
+                    "api": "LocalHoardAdapter.resolve",
+                    "license_metadata": "CONFLICT: root Apache-2.0; pyproject MIT",
+                },
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     ctx.register_tool(
         name="smidja_spec_validate",
@@ -434,4 +668,20 @@ def register_tools(ctx) -> None:
         handler=build_render_views_handler(ctx),
         description=SMIDJA_RENDER_VIEWS_SCHEMA["description"],
         emoji="👁️",
+    )
+    ctx.register_tool(
+        name="smidja_gate_check",
+        toolset="volmarr_smidja",
+        schema=SMIDJA_GATE_CHECK_SCHEMA,
+        handler=build_gate_check_handler(ctx),
+        description=SMIDJA_GATE_CHECK_SCHEMA["description"],
+        emoji="🛡️",
+    )
+    ctx.register_tool(
+        name="smidja_asset_probe",
+        toolset="volmarr_smidja",
+        schema=SMIDJA_ASSET_PROBE_SCHEMA,
+        handler=build_asset_probe_handler(ctx),
+        description=SMIDJA_ASSET_PROBE_SCHEMA["description"],
+        emoji="🔎",
     )
