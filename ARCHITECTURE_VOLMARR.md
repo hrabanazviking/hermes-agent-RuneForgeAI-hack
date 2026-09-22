@@ -433,6 +433,22 @@ resume. Successful durable pulses emit only sequence/source/resume metadata to V
 `runeforge.entity.heartbeat` contract; entity IDs, session IDs, prompts, and state content are
 excluded. Corrupt and wrong-owner continuity files are never replaced.
 
+### Slice 26: Hermes-Cron Background Routine
+
+`routines.py` installs one foundational frequent-continuity job into Hermes' existing profile-local
+cron store. `hermes volmarr routines install` is explicit, idempotent, and paused by default;
+`--activate` resumes it only after the operator asks. Installation writes a small profile-local
+Python launcher beneath `scripts/` and registers a `no_agent` job on a ten-minute interval. The
+launcher calls back through the plugin CLI, stays silent on success, and lets Hermes cron retain
+all cadence, claiming, retry, pause/resume, gateway-liveness, and execution-history authority.
+
+Each frequent run records the continuity pulse and counts planned, active, and blocked durable
+goals without reading their titles or descriptions. Verðandi receives only routine kind, pulse
+sequence, and aggregate counts. No LLM is invoked, no provider is pinned, no new scheduler thread
+exists, and no job is created merely by enabling or starting the plugin. Status detects missing,
+ambiguous, active, paused, and drifted definitions; reinstalling repairs drift without changing an
+existing job's activation state unless `--activate` is explicit.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
