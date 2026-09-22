@@ -1882,7 +1882,10 @@ complete, and archive this state without mining conversation or deleting continu
 receipt is now implemented in `entity/continuity.json`: explicit tool or CLI pulses advance a durable
 sequence, report freshness/staleness, recognize a post-stale resume, and emit content-free
 Verðandi metadata. It deliberately starts no scheduler; Hermes cron remains the cadence owner for
-the next slice. Background routines and sleep/consolidation remain later ordered slices.
+the next slice. The first background routine is now implemented as an explicit, idempotent,
+paused-by-default Hermes cron installation. Its no-agent ten-minute run records the pulse and
+publishes only aggregate pending-goal counts; it adds no scheduler or model call. Sleep and
+consolidation remain the final ordered lifecycle slice.
 
 ## Milestone 7: Secrets and Security
 

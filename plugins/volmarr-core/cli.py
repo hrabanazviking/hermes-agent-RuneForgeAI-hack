@@ -16,6 +16,7 @@ from .memory_fabric import probe_bifrost
 from .mempalace import probe_mempalace
 from .openviking import probe_openviking
 from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
+from .routines import RoutineError, RoutineManager, RoutineService
 from .sessiondb import probe_sessiondb
 from .telemetry import CognitionTelemetry
 from .wyrd import probe_wyrd
@@ -136,6 +137,28 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         default="manual",
     )
     heartbeat_pulse.add_argument("--json", action="store_true", dest="json_output")
+    routines = subcommands.add_parser(
+        "routines",
+        help="Manage entity routines backed by Hermes cron",
+    )
+    routines_subcommands = routines.add_subparsers(dest="routines_action")
+    routines_status = routines_subcommands.add_parser(
+        "status",
+        help="Inspect the installed routine definition read-only",
+    )
+    routines_status.add_argument("--json", action="store_true", dest="json_output")
+    routines_install = routines_subcommands.add_parser(
+        "install",
+        help="Idempotently install the routine paused unless --activate is supplied",
+    )
+    routines_install.add_argument("--activate", action="store_true")
+    routines_install.add_argument("--json", action="store_true", dest="json_output")
+    routines_run = routines_subcommands.add_parser(
+        "run",
+        help="Run one deterministic routine (used by the installed cron script)",
+    )
+    routines_run.add_argument("--kind", choices=("frequent",), required=True)
+    routines_run.add_argument("--json", action="store_true", dest="json_output")
 
 
 def _load_json_request(source: str, *, max_bytes: int) -> dict:
@@ -272,6 +295,37 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             print("Usage: hermes volmarr heartbeat {status|pulse} [options]")
             return 2
         label = "Entity heartbeat"
+    elif action == "routines":
+        routines_action = getattr(args, "routines_action", None)
+        try:
+            if routines_action == "status":
+                report = RoutineManager(ctx).status()
+                exit_code = 0 if report.status.startswith("installed_") else 1
+            elif routines_action == "install":
+                report = RoutineManager(ctx).install(
+                    activate=bool(getattr(args, "activate", False))
+                )
+                exit_code = 0
+            elif routines_action == "run":
+                report = RoutineService(ctx).run_frequent()
+                exit_code = 0
+            else:
+                print("Usage: hermes volmarr routines {status|install|run} [options]")
+                return 2
+        except (IdentityError, HeartbeatError, RoutineError, OSError) as exc:
+            print(
+                json.dumps(
+                    {"error": "routine_failed", "detail": str(exc)},
+                    sort_keys=True,
+                ),
+                file=sys.stderr,
+            )
+            return 1
+        if getattr(args, "json_output", False):
+            print(json.dumps(report.as_dict(), sort_keys=True))
+        else:
+            print(f"Entity routines: {getattr(report, 'status', 'completed')}")
+        return exit_code
     else:
         print("Usage: hermes volmarr {health|cognition|memory|world|identity} ...")
         return 2
