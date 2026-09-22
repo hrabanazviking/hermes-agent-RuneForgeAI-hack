@@ -130,7 +130,9 @@ export const en: Translations = {
       managedUnavailable: 'Managed apps are not available for this account yet.',
       writeFailed: 'That change was not saved.',
       refreshFailed: 'The tool list was not refreshed.',
-      disconnectNoAccount: 'Hermes has no account to disconnect here. Refresh the page and try again.'
+      disconnectNoAccount: 'Hermes has no account to disconnect here. Refresh the page and try again.',
+      disconnectRefused:
+        'Nous could not remove this sign-in right now. Turn the app off with the switch instead, or try again later.'
     },
 
     add: {
@@ -176,7 +178,8 @@ export const en: Translations = {
       removeServerTitle: (name: string) => `Remove ${name}?`,
       removeServerBody: 'The entry leaves mcp.json on this computer. Nothing else is deleted.',
       appSwitch: (name: string) => `Hermes can use ${name}`,
-      waysTitle: (name: string) => `How Hermes reaches ${name}`,
+      waysTitle: (name: string) => `Where ${name} runs`,
+      wayNotConnected: (name: string) => `Not connected yet. Sign in to ${name} in your browser.`,
       wayHosted: 'Managed',
       bothOn: (name: string) => `Both are on, so Hermes sees every ${name} tool twice.`,
       turnOffLocal: 'Turn off the local server',
@@ -663,6 +666,7 @@ export const en: Translations = {
       'view.toggleStatusbar': 'Toggle status bar',
       'view.toggleTabStrip': 'Toggle tabs',
       'view.toggleProfileRail': 'Toggle profile rail',
+      'view.toggleSimpleMode': 'Toggle Simple mode',
       'view.showFiles': 'Show file browser',
       'view.showBrowser': 'Open browser',
       'view.toggleHud': 'Toggle HUD mode',
@@ -846,6 +850,14 @@ export const en: Translations = {
           'This entry was human-reviewed at its pinned commit. You can still inspect the exact code below.',
         restartToApply: 'Restart the gateway for the plugin to take effect.',
         restartNow: 'Restart gateway',
+        connectServers: (name, n) =>
+          n === 1
+            ? `${name} installed. Its MCP server is not connected yet.`
+            : `${name} installed. Its ${n} MCP servers are not connected yet.`,
+        connectNow: 'Connect now',
+        connectSub: 'Open chats re-send their context',
+        connectFailed: 'Could not connect the plugin’s MCP servers.',
+        liveNow: name => `${name} installed and active.`,
         missingEnvAction: 'Set it up',
         alreadyInstalled: (name: string) => `${name} is already installed.`,
         desktopTarget: "Installs into this app's local desktop-plugins folder",
@@ -4224,6 +4236,20 @@ export const en: Translations = {
       commentTitle: n => `Comment ${n}`,
       saveComment: 'Save',
       cancelComment: 'Cancel comment'
+    }
+  },
+
+  interfaceMode: {
+    title: 'Interface mode',
+    hint: 'Changes what is shown, not what Hermes can do.',
+    sessionNote: 'Set by Simple mode. A change here lasts for this session; switch to Advanced to make it yours.',
+    simple: {
+      label: 'Simple',
+      description: 'For talking to Hermes. Sidebar and chat; no terminal, file or diff panes.'
+    },
+    advanced: {
+      label: 'Advanced',
+      description: 'For developers. Terminal, files, diffs, statusbar and layouts, as you set them.'
     }
   },
 
