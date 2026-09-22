@@ -26,7 +26,11 @@ def test_real_discovery_roll_is_replayable_and_exposes_arithmetic():
     try:
         loaded = manager._plugins["volmarr-rpg"]
         assert loaded.enabled
-        assert set(loaded.tools_registered) == {"dice_roll", "rpg_skill_check"}
+        assert set(loaded.tools_registered) == {
+            "dice_roll",
+            "rpg_skill_check",
+            "rpg_oracle",
+        }
         args = {"count": 4, "sides": 6, "modifier": 3, "seed": 0}
         first = json.loads(registry.dispatch("dice_roll", args, scope=manager.scope_key))
         second = json.loads(registry.dispatch("dice_roll", args, scope=manager.scope_key))
@@ -114,3 +118,84 @@ def test_skill_check_applies_advantage_disadvantage_and_dc_arithmetic():
             result["total"] >= result["difficulty_class"]
         )
         assert result["natural_d20_automatic"] is False
+
+
+def test_oracle_is_replayable_and_separates_likelihood_from_chaos():
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    _enable_plugin()
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        baseline_args = {
+            "likelihood": "likely",
+            "chaos_factor": 1,
+            "seed": 7,
+        }
+        first = json.loads(
+            registry.dispatch("rpg_oracle", baseline_args, scope=manager.scope_key)
+        )
+        replay = json.loads(
+            registry.dispatch("rpg_oracle", baseline_args, scope=manager.scope_key)
+        )
+        high_chaos = json.loads(
+            registry.dispatch(
+                "rpg_oracle",
+                {**baseline_args, "chaos_factor": 9},
+                scope=manager.scope_key,
+            )
+        )
+        impossible = json.loads(
+            registry.dispatch(
+                "rpg_oracle",
+                {**baseline_args, "likelihood": "impossible"},
+                scope=manager.scope_key,
+            )
+        )
+        certain = json.loads(
+            registry.dispatch(
+                "rpg_oracle",
+                {**baseline_args, "likelihood": "certain"},
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert first == replay
+    assert 1 <= first["roll"] <= 100
+    assert first["yes"] is (first["roll"] <= first["yes_chance_percent"])
+    assert high_chaos["roll"] == first["roll"]
+    assert high_chaos["yes_chance_percent"] == first["yes_chance_percent"]
+    assert high_chaos["exceptional_band_percent"] > first["exceptional_band_percent"]
+    assert impossible["yes"] is False
+    assert certain["yes"] is True
+
+
+def test_oracle_rejects_boolean_chaos_and_narrative_fields():
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    _enable_plugin()
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        invalid = []
+        for args in (
+            {"likelihood": "likely", "chaos_factor": True, "seed": 1},
+            {"likelihood": "unknown", "chaos_factor": 5, "seed": 1},
+            {
+                "likelihood": "likely",
+                "chaos_factor": 5,
+                "seed": 1,
+                "question": "Will the hidden door open?",
+            },
+        ):
+            invalid.append(
+                json.loads(registry.dispatch("rpg_oracle", args, scope=manager.scope_key))
+            )
+    finally:
+        manager.unload()
+
+    assert all("error" in result for result in invalid)

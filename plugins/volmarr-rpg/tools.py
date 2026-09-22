@@ -9,6 +9,17 @@ from tools.registry import tool_error, tool_result
 
 
 _MAX_SEED = 2**31 - 1
+_ORACLE_YES_CHANCES = {
+    "impossible": 0,
+    "no_way": 5,
+    "very_unlikely": 15,
+    "unlikely": 30,
+    "fifty_fifty": 50,
+    "likely": 70,
+    "very_likely": 85,
+    "near_certain": 95,
+    "certain": 100,
+}
 
 DICE_ROLL_SCHEMA = {
     "name": "dice_roll",
@@ -48,6 +59,27 @@ RPG_SKILL_CHECK_SCHEMA = {
             "seed": {"type": "integer", "minimum": 0, "maximum": _MAX_SEED},
         },
         "required": ["modifier", "difficulty_class", "seed"],
+        "additionalProperties": False,
+    },
+}
+
+RPG_ORACLE_SCHEMA = {
+    "name": "rpg_oracle",
+    "description": (
+        "Resolve a replayable binary RPG oracle from an explicit likelihood, chaos "
+        "factor, and seed. Chaos widens only the exceptional-result band."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "likelihood": {
+                "type": "string",
+                "enum": list(_ORACLE_YES_CHANCES),
+            },
+            "chaos_factor": {"type": "integer", "minimum": 1, "maximum": 9},
+            "seed": {"type": "integer", "minimum": 0, "maximum": _MAX_SEED},
+        },
+        "required": ["likelihood", "chaos_factor", "seed"],
         "additionalProperties": False,
     },
 }
@@ -148,6 +180,51 @@ def build_skill_check_handler():
     return handle
 
 
+def build_oracle_handler():
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        required = {"likelihood", "chaos_factor", "seed"}
+        if set(args) != required:
+            return tool_error("likelihood, chaos_factor, and seed are required")
+        likelihood = args.get("likelihood")
+        chaos_factor = _integer(args.get("chaos_factor"), minimum=1, maximum=9)
+        seed = _integer(args.get("seed"), minimum=0, maximum=_MAX_SEED)
+        if likelihood not in _ORACLE_YES_CHANCES:
+            return tool_error(
+                "likelihood must be one of: " + ", ".join(_ORACLE_YES_CHANCES)
+            )
+        if chaos_factor is None:
+            return tool_error("chaos_factor must be an integer from 1 to 9")
+        if seed is None:
+            return tool_error(f"seed must be an integer from 0 to {_MAX_SEED}")
+
+        yes_chance = _ORACLE_YES_CHANCES[likelihood]
+        roll = random.Random(seed).randint(1, 100)
+        yes = roll <= yes_chance
+        exceptional_band = chaos_factor
+        if yes and roll <= exceptional_band:
+            outcome = "exceptional_yes"
+        elif not yes and roll > 100 - exceptional_band:
+            outcome = "exceptional_no"
+        else:
+            outcome = "yes" if yes else "no"
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "rpg_oracle",
+                "seed": seed,
+                "likelihood": likelihood,
+                "yes_chance_percent": yes_chance,
+                "chaos_factor": chaos_factor,
+                "exceptional_band_percent": exceptional_band,
+                "roll": roll,
+                "yes": yes,
+                "outcome": outcome,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         ("dice_roll", DICE_ROLL_SCHEMA, build_dice_roll_handler(), "🎲"),
@@ -157,6 +234,7 @@ def register_tools(ctx) -> None:
             build_skill_check_handler(),
             "🛡️",
         ),
+        ("rpg_oracle", RPG_ORACLE_SCHEMA, build_oracle_handler(), "🔮"),
     ):
         ctx.register_tool(
             name=name,

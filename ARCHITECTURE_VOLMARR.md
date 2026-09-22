@@ -767,6 +767,18 @@ the modified total, unlike attack-roll critical rules. It accepts no character s
 name, skill label, proficiency state, or narrative outcome; callers calculate one bounded modifier
 and the GM retains authority over consequences.
 
+### Slice 48: Replayable Binary Oracle
+
+`rpg_oracle` is a small original percentile mechanic, not a copy of a Mythic GME table or a
+NorseSagaEngine subsystem. A named likelihood maps to a disclosed 0–100 yes threshold, while a
+bounded chaos factor controls only the size of the exceptional-result bands at the two extremes.
+This keeps probability and volatility separate and makes every outcome auditable.
+
+The tool requires an explicit seed and returns the percentile roll, yes threshold, exceptional
+band, Boolean answer, and normalized outcome. It accepts no question text, campaign state,
+narrative consequence, hidden entropy, or model dependency. The caller supplies meaning; the
+plugin supplies only finite replayable mechanics.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

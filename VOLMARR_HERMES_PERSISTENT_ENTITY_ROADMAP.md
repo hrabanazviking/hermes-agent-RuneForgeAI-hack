@@ -2041,7 +2041,12 @@ state, narration, characters, and rules data remain outside the plugin. Ability 
 Slice 47 adds `rpg_skill_check`, grounded in official SRD fork commit
 `2e62e0413061c2443e21369cdc074c7a7356a857`: one d20 plus a total modifier compared against a DC,
 with explicit normal/advantage/disadvantage selection. Natural 1 and 20 are truthfully not treated
-as automatic outcomes for ordinary ability checks. Oracle mechanics are next.
+as automatic outcomes for ordinary ability checks.
+
+Slice 48 adds `rpg_oracle`, an original replayable percentile oracle with disclosed likelihood
+thresholds. Chaos changes only the exceptional-result band, not the yes probability, and the tool
+accepts no question or campaign state. No Mythic GME table or NorseSagaEngine source is copied.
+Reusable random-table selection is next.
 
 ## Milestone 9: Embodiment
 
