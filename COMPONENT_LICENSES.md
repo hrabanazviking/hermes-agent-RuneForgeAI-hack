@@ -15,6 +15,7 @@ It does not replace the original license text.
 | MemPalace | Official `MemPalace/mempalace` v3.10.0 at `22fd87f09c19d5ffb2d6966486483353937931c0`; mirrored by `hrabanazviking/mempalace` at `ff1bdf03407bc5d6c571fa85f8c621d7177de616` | Python package identity and read-only Chroma SQLite contract integration; no MemPalace source copied | MIT | Copyright 2026 MemPalace Contributors; MemPalace remains an external package |
 | OpenViking | Official `volcengine/OpenViking` v0.4.21 at `3fca2577520f00b7f580d85d4ac6ae42bb9ba6f1` | Anonymous loopback `/health` protocol attestation; existing Hermes provider reused and no OpenViking source copied by this fork slice | AGPL-3.0 | Copyright belongs to OpenViking contributors; OpenViking remains an external service/package |
 | WYRD Protocol | Official `hrabanazviking/WYRD-Protocol-World-Yielding-Real-time-Data-AI-world-model` v1.0.0 at `9884ce8a9e683dc20f372a91eb66ba5b02561300` | Anonymous loopback `/health` protocol compatibility probe; no WYRD source copied | CC BY 4.0 | Created by Volmarr Wyrd / RuneForgeAI; WYRD remains an external world-model service/package |
+| Kista | Official `hrabanazviking/kista` v2.0.0 at `ce6313cc392589abd43a5fcf614e0e272663961f` | Read-only `kista get <service>` JSON protocol integration through the Hermes Secret Source plugin API; no Kista source copied | MIT | Authored by Runa Gridweaver; Kista remains an external encrypted-vault CLI |
 
 ## Import Rule
 

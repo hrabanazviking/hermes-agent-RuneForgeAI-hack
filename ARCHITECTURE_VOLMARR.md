@@ -466,6 +466,42 @@ idempotent, profile-local, and paused unless `--activate` is explicit. Restart t
 identity, relationship and goal ledgers, heartbeat, and consolidation sequence resume under the
 same owner, while A→B→A tests prove profile isolation.
 
+## Milestone 7: Secrets and Security
+
+### Slice 28: Kista Secret Source
+
+`kista-secret-source` attaches the official Kista 2.0 CLI through Hermes' existing
+`SecretSource` contract. It is a separate, opt-in general plugin because credential acquisition
+is an integration boundary, not entity-domain policy and not a reason to modify Hermes core. The
+source is mapped and read-only: each configured environment variable names one explicit
+`kista://service/field` reference, while Hermes retains ownership of precedence, provenance,
+profile secret scope, process-environment application, and startup refresh.
+
+The adapter invokes `kista get -- <service>` without a shell or interactive stdin. Its child
+receives only the secret-runner baseline plus `KISTA_DIR` and `PYTHONUTF8`; it never inherits the
+post-dotenv credential environment. `KISTA_DIR` must resolve beneath the active Hermes profile and
+is recomputed for every fetch, so one gateway process cannot reuse another profile's vault. Entry
+JSON is bounded, top-level fields must resolve to non-empty strings, repeated fields from one entry
+share one CLI read, and CLI output is never copied into errors, warnings, logs, tools, prompts, or
+events. The plugin registers no tool or hook, so raw-secret retrieval is not model-callable.
+
+Configuration lives under `secrets.kista` in `config.yaml`:
+
+```yaml
+plugins:
+  enabled: [kista-secret-source]
+secrets:
+  kista:
+    enabled: true
+    vault_dir: credentials
+    env:
+      OPENROUTER_API_KEY: kista://openrouter/key
+```
+
+The operator may pin `binary_path` to an installed Kista executable or the official
+`scripts/credstore.py` during development. Existing environment values win by default; an explicit
+`override_existing: true` opts into replacement through the normal Hermes orchestrator.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
