@@ -888,6 +888,18 @@ Therefore the adapter reports `inspection_scope: metadata_only` and
 `compliance_performed: false` instead of presenting file metadata as certification. It can expose
 real official checks later without changing this truth boundary.
 
+### Slice 58: Read-Only Seiðr-Smiðja Loom Validation
+
+The separate opt-in `volmarr-smidja` plugin begins the higher-level avatar forge boundary with
+`smidja_spec_validate`. It calls the official public `loom.load_and_validate` API at clean current
+`development` commit `482c8f0032b28c4ceb323478e7854adae3715f72`, returning a bounded summary or
+field/reason failures without received values. Paths remain beneath an active-profile spec root.
+
+The subprocess has closed stdin, scrubbed credentials, disabled bytecode writes, and finite file,
+time, and output bounds. It dispatches no forge, Blender, REST, MCP, or Brúarhönd control. The
+upstream root `LICENSE` says Apache-2.0 while `pyproject.toml` declares MIT; the adapter copies no
+engine source and explicitly reports this unresolved metadata conflict rather than choosing one.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
