@@ -30,6 +30,7 @@ def test_real_discovery_roll_is_replayable_and_exposes_arithmetic():
             "dice_roll",
             "rpg_skill_check",
             "rpg_oracle",
+            "rpg_random_table",
         }
         args = {"count": 4, "sides": 6, "modifier": 3, "seed": 0}
         first = json.loads(registry.dispatch("dice_roll", args, scope=manager.scope_key))
@@ -194,6 +195,61 @@ def test_oracle_rejects_boolean_chaos_and_narrative_fields():
         ):
             invalid.append(
                 json.loads(registry.dispatch("rpg_oracle", args, scope=manager.scope_key))
+            )
+    finally:
+        manager.unload()
+
+    assert all("error" in result for result in invalid)
+
+
+def test_random_table_replays_a_bounded_dn_selection():
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    _enable_plugin()
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        args = {
+            "entries": ["  distant bells  ", "broken bridge", "friendly raven"],
+            "seed": 23,
+        }
+        first = json.loads(
+            registry.dispatch("rpg_random_table", args, scope=manager.scope_key)
+        )
+        replay = json.loads(
+            registry.dispatch("rpg_random_table", args, scope=manager.scope_key)
+        )
+    finally:
+        manager.unload()
+
+    assert first == replay
+    assert first["notation"] == "1d3"
+    assert first["entry_count"] == 3
+    assert 1 <= first["roll"] <= first["entry_count"]
+    assert first["selected_entry"] == args["entries"][first["roll"] - 1].strip()
+
+
+def test_random_table_rejects_empty_oversized_and_extra_inputs():
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    _enable_plugin()
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        invalid = []
+        for args in (
+            {"entries": [], "seed": 1},
+            {"entries": ["   "], "seed": 1},
+            {"entries": ["x" * 201], "seed": 1},
+            {"entries": ["one"], "seed": True},
+            {"entries": ["one"], "seed": 1, "weights": [1]},
+        ):
+            invalid.append(
+                json.loads(
+                    registry.dispatch("rpg_random_table", args, scope=manager.scope_key)
+                )
             )
     finally:
         manager.unload()

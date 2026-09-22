@@ -2046,7 +2046,10 @@ as automatic outcomes for ordinary ability checks.
 Slice 48 adds `rpg_oracle`, an original replayable percentile oracle with disclosed likelihood
 thresholds. Chaos changes only the exceptional-result band, not the yes probability, and the tool
 accepts no question or campaign state. No Mythic GME table or NorseSagaEngine source is copied.
-Reusable random-table selection is next.
+
+Slice 49 adds `rpg_random_table`, selecting one short entry from a bounded caller-owned table with
+an explicit seed and auditable dN-style roll. The plugin bundles no setting or rules tables and
+persists none of the supplied content. SRD condition lookup is next.
 
 ## Milestone 9: Embodiment
 

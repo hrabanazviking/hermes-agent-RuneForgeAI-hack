@@ -84,6 +84,28 @@ RPG_ORACLE_SCHEMA = {
     },
 }
 
+RPG_RANDOM_TABLE_SCHEMA = {
+    "name": "rpg_random_table",
+    "description": (
+        "Select one entry from a caller-supplied bounded random table with an explicit "
+        "reproducibility seed. Returns the dN-style roll and selected entry."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "entries": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "items": {"type": "string", "minLength": 1, "maxLength": 200},
+            },
+            "seed": {"type": "integer", "minimum": 0, "maximum": _MAX_SEED},
+        },
+        "required": ["entries", "seed"],
+        "additionalProperties": False,
+    },
+}
+
 
 def _integer(value: Any, *, minimum: int, maximum: int) -> int | None:
     if isinstance(value, bool) or not isinstance(value, int):
@@ -225,6 +247,41 @@ def build_oracle_handler():
     return handle
 
 
+def build_random_table_handler():
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if set(args) != {"entries", "seed"}:
+            return tool_error("entries and seed are required")
+        entries = args.get("entries")
+        seed = _integer(args.get("seed"), minimum=0, maximum=_MAX_SEED)
+        if not isinstance(entries, list) or not 1 <= len(entries) <= 100:
+            return tool_error("entries must be an array containing 1 to 100 strings")
+        if any(
+            not isinstance(entry, str)
+            or not entry.strip()
+            or len(entry) > 200
+            for entry in entries
+        ):
+            return tool_error("each entry must be a non-blank string of at most 200 characters")
+        if seed is None:
+            return tool_error(f"seed must be an integer from 0 to {_MAX_SEED}")
+
+        normalized_entries = [entry.strip() for entry in entries]
+        roll = random.Random(seed).randint(1, len(normalized_entries))
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "rpg_random_table",
+                "seed": seed,
+                "notation": f"1d{len(normalized_entries)}",
+                "entry_count": len(normalized_entries),
+                "roll": roll,
+                "selected_entry": normalized_entries[roll - 1],
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         ("dice_roll", DICE_ROLL_SCHEMA, build_dice_roll_handler(), "🎲"),
@@ -235,6 +292,12 @@ def register_tools(ctx) -> None:
             "🛡️",
         ),
         ("rpg_oracle", RPG_ORACLE_SCHEMA, build_oracle_handler(), "🔮"),
+        (
+            "rpg_random_table",
+            RPG_RANDOM_TABLE_SCHEMA,
+            build_random_table_handler(),
+            "📜",
+        ),
     ):
         ctx.register_tool(
             name=name,

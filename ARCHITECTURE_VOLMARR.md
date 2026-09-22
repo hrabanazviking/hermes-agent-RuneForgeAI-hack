@@ -779,6 +779,17 @@ band, Boolean answer, and normalized outcome. It accepts no question text, campa
 narrative consequence, hidden entropy, or model dependency. The caller supplies meaning; the
 plugin supplies only finite replayable mechanics.
 
+### Slice 49: Caller-Owned Random Tables
+
+`rpg_random_table` selects one entry from a caller-supplied table of at most 100 short strings.
+It uses an explicit seed, reports a one-based dN-style roll, and returns the normalized selected
+entry. This creates a reusable random-table primitive without embedding copyrighted setting or
+rules content in Hermes.
+
+The table is ephemeral call input: the plugin does not name, persist, merge, weight, interpret, or
+narrate entries. Per-entry and table-size bounds keep the result finite, and strict field refusal
+prevents accidental expansion into campaign storage or a hidden table language.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
