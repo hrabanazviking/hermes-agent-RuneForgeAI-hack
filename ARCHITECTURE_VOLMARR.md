@@ -690,6 +690,106 @@ loads only RuneTarot's deterministic Golden Dawn data beside the deck and spread
 returns the structural evidence for Hermes cognition to interpret separately. Provider calls,
 questions, storage, telemetry, and prompt contributions remain outside the Tarot plugin.
 
+### Slice 42: Reproducible Seiðr Composition
+
+The separate, opt-in `volmarr-seidr` plugin begins Norse poetry with `seidr_compose`, backed by the
+official MIT-licensed Seiðr Engine at current `main` commit
+`a1999cd21bdac6c65791ff98c0f8125bff04cc69`. It exposes the engine's four meters, optional Nine
+Worlds vocabulary domain, one to four stanzas, explicit kenning control, and structured line-level
+syllable/alliteration metadata. No engine source or lexicon is copied into Hermes.
+
+Composition runs through the official `Lexicon`, `Skald`, and `PoemConfig` API in a bytecode-free,
+no-user-site child with closed stdin, minimal environment, static failures, and 64-KiB output cap.
+The adapter fixes `PYTHONHASHSEED=0` because the current engine selects from an unordered set of
+alliteration groups; without that process invariant, identical numeric seeds diverge across fresh
+interpreters. Numeric seed zero is rejected because the current `compose_poem` implementation
+treats it as falsy and enters an unseeded branch. The plugin accepts no free-form topic yet and
+makes no model call, state write, prompt contribution, or telemetry emission.
+
+### Slice 43: Canonical Seiðr Form Catalog
+
+`seidr_forms` reads the official engine's `FORMS` registry and returns each canonical meter's code
+key, Old Norse name, syllable range, and structural description. Registry aliases such as the
+alternate ASCII spelling of fornyrðislag are collapsed by comparing each entry's key with the
+form object's own canonical name, so Hermes does not publish duplicate forms or maintain a second
+catalog.
+
+The tool accepts no arguments and uses the same read-only, credential-free child boundary as
+composition. It adds no cache, persistence, or prompt text; changes in the external engine's
+canonical registry appear when the configured checkout changes.
+
+### Slice 44: Official Kenning Catalog
+
+`seidr_kennings` returns the configured engine's complete `Lexicon.kennings` collection, including
+each described base, poetic expression, component words, Nine Worlds domain, and the engine's own
+computed syllable count. The tool has no filters or pagination, so the compact authoritative
+catalog is read in full and no model can mistake a partial page for the vocabulary boundary.
+
+Hermes neither copies nor extends this lexicon. The catalog is resolved from the active profile's
+external checkout on every call through the same closed-stdin, bytecode-free child, without state,
+network, provider credentials, or prompt mutation.
+
+### Slice 45: Independent Seiðr Meter Validation
+
+`seidr_validate_meter` accepts one canonical form and one to eight bounded verse lines. Inside the
+isolated engine child, each line is tokenized into words, measured with the official approximate
+syllable counter, assigned the official first-word alliteration group, constructed as an official
+`Line`, and passed to the selected form's `validate_stanza` implementation. The response exposes
+the verdict and every computed metric rather than replacing the engine's result with prose.
+
+This validation is intentionally structural, matching the current engine's published rules and
+limitations; it is not a claim of philological correctness. Input is never persisted or sent to a
+model or network service, and the strict eight-line/200-character bounds keep argv and output
+finite.
+
+### Slice 46: Replayable Bounded Dice
+
+The separate, opt-in `volmarr-rpg` plugin begins reusable D&D/Norse Saga mechanics with
+`dice_roll`. It accepts a structured dice count, side count, optional flat modifier, and required
+seed rather than parsing an open-ended notation language. Count, sides, modifier, and seed are all
+bounded before the standard-library PRNG is constructed.
+
+The result includes every die, subtotal, modifier, total, and normalized notation, making the
+arithmetic auditable and the roll exactly replayable—including seed zero. The plugin owns no
+campaign, character, encounter, narration, rules corpus, memory, or prompt state and requires no
+external dependency.
+
+### Slice 47: SRD-Grounded Ability Checks
+
+`rpg_skill_check` implements the SRD ability-check rule as a replayable mechanic: roll one d20,
+add the supplied total modifier, and succeed when the total equals or exceeds the Difficulty Class.
+Normal, advantage, and disadvantage modes roll one or two d20s and keep the required result. The
+rule was verified against official fork commit `2e62e0413061c2443e21369cdc074c7a7356a857` without
+copying SRD text or data into the plugin.
+
+The tool deliberately reports `natural_d20_automatic: false`: ordinary ability checks resolve by
+the modified total, unlike attack-roll critical rules. It accepts no character sheet, ability
+name, skill label, proficiency state, or narrative outcome; callers calculate one bounded modifier
+and the GM retains authority over consequences.
+
+### Slice 48: Replayable Binary Oracle
+
+`rpg_oracle` is a small original percentile mechanic, not a copy of a Mythic GME table or a
+NorseSagaEngine subsystem. A named likelihood maps to a disclosed 0–100 yes threshold, while a
+bounded chaos factor controls only the size of the exceptional-result bands at the two extremes.
+This keeps probability and volatility separate and makes every outcome auditable.
+
+The tool requires an explicit seed and returns the percentile roll, yes threshold, exceptional
+band, Boolean answer, and normalized outcome. It accepts no question text, campaign state,
+narrative consequence, hidden entropy, or model dependency. The caller supplies meaning; the
+plugin supplies only finite replayable mechanics.
+
+### Slice 49: Caller-Owned Random Tables
+
+`rpg_random_table` selects one entry from a caller-supplied table of at most 100 short strings.
+It uses an explicit seed, reports a one-based dN-style roll, and returns the normalized selected
+entry. This creates a reusable random-table primitive without embedding copyrighted setting or
+rules content in Hermes.
+
+The table is ephemeral call input: the plugin does not name, persist, merge, weight, interpret, or
+narrate entries. Per-entry and table-size bounds keep the result finite, and strict field refusal
+prevents accidental expansion into campaign storage or a hidden table language.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

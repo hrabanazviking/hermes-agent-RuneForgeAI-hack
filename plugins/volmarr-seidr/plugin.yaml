@@ -1,0 +1,23 @@
+manifest_version: 2
+name: volmarr-seidr
+version: "0.4.0"
+description: "Local deterministic Old Norse poetry through the official Seiðr Engine."
+author: Volmarr Wyrd / RuneForgeAI
+homepage: https://github.com/hrabanazviking/seidr-engine
+tags:
+  - runeforgeai
+  - poetry
+  - local
+config_schema:
+  engine_root:
+    type: str
+    default: ""
+    description: "Absolute path to the official seidr-engine checkout."
+  python_path:
+    type: str
+    default: ""
+    description: "Python executable used to run the Seiðr Engine."
+  timeout_seconds:
+    type: float
+    default: 10
+    description: "Maximum composition runtime in seconds (clamped to 1-30)."

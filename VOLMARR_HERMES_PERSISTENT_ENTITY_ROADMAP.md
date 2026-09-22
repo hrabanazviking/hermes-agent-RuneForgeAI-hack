@@ -2008,6 +2008,49 @@ reimplementing their matrix or generating narrative advice.
 position correspondences, elemental balance, and dignity structure are available while all LLM
 interpretation remains in normal Hermes cognition. Norse poetry is the next personal tool family.
 
+Slice 42 begins Norse poetry with `seidr_compose` against official Seiðr Engine `main` commit
+`a1999cd21bdac6c65791ff98c0f8125bff04cc69`. It exposes the four official forms, optional Nine
+Worlds domain, bounded stanza count, kenning control, and structured metrical output without AI.
+The child pins Python's hash seed to make the engine's unordered alliteration-group selection
+replayable and rejects numeric seed zero because current upstream treats it as unseeded. Form
+catalog, kenning catalog, and independent meter validation remain open.
+
+Slice 43 adds `seidr_forms`, a read-only view of the official engine's canonical form registry with
+Old Norse names, syllable ranges, and structural descriptions. Alternate spelling aliases are
+collapsed according to the form objects' own canonical names. Kenning catalog and independent
+meter validation remain open.
+
+Slice 44 adds `seidr_kennings`, a complete read-only projection of the official Lexicon's bases,
+expressions, component words, domains, and computed syllable counts. No vocabulary is copied or
+extended in Hermes, and the catalog is deliberately unpaginated. Independent meter validation
+remains open.
+
+Slice 45 adds `seidr_validate_meter`, which converts bounded input lines into official `Line`
+objects using the engine's syllable counter and alliteration classifier before invoking the
+selected form's own stanza validator. Results expose the per-line evidence and are described as
+structural engine validation, not a broader claim of philological correctness.
+
+**Norse poetry is complete:** deterministic composition, canonical form discovery, complete
+kenning discovery, and independent structural meter validation now use the official Seiðr Engine.
+D&D / Norse Saga mechanics are the next personal tool family.
+
+Slice 46 begins reusable RPG mechanics with `dice_roll`: bounded structured dice, an optional flat
+modifier, and a required replay seed. Every die and arithmetic step is returned, while campaign
+state, narration, characters, and rules data remain outside the plugin. Ability checks are next.
+
+Slice 47 adds `rpg_skill_check`, grounded in official SRD fork commit
+`2e62e0413061c2443e21369cdc074c7a7356a857`: one d20 plus a total modifier compared against a DC,
+with explicit normal/advantage/disadvantage selection. Natural 1 and 20 are truthfully not treated
+as automatic outcomes for ordinary ability checks.
+
+Slice 48 adds `rpg_oracle`, an original replayable percentile oracle with disclosed likelihood
+thresholds. Chaos changes only the exceptional-result band, not the yes probability, and the tool
+accepts no question or campaign state. No Mythic GME table or NorseSagaEngine source is copied.
+
+Slice 49 adds `rpg_random_table`, selecting one short entry from a bounded caller-owned table with
+an explicit seed and auditable dN-style roll. The plugin bundles no setting or rules tables and
+persists none of the supplied content. SRD condition lookup is next.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
