@@ -921,6 +921,15 @@ This is diagnostics, not certification. No avatar is opened, no Gate check execu
 explicitly states that artifact inspection and compliance evaluation did not occur. Rule files are
 selected beneath the verified engine checkout, and call-time A→B→A coverage remains mandatory.
 
+### Slice 61: Read-Only Seiðr-Smiðja Oracle Eye View Discovery
+
+`smidja_render_views` exposes only `oracle_eye.list_standard_views`, preserving the official order
+and open-ended names. It accepts no paths or rendering options and explicitly reports that Blender
+was not launched and no images were created.
+
+The view catalog remains owned by the external engine and is resolved from the active profile at
+call time. This creates a safe planning surface without granting render or filesystem authority.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
