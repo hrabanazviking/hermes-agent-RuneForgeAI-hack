@@ -1901,6 +1901,23 @@ milestone's continuity condition.
 
 **Done when:** API keys can be used without being exposed to prompts or logs.
 
+**Progress:** Slice 28 attaches official Kista v2.0.0 through a separate, opt-in Hermes Secret
+Source plugin. Explicit `kista://service/field` bindings are resolved by the official CLI from a
+vault forced beneath the active profile, using a minimal child environment and no shell or stdin.
+The plugin has no model-callable tool, prompt contribution, event publisher, or direct environment
+write; Hermes' existing orchestrator remains the sole owner of application and provenance. CLI
+output is bounded and never echoed through failures. Contract tests cover real discovery,
+orchestrated application, malformed responses, reference and path validation, and A→B→A profile
+isolation. Milestone 7 remains open for cross-runtime redaction, canary-leak, and permission slices.
+
+Slice 29 closes the redaction item at the shared Hermes boundary. Any value that wins Secret Source
+precedence is placed into the existing bounded, memory-only exact-value redaction registry before
+environment application. The registry is keyed by normalized profile home, so arbitrary
+prefix-less Kista values are masked by the canonical model-egress and log redactor only for their
+owning profile. Values that were skipped are not registered, and no raw value, reference, or name is
+persisted by the registry. A→B→A tests prove both masking and cross-profile non-disclosure.
+Milestone 7 remains open for the broader canary-leak matrix and vault-permission enforcement.
+
 ## Milestone 8: Personal Tool Suite
 
 - astrology;

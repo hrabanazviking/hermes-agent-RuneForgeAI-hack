@@ -28,6 +28,12 @@ secrets:
 
 Every credential injected by a source is labelled with its origin — setup flows and `hermes model` show `(from Bitwarden)` next to detected keys so you always know where a value came from.
 
+Every value that wins this precedence pass is also registered with Hermes' bounded, in-memory
+exact-value redactor before it enters the profile environment. This catches arbitrary opaque
+credentials that have no known vendor prefix. Exact values are isolated by profile, never written
+to the redaction registry on disk, and scrubbed at the hard model-egress boundary even when ordinary
+pattern redaction is disabled.
+
 ## Profiles and shared vaults
 
 Two orchestrator-level knobs make one shared vault safe across [profiles](../profiles):

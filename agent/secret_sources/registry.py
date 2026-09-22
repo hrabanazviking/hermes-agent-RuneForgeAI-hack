@@ -315,8 +315,9 @@ class _Applier:
     """Apply phase state for one orchestrated pass: sequential, first-wins, attributed."""
 
     def __init__(self, env: MutableMapping[str, str], report: ApplyReport,
-                 protected: Dict[str, str], preserve: frozenset) -> None:
+                 protected: Dict[str, str], preserve: frozenset, redaction_scope: str) -> None:
         self.env, self.report, self.protected, self.preserve = env, report, protected, preserve
+        self.redaction_scope = redaction_scope
         self.claimed: Dict[str, str] = {}  # var → source name that won it
 
     def apply_source(self, source: SecretSource, cfg: dict, result: FetchResult,
@@ -359,6 +360,8 @@ class _Applier:
         if existed and (var in self.preserve or not override):
             sr.skipped_existing.append(var)
             return False
+        from agent.redact import register_vault_redaction_value
+        register_vault_redaction_value(value, scope=self.redaction_scope)
         self.env[var] = value
         self.claimed[var] = source.name
         sr.applied.append(var)
@@ -417,7 +420,9 @@ def apply_all(secrets_cfg: dict, home_path: Path,
     # An alias never shadows a var some source supplies by its real name.
     supplied_directly = {v for _, _, r in fetches if r.ok for v in r.secrets if isinstance(v, str)}
 
-    applier = _Applier(env, report, protected, preserve)
+    applier = _Applier(
+        env, report, protected, preserve, redaction_scope=hermes_home_key(home_path)
+    )
     for source, cfg, result in fetches:
         applier.apply_source(source, cfg, result, profile, supplied_directly)
     return report

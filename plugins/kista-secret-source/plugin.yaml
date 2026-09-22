@@ -1,0 +1,10 @@
+manifest_version: 2
+name: kista-secret-source
+version: "0.1.0"
+description: "Profile-local Kista credentials through Hermes' Secret Source API."
+author: Volmarr Wyrd / RuneForgeAI
+homepage: https://github.com/hrabanazviking/kista
+tags:
+  - runeforgeai
+  - secrets
+  - kista
