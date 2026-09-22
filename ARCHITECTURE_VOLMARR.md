@@ -605,6 +605,19 @@ network geocoding, persistence, and interpretation remain outside the plugin. Th
 contains sky positions, transiting planets in natal houses, and transit-to-natal aspects under the
 same bounded, credential-free subprocess contract as the earlier astrology tools.
 
+### Slice 36: Bounded Astrology Prediction
+
+`astrology_predict` exposes the official engine's exact transit-to-natal aspects, stations,
+ingresses, and eclipse scan over an explicit forward-moving window no longer than 366 days. Natal
+date and coordinates are required; birth time remains optional and explicit. The adapter uses the
+engine's documented built-in transit and natal planet sets rather than accepting arbitrary lists,
+which keeps both computation and CLI construction bounded.
+
+Start and end never default to the host clock, coordinate geocoding is unreachable, and the shared
+60-second maximum process timeout plus 64-KiB output ceiling remain hard boundaries even when the
+operator configures a longer value. Prediction output is calculation evidence only; the normal
+cognition layer may interpret it separately.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

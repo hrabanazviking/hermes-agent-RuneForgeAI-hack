@@ -70,6 +70,7 @@ def test_real_discovery_runs_lunar_with_fixed_argv_and_scrubbed_environment(
             "astrology_planetary_hours",
             "astrology_natal",
             "astrology_transit",
+            "astrology_predict",
         }
         result = json.loads(
             registry.dispatch("astrology_lunar", {}, scope=manager.scope_key)
@@ -451,6 +452,103 @@ def test_transit_rejects_implicit_now_and_invalid_time_before_engine(tmp_path):
 
     assert "error" in implicit_now
     assert "error" in invalid_time
+    assert not marker.exists()
+
+
+def test_prediction_uses_explicit_bounded_window_and_default_planet_sets(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine = tmp_path / "astrology_engine.py"
+    record = tmp_path / "predict.json"
+    _engine_script(engine, "PREDICTION EVENTS REPORT", record=record)
+    _write_profile(home, engine, timeout=60)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch(
+                "astrology_predict",
+                {
+                    "natal_date": "1975-11-22",
+                    "natal_time": "14:30",
+                    "start_date": "2026-01-01",
+                    "end_date": "2027-01-01",
+                    "latitude": 39.7684,
+                    "longitude": -86.1581,
+                },
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert result["calculation"] == "prediction"
+    assert result["window_days"] == 365
+    assert result["report"] == "PREDICTION EVENTS REPORT"
+    invocation = json.loads(record.read_text(encoding="utf-8"))
+    assert invocation["argv"] == [
+        "predict",
+        "--date",
+        "1975-11-22",
+        "--start",
+        "2026-01-01",
+        "--end",
+        "2027-01-01",
+        "--lat",
+        "39.7684",
+        "--lon",
+        "-86.1581",
+        "--time",
+        "14:30",
+    ]
+    assert "--transit-planets" not in invocation["argv"]
+    assert "--natal-planets" not in invocation["argv"]
+    assert "--city" not in invocation["argv"]
+
+
+def test_prediction_rejects_reverse_and_oversized_windows_before_engine(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine = tmp_path / "astrology_engine.py"
+    marker = tmp_path / "should-not-exist"
+    engine.write_text(
+        f"from pathlib import Path\nPath({str(marker)!r}).write_text('called')\n",
+        encoding="utf-8",
+    )
+    _write_profile(home, engine)
+    base = {
+        "natal_date": "1975-11-22",
+        "latitude": 39.7684,
+        "longitude": -86.1581,
+    }
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        reverse = json.loads(
+            registry.dispatch(
+                "astrology_predict",
+                {**base, "start_date": "2027-01-01", "end_date": "2026-01-01"},
+                scope=manager.scope_key,
+            )
+        )
+        oversized = json.loads(
+            registry.dispatch(
+                "astrology_predict",
+                {**base, "start_date": "2026-01-01", "end_date": "2027-02-01"},
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert "error" in reverse
+    assert "error" in oversized
     assert not marker.exists()
 
 

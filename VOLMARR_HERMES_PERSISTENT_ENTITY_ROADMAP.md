@@ -1966,6 +1966,11 @@ command's implicit current-time branch so results are replayable. Optional natal
 times are validated and declared in result metadata; only date/time/coordinate flags reach the
 engine. Prediction, synastry, and astrocartography remain open.
 
+Slice 36 adds `astrology_predict` for exact aspects, stations, ingresses, and eclipses over an
+explicit forward window capped at 366 days. It uses the engine's documented default planet sets
+instead of exposing arbitrary list construction, and retains the local coordinate-only,
+credential-free, timeout-bounded process contract. Synastry and astrocartography remain open.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
