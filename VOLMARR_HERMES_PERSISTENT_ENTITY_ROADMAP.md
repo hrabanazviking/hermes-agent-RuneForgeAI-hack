@@ -2034,6 +2034,10 @@ structural engine validation, not a broader claim of philological correctness.
 kenning discovery, and independent structural meter validation now use the official Seiðr Engine.
 D&D / Norse Saga mechanics are the next personal tool family.
 
+Slice 46 begins reusable RPG mechanics with `dice_roll`: bounded structured dice, an optional flat
+modifier, and a required replay seed. Every die and arithmetic step is returned, while campaign
+state, narration, characters, and rules data remain outside the plugin. Ability checks are next.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

@@ -742,6 +742,18 @@ limitations; it is not a claim of philological correctness. Input is never persi
 model or network service, and the strict eight-line/200-character bounds keep argv and output
 finite.
 
+### Slice 46: Replayable Bounded Dice
+
+The separate, opt-in `volmarr-rpg` plugin begins reusable D&D/Norse Saga mechanics with
+`dice_roll`. It accepts a structured dice count, side count, optional flat modifier, and required
+seed rather than parsing an open-ended notation language. Count, sides, modifier, and seed are all
+bounded before the standard-library PRNG is constructed.
+
+The result includes every die, subtotal, modifier, total, and normalized notation, making the
+arithmetic auditable and the roll exactly replayable—including seed zero. The plugin owns no
+campaign, character, encounter, narration, rules corpus, memory, or prompt state and requires no
+external dependency.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

@@ -1,0 +1,9 @@
+manifest_version: 2
+name: volmarr-rpg
+version: "0.1.0"
+description: "Deterministic tabletop RPG mechanics for Volmarr's personal Hermes fork."
+author: Volmarr Wyrd / RuneForgeAI
+tags:
+  - runeforgeai
+  - rpg
+  - local
