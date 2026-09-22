@@ -2061,8 +2061,13 @@ generates no identity, ancestry, class, personality, equipment, or narrative.
 
 Slice 52 adds `rpg_encounter_initiative`, a bounded seeded d20 ordering primitive over opaque
 participant identifiers and total modifiers. Every roll, sum, position, and deterministic tie
-breaker is visible; no combatant state or narration is retained. Finite hit-point transitions are
-next.
+breaker is visible; no combatant state or narration is retained.
+
+Slice 53 adds `rpg_hit_points`, applying one bounded damage or healing transition with SRD-style
+temporary-hit-point precedence and healing caps. It returns all before/after arithmetic while
+leaving death, stability, resistance, and narrative consequences explicitly unresolved. The
+minimal RPG mechanics family is complete; broader campaign utilities remain deferred until a
+separate state-ownership design is approved.
 
 ## Milestone 9: Embodiment
 

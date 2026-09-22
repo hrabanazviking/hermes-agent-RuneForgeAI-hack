@@ -827,6 +827,18 @@ initiative meaning. Ties use a documented adapter rule—higher modifier, then i
 input order—so replay remains total and deterministic without pretending that this ordering is a
 mandatory SRD table rule.
 
+### Slice 53: Finite Hit-Point Transitions
+
+`rpg_hit_points` applies exactly one supplied damage or healing amount to caller-owned hit-point
+values. Damage consumes temporary hit points before current hit points; healing is capped at the
+maximum and never restores temporary hit points. The result returns complete before/after values,
+applied deltas, unused healing or overflow damage, and whether current hit points reached zero.
+
+The tool is intentionally stateless and does not roll damage, infer resistance or vulnerability,
+award temporary hit points, or resolve unconsciousness, instant death, death saves, or stability.
+It explicitly reports that those zero-hit-point consequences remain unresolved, keeping this
+slice faithful to its finite arithmetic boundary.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

@@ -179,6 +179,26 @@ RPG_ENCOUNTER_INITIATIVE_SCHEMA = {
     },
 }
 
+RPG_HIT_POINTS_SCHEMA = {
+    "name": "rpg_hit_points",
+    "description": (
+        "Apply one bounded damage or healing transition to supplied hit-point values. "
+        "Damage consumes temporary hit points first; healing never restores them."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "current_hp": {"type": "integer", "minimum": 0, "maximum": 1000000},
+            "maximum_hp": {"type": "integer", "minimum": 1, "maximum": 1000000},
+            "temporary_hp": {"type": "integer", "minimum": 0, "maximum": 1000000},
+            "operation": {"type": "string", "enum": ["damage", "healing"]},
+            "amount": {"type": "integer", "minimum": 0, "maximum": 1000000},
+        },
+        "required": ["current_hp", "maximum_hp", "operation", "amount"],
+        "additionalProperties": False,
+    },
+}
+
 
 def _integer(value: Any, *, minimum: int, maximum: int) -> int | None:
     if isinstance(value, bool) or not isinstance(value, int):
@@ -545,6 +565,78 @@ def build_encounter_initiative_handler():
     return handle
 
 
+def build_hit_points_handler():
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        required = {"current_hp", "maximum_hp", "operation", "amount"}
+        if not required.issubset(args) or not set(args) <= required | {"temporary_hp"}:
+            return tool_error(
+                "current_hp, maximum_hp, operation, and amount are required; "
+                "only temporary_hp is optional"
+            )
+        current_hp = _integer(args.get("current_hp"), minimum=0, maximum=1000000)
+        maximum_hp = _integer(args.get("maximum_hp"), minimum=1, maximum=1000000)
+        temporary_hp = _integer(args.get("temporary_hp", 0), minimum=0, maximum=1000000)
+        amount = _integer(args.get("amount"), minimum=0, maximum=1000000)
+        operation = args.get("operation")
+        if current_hp is None:
+            return tool_error("current_hp must be an integer from 0 to 1000000")
+        if maximum_hp is None:
+            return tool_error("maximum_hp must be an integer from 1 to 1000000")
+        if current_hp > maximum_hp:
+            return tool_error("current_hp cannot exceed maximum_hp")
+        if temporary_hp is None:
+            return tool_error("temporary_hp must be an integer from 0 to 1000000")
+        if amount is None:
+            return tool_error("amount must be an integer from 0 to 1000000")
+        if operation not in {"damage", "healing"}:
+            return tool_error("operation must be damage or healing")
+
+        before = {
+            "current_hp": current_hp,
+            "maximum_hp": maximum_hp,
+            "temporary_hp": temporary_hp,
+        }
+        if operation == "damage":
+            temporary_lost = min(temporary_hp, amount)
+            remaining_damage = amount - temporary_lost
+            hp_lost = min(current_hp, remaining_damage)
+            after_current = current_hp - hp_lost
+            after_temporary = temporary_hp - temporary_lost
+            details = {
+                "temporary_hp_lost": temporary_lost,
+                "current_hp_lost": hp_lost,
+                "overflow_damage": remaining_damage - hp_lost,
+            }
+        else:
+            hp_gained = min(amount, maximum_hp - current_hp)
+            after_current = current_hp + hp_gained
+            after_temporary = temporary_hp
+            details = {
+                "current_hp_gained": hp_gained,
+                "unused_healing": amount - hp_gained,
+                "temporary_hp_changed": False,
+            }
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "rpg_hit_points",
+                "operation": operation,
+                "amount": amount,
+                "before": before,
+                "after": {
+                    "current_hp": after_current,
+                    "maximum_hp": maximum_hp,
+                    "temporary_hp": after_temporary,
+                },
+                "at_zero_hp": after_current == 0,
+                "death_or_stability_resolved": False,
+                "details": details,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         ("dice_roll", DICE_ROLL_SCHEMA, build_dice_roll_handler(), "🎲"),
@@ -579,6 +671,7 @@ def register_tools(ctx) -> None:
             build_encounter_initiative_handler(),
             "⚔️",
         ),
+        ("rpg_hit_points", RPG_HIT_POINTS_SCHEMA, build_hit_points_handler(), "❤️"),
     ):
         ctx.register_tool(
             name=name,
