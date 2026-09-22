@@ -59,6 +59,7 @@ def test_real_discovery_roll_is_replayable_and_exposes_arithmetic():
             "rpg_random_table",
             "rpg_condition_lookup",
             "rpg_random_character",
+            "rpg_encounter_initiative",
         }
         args = {"count": 4, "sides": 6, "modifier": 3, "seed": 0}
         first = json.loads(registry.dispatch("dice_roll", args, scope=manager.scope_key))
@@ -442,6 +443,81 @@ def test_random_character_rejects_boolean_seed_and_character_content():
                 json.loads(
                     registry.dispatch(
                         "rpg_random_character", args, scope=manager.scope_key
+                    )
+                )
+            )
+    finally:
+        manager.unload()
+
+    assert all("error" in result for result in invalid)
+
+
+def test_encounter_initiative_replays_rolls_arithmetic_and_total_order():
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    _enable_plugin()
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        args = {
+            "participants": [
+                {"id": "hero", "modifier": 3},
+                {"id": "rival", "modifier": 5},
+                {"id": "wolf", "modifier": 2},
+            ],
+            "seed": 41,
+        }
+        first = json.loads(
+            registry.dispatch("rpg_encounter_initiative", args, scope=manager.scope_key)
+        )
+        replay = json.loads(
+            registry.dispatch("rpg_encounter_initiative", args, scope=manager.scope_key)
+        )
+    finally:
+        manager.unload()
+
+    assert first == replay
+    assert first["participant_count"] == 3
+    assert first["natural_d20_automatic"] is False
+    assert [item["position"] for item in first["order"]] == [1, 2, 3]
+    for item in first["order"]:
+        assert 1 <= item["natural_roll"] <= 20
+        assert item["total"] == item["natural_roll"] + item["modifier"]
+    ordering_keys = [
+        (-item["total"], -item["modifier"], item["id"].casefold(), item["input_index"])
+        for item in first["order"]
+    ]
+    assert ordering_keys == sorted(ordering_keys)
+
+
+def test_encounter_initiative_rejects_duplicate_ids_boolean_and_extra_fields():
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    _enable_plugin()
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        invalid = []
+        for args in (
+            {
+                "participants": [
+                    {"id": "Hero", "modifier": 1},
+                    {"id": "hero", "modifier": 2},
+                ],
+                "seed": 1,
+            },
+            {"participants": [{"id": "hero", "modifier": True}], "seed": 1},
+            {
+                "participants": [{"id": "hero", "modifier": 1, "hp": 10}],
+                "seed": 1,
+            },
+        ):
+            invalid.append(
+                json.loads(
+                    registry.dispatch(
+                        "rpg_encounter_initiative", args, scope=manager.scope_key
                     )
                 )
             )
