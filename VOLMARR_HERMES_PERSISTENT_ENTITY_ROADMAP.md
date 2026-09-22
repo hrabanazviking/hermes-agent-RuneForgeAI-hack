@@ -2073,7 +2073,11 @@ Slice 54 begins Embodiment with `hamr_spec_validate`, a read-only adapter over t
 `Spec.from_yaml` interface at `Development` commit
 `db90f4657c2725d0b6432651d1400f1a05f77b7d`. It validates one traversal-safe YAML path beneath an
 active-profile spec root in a credential-scrubbed subprocess without launching Blender or creating
-an avatar. Hamr preset discovery is next.
+an avatar.
+
+Slice 55 adds `hamr_presets`, reading Hamr's official body proportions and compact character preset
+metadata without copying full preset specs into Hermes. It remains read-only and Blender-free.
+Hamr dry-run forge planning is next.
 
 ## Milestone 9: Embodiment
 

@@ -66,6 +66,19 @@ def _fake_engine(root: Path, record: Path | None = None) -> None:
         "        ))\n",
         encoding="utf-8",
     )
+    (package / "constants.py").write_text(
+        "BODY_PRESETS = {'average': {'waist': 0.5, 'height': 0.6}}\n",
+        encoding="utf-8",
+    )
+    (package / "presets.py").write_text(
+        "CHARACTER_PRESETS = {\n"
+        "    'starter': {\n"
+        "        'display_name': 'Starter Avatar',\n"
+        "        'description': 'A bounded test preset.',\n"
+        "    },\n"
+        "}\n",
+        encoding="utf-8",
+    )
 
 
 def test_real_discovery_validates_without_credentials_blender_or_output(tmp_path, monkeypatch):
@@ -86,7 +99,7 @@ def test_real_discovery_validates_without_credentials_blender_or_output(tmp_path
     try:
         loaded = manager._plugins["volmarr-hamr"]
         assert loaded.enabled
-        assert loaded.tools_registered == ["hamr_spec_validate"]
+        assert set(loaded.tools_registered) == {"hamr_spec_validate", "hamr_presets"}
         result = json.loads(
             registry.dispatch(
                 "hamr_spec_validate",
@@ -111,6 +124,46 @@ def test_real_discovery_validates_without_credentials_blender_or_output(tmp_path
         "hermes_home_present": False,
     }
     assert sorted(path.name for path in specs.iterdir()) == ["avatar.yaml"]
+
+
+def test_presets_returns_official_catalog_structure_without_spec_content(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    engine = tmp_path / "hamr"
+    specs = tmp_path / "specs"
+    _fake_engine(engine)
+    specs.mkdir()
+    _write_profile(get_hermes_home(), engine, specs)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch("hamr_presets", {}, scope=manager.scope_key)
+        )
+        rejected = json.loads(
+            registry.dispatch(
+                "hamr_presets", {"include_full_specs": True}, scope=manager.scope_key
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert result["body_count"] == 1
+    assert result["character_count"] == 1
+    assert result["body"] == [
+        {"name": "average", "proportions": {"height": 0.6, "waist": 0.5}}
+    ]
+    assert result["character"] == [
+        {
+            "name": "starter",
+            "display_name": "Starter Avatar",
+            "description": "A bounded test preset.",
+        }
+    ]
+    assert result["blender_launched"] is False
+    assert "error" in rejected
 
 
 def test_validation_resolves_active_profile_a_b_a(tmp_path):
