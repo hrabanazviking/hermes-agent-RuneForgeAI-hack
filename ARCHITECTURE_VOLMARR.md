@@ -900,6 +900,17 @@ time, and output bounds. It dispatches no forge, Blender, REST, MCP, or Brúarh�
 upstream root `LICENSE` says Apache-2.0 while `pyproject.toml` declares MIT; the adapter copies no
 engine source and explicitly reports this unresolved metadata conflict rather than choosing one.
 
+### Slice 59: Read-Only Seiðr-Smiðja Hoard Discovery
+
+`smidja_assets` exposes the official public `LocalHoardAdapter.list_assets` boundary with bounded
+asset-type and tag filters. Results contain only the upstream `AssetMeta` contract: identifier,
+display name, type, tags, VRM version, declared size, and whether the backing file currently exists.
+
+Discovery never calls `resolve`, the network-capable bootstrap command, or any build surface. It
+does not return filesystem paths or remote source URLs, and it declares that no asset was resolved,
+fetched, or bootstrapped. Engine and Python settings are resolved from the active profile on every
+call; A→B→A coverage protects that boundary.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

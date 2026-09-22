@@ -11,11 +11,7 @@ def _emit(payload: dict) -> None:
     sys.stdout.write(json.dumps(payload, ensure_ascii=False))
 
 
-def main() -> int:
-    if len(sys.argv) != 3:
-        return 2
-    engine_root = Path(sys.argv[1]).resolve()
-    spec_path = Path(sys.argv[2]).resolve()
+def _validate(engine_root: Path, spec_path: Path) -> int:
     sys.path.insert(0, str(engine_root / "src"))
     try:
         from seidr_smidja.loom import LoomValidationError, load_and_validate
@@ -51,6 +47,51 @@ def main() -> int:
         }
     )
     return 0
+
+
+def _assets(engine_root: Path, asset_type: str, tags_json: str) -> int:
+    sys.path.insert(0, str(engine_root / "src"))
+    try:
+        tags = json.loads(tags_json)
+        if not isinstance(tags, list) or any(not isinstance(tag, str) for tag in tags):
+            return 2
+        from seidr_smidja.hoard.local import LocalHoardAdapter
+        from seidr_smidja.hoard.port import AssetFilter
+
+        adapter = LocalHoardAdapter(
+            catalog_path=engine_root / "data" / "hoard" / "catalog.yaml",
+            bases_dir=engine_root / "data" / "hoard" / "bases",
+        )
+        assets = adapter.list_assets(
+            AssetFilter(asset_type=asset_type or None, tags=tags)
+        )
+    except Exception:
+        return 2
+    _emit(
+        {
+            "assets": [
+                {
+                    "asset_id": item.asset_id,
+                    "display_name": item.display_name,
+                    "asset_type": item.asset_type,
+                    "tags": item.tags,
+                    "vrm_version": item.vrm_version,
+                    "file_size_bytes": item.file_size_bytes,
+                    "cached": item.cached,
+                }
+                for item in assets[:101]
+            ]
+        }
+    )
+    return 0
+
+
+def main() -> int:
+    if len(sys.argv) == 4 and sys.argv[1] == "validate":
+        return _validate(Path(sys.argv[2]).resolve(), Path(sys.argv[3]).resolve())
+    if len(sys.argv) == 5 and sys.argv[1] == "assets":
+        return _assets(Path(sys.argv[2]).resolve(), sys.argv[3], sys.argv[4])
+    return 2
 
 
 if __name__ == "__main__":

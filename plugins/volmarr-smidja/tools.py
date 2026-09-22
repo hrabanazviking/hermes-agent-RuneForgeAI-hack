@@ -42,6 +42,26 @@ SMIDJA_SPEC_VALIDATE_SCHEMA = {
     },
 }
 
+SMIDJA_ASSETS_SCHEMA = {
+    "name": "smidja_assets",
+    "description": (
+        "List bounded public metadata from Seidr-Smidja's local Hoard catalog. "
+        "This read-only query does not resolve, fetch, bootstrap, or modify assets."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "asset_type": {"type": "string", "minLength": 1, "maxLength": 40},
+            "tags": {
+                "type": "array",
+                "items": {"type": "string", "minLength": 1, "maxLength": 40},
+                "maxItems": 8,
+            },
+        },
+        "additionalProperties": False,
+    },
+}
+
 
 def _root(value: Any, marker: str | None = None) -> Path | None:
     if not isinstance(value, str) or not value.strip() or "\x00" in value:
@@ -95,6 +115,36 @@ def _env() -> dict[str, str]:
     return env
 
 
+def _run(ctx, python: Path, arguments: list[str]) -> dict[str, Any] | None:
+    try:
+        completed = subprocess.run(
+            [str(python), "-B", "-P", "-s", str(_RUNNER), *arguments],
+            env=_env(),
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=_timeout(ctx),
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    stdout = completed.stdout or ""
+    stderr = completed.stderr or ""
+    if (
+        completed.returncode != 0
+        or len(stdout.encode("utf-8", errors="replace")) > _MAX_BYTES
+        or len(stderr.encode("utf-8", errors="replace")) > _MAX_BYTES
+    ):
+        return None
+    try:
+        payload = json.loads(stdout)
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
 def build_spec_validate_handler(ctx):
     def handle(args: dict[str, Any], **_kwargs: Any) -> str:
         if set(args) != {"spec_path"}:
@@ -120,33 +170,10 @@ def build_spec_validate_handler(ctx):
             return tool_error("spec_path must remain within spec_root")
         if not spec_file.is_file() or not 1 <= size <= _MAX_BYTES:
             return tool_error("spec_path must name a file from 1 byte to 64 KiB")
-        try:
-            completed = subprocess.run(
-                [str(python), "-B", "-P", "-s", str(_RUNNER), str(engine), str(spec_file)],
-                env=_env(),
-                stdin=subprocess.DEVNULL,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                timeout=_timeout(ctx),
-                check=False,
-            )
-        except (OSError, subprocess.TimeoutExpired):
+        payload = _run(ctx, python, ["validate", str(engine), str(spec_file)])
+        if payload is None:
             return tool_error("Seidr-Smidja Loom validation could not complete")
-        stdout = completed.stdout or ""
-        stderr = completed.stderr or ""
-        if (
-            completed.returncode != 0
-            or len(stdout.encode("utf-8", errors="replace")) > _MAX_BYTES
-            or len(stderr.encode("utf-8", errors="replace")) > _MAX_BYTES
-        ):
-            return tool_error("Seidr-Smidja Loom validation failed")
-        try:
-            payload = json.loads(stdout)
-        except json.JSONDecodeError:
-            return tool_error("Seidr-Smidja returned an invalid Loom response")
-        if not isinstance(payload, dict) or not isinstance(payload.get("valid"), bool) or not isinstance(
+        if not isinstance(payload.get("valid"), bool) or not isinstance(
             payload.get("failures"), list
         ):
             return tool_error("Seidr-Smidja returned an invalid Loom response")
@@ -169,6 +196,103 @@ def build_spec_validate_handler(ctx):
     return handle
 
 
+def _asset(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, dict) or set(value) != {
+        "asset_id",
+        "display_name",
+        "asset_type",
+        "tags",
+        "vrm_version",
+        "file_size_bytes",
+        "cached",
+    }:
+        return None
+    text_fields = ("asset_id", "display_name", "asset_type")
+    if any(not isinstance(value[key], str) or len(value[key]) > 300 for key in text_fields):
+        return None
+    tags = value["tags"]
+    if not isinstance(tags, list) or len(tags) > 32 or any(
+        not isinstance(tag, str) or len(tag) > 100 for tag in tags
+    ):
+        return None
+    vrm_version = value["vrm_version"]
+    if vrm_version is not None and (not isinstance(vrm_version, str) or len(vrm_version) > 40):
+        return None
+    file_size = value["file_size_bytes"]
+    if file_size is not None and (
+        not isinstance(file_size, int) or isinstance(file_size, bool) or file_size < 0
+    ):
+        return None
+    if not isinstance(value["cached"], bool):
+        return None
+    return value
+
+
+def build_assets_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if not set(args).issubset({"asset_type", "tags"}):
+            return tool_error("Only asset_type and tags are accepted")
+        engine = _root(
+            ctx.get_config("engine_root", ""), marker="src/seidr_smidja/hoard/local.py"
+        )
+        python = _python(ctx.get_config("python_path", "") or sys.executable)
+        if engine is None or python is None or not _RUNNER.is_file():
+            return tool_error("Configure volmarr-smidja engine_root and Python.")
+        asset_type = args.get("asset_type")
+        if asset_type is not None and (
+            not isinstance(asset_type, str)
+            or not asset_type.strip()
+            or len(asset_type) > 40
+            or "\x00" in asset_type
+        ):
+            return tool_error("asset_type must be a bounded non-empty string")
+        clean_type = asset_type.strip() if asset_type is not None else None
+        tags = args.get("tags", [])
+        if (
+            not isinstance(tags, list)
+            or len(tags) > 8
+            or any(
+                not isinstance(tag, str)
+                or not tag.strip()
+                or len(tag) > 40
+                or "\x00" in tag
+                for tag in tags
+            )
+        ):
+            return tool_error("tags must contain at most eight bounded strings")
+        clean_tags = list(dict.fromkeys(tag.strip() for tag in tags))
+        payload = _run(
+            ctx,
+            python,
+            ["assets", str(engine), clean_type or "", json.dumps(clean_tags)],
+        )
+        raw_assets = None if payload is None else payload.get("assets")
+        if not isinstance(raw_assets, list) or len(raw_assets) > 100:
+            return tool_error("Seidr-Smidja Hoard discovery could not complete")
+        assets = [_asset(item) for item in raw_assets]
+        if any(item is None for item in assets):
+            return tool_error("Seidr-Smidja returned invalid Hoard metadata")
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "smidja_assets",
+                "filters": {"asset_type": clean_type, "tags": clean_tags},
+                "count": len(assets),
+                "assets": assets,
+                "asset_resolved": False,
+                "asset_fetched": False,
+                "hoard_bootstrapped": False,
+                "source": {
+                    "engine": "Seidr-Smidja",
+                    "api": "LocalHoardAdapter.list_assets",
+                    "license_metadata": "CONFLICT: root Apache-2.0; pyproject MIT",
+                },
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     ctx.register_tool(
         name="smidja_spec_validate",
@@ -177,4 +301,12 @@ def register_tools(ctx) -> None:
         handler=build_spec_validate_handler(ctx),
         description=SMIDJA_SPEC_VALIDATE_SCHEMA["description"],
         emoji="🧵",
+    )
+    ctx.register_tool(
+        name="smidja_assets",
+        toolset="volmarr_smidja",
+        schema=SMIDJA_ASSETS_SCHEMA,
+        handler=build_assets_handler(ctx),
+        description=SMIDJA_ASSETS_SCHEMA["description"],
+        emoji="🗃️",
     )

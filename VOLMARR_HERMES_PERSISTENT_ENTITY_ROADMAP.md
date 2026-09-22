@@ -2093,6 +2093,11 @@ validation without forge, Blender, REST, MCP, or remote VRoid authority. The ups
 and package metadata disagree (Apache-2.0 versus MIT), so no source is copied and the conflict is
 reported explicitly. Read-only Hoard asset discovery is next.
 
+Slice 59 adds `smidja_assets` over the official Hoard's public `list_assets` contract. It returns a
+bounded, filterable metadata catalog while refusing asset resolution, fetch, bootstrap, filesystem
+path disclosure, and all forge authority. Engine settings remain call-time profile scoped with
+A→B→A verification. Read-only Gate rule discovery is next.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
