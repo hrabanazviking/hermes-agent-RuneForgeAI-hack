@@ -91,6 +91,225 @@ export interface Translations {
     authorizedToolsUnavailable: string
     required: string
   }
+  connectorsPage: {
+    title: string
+    searchPlaceholder: (count: number) => string
+    filterCategory: string
+    categoryAll: string
+    uncategorised: string
+    residencyLocal: string
+    segment: {
+      all: string
+      available: string
+      connected: string
+      off: string
+    }
+    group: {
+      connected: string
+      connectedNote: string
+      available: string
+      off: string
+      offNote: string
+    }
+    card: {
+      kindManaged: string
+      kindCatalog: string
+      kindCustom: string
+      kindPlugin: (plugin: string) => string
+      inCatalog: string
+      hostedTwin: string
+      alsoLocal: string
+      open: (name: string) => string
+      turnServerOn: (name: string) => string
+      turnServerOff: (name: string) => string
+      state: {
+        accessExpired: string
+        available: string
+        connected: string
+        connecting: string
+        connectionUnknown: string
+        couldNotConnect: string
+        offByYourOrganisation: string
+        offForYou: string
+        serverConnecting: string
+        serverError: string
+        serverNeedsAuth: string
+        serverOff: string
+        serverOn: string
+        serverOnUnused: string
+      }
+      fact: {
+        tools: (count: number) => string
+        toolsOff: (count: number) => string
+        toolsOn: (count: number) => string
+        toolsSomeOn: (total: number, on: number) => string
+      }
+      verb: {
+        authenticate: string
+        connect: string
+        install: string
+        openLogs: string
+        reconnect: string
+        stopWaiting: string
+        tryAgain: string
+        turnBackOn: string
+      }
+      reason: {
+        finishSignIn: string
+        reconnect: string
+        serverError: string
+        serverNeedsAuth: string
+      }
+    }
+    page: {
+      loading: string
+      emptyTitle: string
+      noMatchTitle: string
+      noMatchBody: string
+      clearSearch: string
+      hostedFailedTitle: string
+      hostedFailedBody: string
+      retry: string
+      matchesElsewhere: (count: number) => string
+      showAllMatches: string
+      segmentNoMatch: (segment: string) => string
+      freeTierNote: string
+      signInLine: string
+      signIn: string
+      managedUnavailable: string
+      writeFailed: string
+      refreshFailed: string
+      disconnectNoAccount: string
+    }
+    add: {
+      action: string
+      title: string
+      hint: string
+      pasteLabel: string
+      pastePlaceholder: string
+      pasteNoMatch: string
+      name: string
+      nameTaken: string
+      type: string
+      typeStdio: string
+      typeHttp: string
+      command: string
+      args: string
+      addArg: string
+      envVars: string
+      addEnvVar: string
+      passthrough: string
+      addPassthrough: string
+      cwd: string
+      url: string
+      headers: string
+      addHeader: string
+      auth: string
+      authNone: string
+      authOauth: string
+      authBearer: string
+      keyPlaceholder: string
+      valuePlaceholder: string
+      removeRow: string
+      editJson: string
+      saveFailed: string
+    }
+    dialog: {
+      disconnect: string
+      disconnectTitle: (name: string) => string
+      disconnectBody: string
+      menuRefreshTools: string
+      moreActions: string
+      removeServerTitle: (name: string) => string
+      removeServerBody: string
+      appSwitch: (name: string) => string
+      waysTitle: (name: string) => string
+      wayHosted: string
+      bothOn: (name: string) => string
+      turnOffLocal: string
+      providedByPlugin: (plugin: string) => string
+      openPlugins: string
+      nousLine: string
+      rulesReadOnly: string
+      rulesAppOff: (name: string) => string
+      rulesSignIn: string
+      orgNote: (count: number) => string
+      orgLink: string
+      connectEnded: string
+      connectOpenAgain: string
+      tokensPerCall: string
+      usesPerMonth: string
+      advanced: string
+      advancedHint: string
+    }
+    tools: {
+      title: string
+      notInstalledBody: string
+      summaryTitle: (name: string) => string
+      summaryPreviewTitle: (name: string) => string
+      summaryCount: (count: number) => string
+      summaryAllTools: string
+      summaryOther: string
+      allToolsSwitch: string
+      summaryAllOn: string
+      summarySomeOn: (on: number, total: number) => string
+      summaryOff: string
+      showAllTools: (count: number) => string
+      showSummary: string
+      facetSwitch: (facet: string) => string
+      moreHints: (count: number) => string
+      staleSignIn: string
+      searchCountPlaceholder: (count: number) => string
+      toolList: (name: string) => string
+      categorySelect: (count: number) => string
+      showDeprecated: (count: number) => string
+      hideDeprecated: (count: number) => string
+      quickReadOnly: string
+      quickNoDestructive: string
+      quickEverythingOn: string
+      lockedHint: string
+      turnToolOn: (tool: string) => string
+      turnToolOff: (tool: string) => string
+      showDetails: (tool: string) => string
+      hideDetails: (tool: string) => string
+      noMatch: string
+      loading: string
+      unavailableLine: string
+      needsAuthTitle: (name: string) => string
+      needsAuthBody: string
+      retry: string
+      goneTitle: (name: string) => string
+      goneBody: string
+      remove: string
+      offTitle: (name: string) => string
+      offBody: string
+      signedOutTitle: string
+      signedOutBody: string
+      conflictTitle: string
+      conflictBody: (theyOff: number, theyOn: number) => string
+      conflictReload: string
+      conflictSave: string
+      saveFailed: string
+      footerDirty: (off: number, backOn: number) => string
+      discard: string
+      save: string
+      saving: string
+    }
+    vocabulary: Record<
+      | 'facetDestructive'
+      | 'facetRead'
+      | 'facetUnclassified'
+      | 'facetWrite'
+      | 'hintCreate'
+      | 'hintDelete'
+      | 'hintDestructive'
+      | 'hintIdempotent'
+      | 'hintOpenWorld'
+      | 'hintReadOnly'
+      | 'hintUpdate',
+      { label: string; long: string }
+    >
+  }
   sessionImport: {
     title: string
     subtitle: string
@@ -1125,58 +1344,23 @@ export interface Translations {
     }
     mcp: {
       loading: string
-      failedLoad: string
-      nameRequiredTitle: string
-      nameRequiredMessage: string
-      objectRequired: string
       invalidJson: string
       saveFailed: string
       removeFailed: string
-      gatewayUnavailableTitle: string
-      gatewayUnavailableMessage: string
-      reloadedTitle: string
-      reloadedMessage: string
       reloadFailed: string
       savedTitle: string
       savedMessage: (name: string) => string
-      newServer: string
-      reload: string
-      reloading: string
-      emptyTitle: string
-      emptyDesc: string
       disabled: string
-      editServer: string
       name: string
       serverJson: string
       remove: string
-      saveServer: string
       test: string
-      testing: string
-      testOk: (count: number) => string
-      testFailed: string
-      enableServer: (name: string) => string
-      disableServer: (name: string) => string
-      serverEnabled: (name: string) => string
-      serverDisabled: (name: string) => string
-      toggleFailed: (name: string, enabled: boolean) => string
-      tabServers: string
-      tabCatalog: string
       catalogLoading: string
-      catalogLoadFailed: string
-      catalogEmpty: string
-      catalogInstalled: string
-      catalogEnabled: string
-      catalogNeedsInstall: string
-      catalogInstall: string
-      catalogInstalling: string
-      catalogInstallStarted: (name: string) => string
       catalogInstallFailed: (name: string) => string
-      catalogEnvPrompt: (name: string) => string
       catalogEnvRequired: string
       capabilitySummary: (tools: number, prompts: number, resources: number) => string
       costTokens: (tokens: string) => string
       usage30d: (uses: string) => string
-      unusedPill: string
       statusConnecting: string
       statusNeedsAuth: string
       statusError: string
@@ -1184,11 +1368,7 @@ export interface Translations {
       allServers: string
       authenticatedTitle: string
       authenticatedMessage: (server: string, count: number) => string
-      waitingForBrowser: string
       authenticate: string
-      unsavedConnect: string
-      enableTool: (tool: string) => string
-      disableTool: (tool: string) => string
       noOutput: string
       deepLinkTitle: string
       deepLinkDescription: string
@@ -1202,11 +1382,6 @@ export interface Translations {
       deepLinkErrorShape: string
       deepLinkErrorUrl: string
       deepLinkErrorTooLarge: string
-      importButton: string
-      importPlaceholder: string
-      importNoMatch: string
-      importConfirm: string
-      importConfirmMany: (count: number) => string
     }
     model: {
       loading: string
@@ -1516,7 +1691,6 @@ export interface Translations {
     tabSkills: string
     tabToolsets: string
     configuringProfile: string
-    tabMcp: string
     all: string
     searchSkills: string
     searchToolsets: string
@@ -1590,6 +1764,15 @@ export interface Translations {
       toggleFailed: (name: string) => string
       legacyBackend: string
       portableBadge: string
+      serverStates: {
+        connected: string
+        app_not_running: string
+        endpoint_unavailable: string
+        no_interactive_session: string
+        version_too_old: string
+        missing_app: string
+        unknown: string
+      }
       catalogTitle: string
       catalogBrowse: string
       catalogHide: string

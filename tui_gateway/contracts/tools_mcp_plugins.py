@@ -341,6 +341,7 @@ method("learning.edit", params=LearningEditParams, result=LearningMutationResult
 class McpCatalogEntry(Result):
     name: str
     description: str
+    connector_slug: str | None = None
     installed: bool
     enabled: bool
     requires: list[str]
@@ -353,6 +354,11 @@ class McpCatalogResult(Result):
 
 method("mcp.catalog", params=ProfileParams, result=McpCatalogResult,
        doc="Curated MCP presets with per-profile installed/enabled state and the env keys each needs.")
+
+
+class McpServerSource(WireEnum):
+    config = "config"
+    plugin = "plugin"
 
 
 class McpServerSummary(Result):
@@ -368,6 +374,8 @@ class McpServerSummary(Result):
     oauth_tokens_present: bool | None = None
     enabled: bool
     tools: JsonValue | None = None
+    source: McpServerSource
+    plugin: str | None = None
 
 
 class McpServersListResult(Result):
@@ -396,6 +404,8 @@ class McpServerRuntimeRow(Result):
     connected: bool
     disabled: bool
     status: McpRuntimeStatus
+    source: McpServerSource
+    plugin: str | None = None
 
 
 class McpServersStatusResult(Result):
@@ -622,6 +632,22 @@ class PluginSettingField(Result):
     has_value: bool | None = None
 
 
+class PluginServerState(WireEnum):
+    connected = "connected"
+    app_not_running = "app_not_running"
+    endpoint_unavailable = "endpoint_unavailable"
+    no_interactive_session = "no_interactive_session"
+    version_too_old = "version_too_old"
+    missing_app = "missing_app"
+    unknown = "unknown"
+
+
+class PluginServerRow(Result):
+    name: str
+    state: PluginServerState
+    sentence: str
+
+
 class AgentPluginRow(Result):
     """``methods_tools._plugin_rows`` + ``plugins_cmd_catalog.catalog_row_fields`` provenance."""
 
@@ -634,6 +660,7 @@ class AgentPluginRow(Result):
     portable: bool
     install_dir: str
     has_desktop_half: bool
+    servers: list[PluginServerRow]
     catalog_name: str | None = None
     catalog_tier: str | None = None
     installed_sha: str | None = None

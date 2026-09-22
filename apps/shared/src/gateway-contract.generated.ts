@@ -3700,6 +3700,7 @@ export interface McpCatalogResult {
 export interface McpCatalogEntry {
   name: string
   description: string
+  connector_slug?: string | null
   installed: boolean
   enabled: boolean
   requires: string[]
@@ -3720,7 +3721,10 @@ export interface McpServerSummary {
   oauth_tokens_present?: boolean | null
   enabled: boolean
   tools?: unknown | null
+  source: McpServerSource
+  plugin?: string | null
 }
+export type McpServerSource = 'config' | 'plugin'
 export interface McpServersStatusResult {
   servers: McpServerRuntimeRow[]
   checked_at: number
@@ -3733,6 +3737,8 @@ export interface McpServerRuntimeRow {
   connected: boolean
   disabled: boolean
   status: McpRuntimeStatus
+  source: McpServerSource
+  plugin?: string | null
 }
 export type McpRuntimeStatus = 'connected' | 'disabled' | 'connecting' | 'failed' | 'lazy' | 'configured'
 /** ``preset`` (catalog id) and/or ``config`` (url/command/args/env/headers/auth/tools); a ``bearer_token`` is written to the profile's .env, only the header template persists. */
@@ -3887,6 +3893,7 @@ export interface AgentPluginRow {
   portable: boolean
   install_dir: string
   has_desktop_half: boolean
+  servers: PluginServerRow[]
   catalog_name?: string | null
   catalog_tier?: string | null
   installed_sha?: string | null
@@ -3896,6 +3903,12 @@ export interface AgentPluginRow {
   pinned_sha?: string | null
   settings_schema?: PluginSettingField[] | null
 }
+export interface PluginServerRow {
+  name: string
+  state: PluginServerState
+  sentence: string
+}
+export type PluginServerState = 'connected' | 'app_not_running' | 'endpoint_unavailable' | 'no_interactive_session' | 'version_too_old' | 'missing_app' | 'unknown'
 /** One ``config_schema`` key of a plugin manifest, rendered by the Plugins hub (``hermes_cli.plugins_settings.plugin_settings_fields``). ``secret`` fields carry no value: ``env`` names the ``.env`` variable and ``has_value`` whether it is set. */
 export interface PluginSettingField {
   key: string

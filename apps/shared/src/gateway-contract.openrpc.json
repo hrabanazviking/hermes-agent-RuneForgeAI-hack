@@ -4256,6 +4256,13 @@
             "title": "Has Desktop Half",
             "type": "boolean"
           },
+          "servers": {
+            "items": {
+              "$ref": "#/components/schemas/PluginServerRow"
+            },
+            "title": "Servers",
+            "type": "array"
+          },
           "catalog_name": {
             "anyOf": [
               {
@@ -4365,7 +4372,8 @@
           "status",
           "portable",
           "install_dir",
-          "has_desktop_half"
+          "has_desktop_half",
+          "servers"
         ],
         "title": "AgentPluginRow",
         "type": "object"
@@ -15139,6 +15147,18 @@
             "title": "Description",
             "type": "string"
           },
+          "connector_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Connector Slug"
+          },
           "installed": {
             "title": "Installed",
             "type": "boolean"
@@ -15627,6 +15647,21 @@
           },
           "status": {
             "$ref": "#/components/schemas/McpRuntimeStatus"
+          },
+          "source": {
+            "$ref": "#/components/schemas/McpServerSource"
+          },
+          "plugin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Plugin"
           }
         },
         "required": [
@@ -15635,10 +15670,19 @@
           "tools",
           "connected",
           "disabled",
-          "status"
+          "status",
+          "source"
         ],
         "title": "McpServerRuntimeRow",
         "type": "object"
+      },
+      "McpServerSource": {
+        "enum": [
+          "config",
+          "plugin"
+        ],
+        "title": "McpServerSource",
+        "type": "string"
       },
       "McpServerStatus": {
         "additionalProperties": true,
@@ -15775,6 +15819,21 @@
             ],
             "default": null,
             "title": "Tools"
+          },
+          "source": {
+            "$ref": "#/components/schemas/McpServerSource"
+          },
+          "plugin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Plugin"
           }
         },
         "required": [
@@ -15782,7 +15841,8 @@
           "transport",
           "args",
           "env",
-          "enabled"
+          "enabled",
+          "source"
         ],
         "title": "McpServerSummary",
         "type": "object"
@@ -19315,6 +19375,42 @@
         ],
         "title": "PingResult",
         "type": "object"
+      },
+      "PluginServerRow": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "state": {
+            "$ref": "#/components/schemas/PluginServerState"
+          },
+          "sentence": {
+            "title": "Sentence",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "state",
+          "sentence"
+        ],
+        "title": "PluginServerRow",
+        "type": "object"
+      },
+      "PluginServerState": {
+        "enum": [
+          "connected",
+          "app_not_running",
+          "endpoint_unavailable",
+          "no_interactive_session",
+          "version_too_old",
+          "missing_app",
+          "unknown"
+        ],
+        "title": "PluginServerState",
+        "type": "string"
       },
       "PluginSettingField": {
         "additionalProperties": false,
