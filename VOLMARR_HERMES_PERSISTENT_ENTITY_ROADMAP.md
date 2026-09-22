@@ -2069,6 +2069,12 @@ leaving death, stability, resistance, and narrative consequences explicitly unre
 minimal RPG mechanics family is complete; broader campaign utilities remain deferred until a
 separate state-ownership design is approved.
 
+Slice 54 begins Embodiment with `hamr_spec_validate`, a read-only adapter over the official Hamr
+`Spec.from_yaml` interface at `Development` commit
+`db90f4657c2725d0b6432651d1400f1a05f77b7d`. It validates one traversal-safe YAML path beneath an
+active-profile spec root in a credential-scrubbed subprocess without launching Blender or creating
+an avatar. Hamr preset discovery is next.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

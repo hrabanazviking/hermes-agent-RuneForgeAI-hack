@@ -839,6 +839,19 @@ award temporary hit points, or resolve unconsciousness, instant death, death sav
 It explicitly reports that those zero-hit-point consequences remain unresolved, keeping this
 slice faithful to its finite arithmetic boundary.
 
+### Slice 54: Read-Only Hamr Spec Validation
+
+The separate, opt-in `volmarr-hamr` plugin begins Embodiment with
+`hamr_spec_validate`. It resolves the official Hamr engine, an allowed spec root, and compatible
+Python interpreter from the active profile at call time, then invokes Hamr's public
+`Spec.from_yaml` API in a bounded subprocess. The local official `Development` head verified for
+this boundary is `db90f4657c2725d0b6432651d1400f1a05f77b7d` under MIT.
+
+Only relative YAML paths contained beneath the configured spec root are accepted. The subprocess
+has closed stdin, a minimal environment without service credentials or `HERMES_HOME`, bytecode
+writes disabled, finite input/output/time bounds, and no Blender invocation. Results preserve
+Hamr's validation verdict and errors while explicitly reporting that no avatar output was created.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
