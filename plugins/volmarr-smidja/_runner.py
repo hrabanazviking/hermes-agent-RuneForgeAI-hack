@@ -168,6 +168,34 @@ def _gate_check(
     return 0
 
 
+def _asset_probe(engine_root: Path, asset_id: str) -> int:
+    sys.path.insert(0, str(engine_root / "src"))
+    try:
+        from seidr_smidja.hoard.exceptions import AssetNotFoundError
+        from seidr_smidja.hoard.local import LocalHoardAdapter
+
+        adapter = LocalHoardAdapter(
+            catalog_path=engine_root / "data" / "hoard" / "catalog.yaml",
+            bases_dir=engine_root / "data" / "hoard" / "bases",
+        )
+        try:
+            path = adapter.resolve(asset_id)
+        except AssetNotFoundError:
+            _emit({"available": False, "file_type": None, "size_bytes": None})
+            return 0
+        size = path.stat().st_size
+    except Exception:
+        return 2
+    _emit(
+        {
+            "available": True,
+            "file_type": path.suffix.casefold().lstrip(".") or None,
+            "size_bytes": size,
+        }
+    )
+    return 0
+
+
 def main() -> int:
     if len(sys.argv) == 4 and sys.argv[1] == "validate":
         return _validate(Path(sys.argv[2]).resolve(), Path(sys.argv[3]).resolve())
@@ -184,6 +212,8 @@ def main() -> int:
             sys.argv[4],
             sys.argv[5],
         )
+    if len(sys.argv) == 4 and sys.argv[1] == "asset-probe":
+        return _asset_probe(Path(sys.argv[2]).resolve(), sys.argv[3])
     return 2
 
 

@@ -2111,6 +2111,11 @@ root. It preserves the official Gate verdict while explicitly reporting header-o
 unevaluated rules, and incomplete certification; it creates no output and launches no Blender
 process. Read-only local Hoard resolution readiness is next.
 
+Slice 63 adds `smidja_asset_probe`, a path-withheld readiness check over the official local Hoard
+resolver. Missing or uncached assets remain structured unavailable results; no fetch, bootstrap,
+asset open, or forge action occurs. Forge build authority and its output transaction boundary are
+the next audit target.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

@@ -941,6 +941,16 @@ advisory and explicitly surface in `unevaluated_rule_ids`; consequently the adap
 `certification_complete: false` and names its scope `official_gate_structural_header`. It creates no
 output, launches no Blender process, and enforces path containment plus a 128 MiB input ceiling.
 
+### Slice 63: Read-Only Seiðr-Smiðja Hoard Resolution Readiness
+
+`smidja_asset_probe` calls the local-only `LocalHoardAdapter.resolve` boundary for one bounded asset
+identifier. It reports availability, file type, and size while withholding the resolved filesystem
+path and leaving the asset unopened.
+
+Missing catalog entries and uncached files are normal `available: false` results. The adapter never
+invokes Hoard bootstrap or any fetch path, and engine selection remains call-time profile scoped
+with A→B→A proof.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
