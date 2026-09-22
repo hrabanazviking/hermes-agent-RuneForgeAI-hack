@@ -863,6 +863,18 @@ The tool accepts no arguments, launches no Blender process, creates no output, a
 catalog counts with MIT provenance. This gives later build planning a discoverable official
 vocabulary without prematurely granting avatar-build or filesystem-write authority.
 
+### Slice 56: Hamr Performance Budget Preflight
+
+`hamr_budget_check` loads one already bounded spec path and invokes Hamr's pure-Python
+`check_budget` estimator against one exact official tier: `minimal`, `balanced`, or `high`. It
+returns Hamr's build-time, peak-memory, triangle, and texture estimates alongside every selected
+limit, warning, and the official within-budget verdict.
+
+Like validation and preset discovery, budget preflight runs with closed stdin, scrubbed
+credentials, call-time profile resolution, and finite subprocess bounds. It explicitly launches
+no Blender process and writes no output, so planning remains separate from the later authority to
+forge a body.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

@@ -29,6 +29,7 @@ _BASE_ENV = (
 )
 _RUNNER = Path(__file__).with_name("_runner.py").resolve()
 _PRESETS_RUNNER = Path(__file__).with_name("_presets_runner.py").resolve()
+_BUDGET_RUNNER = Path(__file__).with_name("_budget_runner.py").resolve()
 
 HAMR_SPEC_VALIDATE_SCHEMA = {
     "name": "hamr_spec_validate",
@@ -58,6 +59,23 @@ HAMR_PRESETS_SCHEMA = {
         "This read-only discovery tool does not build or modify an avatar."
     ),
     "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
+}
+
+HAMR_BUDGET_CHECK_SCHEMA = {
+    "name": "hamr_budget_check",
+    "description": (
+        "Estimate one validated Hamr spec against an official minimal, balanced, or high "
+        "performance budget without launching Blender or creating output."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "spec_path": {"type": "string", "minLength": 1, "maxLength": 240},
+            "budget": {"type": "string", "enum": ["minimal", "balanced", "high"]},
+        },
+        "required": ["spec_path", "budget"],
+        "additionalProperties": False,
+    },
 }
 
 
@@ -285,6 +303,89 @@ def build_presets_handler(ctx):
     return handle
 
 
+def build_budget_check_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if set(args) != {"spec_path", "budget"}:
+            return tool_error("spec_path and budget are required")
+        budget = args.get("budget")
+        if budget not in {"minimal", "balanced", "high"}:
+            return tool_error("budget must be minimal, balanced, or high")
+        runtime = _runtime(ctx)
+        if runtime is None or not _BUDGET_RUNNER.is_file():
+            return tool_error(
+                "Configure volmarr-hamr engine_root, spec_root, and a compatible Python interpreter."
+            )
+        python, engine_root, spec_root = runtime
+        spec_file, relative_path = _spec_file(spec_root, args.get("spec_path"))
+        if spec_file is None or relative_path is None:
+            return tool_error(
+                "spec_path must name an existing YAML file of at most 64 KiB within spec_root"
+            )
+        try:
+            completed = subprocess.run(
+                [
+                    str(python),
+                    "-B",
+                    "-P",
+                    "-s",
+                    str(_BUDGET_RUNNER),
+                    str(engine_root),
+                    str(spec_file),
+                    budget,
+                ],
+                env=_child_env(),
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=_timeout(ctx),
+                check=False,
+            )
+        except subprocess.TimeoutExpired:
+            return tool_error("Hamr budget check timed out")
+        except OSError:
+            return tool_error("Hamr budget check could not be started")
+        stdout = completed.stdout or ""
+        stderr = completed.stderr or ""
+        if (
+            len(stdout.encode("utf-8", errors="replace")) > _MAX_OUTPUT_BYTES
+            or len(stderr.encode("utf-8", errors="replace")) > _MAX_OUTPUT_BYTES
+        ):
+            return tool_error("Hamr returned an oversized budget response")
+        if completed.returncode != 0:
+            return tool_error("Hamr could not check the spec budget")
+        try:
+            payload = json.loads(stdout)
+        except (TypeError, json.JSONDecodeError):
+            return tool_error("Hamr returned an invalid budget response")
+        if not isinstance(payload, dict) or set(payload) != {
+            "within_budget",
+            "estimates",
+            "limits",
+            "warnings",
+        }:
+            return tool_error("Hamr returned an invalid budget response")
+        if not isinstance(payload["within_budget"], bool) or not isinstance(
+            payload["warnings"], list
+        ):
+            return tool_error("Hamr returned an invalid budget response")
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "hamr_budget_check",
+                "spec_path": relative_path,
+                "budget": budget,
+                **payload,
+                "blender_launched": False,
+                "output_created": False,
+                "source": {"engine": "Hamr", "api": "check_budget", "license": "MIT"},
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         (
@@ -294,6 +395,12 @@ def register_tools(ctx) -> None:
             "🔨",
         ),
         ("hamr_presets", HAMR_PRESETS_SCHEMA, build_presets_handler(ctx), "🧍"),
+        (
+            "hamr_budget_check",
+            HAMR_BUDGET_CHECK_SCHEMA,
+            build_budget_check_handler(ctx),
+            "📐",
+        ),
     ):
         ctx.register_tool(
             name=name,

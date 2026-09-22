@@ -79,6 +79,26 @@ def _fake_engine(root: Path, record: Path | None = None) -> None:
         "}\n",
         encoding="utf-8",
     )
+    (package / "perf.py").write_text(
+        "from types import SimpleNamespace\n"
+        "def budget(triangles):\n"
+        "    return SimpleNamespace(\n"
+        "        max_build_time_seconds=45.0, max_memory_mb=1500.0,\n"
+        "        max_triangles=triangles, max_texture_resolution=2048,\n"
+        "        blender_timeout_seconds=120.0, target_fps=30.0,\n"
+        "    )\n"
+        "MEMORY_TIERS = {\n"
+        "    'minimal': budget(30000), 'balanced': budget(50000), 'high': budget(80000),\n"
+        "}\n"
+        "def check_budget(character, selected):\n"
+        "    return SimpleNamespace(\n"
+        "        within_budget=selected.max_triangles >= 40000,\n"
+        "        build_time_seconds=25.0, peak_memory_mb=600.0,\n"
+        "        total_triangles=40000, max_texture_resolution=2048,\n"
+        "        warnings=[] if selected.max_triangles >= 40000 else ['triangle limit exceeded'],\n"
+        "    )\n",
+        encoding="utf-8",
+    )
 
 
 def test_real_discovery_validates_without_credentials_blender_or_output(tmp_path, monkeypatch):
@@ -99,7 +119,11 @@ def test_real_discovery_validates_without_credentials_blender_or_output(tmp_path
     try:
         loaded = manager._plugins["volmarr-hamr"]
         assert loaded.enabled
-        assert set(loaded.tools_registered) == {"hamr_spec_validate", "hamr_presets"}
+        assert set(loaded.tools_registered) == {
+            "hamr_spec_validate",
+            "hamr_presets",
+            "hamr_budget_check",
+        }
         result = json.loads(
             registry.dispatch(
                 "hamr_spec_validate",
@@ -163,6 +187,59 @@ def test_presets_returns_official_catalog_structure_without_spec_content(tmp_pat
         }
     ]
     assert result["blender_launched"] is False
+    assert "error" in rejected
+
+
+def test_budget_check_returns_official_estimates_limits_and_verdict(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    engine = tmp_path / "hamr"
+    specs = tmp_path / "specs"
+    _fake_engine(engine)
+    specs.mkdir()
+    (specs / "avatar.yaml").write_text("Budget Avatar", encoding="utf-8")
+    _write_profile(get_hermes_home(), engine, specs)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        minimal = json.loads(
+            registry.dispatch(
+                "hamr_budget_check",
+                {"spec_path": "avatar.yaml", "budget": "minimal"},
+                scope=manager.scope_key,
+            )
+        )
+        balanced = json.loads(
+            registry.dispatch(
+                "hamr_budget_check",
+                {"spec_path": "avatar.yaml", "budget": "balanced"},
+                scope=manager.scope_key,
+            )
+        )
+        rejected = json.loads(
+            registry.dispatch(
+                "hamr_budget_check",
+                {"spec_path": "avatar.yaml", "budget": "unbounded"},
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert minimal["within_budget"] is False
+    assert minimal["warnings"] == ["triangle limit exceeded"]
+    assert balanced["within_budget"] is True
+    assert balanced["estimates"] == {
+        "build_time_seconds": 25.0,
+        "peak_memory_mb": 600.0,
+        "total_triangles": 40000,
+        "max_texture_resolution": 2048,
+    }
+    assert balanced["limits"]["max_triangles"] == 50000
+    assert balanced["blender_launched"] is False
+    assert balanced["output_created"] is False
     assert "error" in rejected
 
 

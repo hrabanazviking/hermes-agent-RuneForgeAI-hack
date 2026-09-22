@@ -2077,7 +2077,10 @@ an avatar.
 
 Slice 55 adds `hamr_presets`, reading Hamr's official body proportions and compact character preset
 metadata without copying full preset specs into Hermes. It remains read-only and Blender-free.
-Hamr dry-run forge planning is next.
+
+Slice 56 adds `hamr_budget_check`, exposing Hamr's own pure-Python estimates, official tier limits,
+warnings, and verdict for one validated spec. It remains read-only and Blender-free. Existing
+VRM/GLB compliance inspection is next.
 
 ## Milestone 9: Embodiment
 
