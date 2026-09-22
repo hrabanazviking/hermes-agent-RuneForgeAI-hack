@@ -1942,6 +1942,13 @@ vault storage must pass a native permission gate before credentials are read.
 
 **Done when:** these are callable through normal Hermes tools/skills.
 
+**Progress:** Slice 32 starts astrology with the normal Hermes tool surface. The opt-in
+`volmarr-astrology` plugin exposes `astrology_lunar` through the official external Astrology Engine
+at a profile-configured path. It supplies fixed argv, closed stdin, a credential-free minimal child
+environment, bounded output, static failures, and A→B→A profile resolution. Calculation remains
+local and distinct from LLM interpretation. The remaining astrology calculations and the other
+personal tool families remain open.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

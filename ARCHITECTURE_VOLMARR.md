@@ -547,6 +547,23 @@ process starts. A wholly absent vault still reaches Kista so its canonical initi
 remediation remain authoritative. The audit changes no ACL or mode and never reads secret bytes;
 operators retain ownership of intentionally hardening their vault storage.
 
+## Milestone 8: Personal Tool Suite
+
+### Slice 32: Local Lunar Astrology
+
+The separate, opt-in `volmarr-astrology` plugin begins the personal tool suite with one narrow
+vertical slice: `astrology_lunar`. It invokes the official external AI Agent Astrology Engine at a
+profile-configured `astrology_engine.py` path and returns the engine's current lunar phase,
+illumination, void-of-course status, next lunations, and Moon aspects as a bounded calculation
+report. The engine computes; Hermes and its normal cognition route may interpret afterward.
+
+The tool accepts no arguments, so this first slice has no birth data, location, geocoding, network,
+or prediction-range surface. Its subprocess uses fixed argv, closed stdin, a minimal environment
+that excludes provider credentials and `HERMES_HOME`, a clamped timeout, and separate 64-KiB stdout
+and stderr limits. Child failures are translated into static errors without echoing child output.
+The plugin registers no hook, prompt contribution, provider, state store, or telemetry publisher,
+and the external Apache-2.0 engine remains outside this repository.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

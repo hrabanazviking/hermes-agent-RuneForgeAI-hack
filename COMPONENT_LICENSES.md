@@ -16,6 +16,7 @@ It does not replace the original license text.
 | OpenViking | Official `volcengine/OpenViking` v0.4.21 at `3fca2577520f00b7f580d85d4ac6ae42bb9ba6f1` | Anonymous loopback `/health` protocol attestation; existing Hermes provider reused and no OpenViking source copied by this fork slice | AGPL-3.0 | Copyright belongs to OpenViking contributors; OpenViking remains an external service/package |
 | WYRD Protocol | Official `hrabanazviking/WYRD-Protocol-World-Yielding-Real-time-Data-AI-world-model` v1.0.0 at `9884ce8a9e683dc20f372a91eb66ba5b02561300` | Anonymous loopback `/health` protocol compatibility probe; no WYRD source copied | CC BY 4.0 | Created by Volmarr Wyrd / RuneForgeAI; WYRD remains an external world-model service/package |
 | Kista | Official `hrabanazviking/kista` v2.0.0 at `ce6313cc392589abd43a5fcf614e0e272663961f` | Read-only `kista get <service>` JSON protocol integration through the Hermes Secret Source plugin API; no Kista source copied | MIT | Authored by Runa Gridweaver; Kista remains an external encrypted-vault CLI |
+| AI Agent Astrology Engine | Official `hrabanazviking/astrology-engine` at `1709fcfc1e00198ab0f25fe4889868a7245cf014` | Fixed-argv, bounded subprocess integration for deterministic lunar calculations; no Astrology Engine source copied | Apache-2.0 | Created by Volmarr Wyrd / RuneForgeAI; the engine and Swiss Ephemeris dependencies remain external |
 
 ## Import Rule
 
