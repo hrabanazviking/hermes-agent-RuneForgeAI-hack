@@ -1994,6 +1994,20 @@ isolated, credential-free child and returns card facts plus built-in Golden Dawn
 It never accepts question text, initializes the upstream AI or session layers, or creates upstream
 history and exports. Multi-card spreads and structural dignity analysis remain open.
 
+Slice 40 adds `tarot_spread` for the official Three Card, Past Life, Opening of the Key,
+Relationship, Celtic Cross, Tree of Life, and Zodiac Wheel layouts. Exact layout keys replace the
+upstream fuzzy matcher, and RuneTarot remains authoritative for count, ordering, position meaning,
+and placement. The adapter returns positioned card/correspondence facts only; structural elemental
+dignity analysis remains open.
+
+Slice 41 adds RuneTarot's official elemental balance and adjacent-card dignity relationships to
+each multi-card spread. The plugin returns the engine's structural classifications without
+reimplementing their matrix or generating narrative advice.
+
+**Tarot is complete:** deterministic single-card and fixed-layout draws, Golden Dawn card and
+position correspondences, elemental balance, and dignity structure are available while all LLM
+interpretation remains in normal Hermes cognition. Norse poetry is the next personal tool family.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

@@ -665,6 +665,31 @@ official 78-card invariant, bounds runtime and output, and creates no RuneTarot 
 Seed zero remains valid, reversals are explicit, and plugin configuration is resolved from the
 active Hermes profile on every draw.
 
+### Slice 40: Positioned Multi-Card Tarot Spreads
+
+`tarot_spread` extends the same deck-only child boundary to RuneTarot's seven official multi-card
+layouts: Three Card, Past Life, Opening of the Key, Relationship, Celtic Cross, Tree of Life, and
+Zodiac Wheel. The caller supplies an exact layout key and required seed; fuzzy spread matching and
+arbitrary card counts are not exposed.
+
+RuneTarot owns the card count, shuffle, orientation, position order, position meanings, and Golden
+Dawn position correspondences. The bridge verifies that position count equals the official card
+count, assigns every drawn card through `SpreadManager`, and returns the resulting facts without a
+question or synthesis. It still never initializes the upstream AI, session, renderer, or export
+surfaces, and the 64-KiB output ceiling bounds even the twelve-card Zodiac Wheel response.
+
+### Slice 41: Official Elemental Dignity Structure
+
+Every `tarot_spread` result now includes RuneTarot's four-element balance and its ordered adjacent
+card dignity relationships. The official `GoldenDawnEngine` remains authoritative for base-element
+normalization and the friendly, hostile, neutral, excessively strong, or unknown relationship; the
+plugin neither reimplements the matrix nor turns it into narrative advice.
+
+This is a pure extension of the existing spread result rather than a new model-facing tool. It
+loads only RuneTarot's deterministic Golden Dawn data beside the deck and spread subsystems, then
+returns the structural evidence for Hermes cognition to interpret separately. Provider calls,
+questions, storage, telemetry, and prompt contributions remain outside the Tarot plugin.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
