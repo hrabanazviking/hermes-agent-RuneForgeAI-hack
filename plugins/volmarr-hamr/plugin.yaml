@@ -1,0 +1,27 @@
+manifest_version: 2
+name: volmarr-hamr
+version: "0.1.0"
+description: "Read-only local validation through the official Hamr shape-skin engine."
+author: Volmarr Wyrd / RuneForgeAI
+homepage: https://github.com/hrabanazviking/Hamr
+tags:
+  - runeforgeai
+  - avatar
+  - local
+config_schema:
+  engine_root:
+    type: str
+    default: ""
+    description: "Absolute path to an official Hamr checkout containing src/hamr/core/spec.py."
+  spec_root:
+    type: str
+    default: ""
+    description: "Absolute root containing YAML avatar specifications allowed for validation."
+  python_path:
+    type: str
+    default: ""
+    description: "Python executable with Hamr's validation dependencies installed."
+  timeout_seconds:
+    type: float
+    default: 10
+    description: "Maximum validation runtime in seconds (clamped to 1-30)."

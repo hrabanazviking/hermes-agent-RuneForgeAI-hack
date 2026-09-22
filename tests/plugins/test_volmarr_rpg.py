@@ -60,6 +60,7 @@ def test_real_discovery_roll_is_replayable_and_exposes_arithmetic():
             "rpg_condition_lookup",
             "rpg_random_character",
             "rpg_encounter_initiative",
+            "rpg_hit_points",
         }
         args = {"count": 4, "sides": 6, "modifier": 3, "seed": 0}
         first = json.loads(registry.dispatch("dice_roll", args, scope=manager.scope_key))
@@ -519,6 +520,103 @@ def test_encounter_initiative_rejects_duplicate_ids_boolean_and_extra_fields():
                     registry.dispatch(
                         "rpg_encounter_initiative", args, scope=manager.scope_key
                     )
+                )
+            )
+    finally:
+        manager.unload()
+
+    assert all("error" in result for result in invalid)
+
+
+def test_hit_points_applies_temporary_buffer_damage_and_bounded_healing():
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    _enable_plugin()
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        damage = json.loads(
+            registry.dispatch(
+                "rpg_hit_points",
+                {
+                    "current_hp": 8,
+                    "maximum_hp": 20,
+                    "temporary_hp": 5,
+                    "operation": "damage",
+                    "amount": 16,
+                },
+                scope=manager.scope_key,
+            )
+        )
+        healing = json.loads(
+            registry.dispatch(
+                "rpg_hit_points",
+                {
+                    "current_hp": 8,
+                    "maximum_hp": 20,
+                    "temporary_hp": 5,
+                    "operation": "healing",
+                    "amount": 20,
+                },
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert damage["before"] == {
+        "current_hp": 8,
+        "maximum_hp": 20,
+        "temporary_hp": 5,
+    }
+    assert damage["after"] == {
+        "current_hp": 0,
+        "maximum_hp": 20,
+        "temporary_hp": 0,
+    }
+    assert damage["details"] == {
+        "temporary_hp_lost": 5,
+        "current_hp_lost": 8,
+        "overflow_damage": 3,
+    }
+    assert damage["at_zero_hp"] is True
+    assert damage["death_or_stability_resolved"] is False
+    assert healing["after"] == {
+        "current_hp": 20,
+        "maximum_hp": 20,
+        "temporary_hp": 5,
+    }
+    assert healing["details"] == {
+        "current_hp_gained": 12,
+        "unused_healing": 8,
+        "temporary_hp_changed": False,
+    }
+
+
+def test_hit_points_rejects_impossible_state_boolean_and_extra_fields():
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    _enable_plugin()
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        invalid = []
+        for args in (
+            {"current_hp": 11, "maximum_hp": 10, "operation": "damage", "amount": 1},
+            {"current_hp": 10, "maximum_hp": 10, "operation": "damage", "amount": True},
+            {
+                "current_hp": 10,
+                "maximum_hp": 10,
+                "operation": "damage",
+                "amount": 1,
+                "resistance": "fire",
+            },
+        ):
+            invalid.append(
+                json.loads(
+                    registry.dispatch("rpg_hit_points", args, scope=manager.scope_key)
                 )
             )
     finally:
