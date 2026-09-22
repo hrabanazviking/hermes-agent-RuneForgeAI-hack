@@ -28,6 +28,24 @@ def main() -> None:
             )
         print(json.dumps(canonical, ensure_ascii=True, separators=(",", ":")))
         return
+    if len(sys.argv) == 3 and sys.argv[2] == "kennings":
+        engine_root = Path(sys.argv[1]).resolve(strict=True)
+        sys.path.insert(0, str(engine_root))
+        from seidr.lexicon import Lexicon
+
+        lexicon = Lexicon(seed=1)
+        payload = [
+            {
+                "base": kenning.base,
+                "expression": kenning.expression,
+                "components": list(kenning.components),
+                "domain": kenning.domain,
+                "syllables": kenning.syllable_count,
+            }
+            for kenning in lexicon.kennings
+        ]
+        print(json.dumps(payload, ensure_ascii=True, separators=(",", ":")))
+        return
     if len(sys.argv) != 7:
         raise SystemExit(2)
     engine_root = Path(sys.argv[1]).resolve(strict=True)

@@ -46,7 +46,18 @@ FORMS = {
         encoding="utf-8",
     )
     (package / "lexicon.py").write_text(
-        "class Lexicon:\n    def __init__(self, seed=None): self.seed = seed\n",
+        '''class Kenning:
+    base = "sea"
+    expression = "whale-road"
+    components = ["whale", "road"]
+    domain = "vanaheim"
+    syllable_count = 2
+
+class Lexicon:
+    def __init__(self, seed=None):
+        self.seed = seed
+        self.kennings = [Kenning()]
+''',
         encoding="utf-8",
     )
     record_code = ""
@@ -178,7 +189,11 @@ def test_forms_catalog_uses_official_registry_and_removes_aliases(tmp_path):
     manager.discover_and_load()
     try:
         loaded = manager._plugins["volmarr-seidr"]
-        assert set(loaded.tools_registered) == {"seidr_compose", "seidr_forms"}
+        assert set(loaded.tools_registered) == {
+            "seidr_compose",
+            "seidr_forms",
+            "seidr_kennings",
+        }
         result = json.loads(
             registry.dispatch("seidr_forms", {}, scope=manager.scope_key)
         )
@@ -188,6 +203,33 @@ def test_forms_catalog_uses_official_registry_and_removes_aliases(tmp_path):
     assert keys == ["fornyrthislag", "ljodhattr", "drottkvaett", "malahattr"]
     assert "fornyrdislag" not in keys
     assert result["forms"][0]["syllables_per_line"] == {"minimum": 4, "maximum": 6}
+
+
+def test_kennings_catalog_comes_from_official_lexicon(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    root = tmp_path / "seidr-engine"
+    _fake_engine(root, "unused")
+    _write_profile(home, root)
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch("seidr_kennings", {}, scope=manager.scope_key)
+        )
+    finally:
+        manager.unload()
+    assert result["kennings"] == [
+        {
+            "base": "sea",
+            "expression": "whale-road",
+            "components": ["whale", "road"],
+            "domain": "vanaheim",
+            "syllables": 2,
+        }
+    ]
 
 
 def test_compose_rejects_invalid_arguments_before_engine(tmp_path):

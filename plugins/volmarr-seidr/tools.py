@@ -70,6 +70,15 @@ SEIDR_FORMS_SCHEMA = {
     "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
 }
 
+SEIDR_KENNINGS_SCHEMA = {
+    "name": "seidr_kennings",
+    "description": (
+        "List the official Seiðr Engine's complete kenning catalog with bases, "
+        "expressions, components, domains, and computed syllable counts."
+    ),
+    "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
+}
+
 
 def _configured_file(value: Any, *, executable: bool = False) -> Path | None:
     if not isinstance(value, str) or not value.strip() or "\x00" in value:
@@ -253,6 +262,52 @@ def _run_forms(ctx) -> tuple[list[dict[str, Any]] | None, str | None]:
     return forms, None
 
 
+def _run_kennings(ctx) -> tuple[list[dict[str, Any]] | None, str | None]:
+    runtime = _runtime(ctx)
+    if runtime is None:
+        return None, "Configure volmarr-seidr engine_root and a Python interpreter."
+    python, engine_root = runtime
+    try:
+        completed = subprocess.run(
+            [str(python), "-B", "-P", "-s", str(_RUNNER), str(engine_root), "kennings"],
+            env=_child_env(),
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=_timeout(ctx),
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return None, "The local Seiðr kenning catalog timed out."
+    except OSError:
+        return None, "The local Seiðr Engine could not be started."
+    stdout = completed.stdout or ""
+    stderr = completed.stderr or ""
+    if (
+        len(stdout.encode("utf-8", errors="replace")) > _MAX_OUTPUT_BYTES
+        or len(stderr.encode("utf-8", errors="replace")) > _MAX_OUTPUT_BYTES
+    ):
+        return None, "The local Seiðr Engine returned an oversized response."
+    if completed.returncode != 0:
+        return None, "The local Seiðr Engine could not list its kennings."
+    try:
+        kennings = json.loads(stdout)
+    except (TypeError, json.JSONDecodeError):
+        return None, "The local Seiðr Engine returned an invalid response."
+    if not isinstance(kennings, list) or not kennings or not all(
+        isinstance(item, dict)
+        and item.get("base")
+        and item.get("expression")
+        and isinstance(item.get("components"), list)
+        and isinstance(item.get("syllables"), int)
+        for item in kennings
+    ):
+        return None, "The local Seiðr Engine returned an invalid kenning catalog."
+    return kennings, None
+
+
 def build_compose_handler(ctx):
     def handle(args: dict[str, Any], **_kwargs: Any) -> str:
         allowed = {"form", "domain", "stanzas", "use_kennings", "seed"}
@@ -316,10 +371,30 @@ def build_forms_handler(ctx):
     return handle
 
 
+def build_kennings_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if args:
+            return tool_error("seidr_kennings does not accept arguments")
+        kennings, error = _run_kennings(ctx)
+        if error is not None:
+            return tool_error(error)
+        return tool_result(
+            {
+                "success": True,
+                "engine": "hrabanazviking/seidr-engine",
+                "calculation": "kenning_catalog",
+                "kennings": kennings,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         ("seidr_compose", SEIDR_COMPOSE_SCHEMA, build_compose_handler(ctx), "ᛋ"),
         ("seidr_forms", SEIDR_FORMS_SCHEMA, build_forms_handler(ctx), "📜"),
+        ("seidr_kennings", SEIDR_KENNINGS_SCHEMA, build_kennings_handler(ctx), "ᚱ"),
     ):
         ctx.register_tool(
             name=name,

@@ -2020,6 +2020,11 @@ Old Norse names, syllable ranges, and structural descriptions. Alternate spellin
 collapsed according to the form objects' own canonical names. Kenning catalog and independent
 meter validation remain open.
 
+Slice 44 adds `seidr_kennings`, a complete read-only projection of the official Lexicon's bases,
+expressions, component words, domains, and computed syllable counts. No vocabulary is copied or
+extended in Hermes, and the catalog is deliberately unpaginated. Independent meter validation
+remains open.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

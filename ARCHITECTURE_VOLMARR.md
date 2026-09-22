@@ -718,6 +718,17 @@ The tool accepts no arguments and uses the same read-only, credential-free child
 composition. It adds no cache, persistence, or prompt text; changes in the external engine's
 canonical registry appear when the configured checkout changes.
 
+### Slice 44: Official Kenning Catalog
+
+`seidr_kennings` returns the configured engine's complete `Lexicon.kennings` collection, including
+each described base, poetic expression, component words, Nine Worlds domain, and the engine's own
+computed syllable count. The tool has no filters or pagination, so the compact authoritative
+catalog is read in full and no model can mistake a partial page for the vocabulary boundary.
+
+Hermes neither copies nor extends this lexicon. The catalog is resolved from the active profile's
+external checkout on every call through the same closed-stdin, bytecode-free child, without state,
+network, provider credentials, or prompt mutation.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

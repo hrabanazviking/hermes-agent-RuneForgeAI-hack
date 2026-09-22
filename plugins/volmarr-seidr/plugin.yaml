@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-seidr
-version: "0.2.0"
+version: "0.3.0"
 description: "Local deterministic Old Norse poetry through the official Seiðr Engine."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/seidr-engine
