@@ -68,6 +68,7 @@ def test_real_discovery_runs_lunar_with_fixed_argv_and_scrubbed_environment(
         assert set(loaded.tools_registered) == {
             "astrology_lunar",
             "astrology_planetary_hours",
+            "astrology_natal",
         }
         result = json.loads(
             registry.dispatch("astrology_lunar", {}, scope=manager.scope_key)
@@ -231,6 +232,132 @@ def test_planetary_hours_zero_exit_error_is_not_reported_as_success(tmp_path):
         manager.unload()
 
     assert result["error"] == "The local Astrology Engine could not complete the calculation."
+
+
+def test_natal_uses_explicit_coordinates_and_optional_time_without_identity_or_geocoding(
+    tmp_path,
+):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine = tmp_path / "astrology_engine.py"
+    record = tmp_path / "natal.json"
+    _engine_script(engine, "NATAL CHART REPORT", record=record)
+    _write_profile(home, engine)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch(
+                "astrology_natal",
+                {
+                    "date": "1975-11-22",
+                    "time": "14:30",
+                    "latitude": 39.7684,
+                    "longitude": -86.1581,
+                },
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert result["calculation"] == "natal"
+    assert result["time_known"] is True
+    assert result["report"] == "NATAL CHART REPORT"
+    assert result["interpretation_included"] is False
+    invocation = json.loads(record.read_text(encoding="utf-8"))
+    assert invocation["argv"] == [
+        "natal",
+        "--date",
+        "1975-11-22",
+        "--lat",
+        "39.7684",
+        "--lon",
+        "-86.1581",
+        "--time",
+        "14:30",
+    ]
+    assert "--city" not in invocation["argv"]
+    assert "--nation" not in invocation["argv"]
+    assert "--name" not in invocation["argv"]
+
+
+def test_natal_without_time_preserves_the_engine_unknown_time_path(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine = tmp_path / "astrology_engine.py"
+    record = tmp_path / "natal-unknown-time.json"
+    _engine_script(engine, "APPROXIMATE NATAL CHART", record=record)
+    _write_profile(home, engine)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch(
+                "astrology_natal",
+                {"date": "1975-11-22", "latitude": 39.7684, "longitude": -86.1581},
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert result["time_known"] is False
+    assert "--time" not in json.loads(record.read_text(encoding="utf-8"))["argv"]
+
+
+def test_natal_rejects_bad_time_and_extra_identity_fields_before_engine(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine = tmp_path / "astrology_engine.py"
+    marker = tmp_path / "should-not-exist"
+    engine.write_text(
+        f"from pathlib import Path\nPath({str(marker)!r}).write_text('called')\n",
+        encoding="utf-8",
+    )
+    _write_profile(home, engine)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        bad_time = json.loads(
+            registry.dispatch(
+                "astrology_natal",
+                {
+                    "date": "1975-11-22",
+                    "time": "24:00",
+                    "latitude": 39.7684,
+                    "longitude": -86.1581,
+                },
+                scope=manager.scope_key,
+            )
+        )
+        extra_name = json.loads(
+            registry.dispatch(
+                "astrology_natal",
+                {
+                    "date": "1975-11-22",
+                    "latitude": 39.7684,
+                    "longitude": -86.1581,
+                    "name": "private identity",
+                },
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert "error" in bad_time
+    assert "error" in extra_name
+    assert not marker.exists()
 
 
 def test_lunar_tool_rejects_arguments_before_starting_engine(tmp_path):

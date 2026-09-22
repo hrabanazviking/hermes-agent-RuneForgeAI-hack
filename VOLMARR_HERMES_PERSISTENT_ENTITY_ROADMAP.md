@@ -1955,6 +1955,12 @@ geocoding unreachable. Exact CLI construction, polar/error classification, outpu
 invalid-input preflight are covered without persisting or publishing location data. Natal,
 transit, prediction, synastry, and astrocartography remain open.
 
+Slice 34 adds `astrology_natal` with strict birth date, optional 24-hour time, and required finite
+coordinates. The adapter never sends city, nation, or name flags, preserving a local no-geocoding
+calculation path and minimizing identity data. Unknown time remains explicitly approximate.
+The plugin creates no extra persistence or telemetry; normal Hermes session-history policy applies
+to the tool call and result. Transit, prediction, synastry, and astrocartography remain open.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

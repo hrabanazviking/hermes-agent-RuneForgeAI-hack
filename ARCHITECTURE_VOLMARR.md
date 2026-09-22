@@ -576,7 +576,21 @@ The result contains the engine's day ruler, sunrise/sunset calculation, and twel
 night Chaldean rulers; interpretation remains absent. The adapter also recognizes the official
 engine's zero-exit `Error calculating planetary hours` output as failure, so polar-day or
 ephemeris errors cannot masquerade as successful reports. No location is stored, published, or
-sent to a network service.
+sent to a network service by the plugin; ordinary Hermes tool-call transcript policy still applies.
+
+### Slice 34: Explicit-Coordinate Natal Charts
+
+`astrology_natal` accepts a real birth date, optional validated 24-hour birth time, and finite
+explicit coordinates. It passes only `natal`, date, coordinate, and optional time flags to the
+official engine—never a city, nation, or personal name—so its geocoder and identity-label surfaces
+remain unreachable. When time is absent the engine's documented unknown-time/noon path is
+preserved and the result labels `time_known: false` rather than inventing precision.
+
+The tool returns the engine's local planetary positions, houses, aspects, dignities, lots,
+antiscia, Hellenistic analysis, and Norse/rune overlay as calculation output with interpretation
+explicitly absent. The plugin creates no additional state, memory record, telemetry, or network
+copy. Birth inputs and reports remain ordinary Hermes tool-call data and therefore follow the
+operator's normal session-history policy.
 
 ## Verification Standard
 

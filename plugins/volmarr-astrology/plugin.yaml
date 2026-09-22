@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-astrology
-version: "0.2.0"
+version: "0.3.0"
 description: "Local deterministic astrology calculations through the official Astrology Engine."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/astrology-engine

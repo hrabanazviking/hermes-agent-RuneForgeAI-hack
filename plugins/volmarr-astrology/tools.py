@@ -74,6 +74,42 @@ ASTROLOGY_PLANETARY_HOURS_SCHEMA = {
     },
 }
 
+ASTROLOGY_NATAL_SCHEMA = {
+    "name": "astrology_natal",
+    "description": (
+        "Calculate a local natal chart from an explicit birth date and coordinates. "
+        "Birth time is optional; when omitted, the engine marks houses and angles as "
+        "approximate. The plugin does not geocode, create extra state, or interpret the chart."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "date": {
+                "type": "string",
+                "description": "Birth date in YYYY-MM-DD form.",
+                "pattern": r"^\d{4}-\d{2}-\d{2}$",
+            },
+            "time": {
+                "type": "string",
+                "description": "Optional local birth time in 24-hour HH:MM form.",
+                "pattern": r"^(?:[01]\d|2[0-3]):[0-5]\d$",
+            },
+            "latitude": {
+                "type": "number",
+                "exclusiveMinimum": -90,
+                "exclusiveMaximum": 90,
+            },
+            "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180,
+            },
+        },
+        "required": ["date", "latitude", "longitude"],
+        "additionalProperties": False,
+    },
+}
+
 
 def _configured_file(value: Any, *, executable: bool = False) -> Path | None:
     if not isinstance(value, str) or not value.strip() or "\x00" in value:
@@ -171,7 +207,7 @@ def _run_calculation(
     if any(marker in combined for marker in zero_exit_failure_markers):
         return None, "The local Astrology Engine could not complete the calculation."
     if not report:
-        return None, "The local Astrology Engine returned no lunar calculation."
+        return None, "The local Astrology Engine returned no calculation output."
     return report, None
 
 
@@ -193,6 +229,22 @@ def _number(value: Any, *, minimum: float, maximum: float) -> float | None:
 
 def _coordinate(value: float) -> str:
     return format(value, ".12g")
+
+
+def _calendar_date(value: Any) -> str | None:
+    if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        return None
+    try:
+        date.fromisoformat(value)
+    except ValueError:
+        return None
+    return value
+
+
+def _clock_time(value: Any) -> str | None:
+    if not isinstance(value, str) or not re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d", value):
+        return None
+    return value
 
 
 def build_lunar_handler(ctx):
@@ -221,14 +273,8 @@ def build_planetary_hours_handler(ctx):
             return tool_error(
                 "date, latitude, and longitude are required; no other fields are accepted"
             )
-        raw_date = args.get("date")
-        if not isinstance(raw_date, str) or not re.fullmatch(
-            r"\d{4}-\d{2}-\d{2}", raw_date
-        ):
-            return tool_error("date must be a real calendar date in YYYY-MM-DD form")
-        try:
-            date.fromisoformat(raw_date)
-        except ValueError:
+        raw_date = _calendar_date(args.get("date"))
+        if raw_date is None:
             return tool_error("date must be a real calendar date in YYYY-MM-DD form")
         latitude = _number(args.get("latitude"), minimum=-90.0, maximum=90.0)
         longitude = _number(args.get("longitude"), minimum=-180.0, maximum=180.0)
@@ -267,6 +313,58 @@ def build_planetary_hours_handler(ctx):
     return handle
 
 
+def build_natal_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        allowed = {"date", "time", "latitude", "longitude"}
+        if not {"date", "latitude", "longitude"}.issubset(args) or not set(args) <= allowed:
+            return tool_error(
+                "date, latitude, and longitude are required; only optional time is accepted"
+            )
+        raw_date = _calendar_date(args.get("date"))
+        if raw_date is None:
+            return tool_error("date must be a real calendar date in YYYY-MM-DD form")
+        raw_time = args.get("time")
+        if raw_time is not None:
+            raw_time = _clock_time(raw_time)
+            if raw_time is None:
+                return tool_error("time must use 24-hour HH:MM form")
+        latitude = _number(args.get("latitude"), minimum=-90.0, maximum=90.0)
+        longitude = _number(args.get("longitude"), minimum=-180.0, maximum=180.0)
+        if latitude is None or not -90.0 < latitude < 90.0:
+            return tool_error("latitude must be a finite number strictly between -90 and 90")
+        if longitude is None:
+            return tool_error("longitude must be a finite number from -180 to 180")
+        argv = [
+            "natal",
+            "--date",
+            raw_date,
+            "--lat",
+            _coordinate(latitude),
+            "--lon",
+            _coordinate(longitude),
+        ]
+        if raw_time is not None:
+            argv.extend(["--time", raw_time])
+        report, error = _run_calculation(ctx, argv)
+        if error is not None:
+            return tool_error(error)
+        return tool_result(
+            {
+                "success": True,
+                "engine": "hrabanazviking/astrology-engine",
+                "calculation": "natal",
+                "interpretation_included": False,
+                "date": raw_date,
+                "time_known": raw_time is not None,
+                "latitude": latitude,
+                "longitude": longitude,
+                "report": report,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         (
@@ -280,6 +378,12 @@ def register_tools(ctx) -> None:
             ASTROLOGY_PLANETARY_HOURS_SCHEMA,
             build_planetary_hours_handler(ctx),
             "🕰️",
+        ),
+        (
+            "astrology_natal",
+            ASTROLOGY_NATAL_SCHEMA,
+            build_natal_handler(ctx),
+            "✨",
         ),
     ):
         ctx.register_tool(
