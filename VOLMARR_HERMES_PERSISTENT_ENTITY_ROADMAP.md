@@ -1986,6 +1986,14 @@ bounded subprocess contract.
 planetary-hours, prediction, anonymous synastry, and coordinate-only astrocartography. Tarot is the
 next personal tool family.
 
+Slice 39 begins Tarot with `tarot_draw`, a reproducible single-card draw against the official
+RuneTarot deck. The official repository's latest `main` contains documentation and its MIT license;
+the executable 78-card engine currently lives on the official `development` branch at
+`5c2ed4746b1c303590bca85bb0d30a3d7b1e437b`. The adapter imports only that deck subsystem in an
+isolated, credential-free child and returns card facts plus built-in Golden Dawn correspondences.
+It never accepts question text, initializes the upstream AI or session layers, or creates upstream
+history and exports. Multi-card spreads and structural dignity analysis remain open.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
