@@ -62,6 +62,31 @@ SMIDJA_ASSETS_SCHEMA = {
     },
 }
 
+SMIDJA_GATE_RULES_SCHEMA = {
+    "name": "smidja_gate_rules",
+    "description": (
+        "List bounded Seidr-Smidja Gate rule metadata for one compliance target. "
+        "This read-only query does not inspect an avatar or issue a compliance verdict."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "target": {"type": "string", "enum": ["VRCHAT", "VTUBE_STUDIO"]}
+        },
+        "required": ["target"],
+        "additionalProperties": False,
+    },
+}
+
+SMIDJA_RENDER_VIEWS_SCHEMA = {
+    "name": "smidja_render_views",
+    "description": (
+        "List Seidr-Smidja's canonical Oracle Eye view names without rendering. "
+        "This read-only query does not launch Blender or create images."
+    ),
+    "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
+}
+
 
 def _root(value: Any, marker: str | None = None) -> Path | None:
     if not isinstance(value, str) or not value.strip() or "\x00" in value:
@@ -293,6 +318,90 @@ def build_assets_handler(ctx):
     return handle
 
 
+def build_gate_rules_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if set(args) != {"target"} or args.get("target") not in {
+            "VRCHAT",
+            "VTUBE_STUDIO",
+        }:
+            return tool_error("target must be VRCHAT or VTUBE_STUDIO")
+        engine = _root(
+            ctx.get_config("engine_root", ""), marker="src/seidr_smidja/gate/gate.py"
+        )
+        python = _python(ctx.get_config("python_path", "") or sys.executable)
+        if engine is None or python is None or not _RUNNER.is_file():
+            return tool_error("Configure volmarr-smidja engine_root and Python.")
+        target = args["target"]
+        payload = _run(ctx, python, ["gate-rules", str(engine), target])
+        raw_rules = None if payload is None else payload.get("rules")
+        if not isinstance(raw_rules, list) or not 1 <= len(raw_rules) <= 100:
+            return tool_error("Seidr-Smidja Gate rule discovery could not complete")
+        expected = {"rule_id", "display_name", "severity", "description"}
+        for rule in raw_rules:
+            if not isinstance(rule, dict) or set(rule) != expected:
+                return tool_error("Seidr-Smidja returned invalid Gate rule metadata")
+            if any(not isinstance(rule[key], str) or len(rule[key]) > 1000 for key in expected):
+                return tool_error("Seidr-Smidja returned invalid Gate rule metadata")
+            if rule["severity"] not in {"ERROR", "WARNING"}:
+                return tool_error("Seidr-Smidja returned invalid Gate rule metadata")
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "smidja_gate_rules",
+                "target": target,
+                "count": len(raw_rules),
+                "rules": raw_rules,
+                "artifact_inspected": False,
+                "compliance_performed": False,
+                "source": {
+                    "engine": "Seidr-Smidja",
+                    "api": "gate.list_rules",
+                    "license_metadata": "CONFLICT: root Apache-2.0; pyproject MIT",
+                },
+            }
+        )
+
+    return handle
+
+
+def build_render_views_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if args:
+            return tool_error("smidja_render_views accepts no arguments")
+        engine = _root(
+            ctx.get_config("engine_root", ""), marker="src/seidr_smidja/oracle_eye/eye.py"
+        )
+        python = _python(ctx.get_config("python_path", "") or sys.executable)
+        if engine is None or python is None or not _RUNNER.is_file():
+            return tool_error("Configure volmarr-smidja engine_root and Python.")
+        payload = _run(ctx, python, ["render-views", str(engine)])
+        views = None if payload is None else payload.get("views")
+        if (
+            not isinstance(views, list)
+            or not 1 <= len(views) <= 32
+            or any(not isinstance(view, str) or not view or len(view) > 100 for view in views)
+            or len(set(views)) != len(views)
+        ):
+            return tool_error("Seidr-Smidja Oracle Eye view discovery could not complete")
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "smidja_render_views",
+                "count": len(views),
+                "views": views,
+                "blender_launched": False,
+                "images_created": False,
+                "source": {
+                    "engine": "Seidr-Smidja",
+                    "api": "oracle_eye.list_standard_views",
+                    "license_metadata": "CONFLICT: root Apache-2.0; pyproject MIT",
+                },
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     ctx.register_tool(
         name="smidja_spec_validate",
@@ -309,4 +418,20 @@ def register_tools(ctx) -> None:
         handler=build_assets_handler(ctx),
         description=SMIDJA_ASSETS_SCHEMA["description"],
         emoji="🗃️",
+    )
+    ctx.register_tool(
+        name="smidja_gate_rules",
+        toolset="volmarr_smidja",
+        schema=SMIDJA_GATE_RULES_SCHEMA,
+        handler=build_gate_rules_handler(ctx),
+        description=SMIDJA_GATE_RULES_SCHEMA["description"],
+        emoji="🚪",
+    )
+    ctx.register_tool(
+        name="smidja_render_views",
+        toolset="volmarr_smidja",
+        schema=SMIDJA_RENDER_VIEWS_SCHEMA,
+        handler=build_render_views_handler(ctx),
+        description=SMIDJA_RENDER_VIEWS_SCHEMA["description"],
+        emoji="👁️",
     )
