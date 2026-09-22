@@ -45,6 +45,7 @@ The orchestrator (`agent.secret_sources.registry.apply_all`) owns everything sec
 | Per-source wall-clock timeout | Keeping `fetch()` reasonably fast |
 | Per-var provenance + `(from X)` labels | A human-readable `label` |
 | `os.environ` writes | Nothing — you never touch the environment |
+| Profile-scoped exact-value redaction for applied secrets | Nothing — return plaintext only in `FetchResult.secrets` |
 
 ## Directory structure
 

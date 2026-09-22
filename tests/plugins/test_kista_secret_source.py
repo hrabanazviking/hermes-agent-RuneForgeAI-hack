@@ -189,7 +189,76 @@ def test_real_subprocess_keeps_a_b_a_vaults_isolated(source, tmp_path):
     assert values == ["secret-for-profile-a", "secret-for-profile-b", "secret-for-profile-a"]
 
 
+def test_orchestrator_registers_exact_redaction_per_profile(source, tmp_path):
+    from agent.redact import (
+        clear_vault_redaction_values,
+        redact_sensitive_text,
+    )
+    from agent.secret_sources import registry
+    from hermes_constants import (
+        hermes_home_key,
+        reset_hermes_home_override,
+        set_hermes_home_override,
+    )
+
+    helper = tmp_path / "fake_kista.py"
+    helper.write_text(
+        "import json, os\n"
+        "from pathlib import Path\n"
+        "profile = Path(os.environ['KISTA_DIR']).parent.name\n"
+        "print(json.dumps({'key': 'opaque-canary-for-' + profile}))\n",
+        encoding="utf-8",
+    )
+    home_a = tmp_path / "redact-a"
+    home_b = tmp_path / "redact-b"
+    home_a.mkdir()
+    home_b.mkdir()
+    scope_a = hermes_home_key(home_a)
+    scope_b = hermes_home_key(home_b)
+    cfg = {
+        "kista": {
+            "enabled": True,
+            "binary_path": str(helper),
+            "env": {"PROFILE_PASSWORD": "kista://service/key"},
+        }
+    }
+    registry._reset_registry_for_tests()
+    assert registry.register_source(source, scope=scope_a)
+    assert registry.register_source(source, scope=scope_b)
+
+    try:
+        values = []
+        for home in (home_a, home_b, home_a):
+            environment = {}
+            report = registry.apply_all(cfg, home, environ=environment)
+            assert report.sources[0].result.ok
+            values.append(environment["PROFILE_PASSWORD"])
+
+        secret_a, secret_b, repeated_a = values
+        assert repeated_a == secret_a
+        token = set_hermes_home_override(home_a)
+        try:
+            assert redact_sensitive_text(secret_a) != secret_a
+            assert redact_sensitive_text(secret_b) == secret_b
+        finally:
+            reset_hermes_home_override(token)
+        token = set_hermes_home_override(home_b)
+        try:
+            assert redact_sensitive_text(secret_b) != secret_b
+            assert redact_sensitive_text(secret_a) == secret_a
+        finally:
+            reset_hermes_home_override(token)
+    finally:
+        clear_vault_redaction_values(scope=scope_a)
+        clear_vault_redaction_values(scope=scope_b)
+        registry._reset_registry_for_tests()
+
+
 def test_real_plugin_discovery_registers_and_applies_kista(tmp_path, monkeypatch):
+    from agent.redact import (
+        clear_vault_redaction_values,
+        redact_registered_vault_values,
+    )
     from agent.secret_sources import registry
     from hermes_constants import hermes_home_key
     from hermes_cli.plugins import PluginManager
@@ -197,7 +266,10 @@ def test_real_plugin_discovery_registers_and_applies_kista(tmp_path, monkeypatch
     home = tmp_path / "home"
     home.mkdir()
     helper = tmp_path / "fake_kista.py"
-    helper.write_text("import json\nprint(json.dumps({'key': 'from-kista'}))\n", encoding="utf-8")
+    canary = "KISTA-DISCOVERY-CANARY"
+    helper.write_text(
+        f"import json\nprint(json.dumps({{'key': {canary!r}}}))\n", encoding="utf-8"
+    )
     (home / "config.yaml").write_text(
         "plugins:\n"
         "  enabled: [kista-secret-source]\n"
@@ -237,8 +309,10 @@ def test_real_plugin_discovery_registers_and_applies_kista(tmp_path, monkeypatch
         assert loaded.enabled
         assert registered is not None
         assert registered.scheme == "kista"
-        assert environment["HERMES_TEST_KISTA_API_KEY"] == "from-kista"
+        assert environment["HERMES_TEST_KISTA_API_KEY"] == canary
         assert report.provenance["HERMES_TEST_KISTA_API_KEY"].source == "kista"
+        assert redact_registered_vault_values(canary, scope=home) != canary
     finally:
+        clear_vault_redaction_values(scope=home)
         os.environ.pop("HERMES_TEST_KISTA_API_KEY", None)
         registry._reset_registry_for_tests()

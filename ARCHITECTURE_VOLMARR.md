@@ -502,6 +502,20 @@ The operator may pin `binary_path` to an installed Kista executable or the offic
 `scripts/credstore.py` during development. Existing environment values win by default; an explicit
 `override_existing: true` opts into replacement through the normal Hermes orchestrator.
 
+### Slice 29: Profile-Scoped Exact Redaction
+
+The Secret Source orchestrator now registers every value it actually applies with Hermes' existing
+bounded exact-value vault redactor before placing the value in the target environment. This is a
+generic security property of all Secret Sources rather than Kista-specific logging code. Values
+that lose precedence are not registered, and no source receives access to another source's values.
+
+The exact-value registry remains memory-only and is keyed by the normalized Hermes profile home.
+Consequently, Kista credentials are scrubbed by the canonical redaction pipeline—including the
+hard model-egress pass and redacting log formatter—even when a credential has no recognizable
+vendor prefix. Profile A's registered bytes neither redact nor disclose matches in profile B. The
+registry stores no reference, service name, environment-variable name, or persistent copy, and the
+Kista plugin still owns no prompt, transcript, event, telemetry, or log integration.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
