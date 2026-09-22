@@ -618,6 +618,33 @@ Start and end never default to the host clock, coordinate geocoding is unreachab
 operator configures a longer value. Prediction output is calculation evidence only; the normal
 cognition layer may interpret it separately.
 
+### Slice 37: Anonymous Coordinate-Only Synastry
+
+`astrology_synastry` calculates two-chart cross-aspects from two explicit date/coordinate pairs and
+optional times. The schema contains no name, city, or nation fields, and direct-dispatch validation
+rejects those extra identity surfaces before process launch. The official engine therefore labels
+the charts only as Person A and Person B and cannot invoke geocoding.
+
+The current official CLI enables house overlays only when city fields are present, even if latitude
+and longitude are already supplied. This adapter does not fabricate placeholder cities to enter
+that branch: `house_overlays_included` is explicitly false, while the valid coordinate-based
+planetary cross-aspects remain available. The plugin adds no relationship record or interpretation;
+ordinary Hermes transcript policy remains the only persistence boundary.
+
+### Slice 38: Coordinate-Only Astrocartography
+
+`astrology_astrocartography` completes the initial astrology set with the official engine's local
+MC, IC, ASC, and DSC line calculation. It requires a real birth date plus finite birth coordinates;
+birth time is optional and its presence is declared in result metadata. An optional query point may
+be supplied only as a complete latitude/longitude pair, allowing the engine to report nearby lines
+without accepting a city or invoking geocoding.
+
+The schema and direct-dispatch guard reject names, city/nation labels, partial query points, and
+out-of-range coordinates before the subprocess starts. Only validated date, time, birth-coordinate,
+and query-coordinate flags reach the fixed CLI boundary. The plugin creates no map record, location
+profile, telemetry publisher, or interpretive layer; the calculation and its ordinary Hermes tool
+transcript remain subject to the same policies as the other astrology tools.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
