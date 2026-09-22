@@ -28,6 +28,7 @@ _BASE_ENV = (
     "LC_ALL",
 )
 _RUNNER = Path(__file__).with_name("_runner.py").resolve()
+_PRESETS_RUNNER = Path(__file__).with_name("_presets_runner.py").resolve()
 
 HAMR_SPEC_VALIDATE_SCHEMA = {
     "name": "hamr_spec_validate",
@@ -48,6 +49,15 @@ HAMR_SPEC_VALIDATE_SCHEMA = {
         "required": ["spec_path"],
         "additionalProperties": False,
     },
+}
+
+HAMR_PRESETS_SCHEMA = {
+    "name": "hamr_presets",
+    "description": (
+        "List the configured official Hamr engine's body and character preset catalogs. "
+        "This read-only discovery tool does not build or modify an avatar."
+    ),
+    "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
 }
 
 
@@ -214,12 +224,82 @@ def build_spec_validate_handler(ctx):
     return handle
 
 
+def build_presets_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if args:
+            return tool_error("hamr_presets accepts no arguments")
+        runtime = _runtime(ctx)
+        if runtime is None or not _PRESETS_RUNNER.is_file():
+            return tool_error(
+                "Configure volmarr-hamr engine_root, spec_root, and a compatible Python interpreter."
+            )
+        python, engine_root, _spec_root = runtime
+        try:
+            completed = subprocess.run(
+                [str(python), "-B", "-P", "-s", str(_PRESETS_RUNNER), str(engine_root)],
+                env=_child_env(),
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=_timeout(ctx),
+                check=False,
+            )
+        except subprocess.TimeoutExpired:
+            return tool_error("Hamr preset discovery timed out")
+        except OSError:
+            return tool_error("Hamr preset discovery could not be started")
+        stdout = completed.stdout or ""
+        stderr = completed.stderr or ""
+        if (
+            len(stdout.encode("utf-8", errors="replace")) > _MAX_OUTPUT_BYTES
+            or len(stderr.encode("utf-8", errors="replace")) > _MAX_OUTPUT_BYTES
+        ):
+            return tool_error("Hamr returned an oversized preset response")
+        if completed.returncode != 0:
+            return tool_error("Hamr could not list presets")
+        try:
+            payload = json.loads(stdout)
+        except (TypeError, json.JSONDecodeError):
+            return tool_error("Hamr returned an invalid preset response")
+        if not isinstance(payload, dict) or set(payload) != {"body", "character"}:
+            return tool_error("Hamr returned an invalid preset response")
+        body = payload["body"]
+        character = payload["character"]
+        if not isinstance(body, list) or not isinstance(character, list):
+            return tool_error("Hamr returned an invalid preset response")
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "hamr_presets",
+                "body_count": len(body),
+                "character_count": len(character),
+                "body": body,
+                "character": character,
+                "blender_launched": False,
+                "source": {"engine": "Hamr", "api": "preset catalogs", "license": "MIT"},
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
-    ctx.register_tool(
-        name="hamr_spec_validate",
-        toolset="volmarr_hamr",
-        schema=HAMR_SPEC_VALIDATE_SCHEMA,
-        handler=build_spec_validate_handler(ctx),
-        description=HAMR_SPEC_VALIDATE_SCHEMA["description"],
-        emoji="🔨",
-    )
+    for name, schema, handler, emoji in (
+        (
+            "hamr_spec_validate",
+            HAMR_SPEC_VALIDATE_SCHEMA,
+            build_spec_validate_handler(ctx),
+            "🔨",
+        ),
+        ("hamr_presets", HAMR_PRESETS_SCHEMA, build_presets_handler(ctx), "🧍"),
+    ):
+        ctx.register_tool(
+            name=name,
+            toolset="volmarr_hamr",
+            schema=schema,
+            handler=handler,
+            description=schema["description"],
+            emoji=emoji,
+        )

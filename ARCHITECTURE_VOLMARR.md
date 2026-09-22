@@ -852,6 +852,17 @@ has closed stdin, a minimal environment without service credentials or `HERMES_H
 writes disabled, finite input/output/time bounds, and no Blender invocation. Results preserve
 Hamr's validation verdict and errors while explicitly reporting that no avatar output was created.
 
+### Slice 55: Read-Only Hamr Preset Discovery
+
+`hamr_presets` reads Hamr's published `BODY_PRESETS` and `CHARACTER_PRESETS` catalogs through the
+same active-profile, credential-scrubbed subprocess boundary. Body entries expose their numeric
+proportions; character entries expose only key, display name, and short description rather than
+copying complete preset specs into Hermes.
+
+The tool accepts no arguments, launches no Blender process, creates no output, and returns finite
+catalog counts with MIT provenance. This gives later build planning a discoverable official
+vocabulary without prematurely granting avatar-build or filesystem-write authority.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
