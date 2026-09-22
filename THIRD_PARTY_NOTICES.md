@@ -86,9 +86,17 @@ official project is available at
 No WYRD source file is copied into this repository. WYRD remains a separate service/package; this
 slice implements only the public HTTP compatibility boundary.
 
+## AI Agent Astrology Engine
+
+The `volmarr-astrology` plugin invokes the official AI Agent Astrology Engine as an external local
+process for deterministic calculations. The engine is distributed under the Apache License,
+Version 2.0, and was created by Volmarr Wyrd / RuneForgeAI. No engine source or ephemeris data is
+copied into this repository; its Python and Swiss Ephemeris dependencies remain externally
+installed components.
+
 ## Future Components
 
-No other third-party runtime component has been incorporated into the personal fork at this stage.
+No other third-party runtime component has been incorporated beyond the components listed above.
 
 When a component is copied or adapted, its required notices must be added here and its exact
 provenance must be recorded in `COMPONENT_LICENSES.md` before the change is merged.

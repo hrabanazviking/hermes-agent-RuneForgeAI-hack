@@ -1942,6 +1942,35 @@ vault storage must pass a native permission gate before credentials are read.
 
 **Done when:** these are callable through normal Hermes tools/skills.
 
+**Progress:** Slice 32 starts astrology with the normal Hermes tool surface. The opt-in
+`volmarr-astrology` plugin exposes `astrology_lunar` through the official external Astrology Engine
+at a profile-configured path. It supplies fixed argv, closed stdin, a credential-free minimal child
+environment, bounded output, static failures, and A→B→A profile resolution. Calculation remains
+local and distinct from LLM interpretation. The remaining astrology calculations and the other
+personal tool families remain open.
+
+Slice 33 adds `astrology_planetary_hours` with a required real calendar date and finite explicit
+coordinates. This keeps the official engine on its local calculation path and makes online city
+geocoding unreachable. Exact CLI construction, polar/error classification, output bounds, and
+invalid-input preflight are covered without persisting or publishing location data. Natal,
+transit, prediction, synastry, and astrocartography remain open.
+
+Slice 34 adds `astrology_natal` with strict birth date, optional 24-hour time, and required finite
+coordinates. The adapter never sends city, nation, or name flags, preserving a local no-geocoding
+calculation path and minimizing identity data. Unknown time remains explicitly approximate.
+The plugin creates no extra persistence or telemetry; normal Hermes session-history policy applies
+to the tool call and result. Transit, prediction, synastry, and astrocartography remain open.
+
+Slice 35 adds `astrology_transit` and requires an explicit sky date, eliminating the upstream
+command's implicit current-time branch so results are replayable. Optional natal and UTC transit
+times are validated and declared in result metadata; only date/time/coordinate flags reach the
+engine. Prediction, synastry, and astrocartography remain open.
+
+Slice 36 adds `astrology_predict` for exact aspects, stations, ingresses, and eclipses over an
+explicit forward window capped at 366 days. It uses the engine's documented default planet sets
+instead of exposing arbitrary list construction, and retains the local coordinate-only,
+credential-free, timeout-bounded process contract. Synastry and astrocartography remain open.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

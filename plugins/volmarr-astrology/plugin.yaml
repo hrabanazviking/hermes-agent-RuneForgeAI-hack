@@ -1,0 +1,23 @@
+manifest_version: 2
+name: volmarr-astrology
+version: "0.5.0"
+description: "Local deterministic astrology calculations through the official Astrology Engine."
+author: Volmarr Wyrd / RuneForgeAI
+homepage: https://github.com/hrabanazviking/astrology-engine
+tags:
+  - runeforgeai
+  - astrology
+  - local
+config_schema:
+  engine_path:
+    type: str
+    default: ""
+    description: "Absolute path to the official astrology_engine.py checkout."
+  python_path:
+    type: str
+    default: ""
+    description: "Python executable with the Astrology Engine dependencies installed."
+  timeout_seconds:
+    type: float
+    default: 20
+    description: "Maximum calculation runtime in seconds (clamped to 1-60)."

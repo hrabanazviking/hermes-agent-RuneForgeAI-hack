@@ -547,6 +547,77 @@ process starts. A wholly absent vault still reaches Kista so its canonical initi
 remediation remain authoritative. The audit changes no ACL or mode and never reads secret bytes;
 operators retain ownership of intentionally hardening their vault storage.
 
+## Milestone 8: Personal Tool Suite
+
+### Slice 32: Local Lunar Astrology
+
+The separate, opt-in `volmarr-astrology` plugin begins the personal tool suite with one narrow
+vertical slice: `astrology_lunar`. It invokes the official external AI Agent Astrology Engine at a
+profile-configured `astrology_engine.py` path and returns the engine's current lunar phase,
+illumination, void-of-course status, next lunations, and Moon aspects as a bounded calculation
+report. The engine computes; Hermes and its normal cognition route may interpret afterward.
+
+The tool accepts no arguments, so this first slice has no birth data, location, geocoding, network,
+or prediction-range surface. Its subprocess uses fixed argv, closed stdin, a minimal environment
+that excludes provider credentials and `HERMES_HOME`, a clamped timeout, and separate 64-KiB stdout
+and stderr limits. Child failures are translated into static errors without echoing child output.
+The plugin registers no hook, prompt contribution, provider, state store, or telemetry publisher,
+and the external Apache-2.0 engine remains outside this repository.
+
+### Slice 33: Coordinate-Bound Planetary Hours
+
+`astrology_planetary_hours` extends the same plugin and subprocess boundary with one explicit
+calendar date, latitude, and longitude. Requiring validated finite coordinates prevents the
+official engine from entering its optional city-geocoding cascade, while requiring a date avoids
+an implicit host-date default. Latitude is strictly bounded between the poles and longitude is
+bounded to the canonical `[-180, 180]` interval before fixed CLI flags are built.
+
+The result contains the engine's day ruler, sunrise/sunset calculation, and twelve day plus twelve
+night Chaldean rulers; interpretation remains absent. The adapter also recognizes the official
+engine's zero-exit `Error calculating planetary hours` output as failure, so polar-day or
+ephemeris errors cannot masquerade as successful reports. No location is stored, published, or
+sent to a network service by the plugin; ordinary Hermes tool-call transcript policy still applies.
+
+### Slice 34: Explicit-Coordinate Natal Charts
+
+`astrology_natal` accepts a real birth date, optional validated 24-hour birth time, and finite
+explicit coordinates. It passes only `natal`, date, coordinate, and optional time flags to the
+official engine—never a city, nation, or personal name—so its geocoder and identity-label surfaces
+remain unreachable. When time is absent the engine's documented unknown-time/noon path is
+preserved and the result labels `time_known: false` rather than inventing precision.
+
+The tool returns the engine's local planetary positions, houses, aspects, dignities, lots,
+antiscia, Hellenistic analysis, and Norse/rune overlay as calculation output with interpretation
+explicitly absent. The plugin creates no additional state, memory record, telemetry, or network
+copy. Birth inputs and reports remain ordinary Hermes tool-call data and therefore follow the
+operator's normal session-history policy.
+
+### Slice 35: Reproducible Transit Charts
+
+`astrology_transit` compares a coordinate-bound natal chart with a required explicit sky date.
+This deliberately removes the official CLI's implicit “now” branch, making every tool result
+replayable from its recorded arguments. Natal and transit times remain optional but validated; the
+engine's documented defaults are surfaced through `natal_time_known` and
+`transit_time_explicit` metadata instead of being hidden.
+
+Only date, time, and coordinate flags reach the external engine. City, nation, identity labels,
+network geocoding, persistence, and interpretation remain outside the plugin. The returned report
+contains sky positions, transiting planets in natal houses, and transit-to-natal aspects under the
+same bounded, credential-free subprocess contract as the earlier astrology tools.
+
+### Slice 36: Bounded Astrology Prediction
+
+`astrology_predict` exposes the official engine's exact transit-to-natal aspects, stations,
+ingresses, and eclipse scan over an explicit forward-moving window no longer than 366 days. Natal
+date and coordinates are required; birth time remains optional and explicit. The adapter uses the
+engine's documented built-in transit and natal planet sets rather than accepting arbitrary lists,
+which keeps both computation and CLI construction bounded.
+
+Start and end never default to the host clock, coordinate geocoding is unreachable, and the shared
+60-second maximum process timeout plus 64-KiB output ceiling remain hard boundaries even when the
+operator configures a longer value. Prediction output is calculation evidence only; the normal
+cognition layer may interpret it separately.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
