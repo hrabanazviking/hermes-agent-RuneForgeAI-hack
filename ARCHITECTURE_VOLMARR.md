@@ -645,6 +645,26 @@ and query-coordinate flags reach the fixed CLI boundary. The plugin creates no m
 profile, telemetry publisher, or interpretive layer; the calculation and its ordinary Hermes tool
 transcript remain subject to the same policies as the other astrology tools.
 
+### Slice 39: Reproducible Single-Card Tarot Draw
+
+The separate, opt-in `volmarr-tarot` plugin begins the Tarot family with `tarot_draw`: one card
+from the official 78-card RuneTarot deck under a required integer seed. The result carries the
+official card identity, orientation, keywords, selected orientation meanings, and Golden Dawn
+correspondences. These are deck facts; question-driven or LLM-generated interpretation remains a
+later cognition concern.
+
+RuneTarotEngine's current `main` head (`432e461136ba58cb3e507bb9cd86b4bb2faba80b`) contains the
+project description and MIT license but no executable tree. The current official executable is on
+`development` at `5c2ed4746b1c303590bca85bb0d30a3d7b1e437b`. The adapter therefore identifies that surface
+explicitly and loads only its `src.deck.TarotDeck` subsystem in an isolated child process; no
+RuneTarot source or card data is copied into this repository.
+
+The bridge never constructs RuneTarot's engine, AI reader, session manager, TUI, or renderer. It
+accepts no question or identity text, sends no provider credential, closes stdin, requires the
+official 78-card invariant, bounds runtime and output, and creates no RuneTarot history or export.
+Seed zero remains valid, reversals are explicit, and plugin configuration is resolved from the
+active Hermes profile on every draw.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

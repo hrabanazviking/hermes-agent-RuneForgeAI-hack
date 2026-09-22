@@ -1,0 +1,23 @@
+manifest_version: 2
+name: volmarr-tarot
+version: "0.1.0"
+description: "Local deterministic tarot draws through the official RuneTarot engine."
+author: Volmarr Wyrd / RuneForgeAI
+homepage: https://github.com/hrabanazviking/RuneTarotEngine
+tags:
+  - runeforgeai
+  - tarot
+  - local
+config_schema:
+  engine_root:
+    type: str
+    default: ""
+    description: "Absolute path to an official RuneTarotEngine checkout containing src/deck.py and data/."
+  python_path:
+    type: str
+    default: ""
+    description: "Python executable with the RuneTarotEngine deck dependencies installed."
+  timeout_seconds:
+    type: float
+    default: 10
+    description: "Maximum draw runtime in seconds (clamped to 1-30)."
