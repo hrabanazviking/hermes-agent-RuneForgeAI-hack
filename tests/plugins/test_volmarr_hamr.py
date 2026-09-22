@@ -13,7 +13,12 @@ from hermes_constants import (
 )
 
 
-def _write_profile(home: Path, engine_root: Path, spec_root: Path) -> None:
+def _write_profile(
+    home: Path,
+    engine_root: Path,
+    spec_root: Path,
+    artifact_root: Path | None = None,
+) -> None:
     home.mkdir(parents=True, exist_ok=True)
     (home / "config.yaml").write_text(
         "plugins:\n"
@@ -23,6 +28,7 @@ def _write_profile(home: Path, engine_root: Path, spec_root: Path) -> None:
         "      settings:\n"
         f"        engine_root: {json.dumps(str(engine_root))}\n"
         f"        spec_root: {json.dumps(str(spec_root))}\n"
+        f"        artifact_root: {json.dumps(str(artifact_root or spec_root))}\n"
         f"        python_path: {json.dumps(sys.executable)}\n",
         encoding="utf-8",
     )
@@ -99,6 +105,17 @@ def _fake_engine(root: Path, record: Path | None = None) -> None:
         "    )\n",
         encoding="utf-8",
     )
+    (package / "builder.py").write_text(
+        "from pathlib import Path\n"
+        "def inspect(path, targets=None):\n"
+        "    path = Path(path)\n"
+        "    return {\n"
+        "        'path': str(path), 'exists': path.exists(),\n"
+        "        'size_mb': path.stat().st_size / (1024 * 1024),\n"
+        "        'targets': targets or [], 'checks': [],\n"
+        "    }\n",
+        encoding="utf-8",
+    )
 
 
 def test_real_discovery_validates_without_credentials_blender_or_output(tmp_path, monkeypatch):
@@ -123,6 +140,7 @@ def test_real_discovery_validates_without_credentials_blender_or_output(tmp_path
             "hamr_spec_validate",
             "hamr_presets",
             "hamr_budget_check",
+            "hamr_artifact_probe",
         }
         result = json.loads(
             registry.dispatch(
@@ -241,6 +259,56 @@ def test_budget_check_returns_official_estimates_limits_and_verdict(tmp_path):
     assert balanced["blender_launched"] is False
     assert balanced["output_created"] is False
     assert "error" in rejected
+
+
+def test_artifact_probe_reports_current_metadata_only_scope_and_refuses_escape(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    engine = tmp_path / "hamr"
+    specs = tmp_path / "specs"
+    artifacts = tmp_path / "artifacts"
+    _fake_engine(engine)
+    specs.mkdir()
+    artifacts.mkdir()
+    (artifacts / "avatar.vrm").write_bytes(b"VRM placeholder")
+    (tmp_path / "outside.vrm").write_bytes(b"outside")
+    _write_profile(get_hermes_home(), engine, specs, artifacts)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch(
+                "hamr_artifact_probe",
+                {"artifact_path": "avatar.vrm", "targets": ["VRCHAT", "VROID"]},
+                scope=manager.scope_key,
+            )
+        )
+        rejected = []
+        for args in (
+            {"artifact_path": "../outside.vrm", "targets": ["VRCHAT"]},
+            {"artifact_path": "avatar.vrm", "targets": ["VRCHAT", "VRCHAT"]},
+            {"artifact_path": "avatar.vrm", "targets": ["UNBOUNDED"]},
+        ):
+            rejected.append(
+                json.loads(
+                    registry.dispatch(
+                        "hamr_artifact_probe", args, scope=manager.scope_key
+                    )
+                )
+            )
+    finally:
+        manager.unload()
+
+    assert result["exists"] is True
+    assert result["size_mb"] > 0
+    assert result["targets"] == ["VRCHAT", "VROID"]
+    assert result["checks"] == []
+    assert result["compliance_performed"] is False
+    assert result["inspection_scope"] == "metadata_only"
+    assert result["blender_launched"] is False
+    assert all("error" in item for item in rejected)
 
 
 def test_validation_resolves_active_profile_a_b_a(tmp_path):

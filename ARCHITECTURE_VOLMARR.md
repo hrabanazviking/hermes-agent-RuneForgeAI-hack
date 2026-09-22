@@ -875,6 +875,19 @@ credentials, call-time profile resolution, and finite subprocess bounds. It expl
 no Blender process and writes no output, so planning remains separate from the later authority to
 forge a body.
 
+### Slice 57: Honest Hamr Artifact Probe
+
+`hamr_artifact_probe` calls Hamr's current public `builder.inspect` API for one traversal-safe VRM
+or GLB beneath an active-profile artifact root. Inputs are limited to the official interface's
+documented VRChat and VRoid targets, and files are bounded at 512 MiB before the isolated process
+starts.
+
+At the verified Hamr commit, `builder.inspect` reports file existence, size, requested targets, and
+an empty checks list; the separate inspection module also identifies itself as a placeholder.
+Therefore the adapter reports `inspection_scope: metadata_only` and
+`compliance_performed: false` instead of presenting file metadata as certification. It can expose
+real official checks later without changing this truth boundary.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
