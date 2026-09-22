@@ -790,6 +790,31 @@ The table is ephemeral call input: the plugin does not name, persist, merge, wei
 narrate entries. Per-entry and table-size bounds keep the result finite, and strict field refusal
 prevents accidental expansion into campaign storage or a hidden table language.
 
+### Slice 50: External SRD Condition Lookup
+
+`rpg_condition_lookup` reads one named condition from `json/12 conditions.json` in a configured
+external `dnd-5e-srd` checkout. The root is resolved from the active profile at call time, so
+profile switches cannot retain another profile's rules source. Hermes bundles no SRD prose and
+does not rewrite or persist the returned definition.
+
+The adapter accepts only one short condition name, matches it case-insensitively, bounds both the
+source file and selected definition, and reports the external corpus file plus OGL 1.0a
+provenance. The currently verified official fork is commit
+`2e62e0413061c2443e21369cdc074c7a7356a857`; alternate configured checkouts remain explicit
+operator choices rather than silently embedded dependencies.
+
+### Slice 51: Replayable Character Ability Skeleton
+
+`rpg_random_character` creates only a mechanical ability skeleton: Strength, Dexterity,
+Constitution, Intelligence, Wisdom, and Charisma are each rolled with a fixed 4d6-drop-lowest
+method. Every die, the exact dropped index and value, resulting score, and floor-derived modifier
+are returned under an explicit seed.
+
+The tool marks `character_complete: false` because abilities are not a character identity. It
+does not choose or accept a name, ancestry, class, culture, gender, alignment, personality,
+equipment, biography, art prompt, or campaign state. Those semantic layers remain separate from
+the finite random mechanic and no catalog content is copied from the SRD or NorseSagaEngine.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
