@@ -417,6 +417,22 @@ hard-delete operation. Files are profile-local, owner-checked, size- and record-
 and atomically replaced. Malformed or wrong-owner state is left intact for repair, and disabling
 identity prevents creation of dependent goal state.
 
+### Slice 25: Continuity Heartbeat Receipt
+
+`heartbeat.py` adds the deterministic pulse receiver that recurring lifecycle work can call; it
+does not create a resident timer or compete with Hermes cron. The profile-local
+`entity/continuity.json` record is versioned, owned by the stable entity UUID, and contains only a
+monotonic pulse sequence, last-pulse timestamp, and bounded source classification. Session start
+creates an idle record but does not pretend that a scheduled pulse occurred.
+
+`entity_heartbeat` records an explicit tool pulse, while
+`hermes volmarr heartbeat pulse --source {manual,cron}` gives operators and future Hermes cron
+scripts a deterministic non-LLM entrypoint. `heartbeat status` reports idle, fresh, stale, missing,
+or invalid state without writing. A pulse after the configured stale window is classified as a
+resume. Successful durable pulses emit only sequence/source/resume metadata to Verðandi under the
+`runeforge.entity.heartbeat` contract; entity IDs, session IDs, prompts, and state content are
+excluded. Corrupt and wrong-owner continuity files are never replaced.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

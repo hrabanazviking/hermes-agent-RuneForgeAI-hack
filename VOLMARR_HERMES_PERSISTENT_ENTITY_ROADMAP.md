@@ -1878,8 +1878,11 @@ Read/update tools require deliberate calls; ordinary conversation is not mined a
 data is not automatically injected into prompts. A third identity-owned ledger at
 `entity/goals.yaml` now persists explicitly created tasks with priority, next action, lifecycle
 status, completion time, and bounded transition history. Goal tools create, advance, filter,
-complete, and archive this state without mining conversation or deleting continuity. Heartbeat,
-background routines, and sleep/consolidation remain later ordered slices.
+complete, and archive this state without mining conversation or deleting continuity. The heartbeat
+receipt is now implemented in `entity/continuity.json`: explicit tool or CLI pulses advance a durable
+sequence, report freshness/staleness, recognize a post-stale resume, and emit content-free
+Verðandi metadata. It deliberately starts no scheduler; Hermes cron remains the cadence owner for
+the next slice. Background routines and sleep/consolidation remain later ordered slices.
 
 ## Milestone 7: Secrets and Security
 

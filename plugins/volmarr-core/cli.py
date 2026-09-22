@@ -10,7 +10,8 @@ from pathlib import Path
 from .cognition import probe_aesir
 from .execution import CognitionExecutionRequest, CognitionExecutor
 from .health import probe_verdandi
-from .identity import probe_identity
+from .heartbeat import HeartbeatError, HeartbeatService, probe_heartbeat
+from .identity import IdentityError, probe_identity
 from .memory_fabric import probe_bifrost
 from .mempalace import probe_mempalace
 from .openviking import probe_openviking
@@ -115,6 +116,26 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Validate the structured entity identity read-only",
     )
     identity_health.add_argument("--json", action="store_true", dest="json_output")
+    heartbeat = subcommands.add_parser(
+        "heartbeat",
+        help="Inspect or pulse the active entity's continuity heartbeat",
+    )
+    heartbeat_subcommands = heartbeat.add_subparsers(dest="heartbeat_action")
+    heartbeat_status = heartbeat_subcommands.add_parser(
+        "status",
+        help="Report current continuity freshness read-only",
+    )
+    heartbeat_status.add_argument("--json", action="store_true", dest="json_output")
+    heartbeat_pulse = heartbeat_subcommands.add_parser(
+        "pulse",
+        help="Record one pulse; recurring cadence remains owned by Hermes cron",
+    )
+    heartbeat_pulse.add_argument(
+        "--source",
+        choices=("manual", "cron"),
+        default="manual",
+    )
+    heartbeat_pulse.add_argument("--json", action="store_true", dest="json_output")
 
 
 def _load_json_request(source: str, *, max_bytes: int) -> dict:
@@ -231,6 +252,26 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 2
         report = probe_identity(ctx)
         label = "Entity identity"
+    elif action == "heartbeat":
+        heartbeat_action = getattr(args, "heartbeat_action", None)
+        if heartbeat_action == "status":
+            report = probe_heartbeat(ctx)
+        elif heartbeat_action == "pulse":
+            try:
+                report = HeartbeatService(ctx).pulse(getattr(args, "source", "manual"))
+            except (IdentityError, HeartbeatError, OSError) as exc:
+                print(
+                    json.dumps(
+                        {"error": "heartbeat_failed", "detail": str(exc)},
+                        sort_keys=True,
+                    ),
+                    file=sys.stderr,
+                )
+                return 1
+        else:
+            print("Usage: hermes volmarr heartbeat {status|pulse} [options]")
+            return 2
+        label = "Entity heartbeat"
     else:
         print("Usage: hermes volmarr {health|cognition|memory|world|identity} ...")
         return 2
@@ -247,6 +288,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             or getattr(report, "palace_path", "")
             or getattr(report, "state_db_path", "")
             or getattr(report, "identity_path", "")
+            or getattr(report, "continuity_path", "")
         )
         print(f"Endpoint: {location}")
         if getattr(report, "latency_ms", None) is not None:
