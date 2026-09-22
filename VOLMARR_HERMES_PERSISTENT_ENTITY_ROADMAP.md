@@ -2077,7 +2077,15 @@ an avatar.
 
 Slice 55 adds `hamr_presets`, reading Hamr's official body proportions and compact character preset
 metadata without copying full preset specs into Hermes. It remains read-only and Blender-free.
-Hamr dry-run forge planning is next.
+
+Slice 56 adds `hamr_budget_check`, exposing Hamr's own pure-Python estimates, official tier limits,
+warnings, and verdict for one validated spec. It remains read-only and Blender-free. Existing
+VRM/GLB compliance inspection is next.
+
+Slice 57 audits and exposes Hamr's current `builder.inspect` as `hamr_artifact_probe`. Because the
+verified upstream implementation returns only existence, size, targets, and an empty checks list,
+the adapter explicitly reports metadata-only scope and no compliance performed. Actual Hamr build
+authority remains deferred; Seiðr-Smiðja interface audit is next.
 
 ## Milestone 9: Embodiment
 

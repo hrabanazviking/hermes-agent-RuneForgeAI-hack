@@ -1,7 +1,7 @@
 manifest_version: 2
 name: volmarr-hamr
-version: "0.2.0"
-description: "Read-only local validation and discovery through the official Hamr shape-skin engine."
+version: "0.4.0"
+description: "Read-only local validation, discovery, budget preflight, and artifact probing through the official Hamr shape-skin engine."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/Hamr
 tags:
@@ -17,6 +17,10 @@ config_schema:
     type: str
     default: ""
     description: "Absolute root containing YAML avatar specifications allowed for validation."
+  artifact_root:
+    type: str
+    default: ""
+    description: "Absolute root containing existing VRM or GLB artifacts allowed for read-only probing."
   python_path:
     type: str
     default: ""
