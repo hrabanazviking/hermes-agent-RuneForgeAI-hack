@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-astrology
-version: "0.1.0"
+version: "0.2.0"
 description: "Local deterministic astrology calculations through the official Astrology Engine."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/astrology-engine
@@ -20,4 +20,4 @@ config_schema:
   timeout_seconds:
     type: float
     default: 20
-    description: "Maximum lunar-calculation runtime in seconds (clamped to 1-60)."
+    description: "Maximum calculation runtime in seconds (clamped to 1-60)."

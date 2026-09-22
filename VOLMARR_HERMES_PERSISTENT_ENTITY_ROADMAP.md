@@ -1949,6 +1949,12 @@ environment, bounded output, static failures, and A→B→A profile resolution. 
 local and distinct from LLM interpretation. The remaining astrology calculations and the other
 personal tool families remain open.
 
+Slice 33 adds `astrology_planetary_hours` with a required real calendar date and finite explicit
+coordinates. This keeps the official engine on its local calculation path and makes online city
+geocoding unreachable. Exact CLI construction, polar/error classification, output bounds, and
+invalid-input preflight are covered without persisting or publishing location data. Natal,
+transit, prediction, synastry, and astrocartography remain open.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

@@ -564,6 +564,20 @@ and stderr limits. Child failures are translated into static errors without echo
 The plugin registers no hook, prompt contribution, provider, state store, or telemetry publisher,
 and the external Apache-2.0 engine remains outside this repository.
 
+### Slice 33: Coordinate-Bound Planetary Hours
+
+`astrology_planetary_hours` extends the same plugin and subprocess boundary with one explicit
+calendar date, latitude, and longitude. Requiring validated finite coordinates prevents the
+official engine from entering its optional city-geocoding cascade, while requiring a date avoids
+an implicit host-date default. Latitude is strictly bounded between the poles and longitude is
+bounded to the canonical `[-180, 180]` interval before fixed CLI flags are built.
+
+The result contains the engine's day ruler, sunrise/sunset calculation, and twelve day plus twelve
+night Chaldean rulers; interpretation remains absent. The adapter also recognizes the official
+engine's zero-exit `Error calculating planetary hours` output as failure, so polar-day or
+ephemeris errors cannot masquerade as successful reports. No location is stored, published, or
+sent to a network service.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

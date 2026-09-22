@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +39,37 @@ ASTROLOGY_LUNAR_SCHEMA = {
     "parameters": {
         "type": "object",
         "properties": {},
+        "additionalProperties": False,
+    },
+}
+
+ASTROLOGY_PLANETARY_HOURS_SCHEMA = {
+    "name": "astrology_planetary_hours",
+    "description": (
+        "Calculate the Chaldean planetary-hour rulers for one explicit date and "
+        "latitude/longitude with the configured local Astrology Engine. Coordinates "
+        "are required so the engine never performs online geocoding."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "date": {
+                "type": "string",
+                "description": "Calendar date in YYYY-MM-DD form.",
+                "pattern": r"^\d{4}-\d{2}-\d{2}$",
+            },
+            "latitude": {
+                "type": "number",
+                "exclusiveMinimum": -90,
+                "exclusiveMaximum": 90,
+            },
+            "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180,
+            },
+        },
+        "required": ["date", "latitude", "longitude"],
         "additionalProperties": False,
     },
 }
@@ -89,7 +121,12 @@ def _child_env() -> dict[str, str]:
     return env
 
 
-def _run_lunar(ctx) -> tuple[str | None, str | None]:
+def _run_calculation(
+    ctx,
+    argv: list[str],
+    *,
+    zero_exit_failure_markers: tuple[str, ...] = (),
+) -> tuple[str | None, str | None]:
     runtime = _runtime(ctx)
     if runtime is None:
         return None, (
@@ -100,7 +137,7 @@ def _run_lunar(ctx) -> tuple[str | None, str | None]:
     timeout = _timeout(ctx)
     try:
         completed = subprocess.run(
-            [str(python), str(engine), "lunar"],
+            [str(python), str(engine), *argv],
             env=_child_env(),
             stdin=subprocess.DEVNULL,
             capture_output=True,
@@ -125,14 +162,37 @@ def _run_lunar(ctx) -> tuple[str | None, str | None]:
     if completed.returncode != 0:
         return None, "The local Astrology Engine failed to calculate lunar state."
     report = _ANSI_RE.sub("", stdout).strip()
-    if "pyswisseph required" in f"{report}\n{stderr}".lower():
+    combined = f"{report}\n{stderr}".lower()
+    if "pyswisseph required" in combined:
         return None, (
             "The configured Astrology Engine Python environment does not have "
             "pyswisseph installed."
         )
+    if any(marker in combined for marker in zero_exit_failure_markers):
+        return None, "The local Astrology Engine could not complete the calculation."
     if not report:
         return None, "The local Astrology Engine returned no lunar calculation."
     return report, None
+
+
+def _run_lunar(ctx) -> tuple[str | None, str | None]:
+    return _run_calculation(ctx, ["lunar"])
+
+
+def _number(value: Any, *, minimum: float, maximum: float) -> float | None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not math.isfinite(parsed) or not minimum <= parsed <= maximum:
+        return None
+    return parsed
+
+
+def _coordinate(value: float) -> str:
+    return format(value, ".12g")
 
 
 def build_lunar_handler(ctx):
@@ -155,13 +215,79 @@ def build_lunar_handler(ctx):
     return handle
 
 
+def build_planetary_hours_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if set(args) != {"date", "latitude", "longitude"}:
+            return tool_error(
+                "date, latitude, and longitude are required; no other fields are accepted"
+            )
+        raw_date = args.get("date")
+        if not isinstance(raw_date, str) or not re.fullmatch(
+            r"\d{4}-\d{2}-\d{2}", raw_date
+        ):
+            return tool_error("date must be a real calendar date in YYYY-MM-DD form")
+        try:
+            date.fromisoformat(raw_date)
+        except ValueError:
+            return tool_error("date must be a real calendar date in YYYY-MM-DD form")
+        latitude = _number(args.get("latitude"), minimum=-90.0, maximum=90.0)
+        longitude = _number(args.get("longitude"), minimum=-180.0, maximum=180.0)
+        if latitude is None or not -90.0 < latitude < 90.0:
+            return tool_error("latitude must be a finite number strictly between -90 and 90")
+        if longitude is None:
+            return tool_error("longitude must be a finite number from -180 to 180")
+        report, error = _run_calculation(
+            ctx,
+            [
+                "planet-hours",
+                "--date",
+                raw_date,
+                "--lat",
+                _coordinate(latitude),
+                "--lon",
+                _coordinate(longitude),
+            ],
+            zero_exit_failure_markers=("error calculating planetary hours:",),
+        )
+        if error is not None:
+            return tool_error(error)
+        return tool_result(
+            {
+                "success": True,
+                "engine": "hrabanazviking/astrology-engine",
+                "calculation": "planetary_hours",
+                "interpretation_included": False,
+                "date": raw_date,
+                "latitude": latitude,
+                "longitude": longitude,
+                "report": report,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
-    ctx.register_tool(
-        name="astrology_lunar",
-        toolset="volmarr_astrology",
-        schema=ASTROLOGY_LUNAR_SCHEMA,
-        handler=build_lunar_handler(ctx),
-        check_fn=lambda: _runtime(ctx) is not None,
-        description=ASTROLOGY_LUNAR_SCHEMA["description"],
-        emoji="🌙",
-    )
+    for name, schema, handler, emoji in (
+        (
+            "astrology_lunar",
+            ASTROLOGY_LUNAR_SCHEMA,
+            build_lunar_handler(ctx),
+            "🌙",
+        ),
+        (
+            "astrology_planetary_hours",
+            ASTROLOGY_PLANETARY_HOURS_SCHEMA,
+            build_planetary_hours_handler(ctx),
+            "🕰️",
+        ),
+    ):
+        ctx.register_tool(
+            name=name,
+            toolset="volmarr_astrology",
+            schema=schema,
+            handler=handler,
+            check_fn=lambda: _runtime(ctx) is not None,
+            description=schema["description"],
+            emoji=emoji,
+        )

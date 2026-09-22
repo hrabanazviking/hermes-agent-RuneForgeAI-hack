@@ -65,7 +65,10 @@ def test_real_discovery_runs_lunar_with_fixed_argv_and_scrubbed_environment(
     try:
         loaded = manager._plugins["volmarr-astrology"]
         assert loaded.enabled
-        assert loaded.tools_registered == ["astrology_lunar"]
+        assert set(loaded.tools_registered) == {
+            "astrology_lunar",
+            "astrology_planetary_hours",
+        }
         result = json.loads(
             registry.dispatch("astrology_lunar", {}, scope=manager.scope_key)
         )
@@ -117,6 +120,117 @@ def test_lunar_tool_resolves_active_profile_a_b_a(tmp_path):
         manager.unload()
 
     assert reports == ["MOON FOR PROFILE A", "MOON FOR PROFILE B", "MOON FOR PROFILE A"]
+
+
+def test_planetary_hours_uses_validated_date_and_coordinates_without_geocoding(
+    tmp_path,
+):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine = tmp_path / "astrology_engine.py"
+    record = tmp_path / "planet-hours.json"
+    _engine_script(engine, "PLANETARY HOURS REPORT", record=record)
+    _write_profile(home, engine)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch(
+                "astrology_planetary_hours",
+                {
+                    "date": "2026-09-22",
+                    "latitude": 0,
+                    "longitude": -86.1581,
+                },
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert result["calculation"] == "planetary_hours"
+    assert result["report"] == "PLANETARY HOURS REPORT"
+    assert result["interpretation_included"] is False
+    invocation = json.loads(record.read_text(encoding="utf-8"))
+    assert invocation["argv"] == [
+        "planet-hours",
+        "--date",
+        "2026-09-22",
+        "--lat",
+        "0",
+        "--lon",
+        "-86.1581",
+    ]
+    assert "--city" not in invocation["argv"]
+    assert "--nation" not in invocation["argv"]
+
+
+def test_planetary_hours_rejects_invalid_inputs_before_starting_engine(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine = tmp_path / "astrology_engine.py"
+    marker = tmp_path / "should-not-exist"
+    engine.write_text(
+        f"from pathlib import Path\nPath({str(marker)!r}).write_text('called')\n",
+        encoding="utf-8",
+    )
+    _write_profile(home, engine)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        failures = [
+            json.loads(
+                registry.dispatch(
+                    "astrology_planetary_hours",
+                    payload,
+                    scope=manager.scope_key,
+                )
+            )
+            for payload in (
+                {"date": "2026-02-30", "latitude": 39, "longitude": -86},
+                {"date": "2026-09-22", "latitude": True, "longitude": -86},
+                {"date": "2026-09-22", "latitude": 39, "longitude": 181},
+            )
+        ]
+    finally:
+        manager.unload()
+
+    assert all("error" in result for result in failures)
+    assert not marker.exists()
+
+
+def test_planetary_hours_zero_exit_error_is_not_reported_as_success(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine = tmp_path / "astrology_engine.py"
+    engine.write_text(
+        "print('Error calculating planetary hours: polar night')\n",
+        encoding="utf-8",
+    )
+    _write_profile(home, engine)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch(
+                "astrology_planetary_hours",
+                {"date": "2026-12-21", "latitude": 69.6492, "longitude": 18.9553},
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert result["error"] == "The local Astrology Engine could not complete the calculation."
 
 
 def test_lunar_tool_rejects_arguments_before_starting_engine(tmp_path):
