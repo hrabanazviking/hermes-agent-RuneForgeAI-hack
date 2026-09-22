@@ -2087,6 +2087,12 @@ verified upstream implementation returns only existence, size, targets, and an e
 the adapter explicitly reports metadata-only scope and no compliance performed. Actual Hamr build
 authority remains deferred; Seiðr-Smiðja interface audit is next.
 
+Slice 58 adds `smidja_spec_validate`, a read-only adapter over the official Seiðr-Smiðja Loom at
+`development` commit `482c8f0032b28c4ceb323478e7854adae3715f72`. It performs bounded schema
+validation without forge, Blender, REST, MCP, or remote VRoid authority. The upstream root license
+and package metadata disagree (Apache-2.0 versus MIT), so no source is copied and the conflict is
+reported explicitly. Read-only Hoard asset discovery is next.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

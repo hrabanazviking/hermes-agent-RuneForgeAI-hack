@@ -1,0 +1,27 @@
+manifest_version: 2
+name: volmarr-smidja
+version: "0.1.0"
+description: "Read-only Loom validation through the official Seidr-Smidja avatar forge."
+author: Volmarr Wyrd / RuneForgeAI
+homepage: https://github.com/hrabanazviking/Seidr-Smidja
+tags:
+  - runeforgeai
+  - avatar
+  - local
+config_schema:
+  engine_root:
+    type: str
+    default: ""
+    description: "Absolute path to an official Seidr-Smidja checkout."
+  spec_root:
+    type: str
+    default: ""
+    description: "Absolute root containing Loom YAML or JSON specs allowed for validation."
+  python_path:
+    type: str
+    default: ""
+    description: "Python executable with Seidr-Smidja Loom dependencies installed."
+  timeout_seconds:
+    type: float
+    default: 10
+    description: "Maximum validation runtime in seconds (clamped to 1-30)."
