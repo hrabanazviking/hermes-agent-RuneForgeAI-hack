@@ -690,6 +690,22 @@ loads only RuneTarot's deterministic Golden Dawn data beside the deck and spread
 returns the structural evidence for Hermes cognition to interpret separately. Provider calls,
 questions, storage, telemetry, and prompt contributions remain outside the Tarot plugin.
 
+### Slice 42: Reproducible Seiðr Composition
+
+The separate, opt-in `volmarr-seidr` plugin begins Norse poetry with `seidr_compose`, backed by the
+official MIT-licensed Seiðr Engine at current `main` commit
+`a1999cd21bdac6c65791ff98c0f8125bff04cc69`. It exposes the engine's four meters, optional Nine
+Worlds vocabulary domain, one to four stanzas, explicit kenning control, and structured line-level
+syllable/alliteration metadata. No engine source or lexicon is copied into Hermes.
+
+Composition runs through the official `Lexicon`, `Skald`, and `PoemConfig` API in a bytecode-free,
+no-user-site child with closed stdin, minimal environment, static failures, and 64-KiB output cap.
+The adapter fixes `PYTHONHASHSEED=0` because the current engine selects from an unordered set of
+alliteration groups; without that process invariant, identical numeric seeds diverge across fresh
+interpreters. Numeric seed zero is rejected because the current `compose_poem` implementation
+treats it as falsy and enters an unseeded branch. The plugin accepts no free-form topic yet and
+makes no model call, state write, prompt contribution, or telemetry emission.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

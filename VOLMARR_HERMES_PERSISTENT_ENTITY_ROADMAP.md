@@ -2008,6 +2008,13 @@ reimplementing their matrix or generating narrative advice.
 position correspondences, elemental balance, and dignity structure are available while all LLM
 interpretation remains in normal Hermes cognition. Norse poetry is the next personal tool family.
 
+Slice 42 begins Norse poetry with `seidr_compose` against official Seiðr Engine `main` commit
+`a1999cd21bdac6c65791ff98c0f8125bff04cc69`. It exposes the four official forms, optional Nine
+Worlds domain, bounded stanza count, kenning control, and structured metrical output without AI.
+The child pins Python's hash seed to make the engine's unordered alliteration-group selection
+replayable and rejects numeric seed zero because current upstream treats it as unseeded. Form
+catalog, kenning catalog, and independent meter validation remain open.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
