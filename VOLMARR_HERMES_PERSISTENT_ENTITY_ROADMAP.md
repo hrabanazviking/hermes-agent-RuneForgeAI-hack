@@ -1994,6 +1994,12 @@ isolated, credential-free child and returns card facts plus built-in Golden Dawn
 It never accepts question text, initializes the upstream AI or session layers, or creates upstream
 history and exports. Multi-card spreads and structural dignity analysis remain open.
 
+Slice 40 adds `tarot_spread` for the official Three Card, Past Life, Opening of the Key,
+Relationship, Celtic Cross, Tree of Life, and Zodiac Wheel layouts. Exact layout keys replace the
+upstream fuzzy matcher, and RuneTarot remains authoritative for count, ordering, position meaning,
+and placement. The adapter returns positioned card/correspondence facts only; structural elemental
+dignity analysis remains open.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

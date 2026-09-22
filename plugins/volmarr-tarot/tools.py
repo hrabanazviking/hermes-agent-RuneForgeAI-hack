@@ -28,6 +28,15 @@ _BASE_ENV = (
     "LC_ALL",
 )
 _RUNNER = Path(__file__).with_name("_runner.py").resolve()
+_MULTI_CARD_SPREADS = (
+    "three_card",
+    "past_life",
+    "opening_of_the_key",
+    "relationship",
+    "celtic_cross",
+    "tree_of_life",
+    "zodiac_wheel",
+)
 
 TAROT_DRAW_SCHEMA = {
     "name": "tarot_draw",
@@ -52,6 +61,28 @@ TAROT_DRAW_SCHEMA = {
             },
         },
         "required": ["seed"],
+        "additionalProperties": False,
+    },
+}
+
+TAROT_SPREAD_SCHEMA = {
+    "name": "tarot_spread",
+    "description": (
+        "Draw one reproducible official RuneTarot multi-card spread and return each card "
+        "with its official position and Golden Dawn correspondences. The tool does not "
+        "accept a question, synthesize an interpretation, call AI, or save history."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "spread": {
+                "type": "string",
+                "enum": list(_MULTI_CARD_SPREADS),
+            },
+            "seed": {"type": "integer", "minimum": 0, "maximum": _MAX_SEED},
+            "allow_reversals": {"type": "boolean", "default": True},
+        },
+        "required": ["spread", "seed"],
         "additionalProperties": False,
     },
 }
@@ -131,6 +162,7 @@ def _run_draw(
     *,
     seed: int,
     allow_reversals: bool,
+    spread: str | None = None,
 ) -> tuple[dict[str, Any] | None, str | None]:
     runtime = _runtime(ctx)
     if runtime is None:
@@ -140,15 +172,18 @@ def _run_draw(
         )
     python, engine_root = runtime
     try:
-        completed = subprocess.run(
-            [
+        command = [
                 str(python),
                 "-I",
                 str(_RUNNER),
                 str(engine_root),
                 str(seed),
                 "1" if allow_reversals else "0",
-            ],
+            ]
+        if spread is not None:
+            command.append(spread)
+        completed = subprocess.run(
+            command,
             env=_child_env(),
             stdin=subprocess.DEVNULL,
             capture_output=True,
@@ -176,8 +211,18 @@ def _run_draw(
         card = json.loads(stdout)
     except (TypeError, json.JSONDecodeError):
         return None, "The local RuneTarot engine returned an invalid response."
-    if not isinstance(card, dict) or not card.get("card_id") or not card.get("name"):
-        return None, "The local RuneTarot engine returned an invalid card."
+    if not isinstance(card, dict):
+        return None, "The local RuneTarot engine returned an invalid response."
+    if spread is None:
+        if not card.get("card_id") or not card.get("name"):
+            return None, "The local RuneTarot engine returned an invalid card."
+    elif (
+        card.get("key") != spread
+        or not isinstance(card.get("card_count"), int)
+        or not isinstance(card.get("cards"), list)
+        or len(card["cards"]) != card["card_count"]
+    ):
+        return None, "The local RuneTarot engine returned an invalid spread."
     return card, None
 
 
@@ -214,13 +259,57 @@ def build_draw_handler(ctx):
     return handle
 
 
+def build_spread_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        required = {"spread", "seed"}
+        if not required.issubset(args) or not set(args) <= required | {"allow_reversals"}:
+            return tool_error(
+                "spread and seed are required; only allow_reversals is optional"
+            )
+        spread = args.get("spread")
+        if spread not in _MULTI_CARD_SPREADS:
+            return tool_error("spread must be one of the supported official multi-card layouts")
+        seed = _seed(args.get("seed"))
+        if seed is None:
+            return tool_error(f"seed must be an integer from 0 to {_MAX_SEED}")
+        allow_reversals = args.get("allow_reversals", True)
+        if not isinstance(allow_reversals, bool):
+            return tool_error("allow_reversals must be true or false")
+        result, error = _run_draw(
+            ctx,
+            seed=seed,
+            allow_reversals=allow_reversals,
+            spread=spread,
+        )
+        if error is not None:
+            return tool_error(error)
+        return tool_result(
+            {
+                "success": True,
+                "engine": "hrabanazviking/RuneTarotEngine",
+                "engine_surface": "development/src/deck.py+src/spreads.py",
+                "calculation": "multi_card_spread",
+                "seed": seed,
+                "reversals_enabled": allow_reversals,
+                "interpretation_included": False,
+                "spread": result,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
-    ctx.register_tool(
-        name="tarot_draw",
-        toolset="volmarr_tarot",
-        schema=TAROT_DRAW_SCHEMA,
-        handler=build_draw_handler(ctx),
-        check_fn=lambda: _runtime(ctx) is not None,
-        description=TAROT_DRAW_SCHEMA["description"],
-        emoji="🃏",
-    )
+    for name, schema, handler, emoji in (
+        ("tarot_draw", TAROT_DRAW_SCHEMA, build_draw_handler(ctx), "🃏"),
+        ("tarot_spread", TAROT_SPREAD_SCHEMA, build_spread_handler(ctx), "🔮"),
+    ):
+        ctx.register_tool(
+            name=name,
+            toolset="volmarr_tarot",
+            schema=schema,
+            handler=handler,
+            check_fn=lambda: _runtime(ctx) is not None,
+            description=schema["description"],
+            emoji=emoji,
+        )

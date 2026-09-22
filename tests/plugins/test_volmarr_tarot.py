@@ -70,9 +70,42 @@ class TarotDeck:
 
     def draw_full_hand(self, count, allow_reversals, seed):
 {record_code}        Card.is_reversed = allow_reversals
-        return [Card()]
+        return [Card() for _ in range(count)]
 '''
     (root / "src" / "deck.py").write_text(module, encoding="utf-8")
+    spreads = '''class Position:
+    def __init__(self, number):
+        self.number = number
+        self.name = f"Position {number}"
+        self.meaning = f"Meaning {number}"
+        self.gd_meaning = f"GD meaning {number}"
+        self.row = 0
+        self.col = number - 1
+        self.crosses = None
+
+class Spread:
+    name = "Three Card"
+    description = "Past, present, and future."
+    tradition = "Universal"
+    card_count = 3
+    positions = [Position(1), Position(2), Position(3)]
+
+class Placed:
+    def __init__(self, card, position):
+        self.card = card
+        self.position = position
+
+class SpreadManager:
+    def load_spreads(self):
+        return {"three_card": Spread()}
+
+    def get_spread(self, key):
+        return Spread() if key == "three_card" else None
+
+    def assign_cards(self, spread, cards):
+        return [Placed(card, position) for card, position in zip(cards, spread.positions)]
+'''
+    (root / "src" / "spreads.py").write_text(spreads, encoding="utf-8")
 
 
 def test_real_discovery_draws_one_reproducible_card_without_credentials_or_state(
@@ -94,7 +127,7 @@ def test_real_discovery_draws_one_reproducible_card_without_credentials_or_state
     try:
         loaded = manager._plugins["volmarr-tarot"]
         assert loaded.enabled
-        assert loaded.tools_registered == ["tarot_draw"]
+        assert set(loaded.tools_registered) == {"tarot_draw", "tarot_spread"}
         result = json.loads(
             registry.dispatch(
                 "tarot_draw",
@@ -118,6 +151,48 @@ def test_real_discovery_draws_one_reproducible_card_without_credentials_or_state
         "secret_present": False,
         "hermes_home_present": False,
     }
+    assert not (engine_root / "session").exists()
+    assert not (engine_root / "exports").exists()
+
+
+def test_spread_returns_official_positions_without_question_or_interpretation(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine_root = tmp_path / "runetarot"
+    record = tmp_path / "spread.json"
+    _fake_engine(engine_root, "The Fool", record)
+    _write_profile(home, engine_root)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch(
+                "tarot_spread",
+                {"spread": "three_card", "seed": 0, "allow_reversals": True},
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert result["calculation"] == "multi_card_spread"
+    assert result["seed"] == 0
+    assert result["interpretation_included"] is False
+    assert result["spread"]["key"] == "three_card"
+    assert result["spread"]["card_count"] == 3
+    assert [item["position"]["number"] for item in result["spread"]["cards"]] == [
+        1,
+        2,
+        3,
+    ]
+    assert all(item["card"]["name"] == "The Fool" for item in result["spread"]["cards"])
+    invocation = json.loads(record.read_text(encoding="utf-8"))
+    assert invocation["count"] == 3
+    assert invocation["seed"] == 0
+    assert invocation["allow_reversals"] is True
     assert not (engine_root / "session").exists()
     assert not (engine_root / "exports").exists()
 
@@ -184,10 +259,18 @@ def test_draw_rejects_invalid_arguments_before_starting_engine(tmp_path):
                 scope=manager.scope_key,
             )
         )
+        unsupported_spread = json.loads(
+            registry.dispatch(
+                "tarot_spread",
+                {"spread": "invented_spread", "seed": 1},
+                scope=manager.scope_key,
+            )
+        )
     finally:
         manager.unload()
 
     assert "error" in missing
     assert "error" in boolean_seed
     assert "error" in extra
+    assert "error" in unsupported_spread
     assert not marker.exists()
