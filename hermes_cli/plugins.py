@@ -1133,10 +1133,13 @@ del _name, _method
 
 def _resolve_hook_callback_timeout() -> float:
     """Effective hook-callback timeout from ``plugins.hook_callback_timeout`` (default 30s; ``<= 0``
-    disables the threaded path; clamped to ``_MAX_HOOK_CALLBACK_TIMEOUT_SECS``)."""
+    disables the threaded path; clamped to ``_MAX_HOOK_CALLBACK_TIMEOUT_SECS``).
+
+    ``invoke_hook`` calls this once per hook invocation; ``load_config_readonly()`` serves cache hits
+    without ``_CONFIG_LOCK``, so this is a stat + dict lookup per call and needs no memo of its own.
+    """
     default = _HOOK_CALLBACK_TIMEOUT_SECS
     try:
-        from hermes_cli.config import load_config_readonly
         plugins_cfg = (load_config_readonly() or {}).get("plugins")
         if not isinstance(plugins_cfg, dict) or plugins_cfg.get("hook_callback_timeout") is None:
             return default
