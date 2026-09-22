@@ -754,6 +754,19 @@ arithmetic auditable and the roll exactly replayable—including seed zero. The 
 campaign, character, encounter, narration, rules corpus, memory, or prompt state and requires no
 external dependency.
 
+### Slice 47: SRD-Grounded Ability Checks
+
+`rpg_skill_check` implements the SRD ability-check rule as a replayable mechanic: roll one d20,
+add the supplied total modifier, and succeed when the total equals or exceeds the Difficulty Class.
+Normal, advantage, and disadvantage modes roll one or two d20s and keep the required result. The
+rule was verified against official fork commit `2e62e0413061c2443e21369cdc074c7a7356a857` without
+copying SRD text or data into the plugin.
+
+The tool deliberately reports `natural_d20_automatic: false`: ordinary ability checks resolve by
+the modified total, unlike attack-roll critical rules. It accepts no character sheet, ability
+name, skill label, proficiency state, or narrative outcome; callers calculate one bounded modifier
+and the GM retains authority over consequences.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

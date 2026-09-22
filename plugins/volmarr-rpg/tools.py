@@ -29,6 +29,29 @@ DICE_ROLL_SCHEMA = {
     },
 }
 
+RPG_SKILL_CHECK_SCHEMA = {
+    "name": "rpg_skill_check",
+    "description": (
+        "Resolve a replayable d20 ability or skill check against a DC, with normal, "
+        "advantage, or disadvantage selection and an explicit total modifier."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "modifier": {"type": "integer", "minimum": -30, "maximum": 30},
+            "difficulty_class": {"type": "integer", "minimum": 0, "maximum": 50},
+            "mode": {
+                "type": "string",
+                "enum": ["normal", "advantage", "disadvantage"],
+                "default": "normal",
+            },
+            "seed": {"type": "integer", "minimum": 0, "maximum": _MAX_SEED},
+        },
+        "required": ["modifier", "difficulty_class", "seed"],
+        "additionalProperties": False,
+    },
+}
+
 
 def _integer(value: Any, *, minimum: int, maximum: int) -> int | None:
     if isinstance(value, bool) or not isinstance(value, int):
@@ -76,12 +99,70 @@ def build_dice_roll_handler():
     return handle
 
 
+def build_skill_check_handler():
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        required = {"modifier", "difficulty_class", "seed"}
+        if not required.issubset(args) or not set(args) <= required | {"mode"}:
+            return tool_error(
+                "modifier, difficulty_class, and seed are required; only mode is optional"
+            )
+        modifier = _integer(args.get("modifier"), minimum=-30, maximum=30)
+        difficulty_class = _integer(
+            args.get("difficulty_class"), minimum=0, maximum=50
+        )
+        seed = _integer(args.get("seed"), minimum=0, maximum=_MAX_SEED)
+        mode = args.get("mode", "normal")
+        if modifier is None:
+            return tool_error("modifier must be an integer from -30 to 30")
+        if difficulty_class is None:
+            return tool_error("difficulty_class must be an integer from 0 to 50")
+        if seed is None:
+            return tool_error(f"seed must be an integer from 0 to {_MAX_SEED}")
+        if mode not in {"normal", "advantage", "disadvantage"}:
+            return tool_error("mode must be normal, advantage, or disadvantage")
+        rng = random.Random(seed)
+        natural_rolls = [rng.randint(1, 20) for _ in range(1 if mode == "normal" else 2)]
+        if mode == "advantage":
+            kept = max(natural_rolls)
+        elif mode == "disadvantage":
+            kept = min(natural_rolls)
+        else:
+            kept = natural_rolls[0]
+        total = kept + modifier
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "rpg_skill_check",
+                "seed": seed,
+                "mode": mode,
+                "natural_rolls": natural_rolls,
+                "kept_roll": kept,
+                "modifier": modifier,
+                "total": total,
+                "difficulty_class": difficulty_class,
+                "check_succeeds": total >= difficulty_class,
+                "natural_d20_automatic": False,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
-    ctx.register_tool(
-        name="dice_roll",
-        toolset="volmarr_rpg",
-        schema=DICE_ROLL_SCHEMA,
-        handler=build_dice_roll_handler(),
-        description=DICE_ROLL_SCHEMA["description"],
-        emoji="🎲",
-    )
+    for name, schema, handler, emoji in (
+        ("dice_roll", DICE_ROLL_SCHEMA, build_dice_roll_handler(), "🎲"),
+        (
+            "rpg_skill_check",
+            RPG_SKILL_CHECK_SCHEMA,
+            build_skill_check_handler(),
+            "🛡️",
+        ),
+    ):
+        ctx.register_tool(
+            name=name,
+            toolset="volmarr_rpg",
+            schema=schema,
+            handler=handler,
+            description=schema["description"],
+            emoji=emoji,
+        )

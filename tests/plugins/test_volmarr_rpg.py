@@ -26,7 +26,7 @@ def test_real_discovery_roll_is_replayable_and_exposes_arithmetic():
     try:
         loaded = manager._plugins["volmarr-rpg"]
         assert loaded.enabled
-        assert loaded.tools_registered == ["dice_roll"]
+        assert set(loaded.tools_registered) == {"dice_roll", "rpg_skill_check"}
         args = {"count": 4, "sides": 6, "modifier": 3, "seed": 0}
         first = json.loads(registry.dispatch("dice_roll", args, scope=manager.scope_key))
         second = json.loads(registry.dispatch("dice_roll", args, scope=manager.scope_key))
@@ -76,3 +76,41 @@ def test_roll_rejects_boolean_and_unbounded_inputs():
     assert "error" in boolean
     assert "error" in oversized
     assert "error" in extra
+
+
+def test_skill_check_applies_advantage_disadvantage_and_dc_arithmetic():
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    _enable_plugin()
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        results = {}
+        for mode in ("normal", "advantage", "disadvantage"):
+            results[mode] = json.loads(
+                registry.dispatch(
+                    "rpg_skill_check",
+                    {
+                        "modifier": 5,
+                        "difficulty_class": 15,
+                        "mode": mode,
+                        "seed": 17,
+                    },
+                    scope=manager.scope_key,
+                )
+            )
+    finally:
+        manager.unload()
+
+    assert len(results["normal"]["natural_rolls"]) == 1
+    assert results["advantage"]["kept_roll"] == max(results["advantage"]["natural_rolls"])
+    assert results["disadvantage"]["kept_roll"] == min(
+        results["disadvantage"]["natural_rolls"]
+    )
+    for result in results.values():
+        assert result["total"] == result["kept_roll"] + result["modifier"]
+        assert result["check_succeeds"] is (
+            result["total"] >= result["difficulty_class"]
+        )
+        assert result["natural_d20_automatic"] is False
