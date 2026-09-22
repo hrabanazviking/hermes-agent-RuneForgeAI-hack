@@ -729,6 +729,19 @@ Hermes neither copies nor extends this lexicon. The catalog is resolved from the
 external checkout on every call through the same closed-stdin, bytecode-free child, without state,
 network, provider credentials, or prompt mutation.
 
+### Slice 45: Independent Seiðr Meter Validation
+
+`seidr_validate_meter` accepts one canonical form and one to eight bounded verse lines. Inside the
+isolated engine child, each line is tokenized into words, measured with the official approximate
+syllable counter, assigned the official first-word alliteration group, constructed as an official
+`Line`, and passed to the selected form's `validate_stanza` implementation. The response exposes
+the verdict and every computed metric rather than replacing the engine's result with prose.
+
+This validation is intentionally structural, matching the current engine's published rules and
+limitations; it is not a claim of philological correctness. Input is never persisted or sent to a
+model or network service, and the strict eight-line/200-character bounds keep argv and output
+finite.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

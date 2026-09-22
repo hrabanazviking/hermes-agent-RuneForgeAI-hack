@@ -79,6 +79,28 @@ SEIDR_KENNINGS_SCHEMA = {
     "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
 }
 
+SEIDR_VALIDATE_METER_SCHEMA = {
+    "name": "seidr_validate_meter",
+    "description": (
+        "Validate bounded verse lines against one official Seiðr poetic form using the "
+        "engine's syllable, alliteration, and stanza rules."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "form": {"type": "string", "enum": list(_FORMS)},
+            "lines": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 8,
+                "items": {"type": "string", "minLength": 1, "maxLength": 200},
+            },
+        },
+        "required": ["form", "lines"],
+        "additionalProperties": False,
+    },
+}
+
 
 def _configured_file(value: Any, *, executable: bool = False) -> Path | None:
     if not isinstance(value, str) or not value.strip() or "\x00" in value:
@@ -308,6 +330,56 @@ def _run_kennings(ctx) -> tuple[list[dict[str, Any]] | None, str | None]:
     return kennings, None
 
 
+def _run_validation(
+    ctx, *, form: str, lines: list[str]
+) -> tuple[dict[str, Any] | None, str | None]:
+    runtime = _runtime(ctx)
+    if runtime is None:
+        return None, "Configure volmarr-seidr engine_root and a Python interpreter."
+    python, engine_root = runtime
+    try:
+        completed = subprocess.run(
+            [
+                str(python), "-B", "-P", "-s", str(_RUNNER), str(engine_root),
+                "validate", form, json.dumps(lines, ensure_ascii=True, separators=(",", ":")),
+            ],
+            env=_child_env(),
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=_timeout(ctx),
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return None, "The local Seiðr meter validation timed out."
+    except OSError:
+        return None, "The local Seiðr Engine could not be started."
+    stdout = completed.stdout or ""
+    stderr = completed.stderr or ""
+    if (
+        len(stdout.encode("utf-8", errors="replace")) > _MAX_OUTPUT_BYTES
+        or len(stderr.encode("utf-8", errors="replace")) > _MAX_OUTPUT_BYTES
+    ):
+        return None, "The local Seiðr Engine returned an oversized response."
+    if completed.returncode != 0:
+        return None, "The local Seiðr Engine could not validate the verse."
+    try:
+        result = json.loads(stdout)
+    except (TypeError, json.JSONDecodeError):
+        return None, "The local Seiðr Engine returned an invalid response."
+    if (
+        not isinstance(result, dict)
+        or result.get("form") != form
+        or not isinstance(result.get("valid"), bool)
+        or not isinstance(result.get("lines"), list)
+        or len(result["lines"]) != len(lines)
+    ):
+        return None, "The local Seiðr Engine returned invalid validation evidence."
+    return result, None
+
+
 def build_compose_handler(ctx):
     def handle(args: dict[str, Any], **_kwargs: Any) -> str:
         allowed = {"form", "domain", "stanzas", "use_kennings", "seed"}
@@ -390,11 +462,52 @@ def build_kennings_handler(ctx):
     return handle
 
 
+def build_validate_meter_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if set(args) != {"form", "lines"}:
+            return tool_error("form and lines are required; no other fields are accepted")
+        form = args.get("form")
+        lines = args.get("lines")
+        if form not in _FORMS:
+            return tool_error("form must be one of the four official meters")
+        if (
+            not isinstance(lines, list)
+            or not 1 <= len(lines) <= 8
+            or any(
+                not isinstance(line, str)
+                or not line.strip()
+                or len(line) > 200
+                or "\x00" in line
+                for line in lines
+            )
+        ):
+            return tool_error("lines must contain 1-8 non-empty strings of at most 200 characters")
+        result, error = _run_validation(ctx, form=form, lines=lines)
+        if error is not None:
+            return tool_error(error)
+        return tool_result(
+            {
+                "success": True,
+                "engine": "hrabanazviking/seidr-engine",
+                "calculation": "meter_validation",
+                "validation": result,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         ("seidr_compose", SEIDR_COMPOSE_SCHEMA, build_compose_handler(ctx), "ᛋ"),
         ("seidr_forms", SEIDR_FORMS_SCHEMA, build_forms_handler(ctx), "📜"),
         ("seidr_kennings", SEIDR_KENNINGS_SCHEMA, build_kennings_handler(ctx), "ᚱ"),
+        (
+            "seidr_validate_meter",
+            SEIDR_VALIDATE_METER_SCHEMA,
+            build_validate_meter_handler(ctx),
+            "⚖️",
+        ),
     ):
         ctx.register_tool(
             name=name,

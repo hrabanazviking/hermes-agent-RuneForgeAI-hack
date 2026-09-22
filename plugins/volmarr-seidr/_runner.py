@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -44,6 +45,37 @@ def main() -> None:
             }
             for kenning in lexicon.kennings
         ]
+        print(json.dumps(payload, ensure_ascii=True, separators=(",", ":")))
+        return
+    if len(sys.argv) == 5 and sys.argv[2] == "validate":
+        engine_root = Path(sys.argv[1]).resolve(strict=True)
+        sys.path.insert(0, str(engine_root))
+        from seidr.forms import Line, get_form
+        from seidr.lexicon import alliteration_group, count_syllables_approx
+
+        form = get_form(sys.argv[3])
+        raw_lines = json.loads(sys.argv[4])
+        lines = []
+        for text in raw_lines:
+            words = re.findall(r"[^\W\d_]+", text, flags=re.UNICODE)
+            syllables = sum(count_syllables_approx(word) for word in words)
+            group = alliteration_group(words[0]) if words else ""
+            lines.append(Line(text=text, syllables=syllables, alliteration_group=group))
+        minimum, maximum = form.syllable_range()
+        payload = {
+            "form": form.name(),
+            "old_norse_name": form.name_on(),
+            "valid": bool(form.validate_stanza(lines)),
+            "syllables_per_line": {"minimum": minimum, "maximum": maximum},
+            "lines": [
+                {
+                    "text": line.text,
+                    "syllables": line.syllables,
+                    "alliteration_group": line.alliteration_group,
+                }
+                for line in lines
+            ],
+        }
         print(json.dumps(payload, ensure_ascii=True, separators=(",", ":")))
         return
     if len(sys.argv) != 7:

@@ -34,6 +34,13 @@ def _fake_engine(root: Path, verse: str, record: Path | None = None) -> None:
     def name_on(self): return self.old_norse
     def syllable_range(self): return (4, 6)
     def describe(self): return f"Official structure for {self.old_norse}"
+    def validate_stanza(self, lines): return len(lines) == 4
+
+class Line:
+    def __init__(self, text, syllables, alliteration_group):
+        self.text = text
+        self.syllables = syllables
+        self.alliteration_group = alliteration_group
 
 FORMS = {
     "fornyrthislag": Form("fornyrthislag", "fornyrðislag"),
@@ -42,6 +49,8 @@ FORMS = {
     "drottkvaett": Form("drottkvaett", "dróttkvætt"),
     "malahattr": Form("malahattr", "málaháttr"),
 }
+
+def get_form(key): return FORMS[key]
 ''',
         encoding="utf-8",
     )
@@ -52,6 +61,9 @@ FORMS = {
     components = ["whale", "road"]
     domain = "vanaheim"
     syllable_count = 2
+
+def count_syllables_approx(word): return 1
+def alliteration_group(word): return word[0].lower() if word else ""
 
 class Lexicon:
     def __init__(self, seed=None):
@@ -193,6 +205,7 @@ def test_forms_catalog_uses_official_registry_and_removes_aliases(tmp_path):
             "seidr_compose",
             "seidr_forms",
             "seidr_kennings",
+            "seidr_validate_meter",
         }
         result = json.loads(
             registry.dispatch("seidr_forms", {}, scope=manager.scope_key)
@@ -229,6 +242,38 @@ def test_kennings_catalog_comes_from_official_lexicon(tmp_path):
             "domain": "vanaheim",
             "syllables": 2,
         }
+    ]
+
+
+def test_meter_validation_uses_official_form_and_line_metrics(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    root = tmp_path / "seidr-engine"
+    _fake_engine(root, "unused")
+    _write_profile(home, root)
+    lines = ["Wyrd wakes", "Wolves wander", "Runes rise", "Ravens return"]
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch(
+                "seidr_validate_meter",
+                {"form": "fornyrthislag", "lines": lines},
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+    validation = result["validation"]
+    assert validation["valid"] is True
+    assert [line["syllables"] for line in validation["lines"]] == [2, 2, 2, 2]
+    assert [line["alliteration_group"] for line in validation["lines"]] == [
+        "w",
+        "w",
+        "r",
+        "r",
     ]
 
 

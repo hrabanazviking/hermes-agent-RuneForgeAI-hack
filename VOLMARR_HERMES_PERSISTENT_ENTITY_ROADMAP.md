@@ -2025,6 +2025,15 @@ expressions, component words, domains, and computed syllable counts. No vocabula
 extended in Hermes, and the catalog is deliberately unpaginated. Independent meter validation
 remains open.
 
+Slice 45 adds `seidr_validate_meter`, which converts bounded input lines into official `Line`
+objects using the engine's syllable counter and alliteration classifier before invoking the
+selected form's own stanza validator. Results expose the per-line evidence and are described as
+structural engine validation, not a broader claim of philological correctness.
+
+**Norse poetry is complete:** deterministic composition, canonical form discovery, complete
+kenning discovery, and independent structural meter validation now use the official Seiðr Engine.
+D&D / Norse Saga mechanics are the next personal tool family.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
