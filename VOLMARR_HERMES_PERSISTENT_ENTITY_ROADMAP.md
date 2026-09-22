@@ -1961,6 +1961,11 @@ calculation path and minimizing identity data. Unknown time remains explicitly a
 The plugin creates no extra persistence or telemetry; normal Hermes session-history policy applies
 to the tool call and result. Transit, prediction, synastry, and astrocartography remain open.
 
+Slice 35 adds `astrology_transit` and requires an explicit sky date, eliminating the upstream
+command's implicit current-time branch so results are replayable. Optional natal and UTC transit
+times are validated and declared in result metadata; only date/time/coordinate flags reach the
+engine. Prediction, synastry, and astrocartography remain open.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

@@ -592,6 +592,19 @@ explicitly absent. The plugin creates no additional state, memory record, teleme
 copy. Birth inputs and reports remain ordinary Hermes tool-call data and therefore follow the
 operator's normal session-history policy.
 
+### Slice 35: Reproducible Transit Charts
+
+`astrology_transit` compares a coordinate-bound natal chart with a required explicit sky date.
+This deliberately removes the official CLI's implicit “now” branch, making every tool result
+replayable from its recorded arguments. Natal and transit times remain optional but validated; the
+engine's documented defaults are surfaced through `natal_time_known` and
+`transit_time_explicit` metadata instead of being hidden.
+
+Only date, time, and coordinate flags reach the external engine. City, nation, identity labels,
+network geocoding, persistence, and interpretation remain outside the plugin. The returned report
+contains sky positions, transiting planets in natal houses, and transit-to-natal aspects under the
+same bounded, credential-free subprocess contract as the earlier astrology tools.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

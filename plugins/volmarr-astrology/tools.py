@@ -110,6 +110,49 @@ ASTROLOGY_NATAL_SCHEMA = {
     },
 }
 
+ASTROLOGY_TRANSIT_SCHEMA = {
+    "name": "astrology_transit",
+    "description": (
+        "Calculate an explicit-date transit chart against a natal chart locally. "
+        "Coordinates are required and the sky date may not default to now. Natal and "
+        "sky times are optional; the tool calculates but does not interpret."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "natal_date": {
+                "type": "string",
+                "pattern": r"^\d{4}-\d{2}-\d{2}$",
+            },
+            "natal_time": {
+                "type": "string",
+                "pattern": r"^(?:[01]\d|2[0-3]):[0-5]\d$",
+            },
+            "transit_date": {
+                "type": "string",
+                "pattern": r"^\d{4}-\d{2}-\d{2}$",
+            },
+            "transit_time": {
+                "type": "string",
+                "description": "Optional explicit UTC sky time in HH:MM form.",
+                "pattern": r"^(?:[01]\d|2[0-3]):[0-5]\d$",
+            },
+            "latitude": {
+                "type": "number",
+                "exclusiveMinimum": -90,
+                "exclusiveMaximum": 90,
+            },
+            "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180,
+            },
+        },
+        "required": ["natal_date", "transit_date", "latitude", "longitude"],
+        "additionalProperties": False,
+    },
+}
+
 
 def _configured_file(value: Any, *, executable: bool = False) -> Path | None:
     if not isinstance(value, str) or not value.strip() or "\x00" in value:
@@ -365,6 +408,72 @@ def build_natal_handler(ctx):
     return handle
 
 
+def build_transit_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        required = {"natal_date", "transit_date", "latitude", "longitude"}
+        allowed = required | {"natal_time", "transit_time"}
+        if not required.issubset(args) or not set(args) <= allowed:
+            return tool_error(
+                "natal_date, transit_date, latitude, and longitude are required; "
+                "only natal_time and transit_time are optional"
+            )
+        natal_date = _calendar_date(args.get("natal_date"))
+        transit_date = _calendar_date(args.get("transit_date"))
+        if natal_date is None or transit_date is None:
+            return tool_error("natal_date and transit_date must be real YYYY-MM-DD dates")
+        natal_time = args.get("natal_time")
+        transit_time = args.get("transit_time")
+        if natal_time is not None:
+            natal_time = _clock_time(natal_time)
+            if natal_time is None:
+                return tool_error("natal_time must use 24-hour HH:MM form")
+        if transit_time is not None:
+            transit_time = _clock_time(transit_time)
+            if transit_time is None:
+                return tool_error("transit_time must use 24-hour HH:MM form")
+        latitude = _number(args.get("latitude"), minimum=-90.0, maximum=90.0)
+        longitude = _number(args.get("longitude"), minimum=-180.0, maximum=180.0)
+        if latitude is None or not -90.0 < latitude < 90.0:
+            return tool_error("latitude must be a finite number strictly between -90 and 90")
+        if longitude is None:
+            return tool_error("longitude must be a finite number from -180 to 180")
+        argv = [
+            "transit",
+            "--date",
+            natal_date,
+            "--transit-date",
+            transit_date,
+            "--lat",
+            _coordinate(latitude),
+            "--lon",
+            _coordinate(longitude),
+        ]
+        if natal_time is not None:
+            argv.extend(["--time", natal_time])
+        if transit_time is not None:
+            argv.extend(["--transit-time", transit_time])
+        report, error = _run_calculation(ctx, argv)
+        if error is not None:
+            return tool_error(error)
+        return tool_result(
+            {
+                "success": True,
+                "engine": "hrabanazviking/astrology-engine",
+                "calculation": "transit",
+                "interpretation_included": False,
+                "natal_date": natal_date,
+                "natal_time_known": natal_time is not None,
+                "transit_date": transit_date,
+                "transit_time_explicit": transit_time is not None,
+                "latitude": latitude,
+                "longitude": longitude,
+                "report": report,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         (
@@ -384,6 +493,12 @@ def register_tools(ctx) -> None:
             ASTROLOGY_NATAL_SCHEMA,
             build_natal_handler(ctx),
             "✨",
+        ),
+        (
+            "astrology_transit",
+            ASTROLOGY_TRANSIT_SCHEMA,
+            build_transit_handler(ctx),
+            "🪐",
         ),
     ):
         ctx.register_tool(

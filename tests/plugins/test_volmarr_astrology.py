@@ -69,6 +69,7 @@ def test_real_discovery_runs_lunar_with_fixed_argv_and_scrubbed_environment(
             "astrology_lunar",
             "astrology_planetary_hours",
             "astrology_natal",
+            "astrology_transit",
         }
         result = json.loads(
             registry.dispatch("astrology_lunar", {}, scope=manager.scope_key)
@@ -357,6 +358,99 @@ def test_natal_rejects_bad_time_and_extra_identity_fields_before_engine(tmp_path
 
     assert "error" in bad_time
     assert "error" in extra_name
+    assert not marker.exists()
+
+
+def test_transit_requires_explicit_sky_date_and_never_uses_geocoding(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine = tmp_path / "astrology_engine.py"
+    record = tmp_path / "transit.json"
+    _engine_script(engine, "TRANSIT CHART REPORT", record=record)
+    _write_profile(home, engine)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch(
+                "astrology_transit",
+                {
+                    "natal_date": "1975-11-22",
+                    "natal_time": "14:30",
+                    "transit_date": "2026-09-22",
+                    "transit_time": "18:45",
+                    "latitude": 39.7684,
+                    "longitude": -86.1581,
+                },
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert result["calculation"] == "transit"
+    assert result["natal_time_known"] is True
+    assert result["transit_time_explicit"] is True
+    assert result["report"] == "TRANSIT CHART REPORT"
+    invocation = json.loads(record.read_text(encoding="utf-8"))
+    assert invocation["argv"] == [
+        "transit",
+        "--date",
+        "1975-11-22",
+        "--transit-date",
+        "2026-09-22",
+        "--lat",
+        "39.7684",
+        "--lon",
+        "-86.1581",
+        "--time",
+        "14:30",
+        "--transit-time",
+        "18:45",
+    ]
+    assert "--city" not in invocation["argv"]
+    assert "--nation" not in invocation["argv"]
+
+
+def test_transit_rejects_implicit_now_and_invalid_time_before_engine(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine = tmp_path / "astrology_engine.py"
+    marker = tmp_path / "should-not-exist"
+    engine.write_text(
+        f"from pathlib import Path\nPath({str(marker)!r}).write_text('called')\n",
+        encoding="utf-8",
+    )
+    _write_profile(home, engine)
+    base = {
+        "natal_date": "1975-11-22",
+        "latitude": 39.7684,
+        "longitude": -86.1581,
+    }
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        implicit_now = json.loads(
+            registry.dispatch("astrology_transit", base, scope=manager.scope_key)
+        )
+        invalid_time = json.loads(
+            registry.dispatch(
+                "astrology_transit",
+                {**base, "transit_date": "2026-09-22", "transit_time": "noon"},
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert "error" in implicit_now
+    assert "error" in invalid_time
     assert not marker.exists()
 
 
