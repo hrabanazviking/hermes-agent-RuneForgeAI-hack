@@ -449,6 +449,23 @@ exists, and no job is created merely by enabling or starting the plugin. Status 
 ambiguous, active, paused, and drifted definitions; reinstalling repairs drift without changing an
 existing job's activation state unless `--activate` is explicit.
 
+### Slice 27: Non-Destructive Sleep and Consolidation
+
+`consolidation.py` closes the first Entity Lifecycle milestone with a validation checkpoint, not a
+generative rewrite. `entity_sleep_cycle` and `hermes volmarr sleep run` read and validate the
+stable identity, relationship ledger, goal ledger, and heartbeat state, then atomically write a
+versioned `entity/consolidation.json`. The checkpoint contains a monotonic sequence, timestamp,
+source class, aggregate counts, and SHA-256 digests of canonical component state. It is an audit
+manifest, not a backup, memory store, or authority over its source domains.
+
+The cycle never edits identity, relationships, goals, continuity, Hermes transcripts, MemPalace,
+OpenViking, or WYRD. Corrupt or wrong-owner source/checkpoint state stops the cycle without
+replacement. Verðandi receives only sequence, source, and aggregate counts. An optional daily
+no-agent job is installed through `hermes volmarr sleep install`; like the frequent routine, it is
+idempotent, profile-local, and paused unless `--activate` is explicit. Restart tests prove that the
+identity, relationship and goal ledgers, heartbeat, and consolidation sequence resume under the
+same owner, while A→B→A tests prove profile isolation.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

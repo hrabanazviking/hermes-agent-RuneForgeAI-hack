@@ -6,6 +6,7 @@ from functools import partial
 
 from .affective_bridge import AffectiveBridge
 from .cli import health_command, register_cli
+from .consolidation import register_sleep_tool
 from .goals import GoalBridge, register_goal_tools
 from .heartbeat import HeartbeatBridge, register_heartbeat_tool
 from .identity import IdentityBridge
@@ -47,6 +48,7 @@ def register(ctx) -> None:
     register_relationship_tools(ctx)
     register_goal_tools(ctx)
     register_heartbeat_tool(ctx)
+    register_sleep_tool(ctx)
     ctx.register_cli_command(
         name="volmarr",
         help="Inspect Volmarr's Hermes integrations",

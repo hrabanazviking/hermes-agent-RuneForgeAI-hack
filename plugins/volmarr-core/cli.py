@@ -8,6 +8,11 @@ import sys
 from pathlib import Path
 
 from .cognition import probe_aesir
+from .consolidation import (
+    ConsolidationService,
+    probe_consolidation,
+    sleep_routine_manager,
+)
 from .execution import CognitionExecutionRequest, CognitionExecutor
 from .health import probe_verdandi
 from .heartbeat import HeartbeatError, HeartbeatService, probe_heartbeat
@@ -159,6 +164,32 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     )
     routines_run.add_argument("--kind", choices=("frequent",), required=True)
     routines_run.add_argument("--json", action="store_true", dest="json_output")
+    sleep = subcommands.add_parser(
+        "sleep",
+        help="Manage non-destructive entity consolidation",
+    )
+    sleep_subcommands = sleep.add_subparsers(dest="sleep_action")
+    sleep_status = sleep_subcommands.add_parser(
+        "status",
+        help="Inspect the latest consolidation checkpoint read-only",
+    )
+    sleep_status.add_argument("--json", action="store_true", dest="json_output")
+    sleep_install = sleep_subcommands.add_parser(
+        "install",
+        help="Install the daily Hermes cron job paused unless --activate is supplied",
+    )
+    sleep_install.add_argument("--activate", action="store_true")
+    sleep_install.add_argument("--json", action="store_true", dest="json_output")
+    sleep_run = sleep_subcommands.add_parser(
+        "run",
+        help="Record one non-destructive consolidation checkpoint",
+    )
+    sleep_run.add_argument(
+        "--source",
+        choices=("manual", "cron"),
+        default="manual",
+    )
+    sleep_run.add_argument("--json", action="store_true", dest="json_output")
 
 
 def _load_json_request(source: str, *, max_bytes: int) -> dict:
@@ -325,6 +356,39 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             print(json.dumps(report.as_dict(), sort_keys=True))
         else:
             print(f"Entity routines: {getattr(report, 'status', 'completed')}")
+        return exit_code
+    elif action == "sleep":
+        sleep_action = getattr(args, "sleep_action", None)
+        try:
+            if sleep_action == "status":
+                report = probe_consolidation(ctx)
+                exit_code = 0 if report.healthy else 1
+            elif sleep_action == "install":
+                report = sleep_routine_manager(ctx).install(
+                    activate=bool(getattr(args, "activate", False))
+                )
+                exit_code = 0
+            elif sleep_action == "run":
+                report = ConsolidationService(ctx).run(
+                    getattr(args, "source", "manual")
+                )
+                exit_code = 0
+            else:
+                print("Usage: hermes volmarr sleep {status|install|run} [options]")
+                return 2
+        except (RuntimeError, OSError) as exc:
+            print(
+                json.dumps(
+                    {"error": "consolidation_failed", "detail": str(exc)},
+                    sort_keys=True,
+                ),
+                file=sys.stderr,
+            )
+            return 1
+        if getattr(args, "json_output", False):
+            print(json.dumps(report.as_dict(), sort_keys=True))
+        else:
+            print(f"Entity consolidation: {getattr(report, 'status', 'completed')}")
         return exit_code
     else:
         print("Usage: hermes volmarr {health|cognition|memory|world|identity} ...")
