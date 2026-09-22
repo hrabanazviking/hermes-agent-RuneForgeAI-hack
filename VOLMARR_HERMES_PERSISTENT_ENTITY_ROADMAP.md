@@ -1916,7 +1916,21 @@ environment application. The registry is keyed by normalized profile home, so ar
 prefix-less Kista values are masked by the canonical model-egress and log redactor only for their
 owning profile. Values that were skipped are not registered, and no raw value, reference, or name is
 persisted by the registry. A→B→A tests prove both masking and cross-profile non-disclosure.
-Milestone 7 remains open for the broader canary-leak matrix and vault-permission enforcement.
+Slice 30 closes the canary-leak item with a real-discovery integration contract. A synthetic
+prefix-less Kista value is deliberately presented to lifecycle hook arguments, terminal output,
+and the logging boundary. The test proves that only a redacted result reaches SessionDB, then
+reopens history and byte-scans all profile databases and SQLite sidecars. Captured Verðandi
+lifecycle events, cognition telemetry, formatted logs, stdout, and stderr are also required to be
+canary-free. No fake memory authority is introduced: stores that do not exist remain absent.
+Slice 31 completes vault-permission enforcement. Initialized vault directories, key files, and
+ciphertext must be non-linked real objects. POSIX ownership and owner-only modes are verified;
+Windows uses the actual NTFS DACL in SID form and rejects grants beyond the current user,
+LocalSystem, and built-in Administrators. Unverifiable or conditional permissions fail closed
+before Kista executes, while the adapter remains read-only and never rewrites operator ACLs.
+
+**Milestone 7 is complete:** Kista is attached only through the Secret Source API, applied values
+join the profile-scoped exact redactor, the cross-surface canary matrix proves containment, and
+vault storage must pass a native permission gate before credentials are read.
 
 ## Milestone 8: Personal Tool Suite
 

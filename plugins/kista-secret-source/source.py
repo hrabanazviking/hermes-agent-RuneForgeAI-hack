@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+import csv
+import io
 import json
 import os
 import re
 import shutil
+import stat
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -26,6 +31,16 @@ _REFERENCE_RE = re.compile(
 _MAX_OUTPUT_BYTES = 256 * 1024
 _DEFAULT_VAULT_DIR = "credentials"
 _DEFAULT_CLI_TIMEOUT_SECONDS = 30.0
+_REQUIRED_VAULT_FILES = (".vault_key", "vault.json.enc")
+_SDDL_ACE_RE = re.compile(r"\(([^()]*)\)")
+_WINDOWS_TRUSTED_ACL_PRINCIPALS = frozenset(
+    {
+        "SY",  # LocalSystem
+        "BA",  # Built-in Administrators
+        "S-1-5-18",
+        "S-1-5-32-544",
+    }
+)
 
 
 def _validate_references(
@@ -59,11 +74,137 @@ def _resolve_vault_dir(cfg: dict, home_path: Path) -> Optional[Path]:
         return None
     try:
         home = home_path.expanduser().resolve()
-        candidate = (home / relative).resolve()
+        candidate = Path(os.path.abspath(home / relative))
         candidate.relative_to(home)
+        candidate.resolve().relative_to(home)
     except (OSError, RuntimeError, ValueError):
         return None
     return candidate
+
+
+def _is_link_or_reparse(path: Path) -> bool:
+    """Reject POSIX links and Windows junctions/reparse points."""
+    try:
+        info = path.lstat()
+    except OSError:
+        return True
+    attributes = getattr(info, "st_file_attributes", 0)
+    reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    return stat.S_ISLNK(info.st_mode) or bool(attributes & reparse)
+
+
+def _windows_current_sid() -> Optional[str]:
+    executable = shutil.which("whoami")
+    if executable is None:
+        return None
+    try:
+        proc = subprocess.run(
+            [executable, "/user", "/fo", "csv", "/nh"],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+        row = next(csv.reader(io.StringIO(proc.stdout)))
+    except (OSError, StopIteration, subprocess.SubprocessError):
+        return None
+    if proc.returncode != 0 or len(row) < 2 or not row[1].startswith("S-1-"):
+        return None
+    return row[1]
+
+
+def _windows_acl_sddl(path: Path) -> Optional[str]:
+    """Read the DACL in SID form so localized account names are irrelevant."""
+    executable = shutil.which("icacls")
+    if executable is None:
+        return None
+    try:
+        with tempfile.TemporaryDirectory(prefix="hermes-kista-acl-") as temp_dir:
+            output = Path(temp_dir) / "acl.txt"
+            proc = subprocess.run(
+                [executable, str(path), "/save", str(output), "/Q"],
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                timeout=5,
+                check=False,
+            )
+            if proc.returncode != 0 or not output.is_file():
+                return None
+            return output.read_text(encoding="utf-16")
+    except (OSError, UnicodeError, subprocess.SubprocessError):
+        return None
+
+
+def _sddl_is_private(sddl: str, current_sid: str) -> bool:
+    """Allow grants only to the current user, LocalSystem, or Administrators."""
+    if any(marker in sddl for marker in ("(XA;", "(ZA;", "(XU;")):
+        # Conditional allow ACEs have a nested expression that this deliberately
+        # small parser cannot safely attribute. Refuse rather than guess.
+        return False
+    trusted = _WINDOWS_TRUSTED_ACL_PRINCIPALS | {current_sid}
+    current_user_granted = False
+    for raw_ace in _SDDL_ACE_RE.findall(sddl):
+        fields = raw_ace.split(";")
+        if len(fields) < 6 or fields[0] not in {"A", "OA"}:
+            continue
+        principal = fields[5]
+        if principal not in trusted:
+            return False
+        if principal == current_sid:
+            current_user_granted = True
+    return current_user_granted
+
+
+def _windows_acl_is_private(path: Path, current_sid: str) -> bool:
+    sddl = _windows_acl_sddl(path)
+    return bool(sddl and _sddl_is_private(sddl, current_sid))
+
+
+def _uses_windows_acls() -> bool:
+    return sys.platform == "win32"
+
+
+def _validate_vault_security(vault_dir: Path) -> Optional[str]:
+    """Return a generic refusal reason when an initialized vault is unsafe."""
+    if not vault_dir.exists():
+        # Let Kista retain ownership of the normal uninitialized-vault error.
+        return None
+    if _is_link_or_reparse(vault_dir) or not vault_dir.is_dir():
+        return "Kista vault storage must be a real profile-local directory."
+
+    required = [vault_dir / name for name in _REQUIRED_VAULT_FILES]
+    if any(
+        not path.exists()
+        or _is_link_or_reparse(path)
+        or not path.is_file()
+        for path in required
+    ):
+        return "Kista vault storage is incomplete or uses unsupported links."
+
+    if _uses_windows_acls():
+        current_sid = _windows_current_sid()
+        if current_sid is None or any(
+            not _windows_acl_is_private(path, current_sid)
+            for path in (vault_dir, *required)
+        ):
+            return (
+                "Kista vault ACLs permit access outside the current user "
+                "and system administrators."
+            )
+        return None
+
+    owner = getattr(os, "geteuid", lambda: None)()
+    for path in (vault_dir, *required):
+        try:
+            info = path.stat()
+        except OSError:
+            return "Kista vault permissions could not be verified."
+        if owner is not None and info.st_uid != owner:
+            return "Kista vault storage is not owned by the current user."
+        if stat.S_IMODE(info.st_mode) & 0o077:
+            return "Kista vault storage permits group or world access."
+    return None
 
 
 def _resolve_command(binary_path: str) -> Tuple[Optional[List[str]], Optional[Path]]:
@@ -100,7 +241,10 @@ def _failure_kind(output: str) -> ErrorKind:
     lowered = output.lower()
     if "no entry found" in lowered:
         return ErrorKind.REF_INVALID
-    if any(token in lowered for token in ("not initialized", "vault key not found", "run 'kista init'")):
+    if any(
+        token in lowered
+        for token in ("not initialized", "vault key not found", "run 'kista init'")
+    ):
         return ErrorKind.NOT_CONFIGURED
     if any(token in lowered for token in ("invalid token", "decrypt", "authentication")):
         return ErrorKind.AUTH_FAILED
@@ -177,7 +321,10 @@ class KistaSource(SecretSource):
 
     def remediation(self, kind: Optional[ErrorKind], cfg: dict) -> str:
         hints = {
-            ErrorKind.NOT_CONFIGURED: "Initialize the active profile's Kista vault with `kista init`.",
+            ErrorKind.NOT_CONFIGURED: (
+                "Initialize the active profile's Kista vault with `kista init` and ensure "
+                "its directory, key, and ciphertext are private to the current user."
+            ),
             ErrorKind.BINARY_MISSING: (
                 "Install Kista or set secrets.kista.binary_path to its executable."
             ),
@@ -208,6 +355,9 @@ class KistaSource(SecretSource):
                 "secrets.kista.vault_dir must stay within the active Hermes profile.",
                 ErrorKind.NOT_CONFIGURED,
             )
+        permission_error = _validate_vault_security(vault_dir)
+        if permission_error is not None:
+            return result.fail(permission_error, ErrorKind.NOT_CONFIGURED)
 
         command, binary = _resolve_command(str(cfg.get("binary_path") or ""))
         result.binary_path = binary
