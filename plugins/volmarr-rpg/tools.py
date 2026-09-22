@@ -149,6 +149,36 @@ RPG_RANDOM_CHARACTER_SCHEMA = {
     },
 }
 
+RPG_ENCOUNTER_INITIATIVE_SCHEMA = {
+    "name": "rpg_encounter_initiative",
+    "description": (
+        "Roll and order a replayable bounded encounter initiative list from opaque "
+        "participant identifiers and total initiative modifiers."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "participants": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 40,
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "string", "minLength": 1, "maxLength": 64},
+                        "modifier": {"type": "integer", "minimum": -30, "maximum": 30},
+                    },
+                    "required": ["id", "modifier"],
+                    "additionalProperties": False,
+                },
+            },
+            "seed": {"type": "integer", "minimum": 0, "maximum": _MAX_SEED},
+        },
+        "required": ["participants", "seed"],
+        "additionalProperties": False,
+    },
+}
+
 
 def _integer(value: Any, *, minimum: int, maximum: int) -> int | None:
     if isinstance(value, bool) or not isinstance(value, int):
@@ -444,6 +474,77 @@ def build_random_character_handler():
     return handle
 
 
+def build_encounter_initiative_handler():
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if set(args) != {"participants", "seed"}:
+            return tool_error("participants and seed are required")
+        participants = args.get("participants")
+        seed = _integer(args.get("seed"), minimum=0, maximum=_MAX_SEED)
+        if not isinstance(participants, list) or not 1 <= len(participants) <= 40:
+            return tool_error("participants must contain 1 to 40 entries")
+        if seed is None:
+            return tool_error(f"seed must be an integer from 0 to {_MAX_SEED}")
+
+        normalized = []
+        seen_ids = set()
+        for input_index, participant in enumerate(participants):
+            if not isinstance(participant, dict) or set(participant) != {"id", "modifier"}:
+                return tool_error("each participant requires only id and modifier")
+            identifier = participant.get("id")
+            modifier = _integer(participant.get("modifier"), minimum=-30, maximum=30)
+            if (
+                not isinstance(identifier, str)
+                or not identifier.strip()
+                or len(identifier) > 64
+            ):
+                return tool_error("participant id must be a non-blank string up to 64 characters")
+            clean_identifier = identifier.strip()
+            normalized_identifier = clean_identifier.casefold()
+            if normalized_identifier in seen_ids:
+                return tool_error("participant ids must be unique ignoring case")
+            if modifier is None:
+                return tool_error("participant modifier must be an integer from -30 to 30")
+            seen_ids.add(normalized_identifier)
+            normalized.append((input_index, clean_identifier, modifier))
+
+        rng = random.Random(seed)
+        order = []
+        for input_index, identifier, modifier in normalized:
+            natural_roll = rng.randint(1, 20)
+            order.append(
+                {
+                    "id": identifier,
+                    "input_index": input_index,
+                    "natural_roll": natural_roll,
+                    "modifier": modifier,
+                    "total": natural_roll + modifier,
+                }
+            )
+        order.sort(
+            key=lambda item: (
+                -item["total"],
+                -item["modifier"],
+                item["id"].casefold(),
+                item["input_index"],
+            )
+        )
+        for position, participant in enumerate(order, start=1):
+            participant["position"] = position
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "rpg_encounter_initiative",
+                "seed": seed,
+                "participant_count": len(order),
+                "natural_d20_automatic": False,
+                "tie_breaker": "higher_modifier_then_identifier_then_input_order",
+                "order": order,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         ("dice_roll", DICE_ROLL_SCHEMA, build_dice_roll_handler(), "🎲"),
@@ -471,6 +572,12 @@ def register_tools(ctx) -> None:
             RPG_RANDOM_CHARACTER_SCHEMA,
             build_random_character_handler(),
             "🧙",
+        ),
+        (
+            "rpg_encounter_initiative",
+            RPG_ENCOUNTER_INITIATIVE_SCHEMA,
+            build_encounter_initiative_handler(),
+            "⚔️",
         ),
     ):
         ctx.register_tool(

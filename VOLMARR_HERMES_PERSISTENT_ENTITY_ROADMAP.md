@@ -2057,8 +2057,12 @@ No SRD rules prose is copied into Hermes.
 
 Slice 51 adds `rpg_random_character` as an ability-only skeleton: six fixed named scores generated
 by seeded 4d6-drop-lowest, with every die, dropped die, score, and modifier exposed. It deliberately
-generates no identity, ancestry, class, personality, equipment, or narrative. Encounter initiative
-is next.
+generates no identity, ancestry, class, personality, equipment, or narrative.
+
+Slice 52 adds `rpg_encounter_initiative`, a bounded seeded d20 ordering primitive over opaque
+participant identifiers and total modifiers. Every roll, sum, position, and deterministic tie
+breaker is visible; no combatant state or narration is retained. Finite hit-point transitions are
+next.
 
 ## Milestone 9: Embodiment
 

@@ -815,6 +815,18 @@ does not choose or accept a name, ancestry, class, culture, gender, alignment, p
 equipment, biography, art prompt, or campaign state. Those semantic layers remain separate from
 the finite random mechanic and no catalog content is copied from the SRD or NorseSagaEngine.
 
+### Slice 52: Replayable Encounter Initiative
+
+`rpg_encounter_initiative` rolls one d20 for each of at most 40 participants, adds the caller's
+bounded total initiative modifier, and returns a complete ordered list. Participants carry only a
+short opaque identifier and modifier; the tool does not ingest character sheets, hit points,
+conditions, actions, or narrative descriptions.
+
+The result exposes every roll and sum and states that natural d20 values have no automatic
+initiative meaning. Ties use a documented adapter rule—higher modifier, then identifier, then
+input order—so replay remains total and deterministic without pretending that this ordering is a
+mandatory SRD table rule.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
