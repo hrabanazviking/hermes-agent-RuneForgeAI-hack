@@ -2000,6 +2000,14 @@ upstream fuzzy matcher, and RuneTarot remains authoritative for count, ordering,
 and placement. The adapter returns positioned card/correspondence facts only; structural elemental
 dignity analysis remains open.
 
+Slice 41 adds RuneTarot's official elemental balance and adjacent-card dignity relationships to
+each multi-card spread. The plugin returns the engine's structural classifications without
+reimplementing their matrix or generating narrative advice.
+
+**Tarot is complete:** deterministic single-card and fixed-layout draws, Golden Dawn card and
+position correspondences, elemental balance, and dignity structure are available while all LLM
+interpretation remains in normal Hermes cognition. Norse poetry is the next personal tool family.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

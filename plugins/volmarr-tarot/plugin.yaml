@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-tarot
-version: "0.2.0"
+version: "0.3.0"
 description: "Local deterministic tarot draws through the official RuneTarot engine."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/RuneTarotEngine

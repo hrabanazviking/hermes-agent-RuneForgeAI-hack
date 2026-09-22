@@ -74,6 +74,10 @@ def main() -> None:
     if spread is None or manager is None:
         payload: object = _card_payload(drawn[0])
     else:
+        from src.golden_dawn import GoldenDawnEngine
+
+        gd_engine = GoldenDawnEngine()
+        gd_engine.load()
         placed = manager.assign_cards(spread, drawn)
         if len(placed) != count:
             raise RuntimeError("official spread did not place every card")
@@ -83,6 +87,8 @@ def main() -> None:
             "description": _text(spread.description),
             "tradition": _text(spread.tradition),
             "card_count": count,
+            "elemental_balance": gd_engine.get_elemental_balance(drawn),
+            "elemental_dignities": gd_engine.assess_elemental_dignities(drawn),
             "cards": [
                 {
                     "position": {

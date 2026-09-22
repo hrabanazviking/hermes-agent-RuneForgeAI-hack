@@ -106,6 +106,29 @@ class SpreadManager:
         return [Placed(card, position) for card, position in zip(cards, spread.positions)]
 '''
     (root / "src" / "spreads.py").write_text(spreads, encoding="utf-8")
+    golden_dawn = '''class GoldenDawnEngine:
+    def load(self):
+        return None
+
+    def get_elemental_balance(self, cards):
+        return {"fire": 0, "water": 0, "air": len(cards), "earth": 0}
+
+    def assess_elemental_dignities(self, cards):
+        return [
+            {
+                "card_a": cards[index].display_name,
+                "card_a_reversed": cards[index].is_reversed,
+                "element_a": "air",
+                "card_b": cards[index + 1].display_name,
+                "card_b_reversed": cards[index + 1].is_reversed,
+                "element_b": "air",
+                "relationship": "friendly_excess",
+                "description": "Air with Air is excessively strong.",
+            }
+            for index in range(len(cards) - 1)
+        ]
+'''
+    (root / "src" / "golden_dawn.py").write_text(golden_dawn, encoding="utf-8")
 
 
 def test_real_discovery_draws_one_reproducible_card_without_credentials_or_state(
@@ -183,6 +206,17 @@ def test_spread_returns_official_positions_without_question_or_interpretation(tm
     assert result["interpretation_included"] is False
     assert result["spread"]["key"] == "three_card"
     assert result["spread"]["card_count"] == 3
+    assert result["spread"]["elemental_balance"] == {
+        "fire": 0,
+        "water": 0,
+        "air": 3,
+        "earth": 0,
+    }
+    assert len(result["spread"]["elemental_dignities"]) == 2
+    assert all(
+        dignity["relationship"] == "friendly_excess"
+        for dignity in result["spread"]["elemental_dignities"]
+    )
     assert [item["position"]["number"] for item in result["spread"]["cards"]] == [
         1,
         2,

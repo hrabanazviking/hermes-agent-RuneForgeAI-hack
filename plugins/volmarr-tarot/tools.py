@@ -287,7 +287,9 @@ def build_spread_handler(ctx):
             {
                 "success": True,
                 "engine": "hrabanazviking/RuneTarotEngine",
-                "engine_surface": "development/src/deck.py+src/spreads.py",
+                "engine_surface": (
+                    "development/src/deck.py+src/spreads.py+src/golden_dawn.py"
+                ),
                 "calculation": "multi_card_spread",
                 "seed": seed,
                 "reversals_enabled": allow_reversals,
