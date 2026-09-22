@@ -233,6 +233,39 @@ ASTROLOGY_SYNASTRY_SCHEMA = {
     },
 }
 
+ASTROLOGY_ASTROCARTOGRAPHY_SCHEMA = {
+    "name": "astrology_astrocartography",
+    "description": (
+        "Calculate local MC, IC, ASC, and DSC astrocartography lines from explicit birth "
+        "coordinates. Optional query coordinates identify nearby lines. No city geocoding, "
+        "identity label, persistence, or interpretation is added."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "date": {"type": "string", "pattern": r"^\d{4}-\d{2}-\d{2}$"},
+            "time": {
+                "type": "string",
+                "pattern": r"^(?:[01]\d|2[0-3]):[0-5]\d$",
+            },
+            "latitude": {
+                "type": "number",
+                "exclusiveMinimum": -90,
+                "exclusiveMaximum": 90,
+            },
+            "longitude": {"type": "number", "minimum": -180, "maximum": 180},
+            "query_latitude": {
+                "type": "number",
+                "exclusiveMinimum": -90,
+                "exclusiveMaximum": 90,
+            },
+            "query_longitude": {"type": "number", "minimum": -180, "maximum": 180},
+        },
+        "required": ["date", "latitude", "longitude"],
+        "additionalProperties": False,
+    },
+}
+
 
 def _configured_file(value: Any, *, executable: bool = False) -> Path | None:
     if not isinstance(value, str) or not value.strip() or "\x00" in value:
@@ -706,6 +739,88 @@ def build_synastry_handler(ctx):
     return handle
 
 
+def build_astrocartography_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        required = {"date", "latitude", "longitude"}
+        allowed = required | {"time", "query_latitude", "query_longitude"}
+        if not required.issubset(args) or not set(args) <= allowed:
+            return tool_error(
+                "date, latitude, and longitude are required; only time and a query pair are optional"
+            )
+        has_query_lat = "query_latitude" in args
+        has_query_lon = "query_longitude" in args
+        if has_query_lat != has_query_lon:
+            return tool_error("query_latitude and query_longitude must be supplied together")
+        raw_date = _calendar_date(args.get("date"))
+        if raw_date is None:
+            return tool_error("date must be a real calendar date in YYYY-MM-DD form")
+        raw_time = args.get("time")
+        if raw_time is not None:
+            raw_time = _clock_time(raw_time)
+            if raw_time is None:
+                return tool_error("time must use 24-hour HH:MM form")
+        latitude = _number(args.get("latitude"), minimum=-90.0, maximum=90.0)
+        longitude = _number(args.get("longitude"), minimum=-180.0, maximum=180.0)
+        if latitude is None or not -90.0 < latitude < 90.0:
+            return tool_error("latitude must be a finite number strictly between -90 and 90")
+        if longitude is None:
+            return tool_error("longitude must be a finite number from -180 to 180")
+        query_latitude = None
+        query_longitude = None
+        if has_query_lat:
+            query_latitude = _number(
+                args.get("query_latitude"), minimum=-90.0, maximum=90.0
+            )
+            query_longitude = _number(
+                args.get("query_longitude"), minimum=-180.0, maximum=180.0
+            )
+            if query_latitude is None or not -90.0 < query_latitude < 90.0:
+                return tool_error(
+                    "query_latitude must be finite and strictly between -90 and 90"
+                )
+            if query_longitude is None:
+                return tool_error("query_longitude must be finite from -180 to 180")
+        argv = [
+            "geoastrology",
+            "--date",
+            raw_date,
+            "--lat",
+            _coordinate(latitude),
+            "--lon",
+            _coordinate(longitude),
+        ]
+        if raw_time is not None:
+            argv.extend(["--time", raw_time])
+        if query_latitude is not None and query_longitude is not None:
+            argv.extend(
+                [
+                    "--query-lat",
+                    _coordinate(query_latitude),
+                    "--query-lon",
+                    _coordinate(query_longitude),
+                ]
+            )
+        report, error = _run_calculation(ctx, argv)
+        if error is not None:
+            return tool_error(error)
+        return tool_result(
+            {
+                "success": True,
+                "engine": "hrabanazviking/astrology-engine",
+                "calculation": "astrocartography",
+                "interpretation_included": False,
+                "date": raw_date,
+                "time_known": raw_time is not None,
+                "query_included": query_latitude is not None,
+                "latitude": latitude,
+                "longitude": longitude,
+                "report": report,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         (
@@ -743,6 +858,12 @@ def register_tools(ctx) -> None:
             ASTROLOGY_SYNASTRY_SCHEMA,
             build_synastry_handler(ctx),
             "⚭",
+        ),
+        (
+            "astrology_astrocartography",
+            ASTROLOGY_ASTROCARTOGRAPHY_SCHEMA,
+            build_astrocartography_handler(ctx),
+            "🗺️",
         ),
     ):
         ctx.register_tool(

@@ -1976,6 +1976,16 @@ times. Names and city/nation geocoding are structurally absent. Because the offi
 gates house overlays on city fields even with coordinates present, the adapter truthfully reports
 overlays as excluded instead of fabricating location labels. Astrocartography remains open.
 
+Slice 38 adds `astrology_astrocartography` for local MC, IC, ASC, and DSC line calculations from a
+validated birth date and explicit coordinates. Optional query coordinates are accepted only as a
+complete pair, while names, place labels, and geocoding remain unreachable. The result declares
+whether birth time and a query point were supplied and remains calculation-only under the shared
+bounded subprocess contract.
+
+**Astrology is complete:** the initial seven-tool set now covers natal, transit, lunar,
+planetary-hours, prediction, anonymous synastry, and coordinate-only astrocartography. Tarot is the
+next personal tool family.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
