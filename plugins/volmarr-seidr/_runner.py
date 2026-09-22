@@ -8,6 +8,26 @@ from pathlib import Path
 
 
 def main() -> None:
+    if len(sys.argv) == 3 and sys.argv[2] == "forms":
+        engine_root = Path(sys.argv[1]).resolve(strict=True)
+        sys.path.insert(0, str(engine_root))
+        from seidr.forms import FORMS
+
+        canonical = []
+        for key, form in FORMS.items():
+            if key != form.name():
+                continue
+            minimum, maximum = form.syllable_range()
+            canonical.append(
+                {
+                    "key": key,
+                    "old_norse_name": form.name_on(),
+                    "syllables_per_line": {"minimum": minimum, "maximum": maximum},
+                    "description": form.describe(),
+                }
+            )
+        print(json.dumps(canonical, ensure_ascii=True, separators=(",", ":")))
+        return
     if len(sys.argv) != 7:
         raise SystemExit(2)
     engine_root = Path(sys.argv[1]).resolve(strict=True)

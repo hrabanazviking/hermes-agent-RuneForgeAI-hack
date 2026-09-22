@@ -706,6 +706,18 @@ interpreters. Numeric seed zero is rejected because the current `compose_poem` i
 treats it as falsy and enters an unseeded branch. The plugin accepts no free-form topic yet and
 makes no model call, state write, prompt contribution, or telemetry emission.
 
+### Slice 43: Canonical Seiðr Form Catalog
+
+`seidr_forms` reads the official engine's `FORMS` registry and returns each canonical meter's code
+key, Old Norse name, syllable range, and structural description. Registry aliases such as the
+alternate ASCII spelling of fornyrðislag are collapsed by comparing each entry's key with the
+form object's own canonical name, so Hermes does not publish duplicate forms or maintain a second
+catalog.
+
+The tool accepts no arguments and uses the same read-only, credential-free child boundary as
+composition. It adds no cache, persistence, or prompt text; changes in the external engine's
+canonical registry appear when the configured checkout changes.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

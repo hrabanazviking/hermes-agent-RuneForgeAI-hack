@@ -2015,6 +2015,11 @@ The child pins Python's hash seed to make the engine's unordered alliteration-gr
 replayable and rejects numeric seed zero because current upstream treats it as unseeded. Form
 catalog, kenning catalog, and independent meter validation remain open.
 
+Slice 43 adds `seidr_forms`, a read-only view of the official engine's canonical form registry with
+Old Norse names, syllable ranges, and structural descriptions. Alternate spelling aliases are
+collapsed according to the form objects' own canonical names. Kenning catalog and independent
+meter validation remain open.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

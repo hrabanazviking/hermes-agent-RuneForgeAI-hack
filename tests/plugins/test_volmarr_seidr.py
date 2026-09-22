@@ -27,7 +27,24 @@ def _fake_engine(root: Path, verse: str, record: Path | None = None) -> None:
     package = root / "seidr"
     package.mkdir(parents=True)
     (package / "__init__.py").write_text("", encoding="utf-8")
-    (package / "forms.py").write_text("", encoding="utf-8")
+    (package / "forms.py").write_text(
+        '''class Form:
+    def __init__(self, key, old_norse): self.key, self.old_norse = key, old_norse
+    def name(self): return self.key
+    def name_on(self): return self.old_norse
+    def syllable_range(self): return (4, 6)
+    def describe(self): return f"Official structure for {self.old_norse}"
+
+FORMS = {
+    "fornyrthislag": Form("fornyrthislag", "fornyrðislag"),
+    "fornyrdislag": Form("fornyrthislag", "fornyrðislag"),
+    "ljodhattr": Form("ljodhattr", "ljóðaháttr"),
+    "drottkvaett": Form("drottkvaett", "dróttkvætt"),
+    "malahattr": Form("malahattr", "málaháttr"),
+}
+''',
+        encoding="utf-8",
+    )
     (package / "lexicon.py").write_text(
         "class Lexicon:\n    def __init__(self, seed=None): self.seed = seed\n",
         encoding="utf-8",
@@ -147,6 +164,30 @@ def test_compose_resolves_active_profile_a_b_a(tmp_path):
     finally:
         manager.unload()
     assert verses == ["Verse A", "Verse B", "Verse A"]
+
+
+def test_forms_catalog_uses_official_registry_and_removes_aliases(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    root = tmp_path / "seidr-engine"
+    _fake_engine(root, "unused")
+    _write_profile(home, root)
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        loaded = manager._plugins["volmarr-seidr"]
+        assert set(loaded.tools_registered) == {"seidr_compose", "seidr_forms"}
+        result = json.loads(
+            registry.dispatch("seidr_forms", {}, scope=manager.scope_key)
+        )
+    finally:
+        manager.unload()
+    keys = [item["key"] for item in result["forms"]]
+    assert keys == ["fornyrthislag", "ljodhattr", "drottkvaett", "malahattr"]
+    assert "fornyrdislag" not in keys
+    assert result["forms"][0]["syllables_per_line"] == {"minimum": 4, "maximum": 6}
 
 
 def test_compose_rejects_invalid_arguments_before_engine(tmp_path):

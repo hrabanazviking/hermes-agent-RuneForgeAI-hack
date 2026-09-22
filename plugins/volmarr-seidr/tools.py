@@ -61,6 +61,15 @@ SEIDR_COMPOSE_SCHEMA = {
     },
 }
 
+SEIDR_FORMS_SCHEMA = {
+    "name": "seidr_forms",
+    "description": (
+        "List the official Seiðr Engine's canonical poetic forms, Old Norse names, "
+        "syllable ranges, and structural descriptions."
+    ),
+    "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
+}
+
 
 def _configured_file(value: Any, *, executable: bool = False) -> Path | None:
     if not isinstance(value, str) or not value.strip() or "\x00" in value:
@@ -202,6 +211,48 @@ def _run_compose(
     return poem, None
 
 
+def _run_forms(ctx) -> tuple[list[dict[str, Any]] | None, str | None]:
+    runtime = _runtime(ctx)
+    if runtime is None:
+        return None, "Configure volmarr-seidr engine_root and a Python interpreter."
+    python, engine_root = runtime
+    try:
+        completed = subprocess.run(
+            [str(python), "-B", "-P", "-s", str(_RUNNER), str(engine_root), "forms"],
+            env=_child_env(),
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=_timeout(ctx),
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return None, "The local Seiðr form catalog timed out."
+    except OSError:
+        return None, "The local Seiðr Engine could not be started."
+    stdout = completed.stdout or ""
+    stderr = completed.stderr or ""
+    if (
+        len(stdout.encode("utf-8", errors="replace")) > _MAX_OUTPUT_BYTES
+        or len(stderr.encode("utf-8", errors="replace")) > _MAX_OUTPUT_BYTES
+    ):
+        return None, "The local Seiðr Engine returned an oversized response."
+    if completed.returncode != 0:
+        return None, "The local Seiðr Engine could not list its forms."
+    try:
+        forms = json.loads(stdout)
+    except (TypeError, json.JSONDecodeError):
+        return None, "The local Seiðr Engine returned an invalid response."
+    if not isinstance(forms, list) or not forms or not all(
+        isinstance(item, dict) and item.get("key") and item.get("old_norse_name")
+        for item in forms
+    ):
+        return None, "The local Seiðr Engine returned an invalid form catalog."
+    return forms, None
+
+
 def build_compose_handler(ctx):
     def handle(args: dict[str, Any], **_kwargs: Any) -> str:
         allowed = {"form", "domain", "stanzas", "use_kennings", "seed"}
@@ -246,13 +297,36 @@ def build_compose_handler(ctx):
     return handle
 
 
+def build_forms_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if args:
+            return tool_error("seidr_forms does not accept arguments")
+        forms, error = _run_forms(ctx)
+        if error is not None:
+            return tool_error(error)
+        return tool_result(
+            {
+                "success": True,
+                "engine": "hrabanazviking/seidr-engine",
+                "calculation": "poetic_form_catalog",
+                "forms": forms,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
-    ctx.register_tool(
-        name="seidr_compose",
-        toolset="volmarr_seidr",
-        schema=SEIDR_COMPOSE_SCHEMA,
-        handler=build_compose_handler(ctx),
-        check_fn=lambda: _runtime(ctx) is not None,
-        description=SEIDR_COMPOSE_SCHEMA["description"],
-        emoji="ᛋ",
-    )
+    for name, schema, handler, emoji in (
+        ("seidr_compose", SEIDR_COMPOSE_SCHEMA, build_compose_handler(ctx), "ᛋ"),
+        ("seidr_forms", SEIDR_FORMS_SCHEMA, build_forms_handler(ctx), "📜"),
+    ):
+        ctx.register_tool(
+            name=name,
+            toolset="volmarr_seidr",
+            schema=schema,
+            handler=handler,
+            check_fn=lambda: _runtime(ctx) is not None,
+            description=schema["description"],
+            emoji=emoji,
+        )
