@@ -1867,7 +1867,7 @@ truth therefore survives restart independently of Hermes conversation memory.
 
 **Done when:** restart resumes state, tasks, and identity cleanly.
 
-**Implementation status:** in progress. The identity package creates one versioned,
+**Implementation status:** complete. The identity package creates one versioned,
 profile-local `entity/entity.yaml` record with a stable UUID and creation time. It is independent
 of session, model, and provider selection, while Hermes `SOUL.md` remains the untouched
 human-authored persona surface. Existing valid identities are never normalized or rewritten;
@@ -1885,7 +1885,12 @@ Verðandi metadata. It deliberately starts no scheduler; Hermes cron remains the
 the next slice. The first background routine is now implemented as an explicit, idempotent,
 paused-by-default Hermes cron installation. Its no-agent ten-minute run records the pulse and
 publishes only aggregate pending-goal counts; it adds no scheduler or model call. Sleep and
-consolidation remain the final ordered lifecycle slice.
+consolidation now produce a non-destructive, versioned checkpoint over validated identity,
+relationship, goal, and heartbeat state. The checkpoint records only counts and component digests;
+it never rewrites the source ledgers or memory/world stores. Its optional daily no-agent Hermes
+cron job is also explicit, idempotent, and paused by default. Restart tests recover the same owner,
+task state, relationship history, heartbeat sequence, and consolidation sequence, satisfying this
+milestone's continuity condition.
 
 ## Milestone 7: Secrets and Security
 

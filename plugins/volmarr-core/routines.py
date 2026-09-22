@@ -35,6 +35,7 @@ class RoutineStatus:
     job_id: str | None = None
     enabled: bool | None = None
     definition_current: bool = False
+    drift: tuple[str, ...] = ()
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -112,55 +113,69 @@ if __name__ == "__main__":
 class RoutineManager:
     """Reconcile a named cron job through Hermes' existing cron management surface."""
 
-    def __init__(self, ctx) -> None:
+    def __init__(
+        self,
+        ctx,
+        *,
+        name: str = FREQUENT_JOB_NAME,
+        schedule: str = FREQUENT_SCHEDULE,
+        script_name: str = FREQUENT_SCRIPT_NAME,
+        script_content: str | None = None,
+    ) -> None:
         self._ctx = ctx
+        self._name = name
+        self._schedule = schedule
+        self._script_name = script_name
+        self._script_content = script_content or _script_content()
 
     def script_path(self) -> Path:
-        return get_hermes_home().resolve() / "scripts" / FREQUENT_SCRIPT_NAME
+        return get_hermes_home().resolve() / "scripts" / self._script_name
 
     def status(self) -> RoutineStatus:
         jobs = self._jobs()
-        matches = [job for job in jobs if job.get("name") == FREQUENT_JOB_NAME]
+        matches = [job for job in jobs if job.get("name") == self._name]
         script_path = self.script_path()
         if len(matches) > 1:
             return RoutineStatus(
                 "ambiguous",
-                FREQUENT_JOB_NAME,
-                FREQUENT_SCHEDULE,
+                self._name,
+                self._schedule,
                 str(script_path),
             )
         if not matches:
             return RoutineStatus(
                 "uninstalled",
-                FREQUENT_JOB_NAME,
-                FREQUENT_SCHEDULE,
+                self._name,
+                self._schedule,
                 str(script_path),
             )
         job = matches[0]
-        current = self._job_current(job) and self._script_current(script_path)
+        drift = self._drift(job, script_path)
+        current = not drift
         enabled = bool(job.get("enabled", True))
         status = "installed_active" if enabled else "installed_paused"
         if not current:
             status = "drifted"
         return RoutineStatus(
             status,
-            FREQUENT_JOB_NAME,
-            FREQUENT_SCHEDULE,
+            self._name,
+            self._schedule,
             str(script_path),
             job_id=str(job.get("job_id") or "") or None,
             enabled=enabled,
             definition_current=current,
+            drift=drift,
         )
 
     def install(self, *, activate: bool = False) -> RoutineStatus:
         script_path = self.script_path()
         atomic_write_text(
             script_path,
-            _script_content(),
+            self._script_content,
             create_mode=0o700,
         )
         jobs = self._jobs()
-        matches = [job for job in jobs if job.get("name") == FREQUENT_JOB_NAME]
+        matches = [job for job in jobs if job.get("name") == self._name]
         if len(matches) > 1:
             raise RoutineError(
                 "multiple cron jobs use the Volmarr routine name; resolve them manually"
@@ -169,9 +184,9 @@ class RoutineManager:
             result = self._cronjob(
                 action="create",
                 prompt="",
-                schedule=FREQUENT_SCHEDULE,
-                name=FREQUENT_JOB_NAME,
-                script=FREQUENT_SCRIPT_NAME,
+                schedule=self._schedule,
+                name=self._name,
+                script=self._script_name,
                 no_agent=True,
                 deliver="local",
                 paused=True,
@@ -191,9 +206,9 @@ class RoutineManager:
                     action="update",
                     job_id=job_id,
                     prompt="",
-                    schedule=FREQUENT_SCHEDULE,
-                    name=FREQUENT_JOB_NAME,
-                    script=FREQUENT_SCRIPT_NAME,
+                    schedule=self._schedule,
+                    name=self._name,
+                    script=self._script_name,
                     no_agent=True,
                     deliver="local",
                 )
@@ -224,22 +239,34 @@ class RoutineManager:
             raise RoutineError(str(result.get("error") or "cron jobs could not be listed"))
         return [job for job in jobs if isinstance(job, dict)]
 
-    @staticmethod
-    def _job_current(job: dict[str, Any]) -> bool:
-        return (
-            job.get("schedule") == FREQUENT_SCHEDULE
-            and job.get("script") == FREQUENT_SCRIPT_NAME
-            and job.get("no_agent") is True
-            and job.get("deliver") == "local"
-            and not str(job.get("prompt_preview") or "").strip()
-        )
+    def _job_current(self, job: dict[str, Any]) -> bool:
+        return not self._job_drift(job)
 
-    @staticmethod
-    def _script_current(path: Path) -> bool:
+    def _job_drift(self, job: dict[str, Any]) -> tuple[str, ...]:
+        drift: list[str] = []
+        if job.get("schedule") != self._schedule:
+            drift.append("schedule")
+        if job.get("script") != self._script_name:
+            drift.append("script")
+        if job.get("no_agent") is not True:
+            drift.append("no_agent")
+        if job.get("deliver") != "local":
+            drift.append("deliver")
+        if str(job.get("prompt_preview") or "").strip():
+            drift.append("prompt")
+        return tuple(drift)
+
+    def _drift(self, job: dict[str, Any], path: Path) -> tuple[str, ...]:
+        drift = list(self._job_drift(job))
+        if not self._script_current(path):
+            drift.append("script_content")
+        return tuple(drift)
+
+    def _script_current(self, path: Path) -> bool:
         try:
             return path.is_file() and not path.is_symlink() and path.read_text(
                 encoding="utf-8"
-            ) == _script_content()
+            ) == self._script_content
         except (OSError, UnicodeError):
             return False
 

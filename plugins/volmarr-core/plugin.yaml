@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-core
-version: "0.25.0"
+version: "0.26.0"
 description: "Volmarr's opt-in Hermes composition plugin, beginning with the Verðandi lifecycle bridge."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/hermes-agent-RuneForgeAI-hack
@@ -193,3 +193,7 @@ config_schema:
     type: int
     default: 900
     description: "Age after which a recorded entity heartbeat is stale (clamped to 60-86400 seconds)."
+  consolidation_path:
+    type: str
+    default: entity/consolidation.json
+    description: "Non-destructive consolidation checkpoint path relative to the active Hermes profile."
