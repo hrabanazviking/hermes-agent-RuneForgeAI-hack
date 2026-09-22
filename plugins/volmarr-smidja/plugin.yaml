@@ -1,7 +1,7 @@
 manifest_version: 2
 name: volmarr-smidja
 version: "0.1.0"
-description: "Read-only Loom validation and Hoard discovery through official Seidr-Smidja APIs."
+description: "Read-only Loom, Hoard, and Gate diagnostics through official Seidr-Smidja APIs."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/Seidr-Smidja
 tags:

@@ -911,6 +911,16 @@ does not return filesystem paths or remote source URLs, and it declares that no 
 fetched, or bootstrapped. Engine and Python settings are resolved from the active profile on every
 call; A→B→A coverage protects that boundary.
 
+### Slice 60: Read-Only Seiðr-Smiðja Gate Rule Discovery
+
+`smidja_gate_rules` exposes `gate.list_rules` for exactly one official target (`VRCHAT` or
+`VTUBE_STUDIO`). It returns only rule identifiers, display names, severities, and descriptions;
+threshold extras remain inside the external engine until a dedicated contract needs them.
+
+This is diagnostics, not certification. No avatar is opened, no Gate check executes, and the result
+explicitly states that artifact inspection and compliance evaluation did not occur. Rule files are
+selected beneath the verified engine checkout, and call-time A→B→A coverage remains mandatory.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

@@ -2098,6 +2098,10 @@ bounded, filterable metadata catalog while refusing asset resolution, fetch, boo
 path disclosure, and all forge authority. Engine settings remain call-time profile scoped with
 A→B→A verification. Read-only Gate rule discovery is next.
 
+Slice 60 adds `smidja_gate_rules`, a bounded diagnostic view of official VRChat or VTube Studio
+rule metadata. It performs no artifact read and returns no compliance verdict, keeping discovery
+separate from certification. Read-only Oracle Eye view discovery is next.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

@@ -62,6 +62,22 @@ SMIDJA_ASSETS_SCHEMA = {
     },
 }
 
+SMIDJA_GATE_RULES_SCHEMA = {
+    "name": "smidja_gate_rules",
+    "description": (
+        "List bounded Seidr-Smidja Gate rule metadata for one compliance target. "
+        "This read-only query does not inspect an avatar or issue a compliance verdict."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "target": {"type": "string", "enum": ["VRCHAT", "VTUBE_STUDIO"]}
+        },
+        "required": ["target"],
+        "additionalProperties": False,
+    },
+}
+
 
 def _root(value: Any, marker: str | None = None) -> Path | None:
     if not isinstance(value, str) or not value.strip() or "\x00" in value:
@@ -293,6 +309,52 @@ def build_assets_handler(ctx):
     return handle
 
 
+def build_gate_rules_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if set(args) != {"target"} or args.get("target") not in {
+            "VRCHAT",
+            "VTUBE_STUDIO",
+        }:
+            return tool_error("target must be VRCHAT or VTUBE_STUDIO")
+        engine = _root(
+            ctx.get_config("engine_root", ""), marker="src/seidr_smidja/gate/gate.py"
+        )
+        python = _python(ctx.get_config("python_path", "") or sys.executable)
+        if engine is None or python is None or not _RUNNER.is_file():
+            return tool_error("Configure volmarr-smidja engine_root and Python.")
+        target = args["target"]
+        payload = _run(ctx, python, ["gate-rules", str(engine), target])
+        raw_rules = None if payload is None else payload.get("rules")
+        if not isinstance(raw_rules, list) or not 1 <= len(raw_rules) <= 100:
+            return tool_error("Seidr-Smidja Gate rule discovery could not complete")
+        expected = {"rule_id", "display_name", "severity", "description"}
+        for rule in raw_rules:
+            if not isinstance(rule, dict) or set(rule) != expected:
+                return tool_error("Seidr-Smidja returned invalid Gate rule metadata")
+            if any(not isinstance(rule[key], str) or len(rule[key]) > 1000 for key in expected):
+                return tool_error("Seidr-Smidja returned invalid Gate rule metadata")
+            if rule["severity"] not in {"ERROR", "WARNING"}:
+                return tool_error("Seidr-Smidja returned invalid Gate rule metadata")
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "smidja_gate_rules",
+                "target": target,
+                "count": len(raw_rules),
+                "rules": raw_rules,
+                "artifact_inspected": False,
+                "compliance_performed": False,
+                "source": {
+                    "engine": "Seidr-Smidja",
+                    "api": "gate.list_rules",
+                    "license_metadata": "CONFLICT: root Apache-2.0; pyproject MIT",
+                },
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     ctx.register_tool(
         name="smidja_spec_validate",
@@ -309,4 +371,12 @@ def register_tools(ctx) -> None:
         handler=build_assets_handler(ctx),
         description=SMIDJA_ASSETS_SCHEMA["description"],
         emoji="🗃️",
+    )
+    ctx.register_tool(
+        name="smidja_gate_rules",
+        toolset="volmarr_smidja",
+        schema=SMIDJA_GATE_RULES_SCHEMA,
+        handler=build_gate_rules_handler(ctx),
+        description=SMIDJA_GATE_RULES_SCHEMA["description"],
+        emoji="🚪",
     )

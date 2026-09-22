@@ -86,11 +86,38 @@ def _assets(engine_root: Path, asset_type: str, tags_json: str) -> int:
     return 0
 
 
+def _gate_rules(engine_root: Path, target_name: str) -> int:
+    sys.path.insert(0, str(engine_root / "src"))
+    try:
+        from seidr_smidja.gate import ComplianceTarget, list_rules
+
+        target = ComplianceTarget(target_name)
+        rules = list_rules(target, rules_dir=engine_root / "data" / "gate")
+    except Exception:
+        return 2
+    _emit(
+        {
+            "rules": [
+                {
+                    "rule_id": rule.rule_id,
+                    "display_name": rule.display_name,
+                    "severity": rule.severity.value,
+                    "description": rule.description,
+                }
+                for rule in rules[:101]
+            ]
+        }
+    )
+    return 0
+
+
 def main() -> int:
     if len(sys.argv) == 4 and sys.argv[1] == "validate":
         return _validate(Path(sys.argv[2]).resolve(), Path(sys.argv[3]).resolve())
     if len(sys.argv) == 5 and sys.argv[1] == "assets":
         return _assets(Path(sys.argv[2]).resolve(), sys.argv[3], sys.argv[4])
+    if len(sys.argv) == 4 and sys.argv[1] == "gate-rules":
+        return _gate_rules(Path(sys.argv[2]).resolve(), sys.argv[3])
     return 2
 
 
