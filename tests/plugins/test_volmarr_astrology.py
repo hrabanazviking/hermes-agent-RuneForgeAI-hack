@@ -71,6 +71,7 @@ def test_real_discovery_runs_lunar_with_fixed_argv_and_scrubbed_environment(
             "astrology_natal",
             "astrology_transit",
             "astrology_predict",
+            "astrology_synastry",
         }
         result = json.loads(
             registry.dispatch("astrology_lunar", {}, scope=manager.scope_key)
@@ -549,6 +550,113 @@ def test_prediction_rejects_reverse_and_oversized_windows_before_engine(tmp_path
 
     assert "error" in reverse
     assert "error" in oversized
+    assert not marker.exists()
+
+
+def test_synastry_is_anonymous_coordinate_only_and_excludes_house_overlays(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine = tmp_path / "astrology_engine.py"
+    record = tmp_path / "synastry.json"
+    _engine_script(engine, "SYNASTRY CROSS-ASPECTS", record=record)
+    _write_profile(home, engine)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        result = json.loads(
+            registry.dispatch(
+                "astrology_synastry",
+                {
+                    "date_a": "1975-11-22",
+                    "time_a": "14:30",
+                    "latitude_a": 39.7684,
+                    "longitude_a": -86.1581,
+                    "date_b": "1980-05-17",
+                    "time_b": "09:15",
+                    "latitude_b": 59.9139,
+                    "longitude_b": 10.7522,
+                },
+                scope=manager.scope_key,
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert result["calculation"] == "synastry"
+    assert result["identities_included"] is False
+    assert result["house_overlays_included"] is False
+    assert result["report"] == "SYNASTRY CROSS-ASPECTS"
+    invocation = json.loads(record.read_text(encoding="utf-8"))
+    assert invocation["argv"] == [
+        "synastry",
+        "--date1",
+        "1975-11-22",
+        "--lat1",
+        "39.7684",
+        "--lon1",
+        "-86.1581",
+        "--date2",
+        "1980-05-17",
+        "--lat2",
+        "59.9139",
+        "--lon2",
+        "10.7522",
+        "--time1",
+        "14:30",
+        "--time2",
+        "09:15",
+    ]
+    assert not any(flag.startswith("--city") for flag in invocation["argv"])
+    assert not any(flag.startswith("--nation") for flag in invocation["argv"])
+    assert not any(flag.startswith("--name") for flag in invocation["argv"])
+
+
+def test_synastry_rejects_identity_and_incomplete_coordinates_before_engine(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home = get_hermes_home()
+    engine = tmp_path / "astrology_engine.py"
+    marker = tmp_path / "should-not-exist"
+    engine.write_text(
+        f"from pathlib import Path\nPath({str(marker)!r}).write_text('called')\n",
+        encoding="utf-8",
+    )
+    _write_profile(home, engine)
+    valid = {
+        "date_a": "1975-11-22",
+        "latitude_a": 39.7684,
+        "longitude_a": -86.1581,
+        "date_b": "1980-05-17",
+        "latitude_b": 59.9139,
+        "longitude_b": 10.7522,
+    }
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        identity = json.loads(
+            registry.dispatch(
+                "astrology_synastry",
+                {**valid, "name_a": "private identity"},
+                scope=manager.scope_key,
+            )
+        )
+        incomplete = dict(valid)
+        incomplete.pop("longitude_b")
+        missing = json.loads(
+            registry.dispatch(
+                "astrology_synastry", incomplete, scope=manager.scope_key
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert "error" in identity
+    assert "error" in missing
     assert not marker.exists()
 
 

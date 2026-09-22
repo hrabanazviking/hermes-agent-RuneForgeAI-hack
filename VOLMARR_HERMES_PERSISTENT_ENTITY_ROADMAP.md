@@ -1971,6 +1971,11 @@ explicit forward window capped at 366 days. It uses the engine's documented defa
 instead of exposing arbitrary list construction, and retains the local coordinate-only,
 credential-free, timeout-bounded process contract. Synastry and astrocartography remain open.
 
+Slice 37 adds anonymous `astrology_synastry` from two validated date/coordinate pairs and optional
+times. Names and city/nation geocoding are structurally absent. Because the official CLI currently
+gates house overlays on city fields even with coordinates present, the adapter truthfully reports
+overlays as excluded instead of fabricating location labels. Astrocartography remains open.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

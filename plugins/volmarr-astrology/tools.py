@@ -188,6 +188,51 @@ ASTROLOGY_PREDICT_SCHEMA = {
     },
 }
 
+ASTROLOGY_SYNASTRY_SCHEMA = {
+    "name": "astrology_synastry",
+    "description": (
+        "Calculate anonymous two-chart synastry cross-aspects locally from explicit dates "
+        "and coordinates. Times are optional. Names, city geocoding, interpretation, and "
+        "the engine's city-gated house-overlay mode are intentionally excluded."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "date_a": {"type": "string", "pattern": r"^\d{4}-\d{2}-\d{2}$"},
+            "time_a": {
+                "type": "string",
+                "pattern": r"^(?:[01]\d|2[0-3]):[0-5]\d$",
+            },
+            "latitude_a": {
+                "type": "number",
+                "exclusiveMinimum": -90,
+                "exclusiveMaximum": 90,
+            },
+            "longitude_a": {"type": "number", "minimum": -180, "maximum": 180},
+            "date_b": {"type": "string", "pattern": r"^\d{4}-\d{2}-\d{2}$"},
+            "time_b": {
+                "type": "string",
+                "pattern": r"^(?:[01]\d|2[0-3]):[0-5]\d$",
+            },
+            "latitude_b": {
+                "type": "number",
+                "exclusiveMinimum": -90,
+                "exclusiveMaximum": 90,
+            },
+            "longitude_b": {"type": "number", "minimum": -180, "maximum": 180},
+        },
+        "required": [
+            "date_a",
+            "latitude_a",
+            "longitude_a",
+            "date_b",
+            "latitude_b",
+            "longitude_b",
+        ],
+        "additionalProperties": False,
+    },
+}
+
 
 def _configured_file(value: Any, *, executable: bool = False) -> Path | None:
     if not isinstance(value, str) or not value.strip() or "\x00" in value:
@@ -581,6 +626,86 @@ def build_predict_handler(ctx):
     return handle
 
 
+def build_synastry_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        required = {
+            "date_a",
+            "latitude_a",
+            "longitude_a",
+            "date_b",
+            "latitude_b",
+            "longitude_b",
+        }
+        allowed = required | {"time_a", "time_b"}
+        if not required.issubset(args) or not set(args) <= allowed:
+            return tool_error(
+                "both dates and coordinate pairs are required; only time_a and time_b are optional"
+            )
+        date_a = _calendar_date(args.get("date_a"))
+        date_b = _calendar_date(args.get("date_b"))
+        if date_a is None or date_b is None:
+            return tool_error("date_a and date_b must be real YYYY-MM-DD dates")
+        time_a = args.get("time_a")
+        time_b = args.get("time_b")
+        if time_a is not None:
+            time_a = _clock_time(time_a)
+            if time_a is None:
+                return tool_error("time_a must use 24-hour HH:MM form")
+        if time_b is not None:
+            time_b = _clock_time(time_b)
+            if time_b is None:
+                return tool_error("time_b must use 24-hour HH:MM form")
+        latitude_a = _number(args.get("latitude_a"), minimum=-90.0, maximum=90.0)
+        longitude_a = _number(args.get("longitude_a"), minimum=-180.0, maximum=180.0)
+        latitude_b = _number(args.get("latitude_b"), minimum=-90.0, maximum=90.0)
+        longitude_b = _number(args.get("longitude_b"), minimum=-180.0, maximum=180.0)
+        if latitude_a is None or not -90.0 < latitude_a < 90.0:
+            return tool_error("latitude_a must be finite and strictly between -90 and 90")
+        if latitude_b is None or not -90.0 < latitude_b < 90.0:
+            return tool_error("latitude_b must be finite and strictly between -90 and 90")
+        if longitude_a is None or longitude_b is None:
+            return tool_error("both longitudes must be finite numbers from -180 to 180")
+        argv = [
+            "synastry",
+            "--date1",
+            date_a,
+            "--lat1",
+            _coordinate(latitude_a),
+            "--lon1",
+            _coordinate(longitude_a),
+            "--date2",
+            date_b,
+            "--lat2",
+            _coordinate(latitude_b),
+            "--lon2",
+            _coordinate(longitude_b),
+        ]
+        if time_a is not None:
+            argv.extend(["--time1", time_a])
+        if time_b is not None:
+            argv.extend(["--time2", time_b])
+        report, error = _run_calculation(ctx, argv)
+        if error is not None:
+            return tool_error(error)
+        return tool_result(
+            {
+                "success": True,
+                "engine": "hrabanazviking/astrology-engine",
+                "calculation": "synastry",
+                "interpretation_included": False,
+                "identities_included": False,
+                "house_overlays_included": False,
+                "date_a": date_a,
+                "time_a_known": time_a is not None,
+                "date_b": date_b,
+                "time_b_known": time_b is not None,
+                "report": report,
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     for name, schema, handler, emoji in (
         (
@@ -612,6 +737,12 @@ def register_tools(ctx) -> None:
             ASTROLOGY_PREDICT_SCHEMA,
             build_predict_handler(ctx),
             "🔭",
+        ),
+        (
+            "astrology_synastry",
+            ASTROLOGY_SYNASTRY_SCHEMA,
+            build_synastry_handler(ctx),
+            "⚭",
         ),
     ):
         ctx.register_tool(
