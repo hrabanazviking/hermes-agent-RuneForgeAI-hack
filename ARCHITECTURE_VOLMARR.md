@@ -975,6 +975,242 @@ separate from credential, connectivity, and end-to-end verification; A→B→A d
 protects the profile boundary. Custom plugin-provider readiness remains unknown rather than calling
 arbitrary provider code from a diagnostic probe.
 
+### Slice 66: Official Voice and Avatar Candidate Audit
+
+`VOICE_EMBODIMENT_AUDIT.md` pins current official heads and releases for Hermes, AIAvatarKit,
+Open-LLM-VTuber, and OmniVoice. The audit keeps Hermes as the sole voice-loop owner: AIAvatarKit
+and Open-LLM-VTuber may later serve bounded presentation/channel roles, while OmniVoice may later
+serve only as an optional Hermes TTS provider.
+
+The personal OmniVoice fork is not current: its `0.1.3` head is an ancestor of official
+`k2-fsa/OmniVoice`, which is 50 commits ahead at `0.2.1`. No dependency, model, source, or sample
+avatar enters the repository in this slice. Candidate adoption requires a separate interface,
+resource, license, and consent audit.
+
+### Slice 67: Provider-Free Hermes Voice Dispatch Contract
+
+A second real-discovery contract installs temporary profile-scoped STT and TTS provider fixtures,
+passes a valid synthetic WAV through `transcribe_audio`, and feeds the returned transcript through
+`text_to_speech_tool`. Both calls use Hermes' real validation, provider registry, configuration,
+dispatch, and output-envelope paths.
+
+The fixture performs no inference and is created only inside the test profile. The contract opens
+no microphone or speaker, contacts no network, reads no credential, and downloads no model. It
+also proves the input audio remains byte-identical while the TTS dispatcher returns one valid WAV.
+This establishes the extension seam without adding a second voice orchestrator.
+
+### Slice 68: Presentation-Only Avatar Contract
+
+`AVATAR_PRESENTATION_CONTRACT.md` defines the minimal versioned handoff from Hermes-owned TTS to
+an optional avatar shell: complete WAV bytes, explicit face/animation controls, stop/final events,
+and opaque session/transaction sequencing. It forbids microphone capture, STT, LLM, TTS, memory,
+tools, conversation ownership, filesystem-path transport, credentials, and expression markup in
+model or spoken text.
+
+The contract is grounded in the official AIAvatarKit response model and maintained clients at
+commit `38b617b8b9269939734e70ef503d7ea6976acdbd`. A future bounded adapter can map `speech` to a
+complete-WAV `chunk` response and map `stop`/`final` directly. The existing `/avatar/perform`
+endpoint is explicitly rejected because it accepts text and invokes AIAvatarKit's own TTS; the
+stock WebSocket client is not adopted as-is because it also starts microphone capture. This slice
+adds no runtime hook, dependency, network service, audio operation, or candidate source.
+
+### Slice 69: Provider-Free Presentation Serializer
+
+`volmarr-voice.presentation` encodes the v1 handoff without registering a tool, hook, transport, or
+resident process. It validates bounded opaque routing tokens, monotonic-compatible integer sequence
+values, complete uncompressed PCM WAV payloads, and shell-owned face/animation names before
+producing base64 audio with a SHA-256 digest and decoded format evidence.
+
+Real plugin discovery loads the defining module and proves byte-exact WAV round-trip, explicit
+control mapping, absence of text/path fields, strict malformed-WAV rejection, and audio-free
+`stop`/`final` events. The serializer opens no device, contacts no provider or network, reads no
+credential or profile setting, and does not select an expression. It is the concrete producer a
+future presentation transport must consume rather than a speculative generic hook.
+
+### Slice 70: AIAvatarKit Response Translation Contract
+
+`volmarr-voice.aiavatarkit` provides a pure translation from canonical v1 events to the official
+AIAvatarKit presentation response fields. `speech` becomes a complete-WAV `chunk` with explicit
+`avatar_control_request`; `stop` and `final` map directly. Contract, transaction, sequence, and
+audio-digest evidence remains bounded inside response metadata, while text, voice text, user
+identity, conversation context, and pipeline requests remain absent.
+
+The translator revalidates the complete canonical envelope, so altered fields, digests, formats,
+audio, or ownership-bearing additions fail before translation. A provider-free consumer fixture
+decodes the exact response like the maintained AIAvatarKit client, verifies WAV frames and visual
+controls, exercises stop/final delivery, and rejects injected second-mind text. No socket, server,
+authentication, retry queue, external package, device, or AIAvatarKit pipeline is started.
+
+### Slice 71: Presentation Transaction Lifecycle
+
+`PresentationTransactionRouter` owns one active presentation transaction per session without
+owning a network connection. Transactions begin only with `speech` sequence zero and then advance
+by exactly one. A replacement transaction first yields an AIAvatarKit-compatible interruption,
+retires the old identifier, and only then yields new audio. Retired IDs are refused, final events
+release live ownership, disconnect performs deterministic cleanup, and stale-ID memory is bounded.
+
+Real discovery proves A→B replacement ordering, stale-A rejection, final cleanup, sequence-gap
+rejection, independent sessions, and idempotent disconnect. State is process-local and contains
+only opaque routing tokens. No profile configuration, durable queue, retry, socket, authentication,
+audio device, provider, external service, or core change participates.
+
+### Slice 72: Loopback Delivery and Authentication Audit
+
+`AVATAR_LOOPBACK_TRANSPORT_AUDIT.md` selects a future outbound-only WebSocket feed on literal
+`127.0.0.1`. The shell receives proven AIAvatarKit-compatible response JSON after a bounded
+presentation-only readiness message; every input-bearing request type remains forbidden. One
+consumer owns a session, writes are serialized, ownership is rechecked before send, and disconnect
+drops unsent data without replay or Hermes-state changes.
+
+The proposed listener requires a strong `VOLMARR_AVATAR_TOKEN` loaded only through `.env` and sent
+only as an Authorization bearer header. Query, URL, cookie, subprotocol, YAML, argv, event, log, and
+error exposure are forbidden; browser-Origin connections are deferred and rejected. The design can
+use Hermes' existing pinned `websockets==15.0.1` dependency and needs no candidate code or web
+framework. This slice adds no listener, socket, runtime registration, dependency, or secret.
+
+### Slice 73: Pre-Socket Avatar Admission
+
+`volmarr-voice.admission` validates the future listener before any networking is possible. It
+accepts only literal `127.0.0.1`, an unprivileged port, the fixed presentation path, and no browser
+Origin. It loads a 32–256 character printable bearer only from `VOLMARR_AVATAR_TOKEN`, registers
+the exact value with the active profile's bounded in-memory redactor, wraps it in a non-revealing
+object, and compares Authorization values in constant time with generic rejection errors.
+
+The readiness parser accepts at most 512 UTF-8 bytes and exactly three fields: `type=ready`, the v1
+contract, and a bounded opaque session ID. `invoke`, microphone/audio fields, unknown fields,
+wrong versions, malformed JSON, and oversize input fail closed. Real discovery proves token
+redaction across A→B→A profiles and refuses wildcard/hostname/privileged/path/Origin targets. The
+module does not import WebSockets, bind a socket, register a runtime surface, or read YAML.
+
+### Slice 74: Disposable Authenticated Loopback Feed
+
+`AvatarLoopbackFeed` is an explicit async helper built on the already-pinned `websockets==15.0.1`;
+the plugin does not import, register, or start it during discovery. An operator-owned caller must
+provide the validated environment token and invoke `start()`/`stop()`. The helper binds only the
+prevalidated target, admits one bearer-authenticated ready consumer per session, serializes writes,
+routes canonical events through the proven transaction state, refuses every later client message,
+and releases ownership on disconnect or shutdown.
+
+Disposable real-loopback tests deliver a complete WAV and face control through the actual socket,
+then deliver `final` and tear down. They also prove bad-auth refusal, duplicate-owner refusal, and
+input-bearing client closure with no provider, microphone, avatar process, retry, durable queue, or
+Hermes runtime registration. The exact pinned dependency was installed into the selected local
+Python 3.11 test environment because it was declared by the repository but missing there.
+
+### Slice 75: Operator-Owned Feed Orchestration Audit
+
+`AVATAR_ORCHESTRATION_AUDIT.md` reserves feed start/stop authority for an explicit future
+`hermes volmarr-voice serve` command. The command will use fixed loopback settings, load its bearer
+only at execution time from `VOLMARR_AVATAR_TOKEN`, accept canonical v1 NDJSON only through stdin,
+and stop on EOF or operator interruption. It will accept no text, TTS request, provider, model,
+microphone, filesystem path, URL, asset command, or conversation state.
+
+The audit proves from current call sites that `post_tool_call` observes model-dispatched TTS tools
+but not direct TTS calls made by CLI and native voice playback. RuneForgeAI therefore refuses a
+partial hook-based integration and will not patch or monkey-patch Hermes core. Automatic mirroring
+stays deferred until a generic upstream post-TTS observer exists. This slice registers no command,
+hook, tool, service, scheduler, or new dependency.
+
+### Slice 76: Side-Effect-Free Operator CLI Gate
+
+Real discovery now registers `hermes volmarr-voice status` alongside the existing readiness tool.
+Status reports the v1 contract, operator-stdin producer intent, disabled serve action, absent runtime
+registration/listener, and unavailable automatic voice mirroring. The `serve` action is not yet
+parseable, so neither help nor invalid serve attempts can load a token or bind a socket.
+
+Tests prove discovery adds exactly one operator CLI, no lifecycle hook, and no new model tool;
+status succeeds even when socket construction is forced to fail, does not read or print a planted
+token, and rejects `serve`. The CLI module imports neither admission nor loopback. This establishes
+the authority boundary before the eventual explicit runner is enabled.
+
+### Slice 77: Bounded Stdin Feed Runner
+
+`run_feed_from_stream` starts an explicitly supplied feed, consumes one newline-terminated binary
+stdin record at a time, enforces a bound derived from the 16 MiB WAV ceiling, decodes UTF-8/JSON,
+revalidates the exact canonical envelope, and publishes without echoing content. EOF returns the
+published count; malformed, oversize, non-canonical, or delivery-failed input raises only a generic
+operator error. A `finally` block always stops the feed.
+
+A disposable real-loopback test starts the runner behind the still-disabled CLI action, connects an
+authenticated presentation consumer, delivers one canonical stdin WAV event, observes the chunk,
+then sends EOF and proves clean return. A second invariant proves malformed and oversize input never
+publishes and always tears down. No tool, hook, CLI serve action, auto-start, file path, or core seam
+is added.
+
+### Slice 78: Explicit Operator Serve Action
+
+`hermes volmarr-voice serve --port PORT` now connects the proven operator CLI, loopback feed, and
+stdin runner. The parser accepts only unprivileged ports. Network and admission modules are imported
+only inside the serve handler; the fixed host/path and environment-only bearer cannot be overridden
+by arguments. Missing credentials fail before socket creation. Runtime failures produce one generic
+stderr line without event or secret content, EOF reports only the event count, and Ctrl-C has a
+distinct operator-stop result.
+
+Real discovery proves missing-token preflight with socket construction forbidden. A full command
+test runs the synchronous handler in an operator thread, connects a real authenticated consumer,
+delivers one canonical stdin WAV event, sends EOF, joins the thread, and proves stdout is empty and
+stderr contains neither bearer nor audio. Status remains non-running, and no model tool, lifecycle
+hook, autostart, native-voice claim, or core change is introduced.
+
+### Slice 79: Operator WAV Event Encoder
+
+`hermes volmarr-voice encode` converts one operator-selected complete WAV into one canonical v1
+speech-event line. It requires explicit session and transaction IDs, defaults to sequence zero, and
+accepts only optional shell-owned face/animation names. The source must be a regular non-symlink
+file within the existing 16 MiB bound; the serializer then validates PCM/container/duration and
+adds format and digest evidence.
+
+Encoding imports no admission or loopback module, reads no bearer, opens no socket, performs no TTS,
+and emits no path or text. Invalid audio produces one generic stderr line without path or content.
+Real discovery proves byte-exact output, canonical revalidation, explicit controls, and path/text
+absence with socket construction forbidden. This completes a manual operator pipeline without
+pretending to attach every native Hermes voice reply.
+
+### Slice 80: Avatar Operator Guide and Smoke Recipe
+
+`AVATAR_OPERATOR_GUIDE.md` consolidates the profile enablement, `.env` bearer rule, fixed endpoint,
+native presentation-only readiness handshake, explicit serve lifecycle, WAV encoder, ordering, and
+focused real-loopback verification commands. It warns that the consumer must own the session before
+stdin receives an event and rejects a naïve `encode | serve` pipeline rather than implying an
+unproven queue.
+
+The guide also keeps both unsafe official surfaces out: the stock AIAvatarKit client starts a
+microphone, and `/avatar/perform` starts AIAvatarKit TTS. It states the current manual-development
+scope and automatic native-voice seam gap without altering the protected project `README.md`.
+
+### Slice 81: AIAvatarKit Presentation Consumer Audit
+
+`AIAVATARKIT_PRESENTATION_CONSUMER_AUDIT.md` reads both maintained client implementations at the
+pinned official commit. Their output behavior validates the RuneForge response map: complete-WAV
+chunks, face/animation controls, stop, and final are real consumer fields. Neither client is an
+admissible presentation-only shell, however.
+
+The Python client constructs input and output devices plus `AudioRecorder`, schedules the microphone
+worker, sends `start`, and sends a client `stop`. The browser client uses subprotocol auth, sends
+`start`, requests `getUserMedia`, and continuously sends microphone or silent `data` frames. Muting
+does not remove input ownership. RuneForgeAI therefore imports no dependency or source and refuses
+subclass/monkey-patch drift until official output-only construction, readiness, authentication, and
+cleanup exist.
+
+### Slice 82: Open-LLM-VTuber Presentation Boundary Audit
+
+`OPEN_LLM_VTUBER_PRESENTATION_AUDIT.md` reads the current official backend and its exact pinned web
+build. The web player independently validates complete-WAV playback, lip sync, talk motion,
+subtitles, and explicit Live2D expressions, but those functions are not published behind an
+output-only application boundary.
+
+Every `/client-ws` connection clones the backend's ASR, TTS, VAD, agent, tool, history, and model
+context, then commands the frontend to start its microphone. The frontend also creates history,
+requests configuration, sends captured audio, and participates in a synthesis/playback
+acknowledgement cycle. `/tts-ws` is rejected because it starts duplicate TTS. Its message schema,
+admission behavior, and lifecycle are incompatible with the strict RuneForge feed without a fork
+that would erase the presentation-only invariant.
+
+No candidate code, dependency, web bundle, Cubism runtime, model, or asset is copied. The audit also
+records that the pinned frontend has a separate license with additional commercial-use conditions,
+while the backend is MIT and its Live2D samples are separately governed. Adoption stays deferred
+through the announced v2 rewrite unless an official output-only boundary appears.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

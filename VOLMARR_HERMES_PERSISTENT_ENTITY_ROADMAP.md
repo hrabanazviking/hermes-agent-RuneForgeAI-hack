@@ -2134,6 +2134,131 @@ local prerequisite status without operating audio or touching credentials. Exter
 remain deferred until a verified missing capability justifies one; a bounded voice-loop smoke
 contract is next.
 
+Slice 66 records the current official candidate audit in `VOICE_EMBODIMENT_AUDIT.md`. Hermes stays
+the voice owner; AIAvatarKit and Open-LLM-VTuber remain presentation/channel candidates, and
+OmniVoice remains a possible optional TTS backend. The roadmap's personal OmniVoice fork is 50
+commits behind official `k2-fsa/OmniVoice`, so future work must begin from the official project.
+No candidate code or dependency was imported. A provider-free Hermes voice-loop dispatch contract
+is next.
+
+Slice 67 proves that contract through real plugin discovery and Hermes' real STT/TTS dispatchers.
+A temporary profile-scoped provider pair turns a valid synthetic WAV into a fixed transcript and
+then a valid synthetic WAV response. No microphone, speaker, network, credential, model, or copied
+candidate code participates, and the input remains byte-identical. The next slice can define the
+minimal expression/audio handoff needed by an avatar shell without reopening voice ownership.
+
+Slice 68 defines that handoff in `AVATAR_PRESENTATION_CONTRACT.md`. The v1 presentation envelope
+contains only complete WAV audio, explicit face/animation controls, interruption/final events, and
+opaque routing/ordering tokens. Its verified AIAvatarKit mapping uses outbound response fields that
+the maintained clients already consume, while rejecting `/avatar/perform` because that endpoint
+would invoke a second TTS and rejecting the stock client as-is because it starts microphone capture.
+No runtime integration or external dependency is added. The next slice can implement and verify a
+provider-free serializer for this exact contract before any transport or shell process is allowed.
+
+Slice 69 adds that strict serializer inside `volmarr-voice`. Real discovery verifies a valid
+complete WAV survives base64 encoding byte-for-byte with its digest and decoded format evidence,
+explicit visual controls remain separate from text, malformed audio is refused, and interruption
+events cannot carry audio or expressions. The module has no registered tool, hook, network
+transport, provider call, device access, credential read, or profile-dependent behavior. The next
+slice can add an AIAvatarKit-compatible presentation consumer fixture and prove the exact v1-to-
+response translation before any live socket or avatar shell is started.
+
+Slice 70 adds that pure response translator and provider-free consumer fixture. Canonical `speech`,
+`stop`, and `final` events map only to official presentation response fields; complete WAV audio and
+explicit controls are consumed successfully, while injected text and any other non-canonical event
+mutation are refused. Contract and ordering evidence remains metadata, not conversation state. No
+AIAvatarKit dependency, server, socket, authentication, device, or duplicate pipeline runs. The
+next slice can define the local transport lifecycle and transaction rules without yet starting a
+live avatar service.
+
+Slice 71 adds the process-local transaction router. It admits ordered canonical events for one
+active transaction per session, interrupts A before B audio, rejects stale A output after the
+replacement, isolates sessions, and releases ownership on final or disconnect with bounded retired
+IDs. The tests exercise real plugin discovery but no socket or avatar process. The next slice can
+audit an actual loopback delivery surface and authentication model against these already-proven
+lifecycle rules before enabling any live transport.
+
+Slice 72 completes that audit in `AVATAR_LOOPBACK_TRANSPORT_AUDIT.md`. The selected future surface
+is an outbound-only WebSocket feed bound to literal `127.0.0.1`, authenticated by a strong
+`VOLMARR_AVATAR_TOKEN` supplied only through `.env`, and consumed by a presentation-only native
+client. Browser-Origin connections and every microphone/text/pipeline request remain forbidden.
+The document defines the live-admission test gate; no listener or secret is added. The next slice
+can implement the bounded bind/auth/readiness validators as pure code before any socket creation.
+
+Slice 73 adds those pure admission validators. Literal loopback/path/port and no-Origin rules are
+checked before networking; a strong `VOLMARR_AVATAR_TOKEN` comes only from the process environment,
+is registered for exact profile-scoped redaction, and is compared in constant time; and the only
+accepted client input is a 512-byte exact `ready` envelope. Real discovery proves A→B→A redaction
+isolation and rejects input-bearing requests. The next slice can exercise one disposable real
+loopback connection behind these gates without registering or auto-starting a resident service.
+
+Slice 74 performs that proof with an explicit, unregistered `AvatarLoopbackFeed`. One authenticated
+consumer receives a real complete-WAV `chunk`, explicit face control, and `final` over literal
+loopback before deterministic teardown. Bad authentication, duplicate session ownership, and all
+post-readiness client input are refused. No tool, hook, CLI command, autostart, avatar process,
+provider, microphone, durable queue, or retry is added. The next slice can expose operator-owned
+start/stop orchestration only after auditing how it will receive Hermes TTS output without granting
+an LLM service-lifecycle authority.
+
+Slice 75 records that orchestration audit in `AVATAR_ORCHESTRATION_AUDIT.md`. Feed lifecycle belongs
+to an explicit future operator CLI, and canonical events enter only as NDJSON on stdin. Current
+`post_tool_call` cannot provide complete native-voice coverage because direct CLI/voice TTS calls do
+not emit it, so automatic mirroring remains deferred rather than shipping a misleading partial
+hook or modifying core. The next slice can register the CLI skeleton and prove that help/invalid
+paths have no token or socket side effects before enabling its serve action.
+
+Slice 76 registers only `hermes volmarr-voice status`. Real discovery proves it adds no lifecycle
+hook or model-facing tool, and status/invalid serve paths cannot read the planted token or create a
+socket. The truthful result keeps serving and automatic voice mirroring disabled. The next slice
+can implement a bounded stdin runner behind the still-explicit serve action, with EOF and failure
+cleanup proven before the action is exposed.
+
+Slice 77 implements that runner without exposing it through the CLI. A real authenticated consumer
+receives one canonical WAV event read from a bounded binary stream, then EOF stops the feed and
+returns cleanly. Malformed and oversize records publish nothing and still close the feed. The next
+slice can wire `serve --port` to this proven runner while retaining status/help/invalid side-effect
+isolation and generic secret-free failures.
+
+Slice 78 wires the explicit `serve --port` action. Missing credentials are refused before socket
+creation, and a real command invocation delivers one canonical stdin WAV event to an authenticated
+consumer, stops on EOF, and emits only a bounded event-count status. The bearer and audio never
+appear in output. This is an operator development surface, not automatic native-voice attachment;
+the next slice can add a separate operator encoder for complete WAV files without allowing paths or
+synthesis requests into the running feed protocol.
+
+Slice 79 adds that operator encoder and advances `volmarr-voice` to `1.0.0`. A regular bounded WAV
+becomes one canonical path-free JSON line with exact bytes, digest, format, and optional explicit
+controls; invalid input is not echoed. The encoder touches no bearer or socket, and the feed still
+accepts no path or synthesis request. The next slice can consolidate operator examples and a
+repeatable manual smoke recipe in the dedicated avatar documents while leaving `README.md`
+protected.
+
+Slice 80 adds `AVATAR_OPERATOR_GUIDE.md` with the exact status, serve, readiness, encode, ordering,
+and focused smoke workflow. It explicitly requires consumer readiness before stdin delivery and
+warns that a naïve pipeline races by design because the feed has no queue. The guide excludes the
+stock microphone-owning AIAvatarKit client and duplicate-TTS control route, preserves the `.env`
+secret rule, and leaves `README.md` untouched. The next slice can audit a minimal
+presentation-only AIAvatarKit consumer wrapper against the now-stable operator feed.
+
+Slice 81 records the exact AIAvatarKit consumer audit. Its maintained clients prove the response
+shape but both own input: Python constructs and schedules microphone capture, while the browser
+requests `getUserMedia` and sends continuous data frames even when muted. Their readiness and auth
+also differ from the native presentation feed. No dependency or source is imported. The next slice
+can audit the current Open-LLM-VTuber external presentation boundary as the remaining shell
+candidate without adopting its ASR/LLM/TTS/history runtime.
+
+Slice 82 audits the current official Open-LLM-VTuber backend and its exact pinned web client. The
+client proves complete-WAV playback, lip sync, subtitles, talk motion, and explicit Live2D
+expression handling, but it is not output-only: connection startup creates history and requests
+configuration, the backend starts microphone capture, browser VAD sends audio input, and turn
+completion requires a frontend acknowledgement. The backend session also owns ASR, TTS, VAD,
+agent, tools, history, and model configuration; its separate TTS socket invokes duplicate TTS. The
+wire protocol does not satisfy RuneForge readiness/auth/input rules, v2 is an announced rewrite,
+and the pinned frontend has additional commercial-use license conditions distinct from the MIT
+backend. Nothing is imported. The next slice can consolidate the exhausted official candidates
+into an explicit avatar-shell admission gate without claiming that the manual fixture controls an
+avatar.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
