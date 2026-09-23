@@ -1068,6 +1068,20 @@ error exposure are forbidden; browser-Origin connections are deferred and reject
 use Hermes' existing pinned `websockets==15.0.1` dependency and needs no candidate code or web
 framework. This slice adds no listener, socket, runtime registration, dependency, or secret.
 
+### Slice 73: Pre-Socket Avatar Admission
+
+`volmarr-voice.admission` validates the future listener before any networking is possible. It
+accepts only literal `127.0.0.1`, an unprivileged port, the fixed presentation path, and no browser
+Origin. It loads a 32–256 character printable bearer only from `VOLMARR_AVATAR_TOKEN`, registers
+the exact value with the active profile's bounded in-memory redactor, wraps it in a non-revealing
+object, and compares Authorization values in constant time with generic rejection errors.
+
+The readiness parser accepts at most 512 UTF-8 bytes and exactly three fields: `type=ready`, the v1
+contract, and a bounded opaque session ID. `invoke`, microphone/audio fields, unknown fields,
+wrong versions, malformed JSON, and oversize input fail closed. Real discovery proves token
+redaction across A→B→A profiles and refuses wildcard/hostname/privileged/path/Origin targets. The
+module does not import WebSockets, bind a socket, register a runtime surface, or read YAML.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

@@ -29,6 +29,12 @@ def _routing_token(value: Any, field: str) -> str:
     return value
 
 
+def validate_routing_token(value: Any, field: str = "routing_token") -> str:
+    """Validate one public session/transaction routing token."""
+
+    return _routing_token(value, field)
+
+
 def _sequence(value: Any) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 2**31 - 1:
         raise PresentationContractError("sequence must be an integer from 0 through 2147483647")

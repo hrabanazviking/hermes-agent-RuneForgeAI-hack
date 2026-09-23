@@ -2185,6 +2185,13 @@ client. Browser-Origin connections and every microphone/text/pipeline request re
 The document defines the live-admission test gate; no listener or secret is added. The next slice
 can implement the bounded bind/auth/readiness validators as pure code before any socket creation.
 
+Slice 73 adds those pure admission validators. Literal loopback/path/port and no-Origin rules are
+checked before networking; a strong `VOLMARR_AVATAR_TOKEN` comes only from the process environment,
+is registered for exact profile-scoped redaction, and is compared in constant time; and the only
+accepted client input is a 512-byte exact `ready` envelope. Real discovery proves A→B→A redaction
+isolation and rejects input-bearing requests. The next slice can exercise one disposable real
+loopback connection behind these gates without registering or auto-starting a resident service.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

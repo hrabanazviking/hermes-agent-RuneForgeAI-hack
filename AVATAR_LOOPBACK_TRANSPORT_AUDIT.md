@@ -91,3 +91,8 @@ A live listener remains forbidden until focused tests prove all of the following
 
 Until this gate passes, `volmarr-voice` remains an I/O-free producer, translator, and transaction
 router.
+
+Slice 73 implements only the pre-socket portion of this gate in `volmarr-voice.admission`: literal
+target validation, strong environment-token loading with profile-scoped exact-value redaction,
+constant-time bearer comparison, and exact bounded `ready` parsing. These validators do not import
+or call `websockets` and cannot create a listener.
