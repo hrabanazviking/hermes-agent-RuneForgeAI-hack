@@ -102,6 +102,12 @@ official response fields needed by a presentation consumer, preserves contract/t
 evidence in `metadata`, and refuses any altered or non-canonical source event. It performs no I/O;
 socket connection, authentication, transaction ownership, and delivery remain future adapter work.
 
+`transport.PresentationTransactionRouter` now owns that in-memory transaction boundary. A session
+admits only `speech` sequence 0 as a new transaction, requires exact sequence increments, emits an
+interruption response before replacement audio, refuses retired transaction IDs, and retires live
+ownership on `final` or disconnect. Retired IDs are bounded to 32 per session. This is ordering
+logic only: it opens no socket and provides no retry or durable queue.
+
 The current public `POST /avatar/perform` route is not this boundary: it accepts text and invokes
 AIAvatarKit's configured TTS before emitting avatar output. The stock WebSocket client also starts
 microphone capture. RuneForgeAI therefore does not call that route or adopt that client as-is.

@@ -2171,6 +2171,13 @@ AIAvatarKit dependency, server, socket, authentication, device, or duplicate pip
 next slice can define the local transport lifecycle and transaction rules without yet starting a
 live avatar service.
 
+Slice 71 adds the process-local transaction router. It admits ordered canonical events for one
+active transaction per session, interrupts A before B audio, rejects stale A output after the
+replacement, isolates sessions, and releases ownership on final or disconnect with bounded retired
+IDs. The tests exercise real plugin discovery but no socket or avatar process. The next slice can
+audit an actual loopback delivery surface and authentication model against these already-proven
+lifecycle rules before enabling any live transport.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

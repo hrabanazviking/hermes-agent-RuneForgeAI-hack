@@ -1041,6 +1041,19 @@ decodes the exact response like the maintained AIAvatarKit client, verifies WAV 
 controls, exercises stop/final delivery, and rejects injected second-mind text. No socket, server,
 authentication, retry queue, external package, device, or AIAvatarKit pipeline is started.
 
+### Slice 71: Presentation Transaction Lifecycle
+
+`PresentationTransactionRouter` owns one active presentation transaction per session without
+owning a network connection. Transactions begin only with `speech` sequence zero and then advance
+by exactly one. A replacement transaction first yields an AIAvatarKit-compatible interruption,
+retires the old identifier, and only then yields new audio. Retired IDs are refused, final events
+release live ownership, disconnect performs deterministic cleanup, and stale-ID memory is bounded.
+
+Real discovery proves A→B replacement ordering, stale-A rejection, final cleanup, sequence-gap
+rejection, independent sessions, and idempotent disconnect. State is process-local and contains
+only opaque routing tokens. No profile configuration, durable queue, retry, socket, authentication,
+audio device, provider, external service, or core change participates.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
