@@ -58,13 +58,13 @@ def test_status_and_invalid_paths_never_read_token_or_open_socket(
         args = parser.parse_args(["status", "--json"])
         assert command["handler_fn"](args) == 0
         payload = json.loads(capsys.readouterr().out)
-        assert payload["serve_enabled"] is False
+        assert payload["serve_enabled"] is True
         assert payload["listener_started"] is False
         assert payload["runtime_registered"] is False
         assert payload["automatic_voice_mirroring"] is False
         assert "VOLMARR_AVATAR_TOKEN" not in payload
         with pytest.raises(SystemExit):
-            parser.parse_args(["serve", "--port", "8765"])
+            parser.parse_args(["serve", "--port", "80"])
         error_output = capsys.readouterr().err
     finally:
         manager.unload()

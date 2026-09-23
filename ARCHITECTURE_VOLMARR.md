@@ -1137,6 +1137,21 @@ then sends EOF and proves clean return. A second invariant proves malformed and 
 publishes and always tears down. No tool, hook, CLI serve action, auto-start, file path, or core seam
 is added.
 
+### Slice 78: Explicit Operator Serve Action
+
+`hermes volmarr-voice serve --port PORT` now connects the proven operator CLI, loopback feed, and
+stdin runner. The parser accepts only unprivileged ports. Network and admission modules are imported
+only inside the serve handler; the fixed host/path and environment-only bearer cannot be overridden
+by arguments. Missing credentials fail before socket creation. Runtime failures produce one generic
+stderr line without event or secret content, EOF reports only the event count, and Ctrl-C has a
+distinct operator-stop result.
+
+Real discovery proves missing-token preflight with socket construction forbidden. A full command
+test runs the synchronous handler in an operator thread, connects a real authenticated consumer,
+delivers one canonical stdin WAV event, sends EOF, joins the thread, and proves stdout is empty and
+stderr contains neither bearer nor audio. Status remains non-running, and no model tool, lifecycle
+hook, autostart, native-voice claim, or core change is introduced.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

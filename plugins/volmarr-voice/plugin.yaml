@@ -1,6 +1,6 @@
 manifest_version: 2
 name: volmarr-voice
-version: "0.8.0"
+version: "0.9.0"
 description: "Hermes voice readiness and provider-free avatar presentation contracts."
 author: Volmarr Wyrd / RuneForgeAI
 homepage: https://github.com/hrabanazviking/hermes-agent-RuneForgeAI-hack

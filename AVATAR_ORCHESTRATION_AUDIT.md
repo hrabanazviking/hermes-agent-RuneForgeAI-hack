@@ -77,3 +77,8 @@ Slice 77 adds the still-unexposed `run_feed_from_stream` implementation. It star
 constructed feed, reads one bounded newline-terminated UTF-8 JSON event at a time from a binary
 stream, revalidates the canonical envelope, publishes without echo, and always stops the feed on
 EOF or failure. CLI serving remains disabled until the action is wired and tested end to end.
+
+Slice 78 enables `hermes volmarr-voice serve --port PORT`. Argument parsing rejects privileged or
+invalid ports before secret/network code is imported. The handler then lazy-loads the feed, reads
+the bearer only from the environment, runs the proven binary-stdin runner, and emits generic status
+only to stderr. Status remains side-effect free and continues to report no automatic voice mirror.

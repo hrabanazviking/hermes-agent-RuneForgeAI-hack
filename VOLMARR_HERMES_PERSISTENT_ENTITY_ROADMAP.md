@@ -2219,6 +2219,13 @@ returns cleanly. Malformed and oversize records publish nothing and still close 
 slice can wire `serve --port` to this proven runner while retaining status/help/invalid side-effect
 isolation and generic secret-free failures.
 
+Slice 78 wires the explicit `serve --port` action. Missing credentials are refused before socket
+creation, and a real command invocation delivers one canonical stdin WAV event to an authenticated
+consumer, stops on EOF, and emits only a bounded event-count status. The bearer and audio never
+appear in output. This is an operator development surface, not automatic native-voice attachment;
+the next slice can add a separate operator encoder for complete WAV files without allowing paths or
+synthesis requests into the running feed protocol.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
