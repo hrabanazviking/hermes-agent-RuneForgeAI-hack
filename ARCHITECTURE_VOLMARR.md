@@ -1192,6 +1192,25 @@ does not remove input ownership. RuneForgeAI therefore imports no dependency or 
 subclass/monkey-patch drift until official output-only construction, readiness, authentication, and
 cleanup exist.
 
+### Slice 82: Open-LLM-VTuber Presentation Boundary Audit
+
+`OPEN_LLM_VTUBER_PRESENTATION_AUDIT.md` reads the current official backend and its exact pinned web
+build. The web player independently validates complete-WAV playback, lip sync, talk motion,
+subtitles, and explicit Live2D expressions, but those functions are not published behind an
+output-only application boundary.
+
+Every `/client-ws` connection clones the backend's ASR, TTS, VAD, agent, tool, history, and model
+context, then commands the frontend to start its microphone. The frontend also creates history,
+requests configuration, sends captured audio, and participates in a synthesis/playback
+acknowledgement cycle. `/tts-ws` is rejected because it starts duplicate TTS. Its message schema,
+admission behavior, and lifecycle are incompatible with the strict RuneForge feed without a fork
+that would erase the presentation-only invariant.
+
+No candidate code, dependency, web bundle, Cubism runtime, model, or asset is copied. The audit also
+records that the pinned frontend has a separate license with additional commercial-use conditions,
+while the backend is MIT and its Live2D samples are separately governed. Adoption stays deferred
+through the announced v2 rewrite unless an official output-only boundary appears.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

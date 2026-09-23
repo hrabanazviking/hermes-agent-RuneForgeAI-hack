@@ -21,7 +21,7 @@ configuration and requirement surfaces without operating them.
 | Candidate | Verified official state | Useful unique surface | Decision |
 |---|---|---|---|
 | [AIAvatarKit](https://github.com/uezo/aiavatarkit) | `main` [`38b617b8b9269939734e70ef503d7ea6976acdbd`](https://github.com/uezo/aiavatarkit/commit/38b617b8b9269939734e70ef503d7ea6976acdbd), latest tag `v0.9.0`, Apache-2.0 | Streaming avatar/channel adapters, expression and animation output, metaverse/device surfaces | Do not adopt its complete VAD→STT→LLM→TTS pipeline. Revisit only as an out-of-process presentation/channel adapter after an exact protocol audit. |
-| [Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber) | `main` [`992309c0aa19845960228f880013d4685fde93b5`](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/commit/992309c0aa19845960228f880013d4685fde93b5), latest tag `v1.2.1`, MIT code with separately licensed Live2D samples | Live2D web/Electron shell, expressions, subtitles, pet mode, touch and screen presentation | Presentation-shell candidate only. Do not bind while the project is planning a v2 rewrite or import its duplicate LLM/ASR/TTS/history ownership. |
+| [Open-LLM-VTuber](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber) | `main` [`992309c0aa19845960228f880013d4685fde93b5`](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/commit/992309c0aa19845960228f880013d4685fde93b5), latest tag `v1.2.1`; MIT backend, separately governed Live2D samples, and pinned web client with additional commercial-use license conditions | Live2D web/Electron shell, expressions, subtitles, pet mode, touch and screen presentation | Do not bind: the current client/server protocol owns microphone/VAD, agent, TTS, history, configuration, and playback acknowledgements, and the project is planning a v2 rewrite. Revisit only if an official output-only boundary appears. |
 | [OmniVoice](https://github.com/k2-fsa/OmniVoice) | official `master` [`08be0b4ccbac3e13e374e86fbfead4b4cac343e2`](https://github.com/k2-fsa/OmniVoice/commit/08be0b4ccbac3e13e374e86fbfead4b4cac343e2), latest tag `0.2.1`, Apache-2.0 code | Optional local multilingual TTS, voice design, and consented reference-voice synthesis | Possible future Hermes TTS provider only. Require a separate model-weight/license, VRAM/latency, output-format, and voice-consent audit before installation or inference. |
 
 ## Fork Freshness Rule
@@ -56,3 +56,10 @@ mapping but imports and invokes nothing until a presentation-only consumer can h
 The follow-up `AIAVATARKIT_PRESENTATION_CONSUMER_AUDIT.md` confirms that both maintained clients
 currently combine compatible output handling with mandatory input ownership. Direct adoption stays
 deferred until an official output-only mode exists.
+
+`OPEN_LLM_VTUBER_PRESENTATION_AUDIT.md` reaches the same boundary for the remaining shell
+candidate. Its pinned web player confirms complete-WAV lip sync and explicit expression handling,
+but the application protocol starts microphone/VAD, creates conversation history, expects backend
+model/configuration state, and acknowledges synthesis completion. Its `/tts-ws` route invokes
+duplicate TTS rather than accepting completed Hermes audio for presentation. No maintained
+output-only client or injection API exists at the audited revisions, so adoption remains deferred.

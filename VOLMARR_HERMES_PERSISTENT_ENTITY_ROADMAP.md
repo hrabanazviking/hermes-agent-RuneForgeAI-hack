@@ -2247,6 +2247,18 @@ also differ from the native presentation feed. No dependency or source is import
 can audit the current Open-LLM-VTuber external presentation boundary as the remaining shell
 candidate without adopting its ASR/LLM/TTS/history runtime.
 
+Slice 82 audits the current official Open-LLM-VTuber backend and its exact pinned web client. The
+client proves complete-WAV playback, lip sync, subtitles, talk motion, and explicit Live2D
+expression handling, but it is not output-only: connection startup creates history and requests
+configuration, the backend starts microphone capture, browser VAD sends audio input, and turn
+completion requires a frontend acknowledgement. The backend session also owns ASR, TTS, VAD,
+agent, tools, history, and model configuration; its separate TTS socket invokes duplicate TTS. The
+wire protocol does not satisfy RuneForge readiness/auth/input rules, v2 is an announced rewrite,
+and the pinned frontend has additional commercial-use license conditions distinct from the MIT
+backend. Nothing is imported. The next slice can consolidate the exhausted official candidates
+into an explicit avatar-shell admission gate without claiming that the manual fixture controls an
+avatar.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
