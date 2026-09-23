@@ -72,3 +72,8 @@ Before registering the command, tests must prove:
 Slice 76 registers only `hermes volmarr-voice status`. The command truthfully reports that serving
 and automatic voice mirroring remain disabled. `serve` is not yet a parseable action, and status
 imports no admission or loopback module, loads no token, and creates no socket.
+
+Slice 77 adds the still-unexposed `run_feed_from_stream` implementation. It starts an explicitly
+constructed feed, reads one bounded newline-terminated UTF-8 JSON event at a time from a binary
+stream, revalidates the canonical envelope, publishes without echo, and always stops the feed on
+EOF or failure. CLI serving remains disabled until the action is wired and tested end to end.

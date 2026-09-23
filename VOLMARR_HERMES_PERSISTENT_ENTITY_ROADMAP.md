@@ -2213,6 +2213,12 @@ socket. The truthful result keeps serving and automatic voice mirroring disabled
 can implement a bounded stdin runner behind the still-explicit serve action, with EOF and failure
 cleanup proven before the action is exposed.
 
+Slice 77 implements that runner without exposing it through the CLI. A real authenticated consumer
+receives one canonical WAV event read from a bounded binary stream, then EOF stops the feed and
+returns cleanly. Malformed and oversize records publish nothing and still close the feed. The next
+slice can wire `serve --port` to this proven runner while retaining status/help/invalid side-effect
+isolation and generic secret-free failures.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

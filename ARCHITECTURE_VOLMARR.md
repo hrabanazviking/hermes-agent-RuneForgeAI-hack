@@ -1123,6 +1123,20 @@ status succeeds even when socket construction is forced to fail, does not read o
 token, and rejects `serve`. The CLI module imports neither admission nor loopback. This establishes
 the authority boundary before the eventual explicit runner is enabled.
 
+### Slice 77: Bounded Stdin Feed Runner
+
+`run_feed_from_stream` starts an explicitly supplied feed, consumes one newline-terminated binary
+stdin record at a time, enforces a bound derived from the 16 MiB WAV ceiling, decodes UTF-8/JSON,
+revalidates the exact canonical envelope, and publishes without echoing content. EOF returns the
+published count; malformed, oversize, non-canonical, or delivery-failed input raises only a generic
+operator error. A `finally` block always stops the feed.
+
+A disposable real-loopback test starts the runner behind the still-disabled CLI action, connects an
+authenticated presentation consumer, delivers one canonical stdin WAV event, observes the chunk,
+then sends EOF and proves clean return. A second invariant proves malformed and oversize input never
+publishes and always tears down. No tool, hook, CLI serve action, auto-start, file path, or core seam
+is added.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
