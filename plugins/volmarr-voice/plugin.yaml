@@ -1,0 +1,11 @@
+manifest_version: 2
+name: volmarr-voice
+version: "0.1.0"
+description: "Read-only active-profile readiness for Hermes' existing voice pipeline."
+author: Volmarr Wyrd / RuneForgeAI
+homepage: https://github.com/hrabanazviking/hermes-agent-RuneForgeAI-hack
+tags:
+  - runeforgeai
+  - voice
+  - diagnostics
+  - local

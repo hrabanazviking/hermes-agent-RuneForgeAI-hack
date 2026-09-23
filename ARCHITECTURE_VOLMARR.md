@@ -951,6 +951,30 @@ Missing catalog entries and uncached files are normal `available: false` results
 invokes Hoard bootstrap or any fetch path, and engine selection remains call-time profile scoped
 with A→B→A proof.
 
+### Slice 64: Read-Only Seiðr-Smiðja Forge Readiness
+
+`smidja_forge_readiness` invokes the official Blender executable resolver with an optional
+profile-scoped absolute path, then verifies that the external Forge build script is present. It
+returns only readiness booleans and the executable filename; the full path remains withheld.
+
+The probe never calls `run_blender` or `forge.build`, creates no output directory, and grants no
+build authority. On the verified Windows host no Blender executable is currently discoverable, so
+real Forge execution remains deliberately unavailable rather than simulated.
+
+### Slice 65: Native Hermes Voice Readiness
+
+The opt-in `volmarr-voice` plugin begins the voice phase with `voice_pipeline_readiness`, a
+read-only view over Hermes' existing voice configuration and prerequisite checks. Hermes already
+owns microphone capture, VAD, STT, turn execution, TTS, streaming, and barge-in, so the personal
+layer does not duplicate those systems or choose an external voice framework prematurely.
+
+The tool resolves voice mode and STT/TTS selections from the active profile at call time, reports
+only local prerequisite booleans, and withholds credentials. It never opens a microphone, records
+audio, transcribes, synthesizes speech, or contacts a provider. Dependency readiness is explicitly
+separate from credential, connectivity, and end-to-end verification; A→B→A discovery coverage
+protects the profile boundary. Custom plugin-provider readiness remains unknown rather than calling
+arbitrary provider code from a diagnostic probe.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

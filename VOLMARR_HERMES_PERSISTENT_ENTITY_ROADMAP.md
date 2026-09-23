@@ -1166,6 +1166,12 @@ Potential foundations:
 - [OmniVoice](https://github.com/hrabanazviking/OmniVoice);
 - existing VAD work in the personal fork.
 
+The current Hermes baseline already implements the complete chained voice route plus a GPT-Live
+mode: capture, VAD, provider-selectable STT, Hermes turn execution, provider-selectable TTS,
+streaming playback, wake word, and full-duplex barge-in. Treat that implementation as the owned
+foundation. External projects remain candidates for avatar-shell or provider capabilities only
+when a concrete gap survives a fresh interface audit; they are not replacement voice runtimes.
+
 Pipeline:
 
 ```text
@@ -2115,6 +2121,18 @@ Slice 63 adds `smidja_asset_probe`, a path-withheld readiness check over the off
 resolver. Missing or uncached assets remain structured unavailable results; no fetch, bootstrap,
 asset open, or forge action occurs. Forge build authority and its output transaction boundary are
 the next audit target.
+
+Slice 64 adds `smidja_forge_readiness`, a non-launching check of the official Blender resolver and
+Forge script installation. Executable paths remain withheld and the current host truthfully reports
+Blender unavailable. Actual Forge build authority stays deferred until a real configured Blender
+can pass the same boundary; the next slice audits the voice embodiment candidates.
+
+Slice 65 completes that first voice audit and adds `voice_pipeline_readiness`. The audit found that
+current Hermes already owns the planned capture → VAD → STT → turn → TTS path, streaming output,
+wake word, and barge-in. The new opt-in plugin therefore exposes active-profile configuration and
+local prerequisite status without operating audio or touching credentials. External voice engines
+remain deferred until a verified missing capability justifies one; a bounded voice-loop smoke
+contract is next.
 
 ## Milestone 9: Embodiment
 
