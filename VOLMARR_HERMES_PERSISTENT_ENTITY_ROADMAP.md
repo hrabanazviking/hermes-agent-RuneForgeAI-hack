@@ -2192,6 +2192,14 @@ accepted client input is a 512-byte exact `ready` envelope. Real discovery prove
 isolation and rejects input-bearing requests. The next slice can exercise one disposable real
 loopback connection behind these gates without registering or auto-starting a resident service.
 
+Slice 74 performs that proof with an explicit, unregistered `AvatarLoopbackFeed`. One authenticated
+consumer receives a real complete-WAV `chunk`, explicit face control, and `final` over literal
+loopback before deterministic teardown. Bad authentication, duplicate session ownership, and all
+post-readiness client input are refused. No tool, hook, CLI command, autostart, avatar process,
+provider, microphone, durable queue, or retry is added. The next slice can expose operator-owned
+start/stop orchestration only after auditing how it will receive Hermes TTS output without granting
+an LLM service-lifecycle authority.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

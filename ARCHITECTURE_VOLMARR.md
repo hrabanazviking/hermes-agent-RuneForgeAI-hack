@@ -1082,6 +1082,21 @@ wrong versions, malformed JSON, and oversize input fail closed. Real discovery p
 redaction across A→B→A profiles and refuses wildcard/hostname/privileged/path/Origin targets. The
 module does not import WebSockets, bind a socket, register a runtime surface, or read YAML.
 
+### Slice 74: Disposable Authenticated Loopback Feed
+
+`AvatarLoopbackFeed` is an explicit async helper built on the already-pinned `websockets==15.0.1`;
+the plugin does not import, register, or start it during discovery. An operator-owned caller must
+provide the validated environment token and invoke `start()`/`stop()`. The helper binds only the
+prevalidated target, admits one bearer-authenticated ready consumer per session, serializes writes,
+routes canonical events through the proven transaction state, refuses every later client message,
+and releases ownership on disconnect or shutdown.
+
+Disposable real-loopback tests deliver a complete WAV and face control through the actual socket,
+then deliver `final` and tear down. They also prove bad-auth refusal, duplicate-owner refusal, and
+input-bearing client closure with no provider, microphone, avatar process, retry, durable queue, or
+Hermes runtime registration. The exact pinned dependency was installed into the selected local
+Python 3.11 test environment because it was declared by the repository but missing there.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
