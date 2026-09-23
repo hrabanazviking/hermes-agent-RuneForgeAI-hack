@@ -87,3 +87,6 @@ Slice 79 adds the separate operator command `encode --audio WAV --session ID --t
 optional face and animation names. It accepts one regular non-symlink file within the v1 byte bound,
 validates the actual WAV container, and writes one path-free canonical JSON line to stdout. The live
 feed still accepts only canonical events and never sees the source path or a synthesis request.
+
+The complete operator sequence, its consumer-first ordering requirement, and the maintained
+real-loopback smoke command are recorded in `AVATAR_OPERATOR_GUIDE.md`.

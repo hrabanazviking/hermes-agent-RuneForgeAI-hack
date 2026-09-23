@@ -1166,6 +1166,18 @@ Real discovery proves byte-exact output, canonical revalidation, explicit contro
 absence with socket construction forbidden. This completes a manual operator pipeline without
 pretending to attach every native Hermes voice reply.
 
+### Slice 80: Avatar Operator Guide and Smoke Recipe
+
+`AVATAR_OPERATOR_GUIDE.md` consolidates the profile enablement, `.env` bearer rule, fixed endpoint,
+native presentation-only readiness handshake, explicit serve lifecycle, WAV encoder, ordering, and
+focused real-loopback verification commands. It warns that the consumer must own the session before
+stdin receives an event and rejects a naïve `encode | serve` pipeline rather than implying an
+unproven queue.
+
+The guide also keeps both unsafe official surfaces out: the stock AIAvatarKit client starts a
+microphone, and `/avatar/perform` starts AIAvatarKit TTS. It states the current manual-development
+scope and automatic native-voice seam gap without altering the protected project `README.md`.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

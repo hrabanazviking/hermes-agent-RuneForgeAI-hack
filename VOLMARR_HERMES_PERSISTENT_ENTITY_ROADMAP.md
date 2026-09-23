@@ -2233,6 +2233,13 @@ accepts no path or synthesis request. The next slice can consolidate operator ex
 repeatable manual smoke recipe in the dedicated avatar documents while leaving `README.md`
 protected.
 
+Slice 80 adds `AVATAR_OPERATOR_GUIDE.md` with the exact status, serve, readiness, encode, ordering,
+and focused smoke workflow. It explicitly requires consumer readiness before stdin delivery and
+warns that a naïve pipeline races by design because the feed has no queue. The guide excludes the
+stock microphone-owning AIAvatarKit client and duplicate-TTS control route, preserves the `.env`
+secret rule, and leaves `README.md` untouched. The next slice can audit a minimal
+presentation-only AIAvatarKit consumer wrapper against the now-stable operator feed.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
