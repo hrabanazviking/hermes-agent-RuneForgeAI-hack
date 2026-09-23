@@ -1178,6 +1178,20 @@ The guide also keeps both unsafe official surfaces out: the stock AIAvatarKit cl
 microphone, and `/avatar/perform` starts AIAvatarKit TTS. It states the current manual-development
 scope and automatic native-voice seam gap without altering the protected project `README.md`.
 
+### Slice 81: AIAvatarKit Presentation Consumer Audit
+
+`AIAVATARKIT_PRESENTATION_CONSUMER_AUDIT.md` reads both maintained client implementations at the
+pinned official commit. Their output behavior validates the RuneForge response map: complete-WAV
+chunks, face/animation controls, stop, and final are real consumer fields. Neither client is an
+admissible presentation-only shell, however.
+
+The Python client constructs input and output devices plus `AudioRecorder`, schedules the microphone
+worker, sends `start`, and sends a client `stop`. The browser client uses subprotocol auth, sends
+`start`, requests `getUserMedia`, and continuously sends microphone or silent `data` frames. Muting
+does not remove input ownership. RuneForgeAI therefore imports no dependency or source and refuses
+subclass/monkey-patch drift until official output-only construction, readiness, authentication, and
+cleanup exist.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

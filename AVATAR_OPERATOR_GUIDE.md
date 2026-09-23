@@ -13,6 +13,7 @@ attachment to Hermes CLI voice, GPT-Live, messaging voice, or native playback.
 
 The stock AIAvatarKit `start_listening()` client is not suitable because it starts microphone
 capture. Its `/avatar/perform` endpoint is also not suitable because it invokes AIAvatarKit TTS.
+The exact client findings are recorded in `AIAVATARKIT_PRESENTATION_CONSUMER_AUDIT.md`.
 
 ## Inspect the Gate
 

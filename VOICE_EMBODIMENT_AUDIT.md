@@ -52,3 +52,7 @@ are sufficient for a presentation-only adapter. Its public `/avatar/perform` con
 safe Hermes boundary because it synthesizes supplied text through AIAvatarKit TTS, and its stock
 WebSocket client starts microphone capture. RuneForgeAI therefore defines the narrow response
 mapping but imports and invokes nothing until a presentation-only consumer can honor it.
+
+The follow-up `AIAVATARKIT_PRESENTATION_CONSUMER_AUDIT.md` confirms that both maintained clients
+currently combine compatible output handling with mandatory input ownership. Direct adoption stays
+deferred until an official output-only mode exists.

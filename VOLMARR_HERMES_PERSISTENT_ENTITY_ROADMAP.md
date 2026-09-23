@@ -2240,6 +2240,13 @@ stock microphone-owning AIAvatarKit client and duplicate-TTS control route, pres
 secret rule, and leaves `README.md` untouched. The next slice can audit a minimal
 presentation-only AIAvatarKit consumer wrapper against the now-stable operator feed.
 
+Slice 81 records the exact AIAvatarKit consumer audit. Its maintained clients prove the response
+shape but both own input: Python constructs and schedules microphone capture, while the browser
+requests `getUserMedia` and sends continuous data frames even when muted. Their readiness and auth
+also differ from the native presentation feed. No dependency or source is imported. The next slice
+can audit the current Open-LLM-VTuber external presentation boundary as the remaining shell
+candidate without adopting its ASR/LLM/TTS/history runtime.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
