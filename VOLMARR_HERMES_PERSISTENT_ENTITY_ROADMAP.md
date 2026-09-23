@@ -2207,6 +2207,12 @@ not emit it, so automatic mirroring remains deferred rather than shipping a misl
 hook or modifying core. The next slice can register the CLI skeleton and prove that help/invalid
 paths have no token or socket side effects before enabling its serve action.
 
+Slice 76 registers only `hermes volmarr-voice status`. Real discovery proves it adds no lifecycle
+hook or model-facing tool, and status/invalid serve paths cannot read the planted token or create a
+socket. The truthful result keeps serving and automatic voice mirroring disabled. The next slice
+can implement a bounded stdin runner behind the still-explicit serve action, with EOF and failure
+cleanup proven before the action is exposed.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

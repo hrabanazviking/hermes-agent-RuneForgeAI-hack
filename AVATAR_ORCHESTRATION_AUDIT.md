@@ -68,3 +68,7 @@ Before registering the command, tests must prove:
 5. malformed/oversize/non-canonical lines fail without echo or partial delivery;
 6. EOF, Ctrl-C, client disconnect, and publish failure all close the listener and release sessions;
 7. no credential, audio base64, or event content appears in stdout, stderr, logs, argv, or config.
+
+Slice 76 registers only `hermes volmarr-voice status`. The command truthfully reports that serving
+and automatic voice mirroring remain disabled. `serve` is not yet a parseable action, and status
+imports no admission or loopback module, loads no token, and creates no socket.

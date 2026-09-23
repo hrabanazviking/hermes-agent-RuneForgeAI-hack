@@ -1111,6 +1111,18 @@ partial hook-based integration and will not patch or monkey-patch Hermes core. A
 stays deferred until a generic upstream post-TTS observer exists. This slice registers no command,
 hook, tool, service, scheduler, or new dependency.
 
+### Slice 76: Side-Effect-Free Operator CLI Gate
+
+Real discovery now registers `hermes volmarr-voice status` alongside the existing readiness tool.
+Status reports the v1 contract, operator-stdin producer intent, disabled serve action, absent runtime
+registration/listener, and unavailable automatic voice mirroring. The `serve` action is not yet
+parseable, so neither help nor invalid serve attempts can load a token or bind a socket.
+
+Tests prove discovery adds exactly one operator CLI, no lifecycle hook, and no new model tool;
+status succeeds even when socket construction is forced to fail, does not read or print a planted
+token, and rejects `serve`. The CLI module imports neither admission nor loopback. This establishes
+the authority boundary before the eventual explicit runner is enabled.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
