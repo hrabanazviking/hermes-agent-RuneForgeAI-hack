@@ -40,6 +40,6 @@ Hermes owns capture → VAD → STT → turn → TTS → playback
                                └── bounded expression/audio events → optional avatar shell
 ```
 
-No candidate source, model, sample avatar, or dependency is copied by this audit. The next useful
-runtime work is a synthetic, provider-free contract that proves Hermes' existing STT and TTS plugin
-dispatch can complete a loop without network, microphone, speaker, or model downloads.
+No candidate source, model, sample avatar, or dependency is copied by this audit. Slice 67 adds a
+synthetic, provider-free regression contract proving that Hermes' existing STT and TTS plugin
+dispatch can complete a loop without network, microphone, speaker, credentials, or model downloads.

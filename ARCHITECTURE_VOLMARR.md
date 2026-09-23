@@ -987,6 +987,18 @@ The personal OmniVoice fork is not current: its `0.1.3` head is an ancestor of o
 avatar enters the repository in this slice. Candidate adoption requires a separate interface,
 resource, license, and consent audit.
 
+### Slice 67: Provider-Free Hermes Voice Dispatch Contract
+
+A second real-discovery contract installs temporary profile-scoped STT and TTS provider fixtures,
+passes a valid synthetic WAV through `transcribe_audio`, and feeds the returned transcript through
+`text_to_speech_tool`. Both calls use Hermes' real validation, provider registry, configuration,
+dispatch, and output-envelope paths.
+
+The fixture performs no inference and is created only inside the test profile. The contract opens
+no microphone or speaker, contacts no network, reads no credential, and downloads no model. It
+also proves the input audio remains byte-identical while the TTS dispatcher returns one valid WAV.
+This establishes the extension seam without adding a second voice orchestrator.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

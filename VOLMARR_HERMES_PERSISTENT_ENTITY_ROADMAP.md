@@ -2141,6 +2141,12 @@ commits behind official `k2-fsa/OmniVoice`, so future work must begin from the o
 No candidate code or dependency was imported. A provider-free Hermes voice-loop dispatch contract
 is next.
 
+Slice 67 proves that contract through real plugin discovery and Hermes' real STT/TTS dispatchers.
+A temporary profile-scoped provider pair turns a valid synthetic WAV into a fixed transcript and
+then a valid synthetic WAV response. No microphone, speaker, network, credential, model, or copied
+candidate code participates, and the input remains byte-identical. The next slice can define the
+minimal expression/audio handoff needed by an avatar shell without reopening voice ownership.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
