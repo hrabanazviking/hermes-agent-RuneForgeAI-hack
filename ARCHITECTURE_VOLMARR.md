@@ -1054,6 +1054,20 @@ rejection, independent sessions, and idempotent disconnect. State is process-loc
 only opaque routing tokens. No profile configuration, durable queue, retry, socket, authentication,
 audio device, provider, external service, or core change participates.
 
+### Slice 72: Loopback Delivery and Authentication Audit
+
+`AVATAR_LOOPBACK_TRANSPORT_AUDIT.md` selects a future outbound-only WebSocket feed on literal
+`127.0.0.1`. The shell receives proven AIAvatarKit-compatible response JSON after a bounded
+presentation-only readiness message; every input-bearing request type remains forbidden. One
+consumer owns a session, writes are serialized, ownership is rechecked before send, and disconnect
+drops unsent data without replay or Hermes-state changes.
+
+The proposed listener requires a strong `VOLMARR_AVATAR_TOKEN` loaded only through `.env` and sent
+only as an Authorization bearer header. Query, URL, cookie, subprotocol, YAML, argv, event, log, and
+error exposure are forbidden; browser-Origin connections are deferred and rejected. The design can
+use Hermes' existing pinned `websockets==15.0.1` dependency and needs no candidate code or web
+framework. This slice adds no listener, socket, runtime registration, dependency, or secret.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

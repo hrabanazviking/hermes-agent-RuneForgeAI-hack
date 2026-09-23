@@ -108,6 +108,9 @@ interruption response before replacement audio, refuses retired transaction IDs,
 ownership on `final` or disconnect. Retired IDs are bounded to 32 per session. This is ordering
 logic only: it opens no socket and provides no retry or durable queue.
 
+The audited future delivery surface is specified in `AVATAR_LOOPBACK_TRANSPORT_AUDIT.md`. It remains
+disabled until the document's live-admission tests pass.
+
 The current public `POST /avatar/perform` route is not this boundary: it accepts text and invokes
 AIAvatarKit's configured TTS before emitting avatar output. The stock WebSocket client also starts
 microphone capture. RuneForgeAI therefore does not call that route or adopt that client as-is.

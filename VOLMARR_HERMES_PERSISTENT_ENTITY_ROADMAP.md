@@ -2178,6 +2178,13 @@ IDs. The tests exercise real plugin discovery but no socket or avatar process. T
 audit an actual loopback delivery surface and authentication model against these already-proven
 lifecycle rules before enabling any live transport.
 
+Slice 72 completes that audit in `AVATAR_LOOPBACK_TRANSPORT_AUDIT.md`. The selected future surface
+is an outbound-only WebSocket feed bound to literal `127.0.0.1`, authenticated by a strong
+`VOLMARR_AVATAR_TOKEN` supplied only through `.env`, and consumed by a presentation-only native
+client. Browser-Origin connections and every microphone/text/pipeline request remain forbidden.
+The document defines the live-admission test gate; no listener or secret is added. The next slice
+can implement the bounded bind/auth/readiness validators as pure code before any socket creation.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
