@@ -2155,6 +2155,14 @@ would invoke a second TTS and rejecting the stock client as-is because it starts
 No runtime integration or external dependency is added. The next slice can implement and verify a
 provider-free serializer for this exact contract before any transport or shell process is allowed.
 
+Slice 69 adds that strict serializer inside `volmarr-voice`. Real discovery verifies a valid
+complete WAV survives base64 encoding byte-for-byte with its digest and decoded format evidence,
+explicit visual controls remain separate from text, malformed audio is refused, and interruption
+events cannot carry audio or expressions. The module has no registered tool, hook, network
+transport, provider call, device access, credential read, or profile-dependent behavior. The next
+slice can add an AIAvatarKit-compatible presentation consumer fixture and prove the exact v1-to-
+response translation before any live socket or avatar shell is started.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

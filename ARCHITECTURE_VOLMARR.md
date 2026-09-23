@@ -1014,6 +1014,19 @@ endpoint is explicitly rejected because it accepts text and invokes AIAvatarKit'
 stock WebSocket client is not adopted as-is because it also starts microphone capture. This slice
 adds no runtime hook, dependency, network service, audio operation, or candidate source.
 
+### Slice 69: Provider-Free Presentation Serializer
+
+`volmarr-voice.presentation` encodes the v1 handoff without registering a tool, hook, transport, or
+resident process. It validates bounded opaque routing tokens, monotonic-compatible integer sequence
+values, complete uncompressed PCM WAV payloads, and shell-owned face/animation names before
+producing base64 audio with a SHA-256 digest and decoded format evidence.
+
+Real plugin discovery loads the defining module and proves byte-exact WAV round-trip, explicit
+control mapping, absence of text/path fields, strict malformed-WAV rejection, and audio-free
+`stop`/`final` events. The serializer opens no device, contacts no provider or network, reads no
+credential or profile setting, and does not select an expression. It is the concrete producer a
+future presentation transport must consume rather than a speculative generic hook.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

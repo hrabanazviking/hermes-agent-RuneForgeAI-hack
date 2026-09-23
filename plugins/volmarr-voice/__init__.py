@@ -1,4 +1,4 @@
-"""Hermes registration boundary for Volmarr voice diagnostics."""
+"""Hermes registration boundary for Volmarr voice and presentation contracts."""
 
 from __future__ import annotations
 

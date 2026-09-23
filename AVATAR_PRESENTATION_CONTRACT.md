@@ -35,7 +35,14 @@ The v1 event envelope is transport-neutral JSON:
     "encoding": "base64",
     "container": "wav",
     "data": "UklGR...",
-    "sha256": "lowercase-hex-digest"
+    "sha256": "lowercase-hex-digest",
+    "format": {
+      "channels": 1,
+      "sample_width": 2,
+      "sample_rate": 16000,
+      "frame_count": 16000,
+      "duration_seconds": 1.0
+    }
   },
   "expression": {
     "face_name": "joy",
@@ -51,6 +58,11 @@ Every event carries the same opaque session and transaction identifiers, and `se
 within a transaction. A newer transaction invalidates unsent or queued events from the older one.
 Names select shell-owned visuals; they never grant script, path, URL, or arbitrary command
 execution.
+
+The plugin's provider-free `presentation.build_presentation_event` serializer validates this
+envelope before any future transport sees it. It accepts only bounded opaque routing tokens,
+uncompressed mono/stereo PCM WAV data (8–48 kHz, at most 16 MiB and 120 seconds), and bounded
+shell-owned control names. It also records the decoded WAV format and digest in the audio object.
 
 ## Ownership and Safety Rules
 
@@ -97,4 +109,3 @@ Version 1 does not define microphone input, transcript or caption transport, vis
 emotion inference, expression selection, avatar asset loading, shell installation, network
 discovery, durable queues, or retry policy. Those capabilities require separate evidence and
 ownership decisions.
-
