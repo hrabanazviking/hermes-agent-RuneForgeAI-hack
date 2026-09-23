@@ -43,3 +43,12 @@ Hermes owns capture → VAD → STT → turn → TTS → playback
 No candidate source, model, sample avatar, or dependency is copied by this audit. Slice 67 adds a
 synthetic, provider-free regression contract proving that Hermes' existing STT and TTS plugin
 dispatch can complete a loop without network, microphone, speaker, credentials, or model downloads.
+
+## Presentation Protocol Result
+
+The exact AIAvatarKit audit is recorded in `AVATAR_PRESENTATION_CONTRACT.md`. Its outbound
+`AIAvatarResponse` supports complete-WAV `chunk` events and explicit face/animation fields, which
+are sufficient for a presentation-only adapter. Its public `/avatar/perform` control route is not a
+safe Hermes boundary because it synthesizes supplied text through AIAvatarKit TTS, and its stock
+WebSocket client starts microphone capture. RuneForgeAI therefore defines the narrow response
+mapping but imports and invokes nothing until a presentation-only consumer can honor it.

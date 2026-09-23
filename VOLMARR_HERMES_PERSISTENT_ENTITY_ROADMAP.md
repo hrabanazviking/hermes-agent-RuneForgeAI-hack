@@ -2147,6 +2147,14 @@ then a valid synthetic WAV response. No microphone, speaker, network, credential
 candidate code participates, and the input remains byte-identical. The next slice can define the
 minimal expression/audio handoff needed by an avatar shell without reopening voice ownership.
 
+Slice 68 defines that handoff in `AVATAR_PRESENTATION_CONTRACT.md`. The v1 presentation envelope
+contains only complete WAV audio, explicit face/animation controls, interruption/final events, and
+opaque routing/ordering tokens. Its verified AIAvatarKit mapping uses outbound response fields that
+the maintained clients already consume, while rejecting `/avatar/perform` because that endpoint
+would invoke a second TTS and rejecting the stock client as-is because it starts microphone capture.
+No runtime integration or external dependency is added. The next slice can implement and verify a
+provider-free serializer for this exact contract before any transport or shell process is allowed.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

@@ -999,6 +999,21 @@ no microphone or speaker, contacts no network, reads no credential, and download
 also proves the input audio remains byte-identical while the TTS dispatcher returns one valid WAV.
 This establishes the extension seam without adding a second voice orchestrator.
 
+### Slice 68: Presentation-Only Avatar Contract
+
+`AVATAR_PRESENTATION_CONTRACT.md` defines the minimal versioned handoff from Hermes-owned TTS to
+an optional avatar shell: complete WAV bytes, explicit face/animation controls, stop/final events,
+and opaque session/transaction sequencing. It forbids microphone capture, STT, LLM, TTS, memory,
+tools, conversation ownership, filesystem-path transport, credentials, and expression markup in
+model or spoken text.
+
+The contract is grounded in the official AIAvatarKit response model and maintained clients at
+commit `38b617b8b9269939734e70ef503d7ea6976acdbd`. A future bounded adapter can map `speech` to a
+complete-WAV `chunk` response and map `stop`/`final` directly. The existing `/avatar/perform`
+endpoint is explicitly rejected because it accepts text and invokes AIAvatarKit's own TTS; the
+stock WebSocket client is not adopted as-is because it also starts microphone capture. This slice
+adds no runtime hook, dependency, network service, audio operation, or candidate source.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
