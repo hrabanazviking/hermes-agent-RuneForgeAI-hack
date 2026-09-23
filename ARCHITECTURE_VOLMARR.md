@@ -1097,6 +1097,20 @@ input-bearing client closure with no provider, microphone, avatar process, retry
 Hermes runtime registration. The exact pinned dependency was installed into the selected local
 Python 3.11 test environment because it was declared by the repository but missing there.
 
+### Slice 75: Operator-Owned Feed Orchestration Audit
+
+`AVATAR_ORCHESTRATION_AUDIT.md` reserves feed start/stop authority for an explicit future
+`hermes volmarr-voice serve` command. The command will use fixed loopback settings, load its bearer
+only at execution time from `VOLMARR_AVATAR_TOKEN`, accept canonical v1 NDJSON only through stdin,
+and stop on EOF or operator interruption. It will accept no text, TTS request, provider, model,
+microphone, filesystem path, URL, asset command, or conversation state.
+
+The audit proves from current call sites that `post_tool_call` observes model-dispatched TTS tools
+but not direct TTS calls made by CLI and native voice playback. RuneForgeAI therefore refuses a
+partial hook-based integration and will not patch or monkey-patch Hermes core. Automatic mirroring
+stays deferred until a generic upstream post-TTS observer exists. This slice registers no command,
+hook, tool, service, scheduler, or new dependency.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

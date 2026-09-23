@@ -100,3 +100,6 @@ or call `websockets` and cannot create a listener.
 Slice 74 adds `AvatarLoopbackFeed` as an explicit, unregistered helper and exercises it only through
 disposable real-loopback tests. The helper serializes writes, enforces one consumer per session,
 drops ownership on disconnect, refuses all post-readiness client input, and never auto-starts.
+
+The permitted operator lifecycle and stdin-only producer boundary are audited separately in
+`AVATAR_ORCHESTRATION_AUDIT.md`.

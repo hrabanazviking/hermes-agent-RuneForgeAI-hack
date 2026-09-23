@@ -2200,6 +2200,13 @@ provider, microphone, durable queue, or retry is added. The next slice can expos
 start/stop orchestration only after auditing how it will receive Hermes TTS output without granting
 an LLM service-lifecycle authority.
 
+Slice 75 records that orchestration audit in `AVATAR_ORCHESTRATION_AUDIT.md`. Feed lifecycle belongs
+to an explicit future operator CLI, and canonical events enter only as NDJSON on stdin. Current
+`post_tool_call` cannot provide complete native-voice coverage because direct CLI/voice TTS calls do
+not emit it, so automatic mirroring remains deferred rather than shipping a misleading partial
+hook or modifying core. The next slice can register the CLI skeleton and prove that help/invalid
+paths have no token or socket side effects before enabling its serve action.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
