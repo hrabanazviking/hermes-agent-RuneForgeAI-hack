@@ -97,6 +97,11 @@ already defines the presentation-side fields needed by v1. A bounded adapter can
 Complete-WAV mode is the minimal compatible audio form. AIAvatarKit's alternative streamed-PCM
 mode needs a separate format announcement and chunk sequence, so it is outside v1.
 
+The pure `aiavatarkit.to_aiavatarkit_response` translator implements this table. It emits only the
+official response fields needed by a presentation consumer, preserves contract/transaction/sequence
+evidence in `metadata`, and refuses any altered or non-canonical source event. It performs no I/O;
+socket connection, authentication, transaction ownership, and delivery remain future adapter work.
+
 The current public `POST /avatar/perform` route is not this boundary: it accepts text and invokes
 AIAvatarKit's configured TTS before emitting avatar output. The stock WebSocket client also starts
 microphone capture. RuneForgeAI therefore does not call that route or adopt that client as-is.

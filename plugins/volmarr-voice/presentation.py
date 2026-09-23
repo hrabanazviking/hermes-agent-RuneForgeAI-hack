@@ -142,3 +142,48 @@ def build_presentation_event(
     if expression:
         event["expression"] = expression
     return event
+
+
+def validate_presentation_event(event: Any) -> dict[str, Any]:
+    """Return an exact canonical event or reject altered/unknown wire fields."""
+
+    if not isinstance(event, dict):
+        raise PresentationContractError("presentation event must be an object")
+    try:
+        kind = event["kind"]
+        audio = event.get("audio")
+        expression = event.get("expression") or {}
+        if audio is not None:
+            if not isinstance(audio, dict):
+                raise PresentationContractError("audio must be an object")
+            if audio.get("encoding") != "base64" or audio.get("container") != "wav":
+                raise PresentationContractError("audio encoding must be base64 WAV")
+            encoded = audio.get("data")
+            if not isinstance(encoded, str):
+                raise PresentationContractError("audio data must be base64 text")
+            try:
+                audio_data = base64.b64decode(encoded, validate=True)
+            except (ValueError, TypeError) as exc:
+                raise PresentationContractError("audio data is not valid base64") from exc
+        else:
+            audio_data = None
+        if not isinstance(expression, dict):
+            raise PresentationContractError("expression must be an object")
+        rebuilt = build_presentation_event(
+            kind=kind,
+            session_id=event["session_id"],
+            transaction_id=event["transaction_id"],
+            sequence=event["sequence"],
+            audio_data=audio_data,
+            face_name=expression.get("face_name"),
+            face_duration_seconds=expression.get("face_duration_seconds", 4.0),
+            animation_name=expression.get("animation_name"),
+            animation_duration_seconds=expression.get(
+                "animation_duration_seconds", 4.0
+            ),
+        )
+    except KeyError as exc:
+        raise PresentationContractError("presentation event is missing a required field") from exc
+    if rebuilt != event:
+        raise PresentationContractError("presentation event is not canonical or was altered")
+    return rebuilt

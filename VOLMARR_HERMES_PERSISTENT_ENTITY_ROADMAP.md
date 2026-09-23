@@ -2163,6 +2163,14 @@ transport, provider call, device access, credential read, or profile-dependent b
 slice can add an AIAvatarKit-compatible presentation consumer fixture and prove the exact v1-to-
 response translation before any live socket or avatar shell is started.
 
+Slice 70 adds that pure response translator and provider-free consumer fixture. Canonical `speech`,
+`stop`, and `final` events map only to official presentation response fields; complete WAV audio and
+explicit controls are consumed successfully, while injected text and any other non-canonical event
+mutation are refused. Contract and ordering evidence remains metadata, not conversation state. No
+AIAvatarKit dependency, server, socket, authentication, device, or duplicate pipeline runs. The
+next slice can define the local transport lifecycle and transaction rules without yet starting a
+live avatar service.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

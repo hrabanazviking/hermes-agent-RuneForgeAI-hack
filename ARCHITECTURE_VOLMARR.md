@@ -1027,6 +1027,20 @@ control mapping, absence of text/path fields, strict malformed-WAV rejection, an
 credential or profile setting, and does not select an expression. It is the concrete producer a
 future presentation transport must consume rather than a speculative generic hook.
 
+### Slice 70: AIAvatarKit Response Translation Contract
+
+`volmarr-voice.aiavatarkit` provides a pure translation from canonical v1 events to the official
+AIAvatarKit presentation response fields. `speech` becomes a complete-WAV `chunk` with explicit
+`avatar_control_request`; `stop` and `final` map directly. Contract, transaction, sequence, and
+audio-digest evidence remains bounded inside response metadata, while text, voice text, user
+identity, conversation context, and pipeline requests remain absent.
+
+The translator revalidates the complete canonical envelope, so altered fields, digests, formats,
+audio, or ownership-bearing additions fail before translation. A provider-free consumer fixture
+decodes the exact response like the maintained AIAvatarKit client, verifies WAV frames and visual
+controls, exercises stop/final delivery, and rejects injected second-mind text. No socket, server,
+authentication, retry queue, external package, device, or AIAvatarKit pipeline is started.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
