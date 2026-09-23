@@ -975,6 +975,18 @@ separate from credential, connectivity, and end-to-end verification; A→B→A d
 protects the profile boundary. Custom plugin-provider readiness remains unknown rather than calling
 arbitrary provider code from a diagnostic probe.
 
+### Slice 66: Official Voice and Avatar Candidate Audit
+
+`VOICE_EMBODIMENT_AUDIT.md` pins current official heads and releases for Hermes, AIAvatarKit,
+Open-LLM-VTuber, and OmniVoice. The audit keeps Hermes as the sole voice-loop owner: AIAvatarKit
+and Open-LLM-VTuber may later serve bounded presentation/channel roles, while OmniVoice may later
+serve only as an optional Hermes TTS provider.
+
+The personal OmniVoice fork is not current: its `0.1.3` head is an ancestor of official
+`k2-fsa/OmniVoice`, which is 50 commits ahead at `0.2.1`. No dependency, model, source, or sample
+avatar enters the repository in this slice. Candidate adoption requires a separate interface,
+resource, license, and consent audit.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

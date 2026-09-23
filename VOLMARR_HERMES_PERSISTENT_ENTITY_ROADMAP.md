@@ -2134,6 +2134,13 @@ local prerequisite status without operating audio or touching credentials. Exter
 remain deferred until a verified missing capability justifies one; a bounded voice-loop smoke
 contract is next.
 
+Slice 66 records the current official candidate audit in `VOICE_EMBODIMENT_AUDIT.md`. Hermes stays
+the voice owner; AIAvatarKit and Open-LLM-VTuber remain presentation/channel candidates, and
+OmniVoice remains a possible optional TTS backend. The roadmap's personal OmniVoice fork is 50
+commits behind official `k2-fsa/OmniVoice`, so future work must begin from the official project.
+No candidate code or dependency was imported. A provider-free Hermes voice-loop dispatch contract
+is next.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
