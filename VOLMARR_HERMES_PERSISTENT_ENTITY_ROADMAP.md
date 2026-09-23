@@ -2226,6 +2226,13 @@ appear in output. This is an operator development surface, not automatic native-
 the next slice can add a separate operator encoder for complete WAV files without allowing paths or
 synthesis requests into the running feed protocol.
 
+Slice 79 adds that operator encoder and advances `volmarr-voice` to `1.0.0`. A regular bounded WAV
+becomes one canonical path-free JSON line with exact bytes, digest, format, and optional explicit
+controls; invalid input is not echoed. The encoder touches no bearer or socket, and the feed still
+accepts no path or synthesis request. The next slice can consolidate operator examples and a
+repeatable manual smoke recipe in the dedicated avatar documents while leaving `README.md`
+protected.
+
 ## Milestone 9: Embodiment
 
 - Hamr;

@@ -1152,6 +1152,20 @@ delivers one canonical stdin WAV event, sends EOF, joins the thread, and proves 
 stderr contains neither bearer nor audio. Status remains non-running, and no model tool, lifecycle
 hook, autostart, native-voice claim, or core change is introduced.
 
+### Slice 79: Operator WAV Event Encoder
+
+`hermes volmarr-voice encode` converts one operator-selected complete WAV into one canonical v1
+speech-event line. It requires explicit session and transaction IDs, defaults to sequence zero, and
+accepts only optional shell-owned face/animation names. The source must be a regular non-symlink
+file within the existing 16 MiB bound; the serializer then validates PCM/container/duration and
+adds format and digest evidence.
+
+Encoding imports no admission or loopback module, reads no bearer, opens no socket, performs no TTS,
+and emits no path or text. Invalid audio produces one generic stderr line without path or content.
+Real discovery proves byte-exact output, canonical revalidation, explicit controls, and path/text
+absence with socket construction forbidden. This completes a manual operator pipeline without
+pretending to attach every native Hermes voice reply.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

@@ -82,3 +82,8 @@ Slice 78 enables `hermes volmarr-voice serve --port PORT`. Argument parsing reje
 invalid ports before secret/network code is imported. The handler then lazy-loads the feed, reads
 the bearer only from the environment, runs the proven binary-stdin runner, and emits generic status
 only to stderr. Status remains side-effect free and continues to report no automatic voice mirror.
+
+Slice 79 adds the separate operator command `encode --audio WAV --session ID --transaction ID` with
+optional face and animation names. It accepts one regular non-symlink file within the v1 byte bound,
+validates the actual WAV container, and writes one path-free canonical JSON line to stdout. The live
+feed still accepts only canonical events and never sees the source path or a synthesis request.
