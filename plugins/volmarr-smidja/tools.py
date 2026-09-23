@@ -129,6 +129,15 @@ SMIDJA_ASSET_PROBE_SCHEMA = {
     },
 }
 
+SMIDJA_FORGE_READINESS_SCHEMA = {
+    "name": "smidja_forge_readiness",
+    "description": (
+        "Probe Seidr-Smidja Forge prerequisites without launching Blender or creating output. "
+        "Executable paths are withheld from the result."
+    ),
+    "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
+}
+
 _MAX_ARTIFACT_BYTES = 128 * 1024 * 1024
 
 
@@ -636,6 +645,70 @@ def build_asset_probe_handler(ctx):
     return handle
 
 
+def build_forge_readiness_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if args:
+            return tool_error("smidja_forge_readiness accepts no arguments")
+        engine = _root(
+            ctx.get_config("engine_root", ""),
+            marker="src/seidr_smidja/_internal/blender_runner.py",
+        )
+        python = _python(ctx.get_config("python_path", "") or sys.executable)
+        blender_path = ctx.get_config("blender_path", "")
+        if not isinstance(blender_path, str) or len(blender_path) > 500 or "\x00" in blender_path:
+            return tool_error("blender_path must be an absolute executable path or empty")
+        clean_path = blender_path.strip()
+        if clean_path and not Path(clean_path).is_absolute():
+            return tool_error("blender_path must be an absolute executable path or empty")
+        if engine is None or python is None or not _RUNNER.is_file():
+            return tool_error("Configure volmarr-smidja engine_root and Python.")
+        payload = _run(ctx, python, ["forge-readiness", str(engine), clean_path])
+        if (
+            not isinstance(payload, dict)
+            or set(payload) != {
+                "blender_available",
+                "build_script_present",
+                "configured_path_selected",
+                "executable_name",
+            }
+            or any(
+                not isinstance(payload[key], bool)
+                for key in (
+                    "blender_available",
+                    "build_script_present",
+                    "configured_path_selected",
+                )
+            )
+            or (
+                payload["executable_name"] is not None
+                and (
+                    not isinstance(payload["executable_name"], str)
+                    or len(payload["executable_name"]) > 100
+                )
+            )
+        ):
+            return tool_error("Seidr-Smidja Forge readiness probe could not complete")
+        ready = payload["blender_available"] and payload["build_script_present"]
+        return tool_result(
+            {
+                "success": True,
+                "calculation": "smidja_forge_readiness",
+                "ready": ready,
+                **payload,
+                "executable_path_withheld": True,
+                "blender_launched": False,
+                "output_created": False,
+                "source": {
+                    "engine": "Seidr-Smidja",
+                    "api": "_internal.blender_runner.resolve_blender_executable",
+                    "license_metadata": "CONFLICT: root Apache-2.0; pyproject MIT",
+                },
+            }
+        )
+
+    return handle
+
+
 def register_tools(ctx) -> None:
     ctx.register_tool(
         name="smidja_spec_validate",
@@ -684,4 +757,12 @@ def register_tools(ctx) -> None:
         handler=build_asset_probe_handler(ctx),
         description=SMIDJA_ASSET_PROBE_SCHEMA["description"],
         emoji="🔎",
+    )
+    ctx.register_tool(
+        name="smidja_forge_readiness",
+        toolset="volmarr_smidja",
+        schema=SMIDJA_FORGE_READINESS_SCHEMA,
+        handler=build_forge_readiness_handler(ctx),
+        description=SMIDJA_FORGE_READINESS_SCHEMA["description"],
+        emoji="🔥",
     )

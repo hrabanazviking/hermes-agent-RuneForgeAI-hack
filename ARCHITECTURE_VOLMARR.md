@@ -951,6 +951,16 @@ Missing catalog entries and uncached files are normal `available: false` results
 invokes Hoard bootstrap or any fetch path, and engine selection remains call-time profile scoped
 with A→B→A proof.
 
+### Slice 64: Read-Only Seiðr-Smiðja Forge Readiness
+
+`smidja_forge_readiness` invokes the official Blender executable resolver with an optional
+profile-scoped absolute path, then verifies that the external Forge build script is present. It
+returns only readiness booleans and the executable filename; the full path remains withheld.
+
+The probe never calls `run_blender` or `forge.build`, creates no output directory, and grants no
+build authority. On the verified Windows host no Blender executable is currently discoverable, so
+real Forge execution remains deliberately unavailable rather than simulated.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.

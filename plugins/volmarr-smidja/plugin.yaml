@@ -22,6 +22,10 @@ config_schema:
     type: str
     default: ""
     description: "Absolute root containing VRM artifacts allowed for read-only Gate checks."
+  blender_path:
+    type: str
+    default: ""
+    description: "Optional absolute Blender executable path for read-only Forge readiness probes."
   python_path:
     type: str
     default: ""

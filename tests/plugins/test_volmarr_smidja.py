@@ -13,7 +13,13 @@ from hermes_constants import (
 )
 
 
-def _profile(home: Path, engine: Path, specs: Path, artifacts: Path | None = None) -> None:
+def _profile(
+    home: Path,
+    engine: Path,
+    specs: Path,
+    artifacts: Path | None = None,
+    blender: Path | None = None,
+) -> None:
     home.mkdir(parents=True, exist_ok=True)
     (home / "config.yaml").write_text(
         "plugins:\n  enabled: [volmarr-smidja]\n  entries:\n    volmarr-smidja:\n"
@@ -21,6 +27,7 @@ def _profile(home: Path, engine: Path, specs: Path, artifacts: Path | None = Non
         f"        engine_root: {json.dumps(str(engine))}\n"
         f"        spec_root: {json.dumps(str(specs))}\n"
         f"        artifact_root: {json.dumps(str(artifacts or specs))}\n"
+        f"        blender_path: {json.dumps(str(blender) if blender else '')}\n"
         f"        python_path: {json.dumps(sys.executable)}\n",
         encoding="utf-8",
     )
@@ -31,10 +38,14 @@ def _engine(root: Path) -> None:
     hoard = root / "src" / "seidr_smidja" / "hoard"
     gate = root / "src" / "seidr_smidja" / "gate"
     oracle = root / "src" / "seidr_smidja" / "oracle_eye"
+    internal = root / "src" / "seidr_smidja" / "_internal"
+    forge_scripts = root / "src" / "seidr_smidja" / "forge" / "scripts"
     loom.mkdir(parents=True)
     hoard.mkdir()
     gate.mkdir()
     oracle.mkdir()
+    internal.mkdir()
+    forge_scripts.mkdir(parents=True)
     (root / "src" / "seidr_smidja" / "__init__.py").write_text("", encoding="utf-8")
     (loom / "loader.py").write_text("", encoding="utf-8")
     (loom / "__init__.py").write_text(
@@ -165,6 +176,17 @@ def _engine(root: Path) -> None:
     (root / "data" / "views.json").write_text(
         json.dumps(["front", "side", "face_closeup"]), encoding="utf-8"
     )
+    (internal / "__init__.py").write_text("", encoding="utf-8")
+    (internal / "blender_runner.py").write_text(
+        "from pathlib import Path\n"
+        "class BlenderNotFoundError(RuntimeError): pass\n"
+        "def resolve_blender_executable(config=None):\n"
+        "    value=(config or {}).get('blender', {}).get('executable')\n"
+        "    if value and Path(value).is_file(): return Path(value).resolve()\n"
+        "    raise BlenderNotFoundError('not found')\n",
+        encoding="utf-8",
+    )
+    (forge_scripts / "build_avatar.py").write_text("# fixture\n", encoding="utf-8")
 
 
 def test_real_discovery_validates_and_reports_failures_without_forge(tmp_path):
@@ -189,6 +211,7 @@ def test_real_discovery_validates_and_reports_failures_without_forge(tmp_path):
             "smidja_render_views",
             "smidja_gate_check",
             "smidja_asset_probe",
+            "smidja_forge_readiness",
         ]
         valid = json.loads(registry.dispatch("smidja_spec_validate", {"spec_path": "valid.yaml"}, scope=manager.scope_key))
         invalid = json.loads(registry.dispatch("smidja_spec_validate", {"spec_path": "invalid.yaml"}, scope=manager.scope_key))
@@ -285,6 +308,60 @@ def test_asset_probe_withholds_paths_and_resolves_active_profile_a_b_a(tmp_path)
     assert all(probe["asset_opened"] is False for probe in probes)
     assert all(probe["asset_fetched"] is False for probe in probes)
     assert all(probe["hoard_bootstrapped"] is False for probe in probes)
+    assert "error" in rejected
+
+
+def test_forge_readiness_never_launches_and_resolves_active_profile_a_b_a(tmp_path):
+    from hermes_cli.plugins import PluginManager
+    from tools.registry import registry
+
+    home_a = get_hermes_home()
+    home_b = tmp_path / "home-b-forge"
+    engine_a = tmp_path / "smidja-forge-a"
+    engine_b = tmp_path / "smidja-forge-b"
+    specs_a = tmp_path / "specs-forge-a"
+    specs_b = tmp_path / "specs-forge-b"
+    blender_a = tmp_path / "blender-a.exe"
+    blender_b = tmp_path / "missing-blender.exe"
+    _engine(engine_a)
+    _engine(engine_b)
+    specs_a.mkdir()
+    specs_b.mkdir()
+    blender_a.write_bytes(b"fixture executable")
+    _profile(home_a, engine_a, specs_a, blender=blender_a)
+    _profile(home_b, engine_b, specs_b, blender=blender_b)
+
+    manager = PluginManager()
+    manager.discover_and_load()
+    try:
+        readiness = []
+        for home in (home_a, home_b, home_a):
+            token = set_hermes_home_override(home)
+            try:
+                readiness.append(
+                    json.loads(
+                        registry.dispatch(
+                            "smidja_forge_readiness", {}, scope=manager.scope_key
+                        )
+                    )
+                )
+            finally:
+                reset_hermes_home_override(token)
+        rejected = json.loads(
+            registry.dispatch(
+                "smidja_forge_readiness", {"launch": True}, scope=manager.scope_key
+            )
+        )
+    finally:
+        manager.unload()
+
+    assert [item["ready"] for item in readiness] == [True, False, True]
+    assert readiness[0]["configured_path_selected"] is True
+    assert readiness[1]["blender_available"] is False
+    assert all(item["build_script_present"] is True for item in readiness)
+    assert all(item["executable_path_withheld"] is True for item in readiness)
+    assert all(item["blender_launched"] is False for item in readiness)
+    assert all(item["output_created"] is False for item in readiness)
     assert "error" in rejected
 
 

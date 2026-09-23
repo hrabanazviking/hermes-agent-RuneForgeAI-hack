@@ -2116,6 +2116,11 @@ resolver. Missing or uncached assets remain structured unavailable results; no f
 asset open, or forge action occurs. Forge build authority and its output transaction boundary are
 the next audit target.
 
+Slice 64 adds `smidja_forge_readiness`, a non-launching check of the official Blender resolver and
+Forge script installation. Executable paths remain withheld and the current host truthfully reports
+Blender unavailable. Actual Forge build authority stays deferred until a real configured Blender
+can pass the same boundary; the next slice audits the voice embodiment candidates.
+
 ## Milestone 9: Embodiment
 
 - Hamr;
