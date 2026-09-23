@@ -961,6 +961,20 @@ The probe never calls `run_blender` or `forge.build`, creates no output director
 build authority. On the verified Windows host no Blender executable is currently discoverable, so
 real Forge execution remains deliberately unavailable rather than simulated.
 
+### Slice 65: Native Hermes Voice Readiness
+
+The opt-in `volmarr-voice` plugin begins the voice phase with `voice_pipeline_readiness`, a
+read-only view over Hermes' existing voice configuration and prerequisite checks. Hermes already
+owns microphone capture, VAD, STT, turn execution, TTS, streaming, and barge-in, so the personal
+layer does not duplicate those systems or choose an external voice framework prematurely.
+
+The tool resolves voice mode and STT/TTS selections from the active profile at call time, reports
+only local prerequisite booleans, and withholds credentials. It never opens a microphone, records
+audio, transcribes, synthesizes speech, or contacts a provider. Dependency readiness is explicitly
+separate from credential, connectivity, and end-to-end verification; A→B→A discovery coverage
+protects the profile boundary. Custom plugin-provider readiness remains unknown rather than calling
+arbitrary provider code from a diagnostic probe.
+
 ## Verification Standard
 
 - Run tests through `scripts/run_tests.sh`.
