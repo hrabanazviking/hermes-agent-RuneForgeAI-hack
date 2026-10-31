@@ -1644,3 +1644,75 @@ portable state: any agent (Muse or Hermes) resumes from here.
   discrepancy surfaces when read at slice start — expect a
   verification/reconciliation slice implementing only
   genuine §16 gaps, not a second persona system.
+- 2026-10-31 ~09:2x EDT keeper tick: **Slice 114 DONE —
+  Self-Aware Agency §16 (Self-Awareness and Caducea-Style
+  Persona Files) complete, banked and PUSHED under the
+  standing go-ahead.** No live work found (tree clean, HEAD
+  == origin/main at `5e9afbae0c`; Slice 113's commit had
+  landed ~1 minute before this tick's start and was verified
+  complete/pushed, not in-progress work). The genuine §16
+  gap was that no persona-canon surface existed at all —
+  identity carries only a `persona_pack` name string:
+  `plugins/volmarr-core/persona_canon.py` adds the
+  human-authored canon file (`entity/persona_canon.yaml`,
+  read-only to the runtime; symlink refusal, size cap,
+  strict owner/field validation) whose assertions carry the
+  six §16 seed kinds (narrative self, ideal self, reflection
+  vocabulary, values, preferred practices, philosophical
+  interpretation), a bounded statement, and optionally one
+  named deterministic runtime check (`memory_continuity` =
+  the heartbeat probe; `live_goals_present`,
+  `relationships_present`, `verified_capability` from the
+  Slice 103 layered snapshot's objective layer when enabled;
+  a fact the snapshot cannot supply is unknown, making its
+  check unverifiable — never supported or contradicted).
+  Explicit deterministic evaluation classifies every
+  assertion supported / contradicted / unverifiable, always
+  under the `persona_canon` epistemic basis — never promoted
+  to a verified runtime fact — and a contradicted assertion
+  (the §16 example: "I remember everything" vs an idle
+  heartbeat) surfaces as a structured `persona_vs_runtime`
+  discrepancy while the runtime fact stands; evaluation is
+  read-only against every source store (canon and claims
+  files sha256-identical across it, contract-proven, and the
+  layered narrative is unchanged). Explicit receipts
+  (counts plus contradicted assertion ids only, no statement
+  text) land in the bounded
+  `entity/persona_canon_evaluations.jsonl` log (rotation,
+  symlink refusal, strict owner/field/count validation).
+  Disabled by default (`persona_canon_enabled`); bounded
+  content-bearing packet producer (a recorded contradiction
+  only; canon prose never enters the packet). One in-slice
+  fix, test-side: the counts-only assertion searched for
+  "remember" in the receipt dump, which the legitimate
+  contradicted assertion *id* contains — it now checks for
+  the statement prose (no production change; one earlier
+  targeted re-run was also lost to a service restart and was
+  re-run clean). Tests: targeted 8/8 pass; full volmarr/kista
+  run (67 files): **464 passed, 7 failed, 1 skipped** — the
+  same name-identical pre-existing environmental set in the
+  same 3 files (5 core-plugin, 1 Verðandi-stimuli socket, 1
+  voice-runner loopback), verified in the run log's own
+  summary line (`~/workspace/.verify-tmp/slice114_full_run.log`).
+  Smoke: `hermes --version` runs; README.md sha256 invariant
+  held (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §16 completion note in the Self-Aware Agency
+  roadmap. Honest gaps: no caller evaluates or records yet —
+  wiring evaluation into a routine would change that
+  routine's contract and is a separate slice; Verðandi
+  persona-canon events NOT yet emitted — deferred to a later
+  telemetry slice, recorded in both bookkeeping spots.
+- **Next resume point: Slice 115 — Self-Aware Agency §17
+  (Blind-Spot System)**: explicit blind-spot tracking over
+  the §17 category list (confirmation_bias, self_serving_bias,
+  relationship_bias, overconfidence, underconfidence,
+  capability_confusion, source_confusion, temporal_blindness,
+  goal_tunnel_vision, affective_distortion, novelty_bias,
+  authority_confusion, unknown_unknown), records carrying
+  category / evidence_count / confidence / mitigation /
+  last_observed_at, affecting metacognitive confidence rather
+  than becoming permanent identity labels, with decay or
+  retirement after contrary evidence — per the §17 spec when
+  read at slice start; expect a bounded record/evaluation
+  layer over the Slice 93/107 metacognition surfaces, not a
+  second metacognition engine.

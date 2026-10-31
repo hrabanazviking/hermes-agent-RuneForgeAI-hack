@@ -529,6 +529,22 @@ config_schema:
     type: int
     default: 200
     description: "Maximum background life receipt log records retained by rotation (clamped to 10-500)."
+  persona_canon_enabled:
+    type: bool
+    default: false
+    description: "Enable persona canon evaluation (Self-Aware Agency §16): a human-authored, read-only persona canon file whose assertions carry one of the six §16 seed kinds (narrative self, ideal self, reflection vocabulary, values, preferred practices, philosophical interpretation) and optionally one named deterministic runtime check, evaluated explicitly against runtime facts (memory continuity = the heartbeat probe; live goals, relationships, and verified capabilities from the layered self-model's objective layer when enabled). Canon keeps the persona_canon epistemic basis forever — supported, contradicted, or unverifiable, never a verified runtime fact — and a contradicted assertion surfaces as a persona_vs_runtime discrepancy while the runtime fact stands. Disabled by default; the runtime never writes the canon file."
+  persona_canon_path:
+    type: str
+    default: entity/persona_canon.yaml
+    description: "Human-authored persona canon YAML path relative to the active Hermes profile; escaping paths fall back to the default. Read-only to the runtime."
+  persona_canon_log_path:
+    type: str
+    default: entity/persona_canon_evaluations.jsonl
+    description: "Persona canon evaluation receipt log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  persona_canon_log_limit:
+    type: int
+    default: 200
+    description: "Maximum persona canon evaluation receipts retained by rotation (clamped to 10-500)."
   heartbeat_enabled:
     type: bool
     default: true

@@ -1658,6 +1658,39 @@ while memory health reports failure, the self-aware system should recognize the 
 
 This is a major purpose of the self-awareness layer.
 
+**§16 completion note (Slice 114, 2026-10-31):** the persona
+canon / runtime distinction stands in
+`plugins/volmarr-core/persona_canon.py` — no second persona
+system, and the layered self-model (Slice 103) is never
+rewritten by canon. Disabled by default
+(`persona_canon_enabled`). The canon file
+(`entity/persona_canon.yaml`) is human-authored and read-only
+to the runtime (symlink refusal, size cap, strict owner/field
+validation); its assertions carry the six §16 seed kinds
+(narrative self, ideal self, reflection vocabulary, values,
+preferred practices, philosophical interpretation), a bounded
+statement, and optionally one named deterministic runtime
+check: `memory_continuity` (the continuity heartbeat probe),
+or `live_goals_present` / `relationships_present` /
+`verified_capability` from the layered snapshot's objective
+layer when it is enabled — a fact the snapshot cannot supply
+is unknown, which makes its check unverifiable, never
+supported or contradicted. Explicit deterministic evaluation
+classifies each assertion supported, contradicted, or
+unverifiable, always under the `persona_canon` epistemic
+basis (never promoted to a verified runtime fact); a
+contradicted assertion — the §16 example, canon claiming
+"I remember everything" while the heartbeat is idle —
+surfaces as a structured `persona_vs_runtime` discrepancy
+while the runtime fact stands, and evaluation is read-only
+against every source store. Explicit receipts (counts plus
+contradicted assertion ids only, no statement text) land in
+the bounded `entity/persona_canon_evaluations.jsonl` log
+(rotation, symlink refusal, strict validation). Honest gaps:
+no caller evaluates or records yet (wiring evaluation into a
+routine is a separate slice); Verðandi persona-canon events
+are NOT emitted by this layer.
+
 ---
 
 # 17. Blind-Spot System
