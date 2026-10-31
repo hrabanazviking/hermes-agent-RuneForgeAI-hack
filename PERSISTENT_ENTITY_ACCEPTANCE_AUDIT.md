@@ -610,3 +610,50 @@ slice.** Three independent grounds, each sufficient on its own:
   package sources. The campaign then moves to roadmap queue item 2
   (Emergent Agency, Phase 0) per `CAMPAIGN_STATE.md` ordering, and
   returns here when the sources are supplied.
+
+---
+
+# Slice 87 — Muninn read-only association-store probe (2026-10-30, DONE)
+
+Implemented exactly per the Slice 86 spec: `probe_bifrost_muninn` in
+`plugins/volmarr-core/memory_fabric.py` (frozen `BifrostMuninnHealth`,
+`as_dict()`), exposed as `hermes volmarr memory muninn health [--json]`
+(label "Bifröst Muninn"). The Muninn path resolves through the existing
+`BifrostSettings` (same profile-escape rejection), the store opens via
+the read-only sqlite URI (`mode=ro`, 1 s timeout), both
+`hebbian_connections` and `activation_log` tables are required, and
+their row counts are reported (`connection_count`, `activation_count`).
+Statuses: `healthy`, `storage_missing`, `schema_missing`,
+`storage_error`, `configuration_error`, with `error_type` on failures.
+The probe imports neither `bifrost` nor `muninn`, constructs no bridge,
+and needs no package installed — the stock-tree case is a contract, not
+an accident. No config changes, no packet producer, no writes of any
+kind.
+
+One strengthening beyond the spec's letter, found by the slice's own
+symlink contract: `_profile_path` resolves symlinks away, so a symlinked
+store whose target escapes the profile surfaced as a bare
+`configuration_error` and one inside the profile would have been
+silently followed. The probe therefore checks the lexical (unresolved)
+configured path for a symlink before resolution and reports
+`storage_missing`, which is what "reject symlinks" means in the existing
+probes' discipline. The other probes share the resolution pattern; this
+check is local to the Muninn probe for now and is recorded here rather
+than silently widened.
+
+Tests: new `tests/plugins/test_volmarr_bifrost_muninn.py` — 8 contracts
+(healthy counts with no `bifrost`/`muninn` module imported, A→B→A
+profile isolation, missing store creates nothing, either missing table
+reports `schema_missing`, store bytes sha256-identical before/after
+with no WAL sidecars, profile escape reports `configuration_error`,
+symlinked store refused). Targeted run with the existing memory-fabric
+contracts: 11/11 pass. Full volmarr/kista run (40 files): **237 passed, 7 failed, 1 skipped** — the failures are the same name-identical pre-existing environmental set in the same 3 files (5 core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner loopback); no new failures.
+
+With Slice 87, Milestone 3's safe work is complete. The write paths
+(Huginn ingestion, Muninn reinforcement, Bifröst consolidation/decay)
+stay parked on the dependency blocker recorded in Slice 86 — the
+canonical `muninn`/`huginn` package sources must come from Volmarr —
+and the campaign moves to roadmap queue item 2 (Emergent Agency,
+Phase 0: agency contracts before intelligence) per `CAMPAIGN_STATE.md`
+ordering, returning here when the sources are supplied. Banked locally
+only; no push.

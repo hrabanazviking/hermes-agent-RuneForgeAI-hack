@@ -1881,6 +1881,23 @@ schema and counts attested per profile) — live in `PERSISTENT_ENTITY_ACCEPTANC
 After Slice 87 the write paths stay parked on the dependency blocker and the campaign moves
 to the next roadmap in queue order. Ingestion remains disabled.
 
+Slice 87 (2026-10-30) implements that probe exactly as specified: `probe_bifrost_muninn` in
+`plugins/volmarr-core/memory_fabric.py`, exposed as `hermes volmarr memory muninn health
+[--json]`. The Muninn path resolves through the existing profile-scoped settings (same
+escape rejection), the store opens read-only (`mode=ro`, 1 s timeout), both
+`hebbian_connections` and `activation_log` tables are required, and both row counts are
+reported; neither `bifrost` nor `muninn` is imported and no bridge is constructed, so the
+probe works on a stock tree with no package installed. One strengthening found by the
+slice's own symlink contract: path resolution hides symlinks, so the probe checks the
+lexical configured path first and refuses a symlinked store as `storage_missing`.
+Contracts: 8 new tests (healthy counts, A→B→A isolation, no-create, schema-missing for
+either table, byte-for-byte no-mutation, path escape, symlink refusal); the full
+volmarr/kista run (40 files) shows 237 passed with only the same 7 pre-existing
+environmental failures — no new failures. With Slice 87, Milestone 3's safe work is
+complete; the write paths stay parked on the dependency blocker (canonical
+`muninn`/`huginn` package sources must come from Volmarr) and the campaign moves to the
+Emergent Agency roadmap, Phase 0. Ingestion remains disabled.
+
 ## Milestone 4: Affective Continuity
 
 - port current affective nervous system;

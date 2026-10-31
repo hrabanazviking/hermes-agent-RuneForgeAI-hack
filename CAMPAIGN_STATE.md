@@ -277,6 +277,33 @@ portable state: any agent (Muse or Hermes) resumes from here.
   to roadmap queue item 2 (Emergent Agency, Phase 0). Banked
   locally only; pushes beyond the ordered refresh still await
   Volmarr's word.
+- 2026-10-30 ~23:11 EDT keeper tick: **Slice 87 DONE, banked locally
+  only, no push.** Implemented exactly per the Slice 86 spec:
+  `probe_bifrost_muninn` in `plugins/volmarr-core/memory_fabric.py`
+  (frozen `BifrostMuninnHealth`), exposed as `hermes volmarr memory
+  muninn health [--json]` (label "Bifröst Muninn"). Read-only sqlite
+  (`mode=ro`, 1 s timeout), both `hebbian_connections` and
+  `activation_log` required, both row counts reported; imports
+  neither `bifrost` nor `muninn`, constructs no bridge, works on a
+  stock tree. One strengthening found by the slice's own symlink
+  contract: path resolution hides symlinks, so the probe checks the
+  lexical configured path before resolution and refuses a symlinked
+  store as `storage_missing` (recorded in the audit; the check is
+  local to this probe). Tests: targeted 11/11 pass (8 new Muninn
+  contracts + 3 memory-fabric); full volmarr/kista run (40 files):
+  **237 passed, 7 failed, 1 skipped** — the failures are the same
+  name-identical pre-existing environmental set in the same 3 files;
+  no new failures. Bookkeeping done: CUSTOMIZATIONS.md ledger row,
+  roadmap §29 Milestone 3 slice-87 paragraph, Slice 87 outcome
+  appended to `PERSISTENT_ENTITY_ACCEPTANCE_AUDIT.md`. **Milestone
+  3's safe work is now complete.**
+- **Next resume point: roadmap queue item 2 —
+  VOLMARR_HERMES_EMERGENT_AGENCY_ROADMAP.md, Phase 0 (§7, Agency
+  Contracts Before Intelligence)**, per the queue above. The Bifröst
+  write paths stay parked on the Slice 86 blocker (canonical
+  `muninn`/`huginn` sources) and Gate 0 reopens on them when
+  Volmarr supplies them. Banked locally only; pushes beyond the
+  ordered refresh still await Volmarr's word.
 
 ## Standing bounds for this campaign
 
@@ -289,3 +316,11 @@ portable state: any agent (Muse or Hermes) resumes from here.
 - Pushes to origin only per Volmarr's word for that line of work.
 - Current facts about Volmarr's other projects live in
   `HERMES_PROJECTS_UPDATE_2026-10-30.md` at repo root.
+
+## BLOCKER RESOLUTION — muninn/huginn sources (main session, 2026-10-30 ~23:33 EDT, at Volmarr's word "look in the project records to find them")
+
+- Bifröst canonical source: `hrabanazviking/bifrost` at `b66e98cc8a79d4dede22ba11d68a1a5ecd22ebd6` (v1.0.0, MIT) per `COMPONENT_LICENSES.md`; verified 2026-10-30 as that repo's live HEAD via `git ls-remote`.
+- Bifröst's pyproject declares the extras bare (`huginn = ["huginn"]`, `muninn = ["muninn"]`); its `core.py` expects `huginn.HuginnMemory` (Qdrant) and `muninn.HebbianMemory` + `muninn.config.MuninnConfig` (Hebbian).
+- Workspace-wide content sweep (2026-10-30) for `HebbianMemory|HuginnMemory|MuninnConfig`: NO standalone `huginn`/`muninn` packages exist in any of Volmarr's trees — the names occur only in Bifröst's own code (GitHub repo + the Ember monorepo's `bifrost/` copy), Verdandi's `eir/core.py` references, docs, and this campaign's audit.
+- The ravens' canonical ancestors ARE in the records: NorseSagaEngine `yggdrasil/ravens/huginn.py` (`class Huginn`) and `yggdrasil/ravens/muninn.py` (`class Muninn`), with interface/test docs, ingested at `~/workspace/your_files/repos-ingest/NorseSagaEngine/` (a second copy in the Viking-Code-Mythic-Engineering ingest). Different class names — ancestors, not drop-ins.
+- Consequence for the Slice 86 Gate 0: the write paths stay NO-GO until either (a) Volmarr points to copies elsewhere, or (b) the campaign builds the two thin packages to Bifröst's expected interface from his own ravens code. Slice 87 (read-only Muninn association-store probe) is unaffected and proceeds.

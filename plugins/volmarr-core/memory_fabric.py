@@ -147,3 +147,98 @@ def probe_bifrost(ctx) -> BifrostHealth:
             package_attached=True,
             error_type=type(exc).__name__,
         )
+
+
+@dataclass(frozen=True)
+class BifrostMuninnHealth:
+    healthy: bool
+    status: str
+    muninn_db_path: str
+    connection_count: int | None = None
+    activation_count: int | None = None
+    error_type: str | None = None
+
+    def as_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def probe_bifrost_muninn(ctx) -> BifrostMuninnHealth:
+    """Attest the profile's Muninn association store read-only, importing nothing.
+
+    Slice 87: unlike ``probe_bifrost`` this never imports the ``bifrost``
+    package and never constructs a bridge — the Slice 86 Gate 0 audit
+    showed every bridge method lazily constructs the write backends, so
+    the store is validated directly through a read-only sqlite open.
+    """
+    configured_path = str(
+        ctx.get_config("bifrost_muninn_db_path", str(DEFAULT_MUNINN_DB_PATH))
+    )
+    # Check the lexical path before resolution: ``_profile_path`` resolves
+    # symlinks away, so a symlinked store whose target escapes the profile
+    # would otherwise surface as a configuration error and one inside the
+    # profile would be silently followed.
+    configured_raw = Path(configured_path)
+    lexical = (
+        configured_raw
+        if configured_raw.is_absolute()
+        else get_hermes_home().resolve() / configured_raw
+    )
+    if lexical.is_symlink():
+        return BifrostMuninnHealth(
+            False,
+            "storage_missing",
+            str(lexical),
+        )
+    try:
+        settings = BifrostSettings.from_plugin_context(ctx)
+    except Exception as exc:
+        return BifrostMuninnHealth(
+            False,
+            "configuration_error",
+            configured_path,
+            error_type=type(exc).__name__,
+        )
+
+    db_path = settings.muninn_db_path
+    if db_path.is_symlink() or not db_path.is_file():
+        return BifrostMuninnHealth(
+            False,
+            "storage_missing",
+            str(db_path),
+        )
+    try:
+        uri = f"file:{db_path.as_posix()}?mode=ro"
+        with sqlite3.connect(uri, uri=True, timeout=1.0) as connection:
+            tables = {
+                row[0]
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'table' "
+                    "AND name IN ('hebbian_connections', 'activation_log')"
+                )
+            }
+            if tables != {"hebbian_connections", "activation_log"}:
+                return BifrostMuninnHealth(
+                    False,
+                    "schema_missing",
+                    str(db_path),
+                )
+            connection_row = connection.execute(
+                "SELECT COUNT(*) FROM hebbian_connections"
+            ).fetchone()
+            activation_row = connection.execute(
+                "SELECT COUNT(*) FROM activation_log"
+            ).fetchone()
+        return BifrostMuninnHealth(
+            True,
+            "healthy",
+            str(db_path),
+            connection_count=int(connection_row[0]),
+            activation_count=int(activation_row[0]),
+        )
+    except Exception as exc:
+        return BifrostMuninnHealth(
+            False,
+            "storage_error",
+            str(db_path),
+            error_type=type(exc).__name__,
+        )

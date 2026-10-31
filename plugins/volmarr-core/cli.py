@@ -17,7 +17,7 @@ from .execution import CognitionExecutionRequest, CognitionExecutor
 from .health import probe_verdandi
 from .heartbeat import HeartbeatError, HeartbeatService, probe_heartbeat
 from .identity import IdentityError, probe_identity
-from .memory_fabric import probe_bifrost
+from .memory_fabric import probe_bifrost, probe_bifrost_muninn
 from .mempalace import probe_mempalace
 from .openviking import probe_openviking
 from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
@@ -102,6 +102,16 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Audit SessionDB integrity and transcript ownership read-only",
     )
     sessiondb_health.add_argument("--json", action="store_true", dest="json_output")
+    muninn = memory_subcommands.add_parser(
+        "muninn",
+        help="Inspect the profile-scoped Bifröst Muninn association store",
+    )
+    muninn_subcommands = muninn.add_subparsers(dest="muninn_action")
+    muninn_health = muninn_subcommands.add_parser(
+        "health",
+        help="Validate the Muninn association store read-only, importing no package",
+    )
+    muninn_health.add_argument("--json", action="store_true", dest="json_output")
     world = subcommands.add_parser(
         "world",
         help="Inspect the WYRD world-model attachment",
@@ -282,13 +292,20 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                 return 2
             report = probe_sessiondb(ctx)
             label = "Hermes SessionDB"
+        elif memory_action == "muninn":
+            if getattr(args, "muninn_action", None) != "health":
+                print("Usage: hermes volmarr memory muninn health [--json]")
+                return 2
+            report = probe_bifrost_muninn(ctx)
+            label = "Bifröst Muninn"
         elif memory_action == "health":
             report = probe_bifrost(ctx)
             label = "Bifröst"
         else:
             print(
                 "Usage: hermes volmarr memory "
-                "{health|mempalace health|openviking health|sessiondb health} [--json]"
+                "{health|mempalace health|openviking health|sessiondb health|"
+                "muninn health} [--json]"
             )
             return 2
     elif action == "health":
@@ -403,6 +420,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             getattr(report, "socket_path", None)
             or getattr(report, "base_url", None)
             or getattr(report, "mimir_db_path", "")
+            or getattr(report, "muninn_db_path", "")
             or getattr(report, "palace_path", "")
             or getattr(report, "state_db_path", "")
             or getattr(report, "identity_path", "")
@@ -419,6 +437,10 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             print(f"Models: {', '.join(report.models)}")
         if getattr(report, "memory_count", None) is not None:
             print(f"Memories: {report.memory_count}")
+        if getattr(report, "connection_count", None) is not None:
+            print(f"Connections: {report.connection_count}")
+        if getattr(report, "activation_count", None) is not None:
+            print(f"Activations: {report.activation_count}")
         if getattr(report, "package_version", None):
             print(f"Package version: {report.package_version}")
         if getattr(report, "server_version", None):
