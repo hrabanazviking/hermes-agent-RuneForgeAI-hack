@@ -2896,3 +2896,74 @@ portable state: any agent (Muse or Hermes) resumes from here.
   score-shape/threshold rule (§29's score/repair are
   later sections), not a live response evaluator or
   repair loop this plugin does not own.
+- 2026-10-31 ~18:2x EDT keeper tick: **Slice 131 DONE —
+  Persona Runtime §27 (Persona Watchdog) and §28 (Drift
+  Dimensions) complete, banked and PUSHED under the
+  standing go-ahead.** No live work found at tick start
+  (tree clean, HEAD == origin/main at `e97deb35e6`;
+  Slice 130's state mtime minutes earlier was its own
+  completed push, verified, not in-progress work; the
+  Python-write blocker was probed absent). One
+  record-correction, stated plainly: this tick first
+  reported its full run as raced/clobbered by a
+  concurrent tick — that was a misread (the runner it
+  saw was its own run's parallel runner, and the log's
+  early tail was a mid-run read); the run completed
+  cleanly and its own summary line stands below.
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §27's pure
+  `watchdog_pipeline` names the four steps in roadmap
+  order (LLM draft, PersonaWatchdog, drift score,
+  route) with only the draft step generating, and the
+  pure `watchdog_contract` stands the watchdog itself —
+  its purpose is not to generate responses, it
+  evaluates them: draft in, drift score out, routed
+  acceptable → output, drift → repair. §28's pure
+  `drift_dimensions` names the ten dimensions in
+  roadmap order (identity, tone, relationship,
+  decision behavior, counsel style, initiative,
+  truthfulness, deference, technical competence,
+  boundaries), and the pure `drift_score` / `drift_route`
+  functions shape a caller-supplied score record over
+  them (total = the deterministic mean over all ten;
+  unlisted dimensions score 0.0; unknown, duplicated,
+  or out-of-interval values refused) and route it under
+  this layer's recorded threshold convention (the
+  roadmap names no numbers): a total at or above 0.20
+  or any single dimension at or above 0.25 is
+  significant and routes to repair — one badly drifted
+  dimension cannot hide inside a low mean — otherwise
+  acceptable and routed to output; the §29 example's
+  named dimensions score acceptable under it. Packet
+  label updated to §§3–28 (eight older persona files'
+  packet assertions updated in-slice). Tests: targeted
+  7/7 pass (new watchdog file); targeted persona run
+  (15 files): **121 passed, 0 failed**; full
+  volmarr/kista run (84 files): **600 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin,
+  1 Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice131_full_run.log`);
+  600 is exactly Slice 130's 593 + the 7 new contracts.
+  Smoke: `hermes --version` runs (`vgit.e97deb3.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §27 + §28 completion notes in the Persona
+  Runtime roadmap. Honest gaps: no live draft is
+  evaluated and nothing is repaired by this layer — the
+  §29 drift-score artefact and the §30 repair loop are
+  later sections; no caller consumes the routing yet.
+- **Next resume point: Slice 132 — Persona Runtime §29
+  (Drift Score) and §30 (Drift Repair)**: §29 stands the
+  conceptual drift-score artefact (a total plus
+  per-dimension values, in the roadmap's YAML shape)
+  over the Slice 131 score record — expect a pure
+  score-artefact builder/validator in that shape, with
+  only-significant-drift-triggers-repair already stood
+  by Slice 131's routing; §30 names the repair pipeline
+  (draft → identify violated persona anchors → rewrite
+  minimally → verify → deliver; do not regenerate
+  everything) — expect a pure pipeline/contract surface
+  reconciled against the §§17/18 anchors, not a live
+  rewriter this plugin does not own.
