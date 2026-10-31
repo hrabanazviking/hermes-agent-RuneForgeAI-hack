@@ -1766,6 +1766,24 @@ drift score
    └── drift → repair
 ```
 
+> **Completion note — Slice 131 (2026-10-31): §27 stands
+> in `plugins/volmarr-core/persona_runtime.py` (extended
+> in place; the `persona_runtime_enabled` description in
+> `plugin.yaml` now covers §§3–28). The pure
+> `watchdog_pipeline` function names the four steps in
+> roadmap order (LLM draft, PersonaWatchdog, drift
+> score, route) with only the draft step generating, and
+> the pure `watchdog_contract` function stands the
+> watchdog itself: it evaluates drafts, generates
+> nothing, takes a draft in, and puts a drift score out,
+> routed acceptable → output, drift → repair. Targeted
+> run (all persona files, 15): 121 passed, 0 failed.
+> Honest gaps: no live draft is evaluated and nothing
+> is repaired by this layer — the pipeline and routing
+> are contract surfaces for whoever runs a draft past
+> the watchdog; the §29 score artefact and the §30
+> repair loop are later sections.**
+
 
 ---
 
@@ -1788,6 +1806,28 @@ deference
 technical competence
 boundaries
 ```
+
+> **Completion note — Slice 131 (2026-10-31): §28 stands
+> in the same module. The pure `drift_dimensions`
+> function names the ten dimensions in roadmap order
+> (identity, tone, relationship, decision behavior,
+> counsel style, initiative, truthfulness, deference,
+> technical competence, boundaries), and the pure
+> `drift_score` / `drift_route` functions shape a
+> caller-supplied score record over them: the total is
+> the deterministic mean over all ten, an unlisted
+> dimension scores 0.0, and an unknown, duplicated, or
+> out-of-interval value is refused. Routing follows
+> this layer's recorded threshold convention (the
+> roadmap names no numbers): a total at or above 0.20
+> or any single dimension at or above 0.25 is
+> significant and routes to repair — so one badly
+> drifted dimension cannot hide inside a low mean —
+> otherwise the draft is acceptable and routes to
+> output; the §29 example's named dimensions score
+> acceptable under it. Honest gaps: this layer scores
+> no prose (§7) — it shapes and routes scores a caller
+> supplies; no caller consumes the routing yet.**
 
 
 ---

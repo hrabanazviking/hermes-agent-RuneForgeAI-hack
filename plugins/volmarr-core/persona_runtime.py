@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-26).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-28).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -2563,6 +2563,179 @@ def state_decay(kind: Any, strength: Any, elapsed_hours: Any,
     }
 
 
+# --- §27 persona watchdog + §28 drift dimensions ---------------------
+#
+# Pure contract data and functions, like §§23–26. Nothing
+# here generates a response, evaluates a live draft, or
+# repairs anything: §27 names the watchdog pipeline and
+# its routing, §28 names the dimensions a drift score is
+# shaped over, and the deterministic score/threshold rule
+# below states when a score record routes to repair. The
+# §29 drift-score YAML and the §30 repair loop are later
+# sections; the thresholds here are this layer's recorded
+# convention (the roadmap says only significant drift
+# should trigger repair and names no numbers).
+
+# The ten §28 drift dimensions, in roadmap order.
+DRIFT_DIMENSIONS = (
+    "identity", "tone", "relationship", "decision_behavior",
+    "counsel_style", "initiative", "truthfulness", "deference",
+    "technical_competence", "boundaries",
+)
+
+# The §27 pipeline steps, in roadmap order.
+WATCHDOG_PIPELINE = (
+    "llm_draft", "persona_watchdog", "drift_score", "route",
+)
+
+# The two §27 routes: acceptable drafts go to output,
+# drifted drafts go to repair.
+WATCHDOG_ROUTES = ("output", "repair")
+
+# §27/§28 threshold convention (this layer's own — see
+# the header note): a total (the mean over all ten
+# dimensions) at or above 0.20 is significant, and any
+# single dimension at or above 0.25 is significant on
+# its own, so one badly drifted dimension cannot hide
+# inside a low mean.
+DRIFT_TOTAL_THRESHOLD = 0.20
+DRIFT_DIMENSION_THRESHOLD = 0.25
+
+
+def drift_dimensions() -> list[str]:
+    return list(DRIFT_DIMENSIONS)
+
+
+def watchdog_pipeline() -> list[dict[str, Any]]:
+    """The §27 watchdog pipeline, in roadmap order. Pure.
+
+    The watchdog's purpose is not to generate responses;
+    it evaluates them. An LLM draft enters, the watchdog
+    evaluates it, a drift score is produced, and the
+    score routes the draft: acceptable to output, drift
+    to repair. Fresh copies are returned; mutating a row
+    does not poison the contract.
+    """
+    return [
+        {
+            "step": "llm_draft",
+            "kind": "generation",
+            "generates_responses": True,
+            "evaluates_drafts": False,
+        },
+        {
+            "step": "persona_watchdog",
+            "kind": "evaluation",
+            "generates_responses": False,
+            "evaluates_drafts": True,
+        },
+        {
+            "step": "drift_score",
+            "kind": "scoring",
+            "generates_responses": False,
+            "evaluates_drafts": False,
+        },
+        {
+            "step": "route",
+            "kind": "routing",
+            "generates_responses": False,
+            "evaluates_drafts": False,
+            "routes": {
+                "acceptable": "output",
+                "drift": "repair",
+            },
+        },
+    ]
+
+
+def watchdog_contract() -> dict[str, Any]:
+    """The §27 PersonaWatchdog contract. Pure.
+
+    The watchdog generates nothing and evaluates drafts
+    only; its output is a drift score over the §28
+    dimensions plus the route that score decides.
+    """
+    return {
+        "name": "PersonaWatchdog",
+        "generates_responses": False,
+        "evaluates_drafts": True,
+        "input": "llm_draft",
+        "output": "drift_score",
+        "pipeline": list(WATCHDOG_PIPELINE),
+        "dimensions": list(DRIFT_DIMENSIONS),
+        "routes": list(WATCHDOG_ROUTES),
+        "total_threshold": DRIFT_TOTAL_THRESHOLD,
+        "dimension_threshold": DRIFT_DIMENSION_THRESHOLD,
+    }
+
+
+def _validate_drift_scores(scores: Any) -> dict[str, float]:
+    if not isinstance(scores, dict):
+        raise PersonaRuntimeError("drift scores are invalid")
+    validated: dict[str, float] = {}
+    for key, value in scores.items():
+        if not isinstance(key, str) \
+                or _slugify(key) not in DRIFT_DIMENSIONS:
+            raise PersonaRuntimeError(
+                "drift dimension is invalid")
+        dimension = _slugify(key)
+        if dimension in validated:
+            raise PersonaRuntimeError(
+                "drift dimension is duplicated")
+        validated[dimension] = _validate_strength(value)
+    return validated
+
+
+def drift_score(scores: Any) -> dict[str, Any]:
+    """Shape and route one drift score record (§§27–28). Pure.
+
+    ``scores`` maps §28 dimension names to unit-interval
+    drift values; an unlisted dimension scores 0.0 (no
+    drift evidence), and an unknown dimension, a
+    duplicated dimension, or a value outside the unit
+    interval is refused. The total is the deterministic
+    mean over all ten dimensions. The record is
+    significant — and routes to repair — when the total
+    reaches the total threshold or any single dimension
+    reaches the dimension threshold; otherwise it is
+    acceptable and routes to output. Only significant
+    drift triggers repair: tiny differences are not
+    polished (§29's counsel, stood here as the routing
+    rule). No draft is read, scored from prose, or
+    repaired by this layer — the record shapes and
+    routes scores a caller supplies.
+    """
+    validated = _validate_drift_scores(scores)
+    dimensions = {
+        dimension: validated.get(dimension, 0.0)
+        for dimension in DRIFT_DIMENSIONS
+    }
+    total = sum(dimensions.values()) / len(DRIFT_DIMENSIONS)
+    max_dimension = max(
+        DRIFT_DIMENSIONS, key=lambda dim: dimensions[dim])
+    significant_dimensions = [
+        dimension for dimension in DRIFT_DIMENSIONS
+        if dimensions[dimension] >= DRIFT_DIMENSION_THRESHOLD
+    ]
+    significant = total >= DRIFT_TOTAL_THRESHOLD \
+        or bool(significant_dimensions)
+    return {
+        "total": total,
+        "dimensions": dimensions,
+        "max_dimension": max_dimension,
+        "max_score": dimensions[max_dimension],
+        "significant_dimensions": significant_dimensions,
+        "significant": significant,
+        "route": "repair" if significant else "output",
+        "repair_required": significant,
+    }
+
+
+def drift_route(scores: Any) -> str:
+    """The §27 route for one drift score record. Pure."""
+    return drift_score(scores)["route"]
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -3144,7 +3317,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-26): persona "
+            f"Persona runtime (§§3-28): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -3240,7 +3413,17 @@ class PersonaRuntimeBridge:
             f"persona. §26 trait vs state: traits come "
             f"from persona files and do not decay; "
             f"temporary states decay deterministically "
-            f"and never become traits. Canonical document "
+            f"and never become traits. §27 watchdog: the "
+            f"PersonaWatchdog evaluates drafts, it does "
+            f"not generate them — draft, watchdog, drift "
+            f"score, then route (acceptable to output, "
+            f"drift to repair). §28 drift dimensions: "
+            f"identity, tone, relationship, decision "
+            f"behavior, counsel style, initiative, "
+            f"truthfulness, deference, technical "
+            f"competence, and boundaries; only "
+            f"significant drift routes to repair. "
+            f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
         return [ContextItem(
@@ -3290,6 +3473,11 @@ __all__ = [
     "EXAMPLE_STATES",
     "STATE_HALF_LIFE_HOURS",
     "STATE_EXPIRY_THRESHOLD",
+    "DRIFT_DIMENSIONS",
+    "WATCHDOG_PIPELINE",
+    "WATCHDOG_ROUTES",
+    "DRIFT_TOTAL_THRESHOLD",
+    "DRIFT_DIMENSION_THRESHOLD",
     "PRECEDENCE_TIERS",
     "HISTORY_MAY_AFFECT",
     "HISTORY_MUST_NOT_REDEFINE",
@@ -3343,6 +3531,11 @@ __all__ = [
     "classify_attribute",
     "decayed_strength",
     "state_decay",
+    "drift_dimensions",
+    "watchdog_pipeline",
+    "watchdog_contract",
+    "drift_score",
+    "drift_route",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
