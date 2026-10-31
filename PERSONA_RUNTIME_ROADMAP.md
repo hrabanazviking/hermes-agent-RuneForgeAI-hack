@@ -521,6 +521,41 @@ The Markdown files remain canonical.
 Never require humans to manually edit PersonaIR.
 
 
+**§§7–8 completion note (Slice 119, 2026-10-31):** §7 and §8
+stand in `plugins/volmarr-core/persona_runtime.py`, extending
+the Slice 118 compiler in place — no second compiler. §7 is
+proven in contract form (`test_volmarr_persona_ir.py`): the
+kernel, the section index, and the IR all carry section text
+verbatim after the §6 whitespace normalisation only; the §7
+counsel example sentence ("…genuinely accepts Volmarr's final
+decision. She never resents being overruled.") survives
+word-for-word in its IR entry, and no generated summary,
+paraphrase, or extracted prose exists anywhere in the layer —
+structured representation here means deterministic
+classification of whole verbatim sections. (The §7 YAML
+behavior-fact extraction in its full semantic form — turning
+prose into boolean behavior fields — is NOT claimed: that
+would require interpretation this deterministic layer does
+not perform.) §8: the compiled artefact now carries `ir` —
+all thirteen categories in roadmap order (identity,
+motivations, values, relationship, communication,
+behavioral_rules, preferences, boundaries, tools, memory,
+embodiment, quirks, projects), each section classified into
+exactly one category by the pure `classify_section` function
+(heading keywords, most specific first, then the
+document-role fallback; extension roles classify by their own
+name; a section with no signal anywhere defaults to
+identity), per-category counts, an `ir_hash` over the
+canonical form, and `generated: True` / `human_editable:
+False`. The IR is returned, never persisted by this layer;
+the Markdown documents remain canonical. The packet item now
+also names the IR hash and populated-category count — still
+no persona text. Honest gaps: kernel generation from the
+full §9 source mix (§9), kernel pinning (§10), retrieval
+(§13), and the compilation cache / generated directory
+(§§48–49) are later sections, not this slice.
+
+
 ---
 
 

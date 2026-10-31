@@ -2018,3 +2018,64 @@ portable state: any agent (Muse or Hermes) resumes from here.
   the §8 spec, read at slice start, names fields the current
   compiled dict does not already carry — implementing only
   genuine gaps, in the established pattern.
+- 2026-10-31 ~11:3x EDT keeper tick: **Slice 119 DONE —
+  Persona Runtime §§7–8 (Do Not Summarize Blindly /
+  PersonaIR) complete, banked and PUSHED under the standing
+  go-ahead.** No live work found (tree clean, HEAD ==
+  origin/main at `0e16d35f25`; Slice 118's commit at 11:36
+  EDT was its own completed push, verified, not in-progress
+  work). §7 stands in contract form and §8's genuine gap —
+  the compiled dict carried no IR at all — is implemented in
+  `plugins/volmarr-core/persona_runtime.py` (extended in
+  place, no second compiler, no new file or config key):
+  kernel, index, and IR all carry section text verbatim
+  after the §6 whitespace normalisation only, and the §7
+  counsel example sentence survives word-for-word in its IR
+  entry; structured representation is deterministic
+  classification of whole verbatim sections, never a
+  generated summary or paraphrase. §8: `build_persona_ir`
+  adds `ir` to the compiled artefact — all thirteen §8
+  categories in roadmap order, every section classified into
+  exactly one by the pure `classify_section` function
+  (heading keywords, most specific first, then the
+  document-role fallback; extension roles classify by their
+  own name; unsignalled sections default to identity),
+  per-category counts, an `ir_hash` over the canonical form,
+  and `generated: True` / `human_editable: False`; the IR is
+  returned, never persisted, and the Markdown documents
+  remain canonical. The packet item now also names the IR
+  hash and populated-category count (still no persona text);
+  the `persona_runtime_enabled` description in `plugin.yaml`
+  now covers §§3–8. Tests: targeted 8/8 new + 8/8 §§3–6 pass
+  (re-verified 8/8 after the bookkeeping edits); full
+  volmarr/kista run (72 files): **503 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback), verified
+  in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice119_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §§7–8 completion note in the Persona Runtime roadmap.
+  Honest gaps: §7's full semantic YAML behavior-fact
+  extraction (prose → boolean behavior fields) is NOT
+  claimed — that requires interpretation this deterministic
+  layer does not perform, recorded in both bookkeeping
+  spots; kernel generation (§9), pinning (§10), retrieval
+  (§13), and the cache/generated directory (§§48–49) are
+  later sections.
+- **Next resume point: Slice 120 — Persona Runtime §9
+  (Persona Kernel Generation) and §10 (Pin the Kernel)**:
+  reconcile the §9 kernel source mix (PERSONA_CORE +
+  highest-priority RELATIONSHIP_MODEL rules + highest-
+  priority SERVICE_BIBLE rules + critical TOOL_POLICY
+  boundaries) against the Slice 118 kernel, which today
+  draws only from the core document — implementing only
+  genuine gaps (e.g. priority-marked sections of the other
+  named roles entering the kernel under the §5 band), and
+  verify §10's pinning requirement against the §53 prompt
+  assembly order when read at slice start (expect the
+  pinning itself to belong to the later prompt-assembly
+  slice; this slice records/stands whatever §10 names that
+  the compiled artefact can already guarantee, e.g. kernel
+  stability across a session's compiles).

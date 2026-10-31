@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-6).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-8).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -46,6 +46,26 @@ What stands here, and nothing more:
   nothing — the compiled artefact is returned, not persisted
   (the §48 compilation cache and §49 generated directory are
   later sections, not this slice).
+- §7 do not summarize blindly: the kernel, the index, and the
+  IR all carry section text *verbatim* (after the §6
+  whitespace normalisation only). No generated summary,
+  paraphrase, or extracted prose is ever produced by this
+  layer; structured representation means deterministic
+  classification of whole verbatim sections, not rewriting.
+- §8 PersonaIR: the compiler's explicit intermediate
+  artefact. Every compiled section is classified
+  deterministically into exactly one of the thirteen §8
+  categories (identity, motivations, values, relationship,
+  communication, behavioral_rules, preferences, boundaries,
+  tools, memory, embodiment, quirks, projects) — first by
+  heading keywords, then by the document's semantic role —
+  and the IR carries all thirteen keys in roadmap order,
+  empty where no section classifies there. The Markdown
+  documents remain canonical; the IR is generated runtime
+  data (``generated: True``, ``human_editable: False``),
+  carries an ``ir_hash`` over its canonical form, and is
+  never written to disk by this layer, so no human is ever
+  asked to edit it.
 
 Token counts are deterministic estimates (ceil(chars / 4)),
 named as estimates wherever they surface. Disabled by
@@ -165,6 +185,137 @@ def parse_sections(text: str) -> list[dict[str, Any]]:
         section["section_id"] = (
             base if seen[base] == 1 else f"{base}_{seen[base]}")
     return sections
+
+
+# The thirteen PersonaIR categories §8 names, in roadmap order.
+IR_CATEGORIES = (
+    "identity", "motivations", "values", "relationship",
+    "communication", "behavioral_rules", "preferences",
+    "boundaries", "tools", "memory", "embodiment", "quirks",
+    "projects",
+)
+
+# Heading-keyword classification, most specific categories
+# first so a specific signal (tools, memory, embodiment, ...)
+# wins over a generic one (identity). §7: classification only —
+# the section text itself is carried verbatim, never rewritten.
+_CATEGORY_KEYWORDS = (
+    ("tools", frozenset({
+        "tool", "tools", "shell", "command", "commands"})),
+    ("memory", frozenset({
+        "memory", "memories", "remembrance", "remembering"})),
+    ("embodiment", frozenset({
+        "embodiment", "avatar", "body", "appearance", "physical",
+        "form"})),
+    ("relationship", frozenset({
+        "relationship", "relationships", "relational", "bond",
+        "bonds", "companion", "devotion"})),
+    ("communication", frozenset({
+        "communication", "style", "voice", "speech", "language",
+        "tone"})),
+    ("projects", frozenset({"project", "projects"})),
+    ("quirks", frozenset({
+        "quirk", "quirks", "habit", "habits", "trait", "traits"})),
+    ("boundaries", frozenset({
+        "boundary", "boundaries", "limit", "limits", "forbidden",
+        "prohibition", "prohibitions"})),
+    ("preferences", frozenset({
+        "preference", "preferences", "likes", "dislikes",
+        "taste"})),
+    ("motivations", frozenset({
+        "motivation", "motivations", "purpose", "drive",
+        "drives", "goal", "goals"})),
+    ("values", frozenset({
+        "value", "values", "virtue", "virtues", "principle",
+        "principles", "ethics", "spiritual", "spirituality",
+        "belief", "beliefs", "faith"})),
+    ("behavioral_rules", frozenset({
+        "behavior", "behaviour", "behavioral", "rule", "rules",
+        "law", "laws", "execution", "conduct", "service",
+        "counsel", "practice", "practices", "policy"})),
+    ("identity", frozenset({
+        "identity", "essence", "character", "role", "self",
+        "who"})),
+)
+
+# Document-role fallback when a section heading names no
+# category: the six core roles map onto the category their
+# document exists for; an extension role is classified by its
+# own name, and a section with no signal anywhere is
+# persona-defining material by default (identity).
+_ROLE_FALLBACK = {
+    "core": "identity",
+    "service_bible": "behavioral_rules",
+    "memory_policy": "memory",
+    "tool_policy": "tools",
+    "relationship": "relationship",
+    "avatar": "embodiment",
+}
+
+
+def ir_categories() -> list[str]:
+    return list(IR_CATEGORIES)
+
+
+def classify_section(role: str, heading: str) -> str:
+    """The one §8 IR category for a section, deterministically.
+
+    Heading keywords win (most specific first); the document
+    role is the fallback. Pure function of (role, heading).
+    """
+    tokens = set(_slugify(heading).split("_"))
+    for category, keywords in _CATEGORY_KEYWORDS:
+        if tokens & keywords:
+            return category
+    fallback = _ROLE_FALLBACK.get(role)
+    if fallback is not None:
+        return fallback
+    role_tokens = set(_slugify(role).split("_"))
+    for category, keywords in _CATEGORY_KEYWORDS:
+        if role_tokens & keywords:
+            return category
+    return "identity"
+
+
+def build_persona_ir(persona_id: str,
+                     index: list[dict[str, Any]]) -> dict[str, Any]:
+    """Build the §8 PersonaIR from the compiled section index.
+
+    Generated runtime data: every §8 category is present in
+    roadmap order (empty where nothing classifies there), each
+    entry carries its section text verbatim (§7), and the
+    ``ir_hash`` covers the canonical category/section/text
+    form so identical documents always produce identical IR.
+    """
+    categories: dict[str, list[dict[str, Any]]] = {
+        category: [] for category in IR_CATEGORIES}
+    for entry in index:
+        category = classify_section(entry["role"], entry["heading"])
+        categories[category].append({
+            "role": entry["role"],
+            "section_id": entry["section_id"],
+            "heading": entry["heading"],
+            "estimated_tokens": entry["estimated_tokens"],
+            "text": entry["text"],
+        })
+    canonical = "|".join(
+        f"{category}:" + ";".join(
+            f"{row['role']}/{row['section_id']}={row['text']}"
+            for row in categories[category])
+        for category in IR_CATEGORIES)
+    return {
+        "persona_id": persona_id,
+        "generated": True,
+        "human_editable": False,
+        "categories": categories,
+        "category_counts": {
+            category: len(categories[category])
+            for category in IR_CATEGORIES},
+        "total_sections": sum(
+            len(rows) for rows in categories.values()),
+        "ir_hash": hashlib.sha256(
+            canonical.encode("utf-8")).hexdigest(),
+    }
 
 
 class PersonaConfigStore:
@@ -373,6 +524,7 @@ class PersonaCompiler:
             "missing_optional": missing_optional,
             "kernel": kernel,
             "index": index,
+            "ir": build_persona_ir(config["id"], index),
             "persona_hash": self._persona_hash(documents, kernel),
         }
 
@@ -451,15 +603,21 @@ class PersonaRuntimeBridge:
         if compiled is None:
             return []
         kernel = compiled["kernel"]
+        populated = sum(
+            1 for count in compiled["ir"]["category_counts"].values()
+            if count)
         content = (
-            f"Persona runtime (§§3-6): persona "
+            f"Persona runtime (§§3-8): persona "
             f"{compiled['persona_id']} compiled from "
             f"{len(compiled['documents'])} documents / "
             f"{len(compiled['index'])} sections; kernel "
             f"{kernel['sha256'][:12]} "
             f"({kernel['estimated_tokens']} estimated tokens, "
             f"{'within' if kernel['within_band'] else 'outside'} "
-            f"the §5 band); persona hash "
+            f"the §5 band); PersonaIR hash "
+            f"{compiled['ir']['ir_hash'][:12]} with {populated} "
+            f"of {len(compiled['ir']['categories'])} categories "
+            f"populated; persona hash "
             f"{compiled['persona_hash'][:12]}. Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -478,12 +636,16 @@ __all__ = [
     "DEFAULT_CONFIG_PATH",
     "DEFAULT_DIRECTORY",
     "CORE_ROLES",
+    "IR_CATEGORIES",
     "KERNEL_TOKEN_MIN",
     "KERNEL_TOKEN_MAX",
     "PersonaRuntimeError",
     "PersonaConfigStore",
     "PersonaCompiler",
     "PersonaRuntimeBridge",
+    "build_persona_ir",
+    "classify_section",
     "core_roles",
+    "ir_categories",
     "parse_sections",
 ]
