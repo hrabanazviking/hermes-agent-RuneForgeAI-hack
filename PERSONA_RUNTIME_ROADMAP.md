@@ -1399,6 +1399,45 @@ does.
 Classify changes by semantic impact.
 
 
+> **Completion note — Slice 128 (2026-10-31): §21 stands
+> in `plugins/volmarr-core/persona_runtime.py` (extended
+> in place; the `persona_runtime_enabled` description in
+> `plugin.yaml` now covers §§3–22). The pure
+> `change_impact` function diffs two compiles at section
+> level (§12 stable ids: sections added / removed /
+> changed in text, semantic heading, heading level, §8
+> category, or §16 priority level) and classifies each
+> change by role, category, priority level, and kernel
+> membership: kernel material of the core or relationship
+> documents — and identity/relationship material at
+> P0–P1 — is major; any other kernel change, a
+> behavior-category change (behavioral rules, boundaries,
+> values, motivations), a P0–P1 change, or a newly added
+> preference/project/tool/memory/communication section
+> is minor; everything else is a patch. A §17/§18 anchor
+> change is major; a document-hash change with no section
+> or anchor change (renumbering, formatting) is a patch.
+> The roadmap's own examples are contract-proven: an
+> avatar skirt-material edit is a patch with
+> `kernel_rebuild_required` False, and a core
+> relationship-authority edit is major with it True —
+> kernel rebuild is the §19 kernel-hash signal, reported
+> separately from the semantic class. Artefacts naming
+> different personas, and malformed artefacts, are
+> refused. Targeted persona run (11 files): 89/89 pass
+> (8 new impact/versioning contracts, incl. the five
+> earlier persona files' packet assertions updated
+> in-slice to §§3–22); full volmarr/kista run (81 files):
+> 576 passed, 7 failed, 1 skipped — the failures the same
+> name-identical pre-existing environmental set.
+> Honest gaps: the classification is deterministic over
+> structural signals (role / category / priority / kernel
+> membership), not a semantic reading of prose — a
+> wording-only edit inside a kernel identity section is
+> major by membership, deliberately, because this layer
+> does not interpret text (§7).**
+
+
 ---
 
 
@@ -1431,6 +1470,30 @@ new preferences or meaningful behavior extension
 PATCH
 wording, formatting, minor clarification
 ```
+
+
+> **Completion note — Slice 128 (2026-10-31): §22 stands
+> in the same module. The human-authored §3 config may
+> carry a per-persona `version` (strict semver, no
+> leading zeroes; absent means the default `0.1.0`; an
+> invalid version fails the config closed) — a distinct
+> field from §19's `persona_version`, which remains the
+> config *format* version, recorded as such in both
+> bookkeeping spots. Every compile carries the authored
+> version, and the pure `version_record` function
+> returns the §22 record in roadmap order (persona_id,
+> persona_version, compiled_at, source_hash — the
+> artefact's combined persona hash; compiled_at is None
+> unless a caller explicitly stamps a validated
+> timezone-aware timestamp, exactly as §19).
+> `change_impact` (§21) suggests the next version from
+> the *previous* artefact's version via the pure
+> `suggested_next_version` function under the semantics
+> above (major → next MAJOR, minor → next MINOR, patch →
+> next PATCH, none → unchanged). The suggestion is
+> deterministic advice only: the human confirms a bump
+> by editing the config, and the runtime never bumps a
+> version itself and never writes the config.**
 
 
 ---

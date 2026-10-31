@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-20).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-22).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -244,6 +244,35 @@ What stands here, and nothing more:
   beyond this explicit check; wiring the check into a
   live session is a caller decision, like compilation
   itself (§6).
+- §21 change impact detection: not every edit requires
+  kernel regeneration, and the pure ``change_impact``
+  function classifies a change between two compiles by
+  semantic impact — the section-level diff (stable ids
+  added / removed / changed, each with its §8 category,
+  §16 priority level, and kernel membership) mapped to
+  one impact class (none / patch / minor / major). An
+  avatar embodiment edit (the roadmap's skirt-material
+  example) is a patch and requires no kernel rebuild; a
+  core relationship-authority edit is major and does.
+  Kernel rebuild itself is the §19 kernel-hash signal,
+  reported separately from the semantic class.
+- §22 persona versioning: the human-authored config may
+  carry a per-persona ``version`` (semver; default
+  ``0.1.0``) — distinct from §19's config format version.
+  Every compile carries it, and the pure
+  ``version_record`` function returns the §22 record
+  (persona_id, persona_version, compiled_at, source_hash
+  — the artefact's persona hash; a timestamp only as an
+  explicit validated caller stamp, as in §19).
+  ``change_impact`` also suggests the next version from
+  the previous artefact's version under §22's semantics
+  (MAJOR identity / relationship architecture, MINOR new
+  preferences or meaningful behavior extension, PATCH
+  wording / formatting / minor clarification). The
+  suggestion is deterministic advice only: the human
+  confirms a bump by editing the config, which this
+  layer never writes, and the runtime never bumps a
+  version itself.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -277,6 +306,9 @@ from .context_packet import ContextItem
 from .identity import IdentityError, IdentityStore, _as_bool
 
 PERSONA_CONFIG_VERSION = 1
+# §22: the default per-persona version when the human has
+# not authored one in the config yet.
+DEFAULT_PERSONA_VERSION = "0.1.0"
 DEFAULT_CONFIG_PATH = Path("config") / "persona.yaml"
 DEFAULT_DIRECTORY = Path("persona")
 MAX_CONFIG_BYTES = 64 * 1024
@@ -402,11 +434,14 @@ def _validate_anchor_list(raw: Any, field: str) -> list[str]:
     return anchors
 
 _SLUG = re.compile(r"^[a-z][a-z0-9_-]*$")
+# §22 per-persona version: strict semver, no leading zeroes.
+_SEMVER = re.compile(
+    r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
 _HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 _CONFIG_FIELDS = {"persona"}
 _PERSONA_FIELDS = {
     "id", "display_name", "directory", "documents",
-    "anchors", "anti_anchors",
+    "anchors", "anti_anchors", "version",
 }
 _DOCUMENT_FIELDS = {"file", "required"}
 
@@ -1566,6 +1601,237 @@ def reload_plan(previous: dict[str, Any] | None,
     }
 
 
+# The §21 impact classes, in ascending severity. Each class
+# is also the §22 bump it suggests (none suggests no bump).
+IMPACT_CLASSES = ("none", "patch", "minor", "major")
+_IMPACT_RANK = {name: rank for rank, name in enumerate(IMPACT_CLASSES)}
+# §8 categories whose change is a meaningful behavior
+# extension (§22 MINOR) even outside the kernel.
+_MINOR_CATEGORIES = frozenset({
+    "behavioral_rules", "boundaries", "values", "motivations",
+})
+# §8 categories where a *new* section is a §22 MINOR (a new
+# preference or a meaningful extension of the surface).
+_MINOR_ADDED_CATEGORIES = frozenset({
+    "preferences", "projects", "tools", "memory", "communication",
+})
+
+# The §22 version record's fields, in the roadmap's order.
+VERSION_RECORD_FIELDS = (
+    "persona_id", "persona_version", "compiled_at", "source_hash",
+)
+
+
+def impact_classes() -> list[str]:
+    return list(IMPACT_CLASSES)
+
+
+def parse_persona_version(value: Any) -> tuple[int, int, int]:
+    """Parse a strict §22 semver string into its three parts."""
+    if not isinstance(value, str):
+        raise PersonaRuntimeError("persona version is invalid")
+    match = _SEMVER.match(value)
+    if not match:
+        raise PersonaRuntimeError("persona version is invalid")
+    return (int(match.group(1)), int(match.group(2)),
+            int(match.group(3)))
+
+
+def _compiled_version(compiled: dict[str, Any]) -> str:
+    version = compiled.get("persona_version",
+                           DEFAULT_PERSONA_VERSION)
+    parse_persona_version(version)
+    return version  # type: ignore[return-value]
+
+
+def suggested_next_version(version: Any, impact_class: Any) -> str:
+    """The §22 version after ``version`` for one impact class.
+
+    Pure. MAJOR bumps identity / relationship architecture,
+    MINOR new preferences or meaningful behavior extension,
+    PATCH wording / formatting / minor clarification, and
+    ``none`` leaves the version unchanged. This is a
+    suggestion for the human to confirm by editing the
+    config — nothing here writes a version anywhere.
+    """
+    major, minor, patch = parse_persona_version(version)
+    if impact_class not in _IMPACT_RANK:
+        raise PersonaRuntimeError("impact class is invalid")
+    if impact_class == "major":
+        return f"{major + 1}.0.0"
+    if impact_class == "minor":
+        return f"{major}.{minor + 1}.0"
+    if impact_class == "patch":
+        return f"{major}.{minor}.{patch + 1}"
+    return f"{major}.{minor}.{patch}"
+
+
+def version_record(compiled: dict[str, Any],
+                   compiled_at: str | None = None) -> dict[str, Any]:
+    """The §22 version record for one compiled artefact.
+
+    Pure: persona id, the human-authored per-persona semver
+    the compile carries (defaulting to ``0.1.0`` for an
+    artefact compiled before §22 stood), an explicit
+    caller stamp or None, and the source hash — the
+    artefact's combined persona hash (§19). No clock is
+    read here, so a compile stays deterministic (§6).
+    """
+    record = hash_record(compiled)
+    return {
+        "persona_id": record["persona_id"],
+        "persona_version": _compiled_version(compiled),
+        "compiled_at": None if compiled_at is None
+        else _validate_compiled_at(compiled_at),
+        "source_hash": record["persona_hash"],
+    }
+
+
+def _impact_index(compiled: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """One compile's sections by stable id, for §21 diffing."""
+    index = compiled.get("index")
+    kernel = compiled.get("kernel")
+    if not isinstance(index, list) or not isinstance(kernel, dict) \
+            or not isinstance(kernel.get("stable_ids"), list):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    kernel_ids = set(kernel["stable_ids"])
+    by_id: dict[str, dict[str, Any]] = {}
+    for entry in index:
+        if not isinstance(entry, dict) \
+                or not isinstance(entry.get("stable_id"), str) \
+                or not isinstance(entry.get("role"), str) \
+                or not isinstance(entry.get("heading"), str) \
+                or not isinstance(entry.get("text"), str) \
+                or entry.get("priority_level") \
+                not in _PRIORITY_LEVEL_SCORES:
+            raise PersonaRuntimeError("compiled persona is invalid")
+        by_id[entry["stable_id"]] = {
+            "stable_id": entry["stable_id"],
+            "role": entry["role"],
+            "heading": entry["heading"],
+            "level": entry.get("level"),
+            "text": entry["text"],
+            "category": classify_section(
+                entry["role"], entry["heading"]),
+            "priority_level": entry["priority_level"],
+            "in_kernel": entry["stable_id"] in kernel_ids,
+        }
+    return by_id
+
+
+def _section_changed(before: dict[str, Any],
+                     after: dict[str, Any]) -> bool:
+    return any(before[key] != after[key] for key in (
+        "text", "heading", "level", "category", "priority_level"))
+
+
+def _section_impact(action: str, section: dict[str, Any]) -> str:
+    """The §21 impact class of one section-level change. Pure."""
+    if section["in_kernel"] \
+            and section["role"] in ("core", "relationship"):
+        return "major"
+    if section["category"] in ("identity", "relationship") \
+            and section["priority_level"] in ("P0", "P1"):
+        return "major"
+    if section["in_kernel"]:
+        return "minor"
+    if section["category"] in _MINOR_CATEGORIES:
+        return "minor"
+    if section["priority_level"] in ("P0", "P1"):
+        return "minor"
+    if action == "added" \
+            and section["category"] in _MINOR_ADDED_CATEGORIES:
+        return "minor"
+    return "patch"
+
+
+def change_impact(previous: dict[str, Any],
+                  current: dict[str, Any]) -> dict[str, Any]:
+    """Classify the §21 semantic impact between two compiles.
+
+    Pure. The two artefacts are compared at section level
+    (§12 stable ids): sections added, removed, or changed
+    (text, semantic heading, heading level, §8 category, or
+    §16 priority level), each classified by the pure
+    ``_section_impact`` rules over its role, category,
+    priority level, and kernel membership. The overall
+    class is the most severe section class; a change to
+    the §17/§18 anchors — authored identity material at
+    the head of every kernel — is major; a document-hash
+    change with no section or anchor change (a renumber,
+    a formatting edit) is a patch. Kernel rebuild is
+    reported separately: it is required exactly when the
+    §19 kernel hash changed, so an avatar embodiment edit
+    is a patch with no kernel rebuild while a core
+    relationship-authority edit is major with one.
+    Artefacts naming different personas are refused (via
+    the §19 records), as are malformed artefacts. The
+    §22 suggestion is computed from the *previous*
+    artefact's version; the human confirms any bump by
+    editing the config.
+    """
+    diff = detect_changes(
+        hash_record(previous), hash_record(current))
+    previous_version = _compiled_version(previous)
+    current_version = _compiled_version(current)
+    before = _impact_index(previous)
+    after = _impact_index(current)
+    added = [sid for sid in after if sid not in before]
+    removed = [sid for sid in before if sid not in after]
+    changed = [
+        sid for sid in after
+        if sid in before and _section_changed(before[sid], after[sid])]
+    details: list[dict[str, Any]] = []
+    for action, ids, source in (
+            ("added", added, after),
+            ("changed", changed, after),
+            ("removed", removed, before)):
+        for sid in ids:
+            section = source[sid]
+            details.append({
+                "stable_id": sid,
+                "action": action,
+                "role": section["role"],
+                "category": section["category"],
+                "priority_level": section["priority_level"],
+                "in_kernel": section["in_kernel"],
+                "impact": _section_impact(action, section),
+            })
+    anchors_changed = (
+        list(previous.get("anchors") or [])
+        != list(current.get("anchors") or [])
+        or list(previous.get("anti_anchors") or [])
+        != list(current.get("anti_anchors") or []))
+    impact = "none"
+    for detail in details:
+        if _IMPACT_RANK[detail["impact"]] > _IMPACT_RANK[impact]:
+            impact = detail["impact"]
+    if anchors_changed and _IMPACT_RANK[impact] < _IMPACT_RANK["major"]:
+        impact = "major"
+    if impact == "none" and diff["changed"]:
+        impact = "patch"
+    return {
+        "changed": diff["changed"],
+        "impact_class": impact,
+        "kernel_rebuild_required": diff["kernel_changed"],
+        "kernel_changed": diff["kernel_changed"],
+        "persona_changed": diff["persona_changed"],
+        "documents_added": diff["documents_added"],
+        "documents_removed": diff["documents_removed"],
+        "documents_changed": diff["documents_changed"],
+        "sections_added": added,
+        "sections_removed": removed,
+        "sections_changed": changed,
+        "details": details,
+        "anchors_changed": anchors_changed,
+        "previous_version": previous_version,
+        "current_version": current_version,
+        "suggested_bump": impact,
+        "suggested_next_version": suggested_next_version(
+            previous_version, impact),
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -1633,11 +1899,16 @@ class PersonaConfigStore:
         directory = persona.get("directory", str(DEFAULT_DIRECTORY))
         if not isinstance(directory, str) or not directory.strip():
             raise PersonaRuntimeError("persona directory is invalid")
+        version = persona.get("version", DEFAULT_PERSONA_VERSION)
+        if not isinstance(version, str) \
+                or not _SEMVER.match(version):
+            raise PersonaRuntimeError("persona version is invalid")
         documents = self._validate_documents(persona.get("documents"))
         return {
             "id": persona_id,
             "display_name": display_name.strip(),
             "directory": directory.strip(),
+            "version": version,
             "documents": documents,
             "anchors": _validate_anchor_list(
                 persona.get("anchors"), "anchors"),
@@ -1800,6 +2071,7 @@ class PersonaCompiler:
                 })
         compiled = {
             "persona_id": config["id"],
+            "persona_version": config["version"],
             "display_name": config["display_name"],
             "anchors": list(config["anchors"]),
             "anti_anchors": list(config["anti_anchors"]),
@@ -2141,8 +2413,9 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-20): persona "
-            f"{compiled['persona_id']} compiled from "
+            f"Persona runtime (§§3-22): persona "
+            f"{compiled['persona_id']} version "
+            f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
             f"{len(compiled['index'])} sections; kernel "
             f"{kernel['sha256'][:12]} "
@@ -2192,6 +2465,25 @@ class PersonaRuntimeBridge:
             f"— reparse changed documents, update the IR, "
             f"rebuild the index, recompile the kernel only "
             f"when its hash changed — with no restart. "
+            f"§21 change impact: the pure change_impact "
+            f"function classifies a change between two "
+            f"compiles by semantic impact (none / patch / "
+            f"minor / major) from the section-level diff — "
+            f"an avatar embodiment edit is a patch with no "
+            f"kernel rebuild, a core relationship-authority "
+            f"edit is major with one; kernel rebuild is the "
+            f"kernel-hash signal, reported separately. "
+            f"§22 versioning: every compile carries its "
+            f"human-authored persona version (semver, "
+            f"default 0.1.0, distinct from the §19 config "
+            f"format version); version_record names "
+            f"persona_id, persona_version, compiled_at, and "
+            f"source_hash, and change_impact suggests the "
+            f"next version (MAJOR identity / relationship "
+            f"architecture, MINOR new preferences or "
+            f"meaningful behavior extension, PATCH wording "
+            f"or formatting) — a suggestion only, confirmed "
+            f"by a human config edit this layer never makes. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -2231,6 +2523,9 @@ __all__ = [
     "CONTEXT_CLASSES",
     "SUGGESTED_BUDGETS",
     "PersonaRuntimeBridge",
+    "DEFAULT_PERSONA_VERSION",
+    "IMPACT_CLASSES",
+    "VERSION_RECORD_FIELDS",
     "ROUTER_DEFAULT_LIMIT",
     "ROUTER_INPUTS",
     "ROUTER_MAX_LIMIT",
@@ -2258,6 +2553,11 @@ __all__ = [
     "detect_changes",
     "hash_record",
     "reload_plan",
+    "change_impact",
+    "impact_classes",
+    "parse_persona_version",
+    "suggested_next_version",
+    "version_record",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
