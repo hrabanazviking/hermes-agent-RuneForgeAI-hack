@@ -3041,3 +3041,80 @@ portable state: any agent (Muse or Hermes) resumes from here.
   expect a pure refresh-trigger/contents surface over
   the banked kernel (§§9–10) and reload (§20) surfaces,
   not a session watcher or context injector.
+- 2026-10-31 ~19:0x EDT keeper tick: **Slice 133 DONE —
+  Persona Runtime §31 (Fast Local Persona Watchdog) and
+  §32 (Persona Refresh) complete, banked and PUSHED under
+  the standing go-ahead.** No live work found at tick
+  start (tree clean, HEAD == origin/main at `ddd8e51e`;
+  Slice 132's state commit at 18:56 EDT was its own
+  completed push, verified, not in-progress work; the
+  only test processes on the box belonged to other
+  campaigns' trees). `plugins/volmarr-core/
+  persona_runtime.py` extended in place — no new file or
+  config key: §31's pure `local_watchdog_tasks` names the
+  six tasks in roadmap order (persona classification,
+  drift detection, section retrieval, tone checking,
+  memory routing, response scoring), each assigned to the
+  local model with no heavy inference and no difficult
+  content, grounded in its banked surface (§8 PersonaIR,
+  §§27–28 drift score, §13 hybrid retrieval, §28 tone
+  dimension, §14 router, §29 score artefact); the pure
+  `local_watchdog_contract` stands the worker (small
+  local nervous-system model; the larger model generates
+  difficult content, the local model keeps the
+  personality coherent) and the pure `watchdog_worker`
+  assigns one named task — §31 task → local model,
+  difficult-content generation → larger model, anything
+  else refused. §32's pure `refresh_triggers` /
+  `refresh_contents` / `refresh_contract` /
+  `refresh_due` / `refresh_plan` stand the refresh:
+  triggers in roadmap order (message interval — this
+  layer's recorded convention 50, the roadmap names no
+  N — context summarization, model switch), contents
+  exactly Persona Kernel + current relationship state +
+  relevant Service Bible anchors; an event trigger is
+  due on occurrence, the interval only at/past 50
+  caller-supplied messages (missing/malformed counts
+  refused); a due plan carries the three contents, an
+  unelapsed-interval plan none. Packet label updated to
+  §§3–32 (ten older persona files' packet assertions
+  updated in-slice). Tests: targeted 23/23 pass (8 new
+  local-refresh contracts + watchdog + drift-repair
+  files); targeted persona run (17 files): **137 passed,
+  0 failed**; full volmarr/kista run (86 files): **616
+  passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set in the
+  same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice133_full_run.log`); 616
+  is exactly Slice 132's 608 + the 8 new contracts.
+  Smoke: `hermes --version` runs (`vgit.ddd8e51.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §31 + §32 completion notes in the Persona
+  Runtime roadmap. Push: fast-forward, no force —
+  origin/main moved `ddd8e51e70` → Slice 133 commit,
+  verified by `git ls-remote` (remote == local HEAD).
+  Honest gaps: no model runs (local or otherwise), no
+  session is watched, no live messages are counted,
+  nothing is refreshed or injected by this layer, and no
+  caller consumes the worker assignment or a refresh
+  plan yet; §33's wider event list stands unclaimed.
+- **Next resume point: Slice 134 — Persona Runtime §33
+  (Event-Based Refresh) and §34 (Model Switching)**:
+  §33 widens §32's triggers — refresh after context
+  compression, model switch, agent handoff, long idle
+  period, persona file modification, major relationship
+  event, memory consolidation ("better than a fixed
+  interval alone") — reconcile against Slice 133's §32
+  trigger/plan surface when read at slice start, expect
+  a pure event-trigger surface extending it, not a
+  session watcher; §34 names model switching — every
+  model receives the same canonical Persona Kernel (the
+  model is the engine, the persona system is the
+  identity layer; Caducea remains Caducea across a
+  switch) — expect a pure kernel-identity surface over
+  the §§9–10 kernel/pinning surfaces (same kernel hash
+  across models), not a live model router this plugin
+  does not own.
