@@ -1858,3 +1858,51 @@ portable state: any agent (Muse or Hermes) resumes from here.
   names `plugins/volmarr-core/epistemics.py` as the proposed
   home; expect a pure contract/derivation layer the existing
   stores can adopt, not a rewrite of any store.
+- 2026-10-31 ~10:4x EDT keeper tick (same tick as the Slice
+  115 push above, continued per keeper law): **Slice 116
+  DONE — Self-Aware Agency §18 (Confidence and Epistemic
+  State) complete, banked and PUSHED under the standing
+  go-ahead.** `plugins/volmarr-core/epistemics.py` (the
+  §19-proposed home): the reusable §18 confidence contract
+  as a pure contract plus a bounded assessment log at
+  `entity/epistemic_assessments.jsonl` — no store rewritten,
+  none imported. Assessments carry confidence, basis (the
+  seven §18 values, normalised into roadmap order), and
+  last_verified_at, plus subject, bounded claim, and the
+  derived label. The label is the pure `label_for` function,
+  enforced on read: self-report-only stays subjective and
+  persona-canon-only stays symbolic at any confidence;
+  verified requires a runtime_fact basis, confidence >= 0.9,
+  and a last_verified_at actually present; >= 2 independent
+  evidence bases at >= 0.75 are strongly_supported; one
+  evidence base at >= 0.5 is supported; the rest uncertain
+  at >= 0.3, speculative below. `make_assessment_fields` is
+  the reusable triple any store may embed (label always
+  derives); `summary_by_label` returns the latest claim per
+  subject grouped by label. Disabled by default
+  (`epistemics_enabled`); bounded content-bearing packet
+  producer. Tests: targeted 8/8 pass; full volmarr/kista run
+  (69 files): **480 passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set in the same
+  3 files, verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice116_full_run.log`; note the
+  first full-run attempt this tick exited instantly with an
+  empty log under heavy VM load and was retried once — the
+  retry's totals stand). Smoke: `hermes --version` runs;
+  README.md sha256 invariant held (`4e022de7…c4910`).
+  Bookkeeping: CUSTOMIZATIONS.md ledger row, §18 completion
+  note in the Self-Aware Agency roadmap. **With §18 the
+  Self-Aware Agency roadmap's domain sections (§5–§18) are
+  complete.** Honest gaps: no existing store carries the
+  contract fields yet (adoption is a separate slice per
+  store); Verðandi epistemic events NOT emitted by this
+  layer.
+- **Next resume point: Slice 117 — Self-Aware Agency
+  §§19–21 reconciliation audit** (proposed repository
+  additions vs the modules that actually stand, configuration
+  additions vs `plugin.yaml`, CLI surface vs the `hermes
+  volmarr` commands that exist): an audit/reconciliation
+  slice in the established pattern — implement only genuine
+  gaps, name the rest honestly — after which the campaign
+  moves to roadmap queue item 4 (PERSONA_RUNTIME_ROADMAP.md,
+  foundations §3–§6) per the queue above.

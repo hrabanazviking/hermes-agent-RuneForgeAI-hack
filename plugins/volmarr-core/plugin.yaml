@@ -557,6 +557,18 @@ config_schema:
     type: int
     default: 200
     description: "Maximum blind spot snapshot records retained by rotation (clamped to 10-500)."
+  epistemics_enabled:
+    type: bool
+    default: false
+    description: "Enable the reusable confidence contract (Self-Aware Agency §18): assessments carrying confidence, a basis list drawn from the seven §18 basis values, and last_verified_at in a bounded log, each described by one of the seven §18 epistemic labels. The label is a deterministic function of confidence, basis, and verification — a stored label that disagrees is refused on read, a self-report-only belief stays subjective and a persona-canon-only belief stays symbolic at any confidence, and verified requires a runtime_fact basis at confidence >= 0.9 with last_verified_at present. This layer is a contract plus log; it writes no other store. Disabled by default; assessments are explicit calls only."
+  epistemics_log_path:
+    type: str
+    default: entity/epistemic_assessments.jsonl
+    description: "Epistemic assessment log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  epistemics_log_limit:
+    type: int
+    default: 200
+    description: "Maximum epistemic assessment records retained by rotation (clamped to 10-500)."
   heartbeat_enabled:
     type: bool
     default: true

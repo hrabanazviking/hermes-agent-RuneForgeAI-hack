@@ -1817,6 +1817,41 @@ Speculative:
 This may represent a stable personal preference.
 ```
 
+**§18 completion note (Slice 116, 2026-10-31):** the reusable
+confidence contract stands in
+`plugins/volmarr-core/epistemics.py` (the §19-proposed home) —
+a pure contract plus a bounded assessment log, not a rewrite
+of any store. Assessments in the bounded
+`entity/epistemic_assessments.jsonl` log carry exactly the
+§18 fields — confidence, basis (the seven values above,
+normalised into roadmap order, duplicates collapsed), and
+last_verified_at — plus subject, bounded claim, and the
+derived label. The label is the pure `label_for` function
+and strict read validation refuses a stored label that
+disagrees with it: a belief resting only on self_report is
+subjective and one resting only on persona_canon is
+symbolic at any confidence; verified requires a runtime_fact
+basis, confidence >= 0.9, and a last_verified_at actually
+present; two or more independent evidence bases at >= 0.75
+are strongly_supported; one evidence base at >= 0.5 is
+supported; the rest are uncertain at >= 0.3 and speculative
+below. `make_assessment_fields` is the reusable triple any
+store may embed — the label always derives, never asserted.
+`summary_by_label` returns the §18 internal summary (latest
+claim per subject grouped by label). The module imports no
+other store and writes only its own log, only on explicit
+`assess` calls; disabled by default (`epistemics_enabled`);
+bounded content-bearing packet producer. Tests: targeted
+8/8 pass; full volmarr/kista run (69 files): 480 passed,
+7 failed, 1 skipped — the same name-identical pre-existing
+environmental set. Honest gaps: no existing store carries
+the contract fields yet (adoption is a separate slice per
+store); Verðandi epistemic events are NOT emitted by this
+layer. With §18 the Self-Aware Agency roadmap's domain
+sections (§5–§18) are complete; §§19–31 are additions,
+configuration, CLI, slice, and testing guidance reconciled
+by later audit slices.
+
 ---
 
 # 19. Proposed Repository Additions

@@ -37,6 +37,7 @@ from .verdandi_events import VerdandiEventsBridge
 from .background_life import BackgroundLifeBridge
 from .persona_canon import PersonaCanonBridge
 from .blind_spots import BlindSpotBridge
+from .epistemics import EpistemicsBridge
 from .subjective_report import SubjectiveReportBridge
 from .timescales import TimescaleBridge
 from .self_model import SelfModelBridge
@@ -97,6 +98,7 @@ def register(ctx) -> None:
     background_life = BackgroundLifeBridge(ctx)
     persona_canon = PersonaCanonBridge(ctx)
     blind_spots = BlindSpotBridge(ctx)
+    epistemics = EpistemicsBridge(ctx)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -138,6 +140,7 @@ def register(ctx) -> None:
             background_life.packet_items,
             persona_canon.packet_items,
             blind_spots.packet_items,
+            epistemics.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():
