@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-24).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-26).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -310,6 +310,30 @@ What stands here, and nothing more:
   ``outranks`` compare two sources by tier. These are
   contract functions only: no conversation is read,
   scored, or monitored here.
+- §25 conversation summaries must not define persona: a
+  summary may record *state* ("was frustrated during
+  debugging") but must never become a *trait* claim ("is
+  a frustrated personality"). The pure
+  ``classify_summary_claim`` function classifies a
+  claim's form by explicit grammatical markers only —
+  trait-form markers win, then temporal/state markers,
+  otherwise the claim is unclassified — and a summary
+  may record only state-form claims. No summary claim,
+  of any form, may define persona or redefine traits:
+  the summary source inherits the §24 conversation tier.
+  This layer builds no summariser and reads no summary.
+- §26 trait vs state: the separation is explicit.
+  Traits (the roadmap's examples: warm, devoted,
+  intelligent, non-oppositional counselor) come from
+  canonical persona files only and never decay. States
+  (currently amused, currently concerned about
+  architecture) are temporary: anything sourced from a
+  non-canonical tier is at most a state, however it is
+  claimed, and states decay deterministically — the
+  pure ``decayed_strength`` / ``state_decay`` functions
+  apply this layer's recorded convention (a 24-hour
+  half-life; a state below 0.05 strength is expired).
+  A decayed or expired state never becomes a trait.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -2243,6 +2267,302 @@ def outranks(first: Any, second: Any) -> bool:
         < _PRECEDENCE_RANK[_precedence_tier(second)]
 
 
+# --- §25 summary claims + §26 trait vs state --------------------------
+#
+# Pure contract data and functions, like §§23/24. Nothing
+# here builds, reads, or stores a summary, and nothing
+# tracks a live state: §25 names what form a summary
+# claim may take, and §26 names the trait/state
+# separation and the deterministic decay rule for states.
+
+# The three forms a claimed summary statement can take.
+SUMMARY_CLAIM_FORMS = ("state", "trait", "unclassified")
+MAX_SUMMARY_CLAIM_CHARS = 1000
+
+# Trait-form markers (§25): wording that presents a
+# quality as what the subject *is* — an enduring identity
+# predication ("is a frustrated personality"), an
+# always/inherent framing, or a trait noun. Trait markers
+# win over state markers: a claim carrying both is
+# refused as trait-form, fail-closed.
+_TRAIT_PHRASES = (("is", "a"), ("is", "an"), ("by", "nature"))
+_TRAIT_TOKENS = frozenset({
+    "always", "disposition", "fundamentally", "inherently",
+    "personality", "temperament", "trait", "traits",
+})
+
+# State-form markers (§25/§26): wording that bounds a
+# quality in time — a past-tense or felt/seemed report, a
+# temporal adverb, or an explicit current-moment framing
+# ("was frustrated during debugging", "currently amused").
+_STATE_PHRASES = (
+    ("at", "the", "moment"), ("right", "now"))
+_STATE_TOKENS = frozenset({
+    "became", "currently", "during", "felt", "lately",
+    "momentarily", "recently", "seemed", "temporarily",
+    "today", "tonight", "was", "were", "while",
+    "yesterday",
+})
+
+# The two §26 kinds, in roadmap order.
+TRAIT_STATE_KINDS = ("trait", "state")
+
+# The roadmap's own §26 examples, as stable slugs: traits
+# authored in persona files, and temporary states.
+EXAMPLE_TRAITS = (
+    "warm", "devoted", "intelligent",
+    "non_oppositional_counselor",
+)
+EXAMPLE_STATES = (
+    "currently_amused",
+    "currently_concerned_about_architecture",
+)
+
+# §26 decay convention (this layer's own deterministic
+# convention — the roadmap says states decay but names no
+# numbers): a state's strength halves every 24 hours and
+# a state under 0.05 strength is expired. Traits never
+# decay under any elapsed time.
+STATE_HALF_LIFE_HOURS = 24.0
+STATE_EXPIRY_THRESHOLD = 0.05
+
+
+def summary_claim_forms() -> list[str]:
+    return list(SUMMARY_CLAIM_FORMS)
+
+
+def _claim_tokens(text: Any) -> list[str]:
+    if not isinstance(text, str) or not text.strip():
+        raise PersonaRuntimeError("summary claim is invalid")
+    if len(text) > MAX_SUMMARY_CLAIM_CHARS:
+        raise PersonaRuntimeError("summary claim exceeds its limit")
+    return [tok for tok in _slugify(text).split("_") if tok]
+
+
+def _has_phrase(tokens: list[str],
+                phrases: tuple[tuple[str, ...], ...]) -> bool:
+    return any(
+        list(phrase) == tokens[i:i + len(phrase)]
+        for phrase in phrases
+        for i in range(len(tokens) - len(phrase) + 1))
+
+
+def classify_summary_claim(text: Any) -> dict[str, Any]:
+    """Classify one summary claim's form (§25). Pure.
+
+    The claim is classified by explicit grammatical
+    markers only — this layer does not interpret prose
+    (§7). Trait-form markers (an "is a"/"is an" identity
+    predication, "by nature", or an always / inherent /
+    personality / temperament / disposition / trait
+    token) win first; temporal state markers (was / were
+    / felt / seemed / became, during / while, or a
+    temporal adverb such as currently / today) make a
+    state form; a claim with neither is ``unclassified``.
+
+    A summary may record only a state-form claim ("was
+    frustrated during debugging"); a trait-form claim
+    ("is a frustrated personality") and an unclassified
+    claim are both refused, fail-closed. No form may
+    define persona or redefine traits — a summary
+    inherits the §24 conversation tier.
+    """
+    tokens = _claim_tokens(text)
+    token_set = set(tokens)
+    if token_set & _TRAIT_TOKENS \
+            or _has_phrase(tokens, _TRAIT_PHRASES):
+        form = "trait"
+        reason = "trait_form_refused"
+    elif token_set & _STATE_TOKENS \
+            or _has_phrase(tokens, _STATE_PHRASES):
+        form = "state"
+        reason = "state_record_allowed"
+    else:
+        form = "unclassified"
+        reason = "unclassified_refused"
+    return {
+        "form": form,
+        "summary_may_record": form == "state",
+        "may_define_persona": False,
+        "may_redefine_traits": False,
+        "reason_code": reason,
+    }
+
+
+def summary_claim_allowed(text: Any) -> bool:
+    """Whether a summary may record this claim (§25). Pure."""
+    return classify_summary_claim(text)["summary_may_record"]
+
+
+def trait_state_kinds() -> list[str]:
+    return list(TRAIT_STATE_KINDS)
+
+
+def trait_state_separation() -> list[dict[str, Any]]:
+    """The §26 trait/state separation, in roadmap order.
+
+    Pure contract data. Traits come from canonical
+    persona files, are defined only by them, and never
+    decay; states are temporary experience, may be
+    reported by any source, and decay under the recorded
+    convention (24-hour half-life, expired below 0.05).
+    The examples are the roadmap's own §26 examples.
+    Fresh copies are returned; mutating a row does not
+    poison the contract.
+    """
+    return [
+        {
+            "kind": "trait",
+            "source": "canonical_persona_files",
+            "defined_by": ["canonical_persona_files"],
+            "decays": False,
+            "half_life_hours": None,
+            "expiry_threshold": None,
+            "examples": list(EXAMPLE_TRAITS),
+        },
+        {
+            "kind": "state",
+            "source": "current_experience",
+            "defined_by": [],
+            "decays": True,
+            "half_life_hours": STATE_HALF_LIFE_HOURS,
+            "expiry_threshold": STATE_EXPIRY_THRESHOLD,
+            "examples": list(EXAMPLE_STATES),
+        },
+    ]
+
+
+def classify_attribute(source: Any,
+                       claimed_kind: Any = None) -> dict[str, Any]:
+    """Classify an attribute by source and claim (§26). Pure.
+
+    ``source`` is any §24 source (a canonical document
+    tier or role, memory, conversation / summary, or a
+    temporary state); ``claimed_kind`` is optionally
+    ``trait`` or ``state``. Traits come from persona
+    files: a canonical source defines a trait (or a
+    state, when claimed as one). Every non-canonical
+    source is at most a state — a trait claimed from
+    conversation, a summary, memory, or a temporary
+    state is returned as a state with the trait claim
+    refused, never as a trait. Unknown sources or kinds
+    are refused.
+    """
+    tier = _precedence_tier(source)
+    canonical = tier in _CANONICAL_TIERS
+    claimed = None
+    if claimed_kind is not None:
+        if not isinstance(claimed_kind, str) \
+                or _slugify(claimed_kind) not in TRAIT_STATE_KINDS:
+            raise PersonaRuntimeError(
+                "attribute kind is invalid")
+        claimed = _slugify(claimed_kind)
+    if canonical:
+        kind = claimed or "trait"
+        trait_claim_allowed = True
+    else:
+        kind = "state"
+        trait_claim_allowed = False
+    return {
+        "source": tier,
+        "tier": tier,
+        "canonical": canonical,
+        "claimed_kind": claimed,
+        "kind": kind,
+        "trait_claim_allowed": trait_claim_allowed,
+        "may_define_persona": canonical and kind == "trait",
+        "decays": kind == "state",
+    }
+
+
+def _validate_strength(value: Any) -> float:
+    if isinstance(value, bool) \
+            or not isinstance(value, (int, float)) \
+            or not math.isfinite(float(value)) \
+            or not 0.0 <= float(value) <= 1.0:
+        raise PersonaRuntimeError("strength is invalid")
+    return float(value)
+
+
+def _validate_elapsed(value: Any) -> float:
+    if isinstance(value, bool) \
+            or not isinstance(value, (int, float)) \
+            or not math.isfinite(float(value)) \
+            or float(value) < 0.0:
+        raise PersonaRuntimeError("elapsed hours are invalid")
+    return float(value)
+
+
+def _validate_half_life(value: Any) -> float:
+    if isinstance(value, bool) \
+            or not isinstance(value, (int, float)) \
+            or not math.isfinite(float(value)) \
+            or float(value) <= 0.0:
+        raise PersonaRuntimeError("half-life hours are invalid")
+    return float(value)
+
+
+def _decay_kind(kind: Any) -> str:
+    if not isinstance(kind, str) \
+            or _slugify(kind) not in TRAIT_STATE_KINDS:
+        raise PersonaRuntimeError("attribute kind is invalid")
+    return _slugify(kind)
+
+
+def decayed_strength(kind: Any, strength: Any, elapsed_hours: Any,
+                     half_life_hours: Any = STATE_HALF_LIFE_HOURS
+                     ) -> float:
+    """A trait/state strength after elapsed time (§26). Pure.
+
+    Traits never decay: the strength is returned
+    unchanged at any elapsed time. States decay under
+    the recorded convention: the strength halves every
+    ``half_life_hours`` (default 24). Invalid kinds,
+    strengths outside the unit interval, negative or
+    non-finite elapsed times, and non-positive
+    half-lives are refused.
+    """
+    resolved = _decay_kind(kind)
+    initial = _validate_strength(strength)
+    elapsed = _validate_elapsed(elapsed_hours)
+    half_life = _validate_half_life(half_life_hours)
+    if resolved == "trait":
+        return initial
+    return initial * 0.5 ** (elapsed / half_life)
+
+
+def state_decay(kind: Any, strength: Any, elapsed_hours: Any,
+                half_life_hours: Any = STATE_HALF_LIFE_HOURS
+                ) -> dict[str, Any]:
+    """The §26 decay record for one attribute. Pure.
+
+    Returns the kind, the initial and decayed strengths,
+    the elapsed hours, the half-life in force (None for
+    a trait, which has none), whether the kind decays,
+    and whether the attribute is expired — a state whose
+    decayed strength falls below the 0.05 threshold. A
+    trait is never expired by time. An expired state
+    never becomes a trait; it simply ends.
+    """
+    resolved = _decay_kind(kind)
+    initial = _validate_strength(strength)
+    elapsed = _validate_elapsed(elapsed_hours)
+    half_life = _validate_half_life(half_life_hours)
+    decayed = decayed_strength(
+        resolved, initial, elapsed, half_life)
+    return {
+        "kind": resolved,
+        "initial_strength": initial,
+        "elapsed_hours": elapsed,
+        "half_life_hours": None if resolved == "trait"
+        else half_life,
+        "strength": decayed,
+        "decays": resolved == "state",
+        "expired": resolved == "state"
+        and decayed < STATE_EXPIRY_THRESHOLD,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -2824,7 +3144,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-24): persona "
+            f"Persona runtime (§§3-26): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -2914,7 +3234,13 @@ class PersonaRuntimeBridge:
             f"conversation history may affect current mood, "
             f"immediate context, and recent events only, "
             f"and must never redefine foundational "
-            f"personality. Canonical document "
+            f"personality. §25 summaries: a conversation "
+            f"summary may record state only — it must "
+            f"never become a trait claim or define "
+            f"persona. §26 trait vs state: traits come "
+            f"from persona files and do not decay; "
+            f"temporary states decay deterministically "
+            f"and never become traits. Canonical document "
             f"text is compiled, not injected by this layer."
         )
         return [ContextItem(
@@ -2957,6 +3283,13 @@ __all__ = [
     "IMPACT_CLASSES",
     "VERSION_RECORD_FIELDS",
     "DRIFT_DANGERS",
+    "SUMMARY_CLAIM_FORMS",
+    "MAX_SUMMARY_CLAIM_CHARS",
+    "TRAIT_STATE_KINDS",
+    "EXAMPLE_TRAITS",
+    "EXAMPLE_STATES",
+    "STATE_HALF_LIFE_HOURS",
+    "STATE_EXPIRY_THRESHOLD",
     "PRECEDENCE_TIERS",
     "HISTORY_MAY_AFFECT",
     "HISTORY_MUST_NOT_REDEFINE",
@@ -3002,6 +3335,14 @@ __all__ = [
     "influence_allowed",
     "precedence_winner",
     "outranks",
+    "summary_claim_forms",
+    "classify_summary_claim",
+    "summary_claim_allowed",
+    "trait_state_kinds",
+    "trait_state_separation",
+    "classify_attribute",
+    "decayed_strength",
+    "state_decay",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

@@ -1652,6 +1652,29 @@ Caducea is a frustrated personality.
 
 State and trait must remain separate.
 
+> **Completion note — Slice 130 (2026-10-31): §25 stands
+> in `plugins/volmarr-core/persona_runtime.py` (extended
+> in place; the `persona_runtime_enabled` description in
+> `plugin.yaml` now covers §§3–26). The pure
+> `classify_summary_claim` function classifies a summary
+> claim's form by explicit grammatical markers only —
+> trait-form markers (an "is a"/"is an" identity
+> predication, "by nature", always/inherent/personality/
+> temperament/disposition/trait tokens) win first, then
+> temporal state markers (was/were/felt/seemed/became,
+> during/while, currently/today and kin), otherwise the
+> claim is unclassified. A summary may record only a
+> state-form claim — the roadmap's own example pair is
+> contract-proven ("was frustrated during debugging"
+> allowed; "is a frustrated personality" refused) — and
+> no form may define persona or redefine traits, since a
+> summary inherits the §24 conversation tier. Targeted
+> run (all persona files, 14): 114 passed, 0 failed.
+> Honest gaps: this layer builds no summariser and reads
+> no summary — the classification is a contract surface
+> for whoever summarises, and marker-free prose is
+> refused as unclassified rather than interpreted (§7).**
+
 
 ---
 
@@ -1684,6 +1707,28 @@ Temporary states should decay.
 
 
 Traits come from persona files.
+
+> **Completion note — Slice 130 (2026-10-31): §26 stands
+> in the same module. The pure `trait_state_separation`
+> function returns the two kinds in roadmap order with
+> the roadmap's own examples (traits: warm, devoted,
+> intelligent, non-oppositional counselor; states:
+> currently amused, currently concerned about
+> architecture). The pure `classify_attribute` function
+> enforces the source rule: a canonical persona-file
+> source defines traits; every non-canonical source
+> (conversation, summary, memory, temporary state) is at
+> most a state, and a trait claimed from one is returned
+> as a state with the trait claim refused. The pure
+> `decayed_strength` / `state_decay` functions apply
+> the decay rule — traits never decay at any elapsed
+> time; states halve every 24 hours and expire below
+> 0.05 strength. The half-life and threshold are this
+> layer's recorded convention (the roadmap names no
+> numbers), stated as such in the code and the plugin
+> description. Honest gaps: no live state is tracked —
+> decay is a pure function over an explicit clock, and
+> no caller consumes the classification yet.**
 
 
 ---
