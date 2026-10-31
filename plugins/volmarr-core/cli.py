@@ -35,6 +35,7 @@ from .openviking import probe_openviking
 from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
 from .routines import RoutineError, RoutineManager, RoutineService
 from .sessiondb import probe_sessiondb
+from .surface_reconciliation import SurfaceInspectionService
 from .telemetry import CognitionTelemetry
 from .wyrd import probe_wyrd
 
@@ -282,6 +283,26 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Report agency routine evaluation counts read-only",
     )
     agency_evaluation.add_argument("--json", action="store_true", dest="json_output")
+    # §21 inspection surface (Slice 117): read-only, no LLM.
+    for surface, verbs in (
+        ("self", ("health", "show")),
+        ("awareness", ("health", "show")),
+        ("reflection", ("health", "recent")),
+        ("motivation", ("show",)),
+        ("curiosity", ("show",)),
+        ("autonomy", ("show",)),
+    ):
+        surface_parser = subcommands.add_parser(
+            surface,
+            help=f"Inspect the {surface} surface read-only (§21)",
+        )
+        surface_subcommands = surface_parser.add_subparsers(
+            dest=f"{surface}_action")
+        for verb in verbs:
+            verb_parser = surface_subcommands.add_parser(
+                verb, help=f"Report the {surface} surface ({verb})")
+            verb_parser.add_argument(
+                "--json", action="store_true", dest="json_output")
 
 
 def _load_json_request(source: str, *, max_bytes: int) -> dict:
@@ -499,6 +520,34 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
         else:
             print(f"Entity routines: {getattr(report, 'status', 'completed')}")
         return exit_code
+    elif action in {"self", "awareness", "reflection", "motivation",
+                    "curiosity", "autonomy"}:
+        verbs = {
+            "self": ("health", "show"),
+            "awareness": ("health", "show"),
+            "reflection": ("health", "recent"),
+            "motivation": ("show",),
+            "curiosity": ("show",),
+            "autonomy": ("show",),
+        }[action]
+        verb = getattr(args, f"{action}_action", None)
+        if verb not in verbs:
+            print(
+                f"Usage: hermes volmarr {action} "
+                f"{{{'|'.join(verbs)}}} [--json]"
+            )
+            return 2
+        payload = SurfaceInspectionService(ctx).inspect(action)
+        payload = {"command": verb, **payload}
+        if getattr(args, "json_output", False):
+            print(json.dumps(payload, sort_keys=True, default=str))
+        else:
+            print(f"{action.capitalize()} surface: {payload['status']}")
+            for key, value in payload["detail"].items():
+                print(f"{key}: {value}")
+        if verb == "health":
+            return 0 if payload["status"] == "ok" else 1
+        return 1 if payload["status"] == "unreadable" else 0
     elif action == "agency":
         agency_action = getattr(args, "agency_action", None)
         try:
@@ -570,7 +619,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             print(f"Entity consolidation: {getattr(report, 'status', 'completed')}")
         return exit_code
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|identity} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency} ...")
         return 2
 
     if getattr(args, "json_output", False):

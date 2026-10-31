@@ -1906,3 +1906,63 @@ portable state: any agent (Muse or Hermes) resumes from here.
   gaps, name the rest honestly — after which the campaign
   moves to roadmap queue item 4 (PERSONA_RUNTIME_ROADMAP.md,
   foundations §3–§6) per the queue above.
+- 2026-10-31 ~10:4x EDT keeper tick: **Slice 117 DONE —
+  Self-Aware Agency §§19–21 reconciliation complete, banked
+  and PUSHED under the standing go-ahead.** No live work
+  found (tree clean, HEAD == origin/main at `aefdc40dc8`;
+  Slice 116's commit minutes earlier was its own completed
+  push, verified, not in-progress work).
+  `plugins/volmarr-core/surface_reconciliation.py` codifies
+  the audit in contract-tested tables: §19 modules 7 exact /
+  3 equivalent (discrepancy → self_model_layers + awareness
+  + persona_canon; reflection → metacognition +
+  reflection_detail; motivation → drives +
+  motivation_lifecycle — no shim files created), state files
+  10 exact / 1 equivalent (`entity/drives.json` stands as
+  `entity/motivation.yaml`); §20 keys 9 exact / 4 equivalent
+  / 1 honestly missing (`reflection_local_first` — reflection
+  is local by construction, so the key would be inert), with
+  banked default divergences (core stores enabled-by-default;
+  agency-cycle bound 3 not 1) recorded, not changed. The one
+  genuine functional gap — §21's inspection CLI did not
+  exist — is implemented: a read-only, LLM-free
+  `SurfaceInspectionService` (ok / disabled / not_created /
+  unreadable per surface; counts, identifiers, and numeric
+  state only; writes nothing) wired as `hermes volmarr self
+  {health|show}`, `awareness {health|show}`, `reflection
+  {health|recent}`, `motivation show`, `curiosity show`,
+  `autonomy show` in `cli.py`. §21's other 9 commands are
+  deferred with reasons in the module (action forms stand
+  service-side in their owning stores; `agency status` was
+  already exact; `agency run` is never mislabelled as the
+  cycle). §22 audited in passing: none of its nine proposed
+  model-callable tool names exists — named as a proposal,
+  not a claim. This layer owns no file, config key, packet
+  producer, or hook. One in-slice fix, test-side: argparse
+  itself rejects an invalid verb with SystemExit 2, so the
+  usage test asserts that instead of a handler return (no
+  production change). Tests: targeted 7/7 pass; full
+  volmarr/kista run (70 files): **487 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback), verified
+  in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice117_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §§19–21 reconciliation note in the Self-Aware Agency
+  roadmap. **With this slice the Self-Aware Agency roadmap
+  is fully reconciled (§§5–18 implemented, §§19–21 audited).**
+  Honest gaps: the 9 deferred §21 action commands and §22's
+  tools are NOT implemented; no store yet adopts the §18
+  epistemic contract fields (recorded at Slice 116).
+- **Next resume point: Slice 118 — roadmap queue item 4,
+  PERSONA_RUNTIME_ROADMAP.md, foundations**: §3
+  (human-editable configuration) and §4 (optional document
+  extension system) first, then §5 (three-layer persona
+  model) and §6 (persona compiler), reconciled against the
+  already-banked persona surfaces (identity `persona_pack`,
+  Slice 114 persona canon, Slice 103 layered self-model)
+  when read at slice start — expect a
+  verification/reconciliation slice implementing only
+  genuine gaps, not a second persona system.

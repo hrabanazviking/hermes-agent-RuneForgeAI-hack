@@ -1994,6 +1994,57 @@ hermes volmarr agency cycle
 
 Operator CLI should always permit inspection without invoking an LLM unless the requested command explicitly requires cognition.
 
+**§§19–21 reconciliation note (Slice 117, 2026-10-31):** the
+proposed additions, configuration, and CLI surface are now
+reconciled in code in
+`plugins/volmarr-core/surface_reconciliation.py`, whose tables
+classify every proposed item and whose counts are
+contract-tested. §19 repository additions: 7 of the 10
+proposed modules stand under their exact names; 3 stand as
+equivalents — `discrepancy.py` as the discrepancy surfaces in
+`self_model_layers.py` / `awareness.py` / `persona_canon.py`,
+`reflection.py` as `metacognition.py` + `reflection_detail.py`,
+and `motivation.py` as `drives.py` +
+`motivation_lifecycle.py` — and no proposed name was recreated
+as a shim (internal paths are not API). Of the 11 proposed
+state files, 10 are exact and `entity/drives.json` stands as
+`entity/motivation.yaml`. §20 configuration: of the 14
+proposed keys, 9 are exact, 4 stand as equivalents
+(`reflection_enabled` / `reflection_path` as the
+reflection-detail keys, `drives_path` as `motivation_path`,
+`agency_cycle_max_actions` as
+`agency_cycle_detail_max_actions`), and 1 is honestly
+missing — `reflection_local_first` has no key because
+reflection is local by construction and no external
+reflection service exists for such a flag to prefer against.
+Banked defaults that differ from the §20 suggestions (the
+core stores enabled-by-default inside an already opt-in
+plugin; the agency-cycle bound at 3, not 1) are recorded in
+the module, not silently changed. §21 CLI: the audit found
+the inspection commands did not exist at all — that genuine
+gap is now implemented read-only and LLM-free, exactly as
+§21 requires: `hermes volmarr self {health|show}`,
+`awareness {health|show}`, `reflection {health|recent}`,
+`motivation show`, `curiosity show`, and `autonomy show`,
+backed by a counts/identifiers-only inspection service that
+reports each surface ok / disabled / not_created /
+unreadable and writes nothing (contract-proven
+byte-identical stores). `agency status` already stood exact.
+The remaining 9 proposed commands are deferred, named in the
+module with their reasons: the action forms (self refresh,
+awareness scan, reflection run, curiosity add / select,
+autonomy check / explain, motivation evaluate, agency
+cycle) stand service-side in their owning stores, and
+wiring each CLI form is a separate slice — `agency run`
+remains the proposal-only routine, never mislabelled as the
+orchestrator cycle. §22's model-callable tools were audited
+in passing: none of the nine proposed tool names exists —
+the entity's model surface remains the banked goal /
+relationship / heartbeat / sleep / WYRD tools — and §22
+stays a proposal for a later slice, not a claim. With this
+reconciliation the Self-Aware Agency roadmap is fully
+reconciled: §§5–18 implemented, §§19–21 audited above.
+
 ---
 
 # 22. Agent Tools
