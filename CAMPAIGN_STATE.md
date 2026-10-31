@@ -466,3 +466,19 @@ portable state: any agent (Muse or Hermes) resumes from here.
   updated. Remaining in this commission: full suite, smoke, README
   invariant, and the full-line push (Slices 83–92) under the standing
   go-ahead, verified by ls-remote.
+- **PUSHED 2026-10-31 ~00:5x EDT (integration commission, complete).**
+  Full suite (45 files: 44 volmarr/kista + `test_project_metadata.py`):
+  **270 passed, 7 failed, 1 skipped** — the failure set name-identical
+  to the pre-existing environmental set (5 core-plugin, 1 Verðandi
+  stimuli socket, 1 voice-runner loopback), independently re-confirmed
+  by a parallel 42-file baseline run (252/7/1). Smoke: `hermes
+  --version` on `b9cde5de` (+11 carried commits), volmarr-core 0.26.0
+  discovered. README.md sha256 invariant held
+  (`4e022de7…c4910`). Push: fast-forward, no force — origin/main moved
+  `9754aa239a` → `b9cde5de78`, verified by `git ls-remote` (remote ==
+  local HEAD). The whole banked line (Slices 83–90, 92a, 92) is now
+  on GitHub. The keeper's held-push condition (concurrent-writer
+  lock in flight) is discharged: the lock's author was this
+  commission, and the lock is committed consistently with pyproject.
+  Campaign resume point returns to the keeper's line: Slice 91 —
+  Emergent Agency Phase 2 (§9, Intrinsic Motivation).
