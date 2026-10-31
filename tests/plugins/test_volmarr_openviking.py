@@ -78,6 +78,18 @@ def _server(handler):
 
 def _write_profile(home, port: int) -> None:
     home.mkdir(parents=True, exist_ok=True)
+    # Since the upstream intake of 2026-10-30 the OpenViking provider is no
+    # longer bundled under plugins/memory/; it ships through the plugin
+    # catalog and installs into $HERMES_HOME/plugins/. Stage a minimal
+    # installed-provider stub so name discovery sees it, mirroring a
+    # catalog install. The probe enumerates names only (no import), so the
+    # stub just declares the MemoryProvider contract discovery looks for.
+    provider_dir = home / "plugins" / "openviking"
+    provider_dir.mkdir(parents=True, exist_ok=True)
+    (provider_dir / "__init__.py").write_text(
+        '"""Installed OpenViking MemoryProvider (test stub)."""\n',
+        encoding="utf-8",
+    )
     (home / "config.yaml").write_text(
         "plugins:\n"
         "  enabled: [volmarr-core]\n"
