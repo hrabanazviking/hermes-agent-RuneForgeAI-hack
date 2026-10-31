@@ -1539,3 +1539,55 @@ portable state: any agent (Muse or Hermes) resumes from here.
   recorded. Expect a Gate-0-style audit of the existing Verðandi
   bridge/telemetry surface first, then the widest safe subset of
   families wired from the stores that already own those facts.
+- 2026-10-31 ~08:3x EDT keeper tick: **Slice 112 DONE —
+  Self-Aware Agency §14 (Verðandi Events) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found (tree
+  clean, HEAD == origin/main at `e829519bf7`; Slice 111's commit
+  had landed ~1 minute before this tick's start and was verified
+  complete/pushed, not in-progress work). Gate 0 audit first, as
+  the resume note directed: the plugin already owns a
+  profile-safe, fail-open Verðandi publisher (lifecycle,
+  cognition, world, heartbeat, consolidation, and routine
+  surfaces publish through it), but none emits any §14 family,
+  and the publisher's context dict is free-form — so the
+  content-free rule is enforced in the new layer, not inherited
+  from the transport. `plugins/volmarr-core/verdandi_events.py`
+  names the seventeen §14 event types in roadmap order and
+  enforces the §14 envelope rule in code: a context may carry
+  only subject_id (canonical UUID or slug), subject_class
+  (slug), score (unit interval), reason_code (slug), outcome
+  (slug), and count (non-negative int) — unknown keys, non-slug
+  strings, and out-of-range numbers are refused at build time
+  and on log read, so no field can carry raw private
+  reflections, prompts, secrets, or conversation text. Emission
+  is explicit only (no hook, loop, scheduler, or turn-path
+  caller) through the existing publisher under schema
+  `runeforge.hermes.self_aware_events`; a dropped event (no
+  Verðandi service listening) never raises and is recorded
+  honestly as `delivered: false` in the bounded
+  `entity/verdandi_events.jsonl` log (rotation, symlink
+  refusal, strict owner/field validation). Disabled by default
+  (`verdandi_events_enabled`); bounded content-bearing packet
+  producer. This layer writes no owning store and imports none
+  of them. Tests: targeted 7/7 pass; full volmarr/kista run
+  (65 files): **449 passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set in the same 3
+  files (5 core-plugin, 1 Verðandi-stimuli socket, 1
+  voice-runner loopback), verified in the run log's own summary
+  line (`~/workspace/.verify-tmp/slice112_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §14 completion note in the Self-Aware Agency roadmap.
+  Honest gaps: no caller emits yet — wiring each owning store
+  to emit at its own transition points would change those
+  stores' contracts and is a separate slice per family;
+  live-bus delivery against a real Verðandi service is NOT
+  PROVEN in this sandbox.
+- **Next resume point: Slice 113 — Self-Aware Agency §15
+  (Background Life Integration)**: reconcile the §15 routines
+  (frequent continuity, reflection, curiosity, daily
+  consolidation — Hermes cron only, no new scheduler) against
+  the already-banked routines/timescales surfaces (Slices 97,
+  102) per the §15 spec when read at slice start — expect a
+  verification/reconciliation slice implementing only genuine
+  §15 gaps, not a second scheduler or routine set.

@@ -1481,6 +1481,39 @@ Event envelopes should contain identifiers, classes, numeric scores, reason code
 
 Do not place raw private reflections, prompts, secrets or conversation text on the event bus.
 
+**§14 completion note (Slice 112, 2026-10-31):** the seventeen
+§14 event families stand in
+`plugins/volmarr-core/verdandi_events.py`, over the plugin's
+existing profile-safe, fail-open Verðandi publisher (Gate 0 audit
+this slice: lifecycle, cognition, world, heartbeat, consolidation,
+and routine surfaces already publish through that socket transport,
+but none emits any §14 family, and the publisher's context dict is
+free-form — so the content-free rule is enforced in this layer, not
+inherited from the transport). Disabled by default
+(`verdandi_events_enabled`). The content-free rule is code: an
+event context may carry only a subject identifier (canonical UUID
+or slug), a subject class (slug), a unit-interval numeric score, a
+reason code (slug), an outcome (slug), and a non-negative count —
+there is no field that could carry free text, so raw private
+reflections, prompts, secrets, or conversation text are refused at
+build time and refused again on log read (a tampered record
+smuggling a text field is rejected by contract). Emission is
+explicit only — no hook, loop, scheduler, or turn-path caller
+emits — through the existing publisher under this layer's own
+schema (`runeforge.hermes.self_aware_events`); a dropped event (no
+Verðandi service listening) never raises into the caller and is
+recorded honestly as `delivered: false`. Every emission attempt
+lands in the bounded `entity/verdandi_events.jsonl` log (rotation,
+symlink refusal, strict owner/field validation). This layer writes
+no owning store and imports none of them. Honest gaps: no caller
+emits yet — wiring each owning store to emit at its own transition
+points would change those stores' contracts and is a separate
+slice per family; live-bus delivery against a real Verðandi
+service is NOT PROVEN in this sandbox (the pre-existing Verðandi
+transport failure in the environmental set is the same class) —
+the contract surface is the validated envelope, the fail-open
+publisher, and the delivered/dropped record.
+
 ---
 
 # 15. Background Life Integration

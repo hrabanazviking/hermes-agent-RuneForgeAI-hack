@@ -505,6 +505,18 @@ config_schema:
     type: bool
     default: false
     description: "Enable the SELF STATE context integration (Self-Aware Agency §13): the packet schema v2 SELF STATE section carries at most the seven compact §13 fields (identity summary, current attention, active self-originated goal, major discrepancy, confidence/uncertainty, known limitation, curiosity target), assembled deterministically and read-only from the layered self-model (Slice 103), Phase 9 intrinsic-goal arbitration, and the Phase 4 curiosity frontier. Requires the layered self-model to be enabled; never a full self-model dump. Disabled by default."
+  verdandi_events_enabled:
+    type: bool
+    default: false
+    description: "Enable the Verðandi event families (Self-Aware Agency §14): the seventeen content-free §14 event types emitted explicitly through the existing fail-open Verðandi publisher under a strict context allowlist (subject identifier/class, numeric score, reason code, outcome, count — no field can carry free text, reflections, prompts, secrets, or conversation text), with every emission attempt recorded in its own bounded log with its delivered/dropped outcome. Disabled by default; emission is explicit only — no hook, loop, scheduler, or turn-path caller emits, and no owning store is wired to emit yet."
+  verdandi_events_log_path:
+    type: str
+    default: entity/verdandi_events.jsonl
+    description: "Verðandi events log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  verdandi_events_log_limit:
+    type: int
+    default: 200
+    description: "Maximum Verðandi events log records retained by rotation (clamped to 10-500)."
   heartbeat_enabled:
     type: bool
     default: true

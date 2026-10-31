@@ -33,6 +33,7 @@ from .curiosity_detail import CuriosityDetailBridge
 from .autonomy_detail import AutonomyDetailBridge
 from .agency_cycle_detail import AgencyCycleDetailBridge
 from .self_state import SelfStateBridge
+from .verdandi_events import VerdandiEventsBridge
 from .subjective_report import SubjectiveReportBridge
 from .timescales import TimescaleBridge
 from .self_model import SelfModelBridge
@@ -89,6 +90,7 @@ def register(ctx) -> None:
     autonomy_detail = AutonomyDetailBridge(ctx)
     agency_cycle_detail = AgencyCycleDetailBridge(ctx)
     self_state = SelfStateBridge(ctx)
+    verdandi_events = VerdandiEventsBridge(ctx)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -126,6 +128,7 @@ def register(ctx) -> None:
             autonomy_detail.packet_items,
             agency_cycle_detail.packet_items,
             self_state.packet_items,
+            verdandi_events.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():
