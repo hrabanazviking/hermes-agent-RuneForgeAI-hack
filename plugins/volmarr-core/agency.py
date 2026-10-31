@@ -19,13 +19,15 @@ One invocation performs one cycle and exits: this module contains no
 loop, no scheduler, and no turn-path caller. Hermes cron decides when
 another cycle occurs (the proposal-only routine is Phase 7).
 
-Execution honesty: the only built-in executor is ``world_get``, a
-read-only local inspection (self-model claims + goal ledger readable
-and consistent on re-read). An allowed action with no registered
+Execution honesty: the built-in executors are ``world_get`` (a
+read-only local inspection verified by re-read) and, since Phase 8
+(§15), the Class 0/1 local-autonomy executors from
+``local_autonomy.py``. An allowed action with no registered
 executor is recorded ``skipped`` with verification
 ``not_executed_no_executor`` — allowed is never reported as executed.
 Additional executors are injected by the caller (tests, later
-phases); none may be registered implicitly.
+phases) and override the built-ins; none may be registered
+implicitly beyond those two named sets.
 """
 
 from __future__ import annotations
@@ -55,6 +57,7 @@ from .drives import DriveError, DriveStore
 from .goals import GoalStore
 from .heartbeat import HeartbeatError, HeartbeatStore
 from .identity import IdentityError, IdentityStore, _as_bool
+from .local_autonomy import BUILTIN_EXECUTOR_ACTIONS, LocalAutonomyExecutors
 from .metacognition import MetacognitionError, MetacognitionStore
 from .self_model import SelfModelStore
 
@@ -63,7 +66,7 @@ DEFAULT_JOURNAL_PATH = Path("entity") / "agency_journal.jsonl"
 DEFAULT_JOURNAL_LIMIT = 200
 MAX_JOURNAL_BYTES = 4 * 1024 * 1024
 DEFAULT_MAX_CANDIDATES = 3
-EXECUTOR_ACTIONS = frozenset({"world_get"})
+EXECUTOR_ACTIONS = frozenset({"world_get"} | BUILTIN_EXECUTOR_ACTIONS)
 
 _JOURNAL_FIELDS = {
     "journal_version", "cycle_id", "owner_entity_id", "trigger", "status",
@@ -122,6 +125,9 @@ class AgencyOrchestrator:
         self._metacognition = MetacognitionStore(ctx)
         self._heartbeat = HeartbeatStore(ctx)
         self._executors: dict[str, Executor] = {"world_get": self._execute_world_get}
+        # Phase 8 (§15): the built-in Class 0/1 local executors.
+        # Caller-injected executors below still override any of these.
+        self._executors.update(LocalAutonomyExecutors(ctx).executors())
         for action, executor in (executors or {}).items():
             if not callable(executor):
                 raise AgencyError("agency executor must be callable")

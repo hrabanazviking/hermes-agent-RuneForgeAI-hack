@@ -16,6 +16,7 @@ from .goals import GoalBridge, register_goal_tools
 from .heartbeat import HeartbeatBridge, register_heartbeat_tool
 from .identity import IdentityBridge
 from .lifecycle import LifecycleBridge
+from .local_autonomy import LocalAutonomyBridge
 from .mempalace_retrieval import MemPalaceRetrievalBridge
 from .metacognition import MetacognitionBridge
 from .openviking_retrieval import OpenVikingRetrievalBridge
@@ -57,6 +58,7 @@ def register(ctx) -> None:
         ctx.register_hook(hook_name, callback)
     agency = AgencyBridge(ctx)
     agency_routine = AgencyRoutineBridge(ctx)
+    local_autonomy = LocalAutonomyBridge(ctx)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -80,6 +82,7 @@ def register(ctx) -> None:
             autonomy.packet_items,
             agency.packet_items,
             agency_routine.packet_items,
+            local_autonomy.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():

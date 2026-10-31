@@ -67,6 +67,20 @@ _DEFAULT_CAPABILITIES: dict[str, dict[str, Any]] = {
     "world_get": {"class": 0, "network": "loopback", "reversible": True},
     "goal_update": {"class": 2, "domain": "entity", "reversible": True},
     "github_push": {"class": 3, "domain": "external", "reversible": False},
+    # Emergent Agency Phase 8 (§15) limited local autonomy: the
+    # narrow Class 0/1 local set. Seeded only into NEW policy files;
+    # an existing human-authoritative policy gains these only by
+    # human edit, exactly like every other registry change.
+    "inspect_project_state": {"class": 0, "domain": "entity", "reversible": True},
+    "check_health": {"class": 0, "domain": "entity", "reversible": True},
+    "inspect_memory_integrity": {"class": 0, "domain": "entity", "reversible": True},
+    "local_readonly_research": {"class": 0, "domain": "entity", "reversible": True},
+    "run_local_tests": {"class": 1, "domain": "entity", "reversible": True},
+    "generate_private_report": {"class": 1, "domain": "entity", "reversible": True},
+    "organize_curiosity_queue": {"class": 1, "domain": "entity", "reversible": True},
+    "update_self_model_evidence": {"class": 1, "domain": "entity", "reversible": True},
+    "run_consolidation": {"class": 1, "domain": "entity", "reversible": True},
+    "prepare_suggested_patch": {"class": 1, "domain": "entity", "reversible": True},
 }
 
 try:

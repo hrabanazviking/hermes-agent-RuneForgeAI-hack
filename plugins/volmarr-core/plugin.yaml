@@ -309,6 +309,18 @@ config_schema:
     type: int
     default: 60
     description: "Runtime budget per agency routine run in seconds (clamped to 5-300)."
+  local_autonomy_enabled:
+    type: bool
+    default: true
+    description: "Enable limited local autonomy (Emergent Agency Phase 8): the narrow Class 0/1 local action set, always through the Phase 5 autonomy gate. Execution still requires a local/bounded policy mode."
+  local_autonomy_log_path:
+    type: str
+    default: entity/local_actions.jsonl
+    description: "Local autonomy log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  local_autonomy_log_limit:
+    type: int
+    default: 200
+    description: "Maximum local autonomy log records retained by rotation (clamped to 10-500)."
   heartbeat_enabled:
     type: bool
     default: true

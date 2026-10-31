@@ -759,3 +759,52 @@ portable state: any agent (Muse or Hermes) resumes from here.
   queue, local read-only research, update self-model evidence, run
   consolidation, prepare suggested patches without applying them)
   per the §15 spec when read at slice start.
+- 2026-10-31 ~03:0x EDT keeper tick: **Slice 98 DONE — Emergent
+  Agency Phase 8 (§15, Limited Local Autonomy) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found (tree
+  clean, HEAD == origin/main at `ff9d4bdf`).
+  `plugins/volmarr-core/local_autonomy.py`: the ten §15 actions as
+  a Class 0/1-only registry (inspect project state, check health,
+  inspect memory integrity, local read-only research = Class 0;
+  run local tests, generate private report, organise curiosity
+  queue, update self-model evidence, run consolidation, prepare
+  suggested patch = Class 1), seeded into NEW autonomy policy
+  files only (existing human-authoritative policies gain entries
+  only by human edit). Execution only through the Phase 5 gate:
+  `LocalAutonomyService.run_action` (one explicit invocation;
+  decision + result recorded in autonomy state) and the Phase 6
+  orchestrator, whose built-in executors now include the nine
+  local executors (caller-injected still override). Read-only
+  actions leave every source store byte-identical (contract-
+  proven); Class 1 effects are bounded to the profile — counts-
+  only private report / never-applied suggested-patch records in
+  the bounded `entity/local_actions.jsonl` log (rotation, symlink
+  refusal, strict owner/field validation), self-model evidence
+  decided by the merge layer (missing claims skipped, never
+  created), and the non-destructive consolidation checkpoint.
+  `run_local_tests` has NO built-in executor (recursive/unbounded
+  inside a cycle): allowed = recorded `skipped`, never executed;
+  the full suite remains an operator action. Bounded packet
+  contribution (last report/patch record, content-bearing only);
+  config keys `local_autonomy_enabled`/`local_autonomy_log_path`/
+  `local_autonomy_log_limit` in `plugin.yaml`. One in-slice fix:
+  the consolidation executor first read a nonexistent
+  `ConsolidationReport.ok` field (the field is `healthy`) —
+  caught by the slice's own contract test, fixed in scope.
+  Tests: targeted 9/9 pass; full volmarr/kista run (51 files):
+  **332 passed, 7 failed, 1 skipped** — the failures are the same
+  name-identical pre-existing environmental set (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback), verified in
+  the run log's own summary line. Smoke: `hermes --version` runs;
+  README.md sha256 invariant held (`4e022de7…c4910`).
+  Bookkeeping: CUSTOMIZATIONS.md ledger row, Phase 8 completion
+  note in the Emergent Agency roadmap §15. Honest gaps: Verðandi
+  local-autonomy events NOT yet emitted — deferred to a later
+  telemetry slice, recorded in both bookkeeping spots.
+- **Next resume point: Slice 99 — Emergent Agency Phase 9 (§16,
+  Durable Intrinsic Goals)**: goals schema v2 with origin
+  preserved, intrinsic goal quota, priority arbitration (user
+  goals normally outrank intrinsic), user archive/reject of
+  intrinsic goals with rejected-fingerprint cooldown and
+  near-duplicate evasion refusal (per the §16 spec when read at
+  slice start).

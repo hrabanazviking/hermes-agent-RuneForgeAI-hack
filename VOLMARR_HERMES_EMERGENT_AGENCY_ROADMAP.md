@@ -1890,6 +1890,35 @@ not:
 
 This alone is a major transition from reactive chatbot to persistent agent.
 
+**Slice 98 completion (2026-10-31):** Phase 8 is implemented in
+`plugins/volmarr-core/local_autonomy.py`. The ten §15 examples form
+a registry of local actions, Class 0/1 only — inspect project
+state, check health, inspect memory integrity, and local read-only
+research (Class 0); run local tests, generate private reports,
+organise the curiosity queue, update self-model evidence, run
+consolidation, and prepare suggested patches (Class 1) — seeded
+into NEW autonomy policy files (existing human-authoritative
+policies gain the entries only by human edit, per the Phase 5
+rule). Execution runs only through the Phase 5 gate:
+`LocalAutonomyService.run_action` performs one explicit, gated
+action and records decision + result in autonomy state, and the
+Phase 6 orchestrator's built-in executors now include the nine
+local executors. Read-only actions leave every source store
+byte-identical (contract-proven); Class 1 effects are bounded to
+the profile — a counts-only private report or a never-applied
+suggested-patch record in the bounded `entity/local_actions.jsonl`
+log, self-model evidence decided by the self-model's own merge
+layer (missing claims skipped, never created), and the
+non-destructive consolidation checkpoint. `run_local_tests` is
+registered but has NO built-in executor: running the pytest suite
+inside an agency cycle would be recursive and unbounded, so an
+allowed proposal is recorded `skipped`, never as executed, and the
+full suite remains an operator action via `scripts/run_tests.sh`.
+Verðandi local-autonomy events are not yet emitted; they arrive
+with a later telemetry slice. Next: Phase 9 (§16) promotes selected
+intent proposals into durable intrinsic goals (goals schema v2,
+origin preserved, quota and arbitration).
+
 ---
 
 # 16. Phase 9 - Durable Intrinsic Goals
