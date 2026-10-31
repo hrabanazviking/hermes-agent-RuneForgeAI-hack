@@ -1089,3 +1089,53 @@ portable state: any agent (Muse or Hermes) resumes from here.
   layered snapshot + discrepancy list (§6.4), bounded and
   replaceable, per the §6 spec (incl. §6.5's
   no-constant-rumination bound) when read at slice start.
+- 2026-10-31 ~06:2x EDT keeper tick: **Slice 104 DONE —
+  Self-Aware Agency §6 (Self-Awareness Layer) complete, banked
+  and PUSHED under the standing go-ahead.** No live work found
+  (tree clean, HEAD == origin/main at `80a373873`; Slice 103's
+  state mtime minutes earlier was its own completed push,
+  verified, not in-progress work). One in-slice fix, test-side:
+  the clean-state test's setup had not ensured the relationships
+  ledger, so the layered model honestly reported it unreadable —
+  the setup now ensures it (no production change).
+  `plugins/volmarr-core/awareness.py`: one bounded, replaceable
+  current snapshot at `entity/awareness.json` (create-once
+  neutral snapshot via the session-start hook; explicit
+  `refresh()` replaces it atomically), assembled deterministically
+  from the Slice 103 layered snapshot — attention target (top
+  active goal), current goal ids, uncertainty, cognitive load
+  (blocked share of live goals), salient discrepancies as bounded
+  detail strings from the layered §6.4 discrepancy list (surfaced,
+  not duplicated into a second discrepancy engine), and known
+  blind spots from the layered low-confidence active assumptions.
+  §6.5's no-constant-rumination bound is code:
+  `reflection_recommended` is true only when a named trigger is
+  present (salient_discrepancy, blocked_goal, high_uncertainty,
+  unresolved_contradiction) and the stored flag must agree with
+  its triggers on read; no hook, loop, scheduler, or turn-path
+  caller refreshes the snapshot. Strict owner/field/range
+  validation on read, symlink refusal; the only file written is
+  the snapshot itself (source stores sha256-identical across a
+  refresh, contract-proven). Disabled by default
+  (`awareness_enabled`); assembling requires the layered
+  self-model enabled. Config keys `awareness_enabled`/
+  `awareness_path` in `plugin.yaml`; bounded content-bearing
+  packet producer wired as one added `packet_sources` producer.
+  Tests: targeted 10/10 pass; full volmarr/kista run (57 files):
+  **387 passed, 7 failed, 1 skipped** — the same name-identical
+  pre-existing environmental set in the same 3 files (5
+  core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback), verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice104_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger row,
+  §6 completion note in the Self-Aware Agency roadmap.
+  Honest gaps: Verðandi awareness events NOT yet emitted —
+  deferred to a later telemetry slice, recorded in both
+  bookkeeping spots.
+- **Next resume point: Slice 105 — Self-Aware Agency §7
+  (Subjective Self-Report Without Confusing It With Telemetry)**:
+  per the §7 spec when read at slice start (persona
+  phenomenology report kept distinct from machine telemetry —
+  expect a bounded report/assembly layer over existing stores,
+  no new telemetry claims).

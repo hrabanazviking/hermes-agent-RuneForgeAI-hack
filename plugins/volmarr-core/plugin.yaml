@@ -389,6 +389,14 @@ config_schema:
     type: bool
     default: false
     description: "Enable the five-layer persistent self-model view (Self-Aware Agency §5). Disabled by default; assembles objective/narrative/ideal/relational/experiential layers deterministically and read-only over the existing claims, goals, and relationships stores, with cross-layer discrepancies made explicit. Owns no writes and no new persistent file."
+  awareness_enabled:
+    type: bool
+    default: false
+    description: "Enable the self-awareness layer (Self-Aware Agency §6). Disabled by default; keeps one bounded, replaceable current snapshot (attention, load, uncertainty, active goals, salient discrepancies from the §5 layered model, known blind spots) at the awareness path. Refresh is explicit only — no loop or rumination — and reflection is recommended only on named §6.5 triggers. Requires the layered self-model to be enabled."
+  awareness_path:
+    type: str
+    default: entity/awareness.json
+    description: "Awareness snapshot JSON path relative to the active Hermes profile; escaping paths fall back to the default."
   heartbeat_enabled:
     type: bool
     default: true

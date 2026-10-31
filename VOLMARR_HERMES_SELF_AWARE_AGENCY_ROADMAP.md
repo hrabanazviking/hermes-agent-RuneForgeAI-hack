@@ -559,6 +559,26 @@ plugins/volmarr-core/awareness.py
 plugins/volmarr-core/discrepancy.py
 ```
 
+**§6 completion note (Slice 104, 2026-10-31):** the self-awareness
+layer stands as `plugins/volmarr-core/awareness.py` — one bounded,
+replaceable current snapshot at `entity/awareness.json` (attention
+target = top active goal, current goal ids, uncertainty, cognitive
+load = blocked share of live goals), assembled deterministically
+on explicit refresh from the Slice 103 layered snapshot.
+Salient discrepancies are the layered model's §6.4 discrepancy
+details, surfaced as bounded strings — the deterministic
+comparisons live in the layered assembly, so no second
+`discrepancy.py` engine was duplicated. Known blind spots are the
+layered low-confidence active assumptions. §6.5 is enforced in
+code: `reflection_recommended` is true only when a named trigger
+is present (salient discrepancy, blocked goal, high uncertainty,
+unresolved contradiction), the stored flag must agree with its
+triggers on read, and nothing refreshes the snapshot except an
+explicit call — no loop, hook-driven refresh, or rumination.
+Disabled by default (`awareness_enabled`); assembling requires
+the layered self-model enabled. Honest gaps: Verðandi awareness
+events are NOT yet emitted — deferred to a later telemetry slice.
+
 ---
 
 # 7. Subjective Self-Report Without Confusing It With Telemetry
