@@ -517,6 +517,18 @@ config_schema:
     type: int
     default: 200
     description: "Maximum Verðandi events log records retained by rotation (clamped to 10-500)."
+  background_life_enabled:
+    type: bool
+    default: false
+    description: "Enable the background-life integration (Self-Aware Agency §15): the four §15 routines registered against Hermes cron (frequent continuity every 10m and daily consolidation every 1440m backed by the existing routines; reflection every 120m and curiosity every 240m paused by default and honestly unbacked), pure §15 gates (reflection only when a trigger is pending; curiosity only for a high-value question, at most one, defaulting to a research proposal), the frequent-continuity extension coverage, and the seven-field daily digest extension — with explicit run receipts in its own bounded log. Disabled by default; this layer installs nothing, runs nothing, and creates no scheduler — Hermes cron remains the only scheduler."
+  background_life_log_path:
+    type: str
+    default: entity/background_life.jsonl
+    description: "Background life receipt log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  background_life_log_limit:
+    type: int
+    default: 200
+    description: "Maximum background life receipt log records retained by rotation (clamped to 10-500)."
   heartbeat_enabled:
     type: bool
     default: true

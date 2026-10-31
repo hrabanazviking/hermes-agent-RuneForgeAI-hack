@@ -1591,3 +1591,56 @@ portable state: any agent (Muse or Hermes) resumes from here.
   102) per the §15 spec when read at slice start — expect a
   verification/reconciliation slice implementing only genuine
   §15 gaps, not a second scheduler or routine set.
+- 2026-10-31 ~08:5x EDT keeper tick: **Slice 113 DONE —
+  Self-Aware Agency §15 (Background Life Integration)
+  complete, banked and PUSHED under the standing go-ahead.**
+  No live work found (tree clean, HEAD == origin/main at
+  `c978556cf9`; Slice 112's commit had landed minutes before
+  this tick's start and was verified complete/pushed, not
+  in-progress work). Reconciliation exactly as the resume note
+  directed — no new scheduler, no second routine set:
+  `plugins/volmarr-core/background_life.py` names the four
+  §15 routines in roadmap order with honest backing (frequent
+  continuity `every 10m` backed by the existing no-agent
+  routine; reflection `every 120m` and curiosity `every 240m`
+  paused by default and backed: false; daily consolidation
+  `every 1440m` backed by the existing daily routine). The
+  §15 gates are pure functions (reflection only when a
+  trigger is pending; curiosity only for a high-value
+  question, at most one, defaulting to a research proposal —
+  never automatic external research). Frequent-continuity
+  coverage is stated honestly (heartbeat/aggregate goals
+  covered; health/stale-blocked partial; discrepancy
+  deferred); the daily digest extension names the seven
+  §15 fields under the never-rewrite-personality-canon rule.
+  Explicit run receipts (counts-only detail) land in the
+  bounded `entity/background_life.jsonl` log; recording
+  installs and runs nothing. Disabled by default
+  (`background_life_enabled`); bounded content-bearing
+  packet producer. Tests: targeted 7/7 pass; full
+  volmarr/kista run (66 files): **456 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice113_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §15 completion note in the Self-Aware Agency roadmap.
+  Honest gaps: the reflection and curiosity routines have
+  no backing Hermes-cron job yet (definition/gate/cadence
+  only); the daily checkpoint does not yet record the
+  seven digest fields (named for a consolidation extension
+  slice); Verðandi background-life events NOT emitted by
+  this layer.
+- **Next resume point: Slice 114 — Self-Aware Agency §16
+  (Self-Awareness and Caducea-Style Persona Files)**:
+  reconcile the §16 persona-canon vs runtime distinction
+  (persona files seed narrative/ideal self, reflection
+  vocabulary, values — never overriding deterministic
+  runtime facts; a persona claim contradicted by runtime
+  health must surface as a discrepancy) against the
+  already-banked layered self-model (Slice 103) and
+  discrepancy surfaces when read at slice start — expect a
+  verification/reconciliation slice implementing only
+  genuine §16 gaps, not a second persona system.

@@ -1580,6 +1580,40 @@ Extend the existing sleep/consolidation checkpoint to record:
 
 The daily routine should not rewrite personality canon automatically.
 
+**§15 completion note (Slice 113, 2026-10-31):** background life
+is reconciled in `plugins/volmarr-core/background_life.py` —
+no new scheduler and no second routine set; Hermes cron remains
+the only scheduler. Disabled by default
+(`background_life_enabled`). The four §15 routines stand named in
+roadmap order with their cadences and backing stated honestly:
+frequent continuity (`every 10m`, backed by the existing
+no-agent routine), reflection (`every 120m`, paused by default,
+backed: false — no routine exists yet), curiosity (`every 240m`,
+paused by default, backed: false), and daily consolidation
+(`every 1440m`, backed by the existing daily routine). The §15
+gates are pure functions: reflection is allowed only when a
+reflection trigger is pending; curiosity is allowed only when a
+high-value open question exists, selects at most one, and
+defaults to a research proposal — never automatic external
+research. Frequent-continuity extension coverage is stated
+honestly (heartbeat and aggregate goals covered; health and
+stale-blocked-goal detection partial; high-priority discrepancy
+detection deferred to the layered self-model). The daily
+digest extension names the seven §15 fields (self-model,
+awareness, and drive-state digests; curiosity, reflection,
+autonomy-action, and intrinsic-goal counts) under the rule that
+the daily routine never rewrites personality canon. Explicit
+run receipts (counts-only detail, no free-text field) land in
+the bounded `entity/background_life.jsonl` log (rotation,
+symlink refusal, strict owner/field validation); recording a
+receipt installs nothing and runs nothing. Honest gaps: the
+reflection and curiosity routines have no backing Hermes-cron
+job yet (registered by definition, gate, and cadence only);
+the daily checkpoint does not yet record the seven digest
+fields (they are named here for the consolidation extension
+slice); Verðandi background-life events are NOT emitted by
+this layer.
+
 ---
 
 # 16. Self-Awareness and Caducea-Style Persona Files
