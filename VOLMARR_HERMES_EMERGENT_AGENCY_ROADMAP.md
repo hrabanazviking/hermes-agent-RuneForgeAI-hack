@@ -1742,6 +1742,28 @@ Example:
 
 Detailed tool outputs remain in their canonical stores rather than being duplicated here.
 
+**Slice 96 completion (2026-10-31):** Phase 6 is implemented in
+`plugins/volmarr-core/agency.py` (`AgencyOrchestrator.run_cycle`):
+one explicit invocation runs one bounded cycle and exits — no loop,
+no scheduler, no session-hook or turn-path caller. Candidates come
+from drive proposals, the curiosity frontier, and active/blocked
+goals; they are deduplicated by (action, normalised summary), scored
+deterministically, capped by `agency_max_candidates`, and every
+selected candidate is policy-checked and recorded through the
+Phase 5 gate. Execution runs only through a registered local
+executor: the sole built-in is `world_get`, a read-only local
+inspection verified by a consistent re-read; an allowed action with
+no executor is recorded `skipped` with verification
+`not_executed_no_executor`, never as executed. The bounded
+`entity/agency_journal.jsonl` holds structured facts only; executed
+cycles record one `significant_autonomous_action` reflection and
+feed evidence back (drive satisfy, curiosity attempt) only for
+actions that actually ran; the returned `AgencyCycleReport` is the
+content-free telemetry shape. A tripped/paused breaker ends the
+cycle as `paused`. Verðandi agency events (§13 step 17 metadata)
+are not yet emitted; they arrive with a later telemetry slice.
+Next: Phase 7 (§14) adds the proposal-only agency routine.
+
 ---
 
 # 14. Phase 7 - Proposal-Only Autonomous Life

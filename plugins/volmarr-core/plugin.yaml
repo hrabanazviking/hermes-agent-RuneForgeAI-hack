@@ -269,6 +269,22 @@ config_schema:
     type: str
     default: entity/autonomy_state.json
     description: "Autonomy runtime state JSON path relative to the active Hermes profile; escaping paths fall back to the default."
+  agency_enabled:
+    type: bool
+    default: true
+    description: "Enable the agency orchestrator (Emergent Agency Phase 6). One explicit invocation runs one bounded cycle and exits; no cycle runs from a session hook."
+  agency_journal_path:
+    type: str
+    default: entity/agency_journal.jsonl
+    description: "Agency journal JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  agency_journal_limit:
+    type: int
+    default: 200
+    description: "Maximum agency journal records retained by rotation (clamped to 10-500)."
+  agency_max_candidates:
+    type: int
+    default: 3
+    description: "Maximum candidate intentions selected per agency cycle (clamped to 1-10)."
   heartbeat_enabled:
     type: bool
     default: true

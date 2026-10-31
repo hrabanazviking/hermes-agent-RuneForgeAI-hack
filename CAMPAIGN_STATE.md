@@ -655,3 +655,53 @@ portable state: any agent (Muse or Hermes) resumes from here.
   into candidate intentions decided by the gate, on the Slice 88
   `AgencyCycleReport` contract (per the §13 spec when read at slice
   start).
+- 2026-10-31 ~02:1x EDT keeper tick: **Slice 96 DONE — Emergent
+  Agency Phase 6 (§13, Agency Orchestrator) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found (tree
+  clean, HEAD == origin/main at `921ee3e0`).
+  `plugins/volmarr-core/agency.py`: `AgencyOrchestrator.run_cycle`
+  performs ONE bounded cycle per explicit invocation and exits (no
+  loop, no scheduler, no session-hook or turn-path caller; Hermes
+  cron decides recurrence). Steps: identity/continuity health
+  (fresh/stale/never/unknown), autonomy breaker check (tripped or
+  paused ends the cycle as `paused` with a journal record), compact
+  self-model read, deterministic drive decay, curiosity frontier,
+  active/blocked goals. Candidates (drive proposals, curiosity
+  frontier, goals — blocked before active) are deduplicated by
+  (action, normalised summary), scored deterministically, capped by
+  `agency_max_candidates` (1–10, default 3), turned into
+  `ActionProposal`s, and policy-checked + recorded through the
+  Phase 5 gate. Execution runs ONLY through a registered local
+  executor: the sole built-in is `world_get`, a read-only local
+  inspection verified by a consistent re-read; an allowed action
+  with no executor is recorded `skipped` (verification
+  `not_executed_no_executor`), never as executed; executors are
+  caller-injected only. Each cycle appends one structured-facts
+  record to the bounded `entity/agency_journal.jsonl` (rotation by
+  `agency_journal_limit` 10–500 default 200, symlink refusal,
+  strict owner/field validation on read) and returns the
+  content-free `AgencyCycleReport`. Executed cycles record one
+  `significant_autonomous_action` reflection and feed evidence back
+  (drive `satisfy`, curiosity attempt) only for actions that ran.
+  Packet contribution is content-bearing only (a completed cycle
+  with no executions contributes nothing). Config keys
+  `agency_enabled`/`agency_journal_path`/`agency_journal_limit`/
+  `agency_max_candidates` in `plugin.yaml`. Tests: targeted 10/10
+  pass; full volmarr/kista run (49 files): **323 passed, 7 failed,
+  1 skipped** — the failures verified name-identical to the
+  pre-existing environmental set by rerunning their 3 files (5
+  core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner loopback).
+  Smoke: `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger row,
+  Phase 6 completion note in the Emergent Agency roadmap §13.
+  Honest gaps: Verðandi agency events (§13 step-17 telemetry
+  metadata) NOT yet emitted — deferred to a later telemetry slice,
+  recorded in both bookkeeping spots; no CLI or cron routine yet —
+  that is Phase 7's `agency_routines.py`.
+- **Next resume point: Slice 97 — Emergent Agency Phase 7 (§14,
+  Proposal-Only Autonomous Life)**: `plugins/volmarr-core/
+  agency_routines.py` — the "Volmarr Agency Review" routine concept
+  (disabled by default, installed only explicitly, paused by
+  default after installation, local-first, one cycle per
+  invocation, bounded runtime/model calls, non-destructive,
+  proposal-only output) per the §14 spec when read at slice start.

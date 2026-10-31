@@ -5,6 +5,7 @@ from __future__ import annotations
 from functools import partial
 
 from .affective_bridge import AffectiveBridge
+from .agency import AgencyBridge
 from .autonomy import AutonomyBridge
 from .cli import health_command, register_cli
 from .consolidation import register_sleep_tool
@@ -53,6 +54,7 @@ def register(ctx) -> None:
     autonomy = AutonomyBridge(ctx)
     for hook_name, callback in autonomy.hooks():
         ctx.register_hook(hook_name, callback)
+    agency = AgencyBridge(ctx)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -74,6 +76,7 @@ def register(ctx) -> None:
             metacognition.packet_items,
             curiosity.packet_items,
             autonomy.packet_items,
+            agency.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():
