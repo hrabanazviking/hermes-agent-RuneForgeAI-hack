@@ -1824,6 +1824,41 @@ Over several weeks of runtime, measure:
 
 Do not unlock broader autonomy until these answers are satisfactory.
 
+**Slice 97 completion (2026-10-31):** Phase 7 is implemented in
+`plugins/volmarr-core/agency_routines.py`. The "Volmarr Agency
+Review" routine is disabled by default
+(`agency_routine_enabled`, default false), installed only by the
+explicit `hermes volmarr agency install` operator action through
+the existing Hermes-cron RoutineManager surface (every 360m, the
+§19 agency timescale), and paused by default after installation;
+no bridge hook installs or runs it. One `run_once` invocation
+collects one bounded batch of proposals and exits: at most
+`agency_routine_max_proposals` (1–20, default 5), zero model calls
+spent against the `agency_routine_max_model_calls` cap, and
+collection stops when the
+`agency_routine_max_runtime_seconds` budget is exhausted.
+Candidates are read local-first from drives, the curiosity
+frontier, goals, and the self-model, and are classified into the
+five §14 kinds — intrinsic goal, research question, maintenance
+task (blocked goals), project improvement (active goals), and
+self-improvement experiment (low-confidence limitation/uncertainty
+claims). The routine is non-destructive and proposal-only: it
+writes only its own bounded `entity/agency_proposals.jsonl` log
+(rotation, symlink refusal, strict owner/field/fingerprint
+validation on read), executes no action, records no autonomy
+result, satisfies no drive, records no curiosity attempt, and
+creates no goal — a contract test proves every source store is
+byte-identical after a run. Repetition is measured: proposals are
+fingerprinted (kind + normalised summary) and repeats are
+suppressed and counted; `evaluation()` returns the §14 evaluation
+numbers (runs, per-kind totals, duplicates suppressed, repetition
+rate, model calls) from the log. A bounded packet contribution
+reports the last batch's counts only when the routine is enabled
+and a batch exists. Verðandi agency-routine events are not yet
+emitted; they arrive with a later telemetry slice. Next: Phase 8
+(§15) allows a narrow set of Class 0/1 local actions once proposal
+quality is proven.
+
 ---
 
 # 15. Phase 8 - Limited Local Autonomy

@@ -285,6 +285,30 @@ config_schema:
     type: int
     default: 3
     description: "Maximum candidate intentions selected per agency cycle (clamped to 1-10)."
+  agency_routine_enabled:
+    type: bool
+    default: false
+    description: "Enable the proposal-only agency review routine (Emergent Agency Phase 7). Disabled by default; the routine executes nothing and only proposes."
+  agency_routine_log_path:
+    type: str
+    default: entity/agency_proposals.jsonl
+    description: "Agency routine proposals log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  agency_routine_log_limit:
+    type: int
+    default: 200
+    description: "Maximum agency routine log records retained by rotation (clamped to 10-500)."
+  agency_routine_max_proposals:
+    type: int
+    default: 5
+    description: "Maximum proposals collected per agency routine run (clamped to 1-20)."
+  agency_routine_max_model_calls:
+    type: int
+    default: 0
+    description: "Maximum model calls per agency routine run (clamped to 0-5). The deterministic routine spends none."
+  agency_routine_max_runtime_seconds:
+    type: int
+    default: 60
+    description: "Runtime budget per agency routine run in seconds (clamped to 5-300)."
   heartbeat_enabled:
     type: bool
     default: true

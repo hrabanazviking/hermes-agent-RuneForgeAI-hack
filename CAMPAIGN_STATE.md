@@ -705,3 +705,57 @@ portable state: any agent (Muse or Hermes) resumes from here.
   default after installation, local-first, one cycle per
   invocation, bounded runtime/model calls, non-destructive,
   proposal-only output) per the §14 spec when read at slice start.
+- 2026-10-31 ~02:3x EDT keeper tick: **Slice 97 DONE — Emergent
+  Agency Phase 7 (§14, Proposal-Only Autonomous Life) complete,
+  banked and PUSHED under the standing go-ahead.** No live work
+  found (tree clean, HEAD == origin/main at `a2e3677d`).
+  `plugins/volmarr-core/agency_routines.py`: the "Volmarr Agency
+  Review" routine — disabled by default
+  (`agency_routine_enabled`, default false), installed only by the
+  explicit `hermes volmarr agency install` operator action through
+  the existing Hermes-cron RoutineManager surface (every 360m, the
+  §19 agency timescale; script invokes `hermes volmarr agency run
+  --json` with a 60s subprocess bound), paused by default after
+  installation; no bridge hook installs or runs it. One `run_once`
+  collects one bounded batch and exits: at most
+  `agency_routine_max_proposals` (1–20, default 5), zero model calls
+  spent against the max-model-calls cap, collection stops at the
+  runtime budget. Candidates are read local-first from drives, the
+  curiosity frontier, goals, and the self-model, classified into
+  the five §14 kinds (intrinsic goal, research question,
+  maintenance task for blocked goals, project improvement for
+  active goals, self-improvement experiment for low-confidence
+  limitation/uncertainty claims). Non-destructive and
+  proposal-only: the only write is the bounded
+  `entity/agency_proposals.jsonl` log (rotation, symlink refusal,
+  strict owner/field/fingerprint validation); a contract test
+  proves every source store byte-identical after a run.
+  Repetition is measured by deterministic fingerprints — repeats
+  suppressed and counted; `evaluation()` returns runs, per-kind
+  totals, duplicates suppressed, and repetition rate. Bounded
+  packet contribution (last batch counts, enabled only) wired as
+  one added `packet_sources` producer; CLI
+  `hermes volmarr agency {status|install|run|evaluation}` added.
+  Tests: targeted 8/8 pass on re-run (the first targeted run
+  reported 1 failure in a file that then passed 8/8 twice,
+  including in the full run — recorded as a flake, not absorbed);
+  full volmarr/kista run (50 files): **323 passed, 7 failed,
+  1 skipped** per the runner summary — the failures are the same
+  name-identical pre-existing environmental set in the same 3
+  files (5 core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback). Smoke: `hermes --version` runs; README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, Phase 7 completion note in the Emergent Agency
+  roadmap §14. Honest gaps: Verðandi agency-routine events NOT yet
+  emitted — deferred to a later telemetry slice, recorded in both
+  bookkeeping spots; live Hermes-cron install of the Agency Review
+  job is NOT PROVEN in this sandbox (the manager reuses the proven
+  RoutineManager surface; no job was installed here).
+- **Next resume point: Slice 98 — Emergent Agency Phase 8 (§15,
+  Limited Local Autonomy)**: allow a narrow set of Class 0/1 local
+  actions through the Phase 5 gate + Phase 6 orchestrator (inspect
+  project state, run local tests, check health, inspect memory
+  integrity, generate private reports, organise the curiosity
+  queue, local read-only research, update self-model evidence, run
+  consolidation, prepare suggested patches without applying them)
+  per the §15 spec when read at slice start.

@@ -7,6 +7,11 @@ import json
 import sys
 from pathlib import Path
 
+from .agency_routines import (
+    AgencyRoutineError,
+    AgencyRoutineManager,
+    AgencyRoutineService,
+)
 from .cognition import probe_aesir
 from .consolidation import (
     ConsolidationService,
@@ -251,6 +256,32 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         default="manual",
     )
     sleep_run.add_argument("--json", action="store_true", dest="json_output")
+    agency = subcommands.add_parser(
+        "agency",
+        help="Manage the proposal-only agency review routine (Phase 7)",
+    )
+    agency_subcommands = agency.add_subparsers(dest="agency_action")
+    agency_status = agency_subcommands.add_parser(
+        "status",
+        help="Inspect the installed agency routine definition read-only",
+    )
+    agency_status.add_argument("--json", action="store_true", dest="json_output")
+    agency_install = agency_subcommands.add_parser(
+        "install",
+        help="Idempotently install the agency routine paused unless --activate is supplied",
+    )
+    agency_install.add_argument("--activate", action="store_true")
+    agency_install.add_argument("--json", action="store_true", dest="json_output")
+    agency_run = agency_subcommands.add_parser(
+        "run",
+        help="Run one proposal-only agency review (executes nothing)",
+    )
+    agency_run.add_argument("--json", action="store_true", dest="json_output")
+    agency_evaluation = agency_subcommands.add_parser(
+        "evaluation",
+        help="Report agency routine evaluation counts read-only",
+    )
+    agency_evaluation.add_argument("--json", action="store_true", dest="json_output")
 
 
 def _load_json_request(source: str, *, max_bytes: int) -> dict:
@@ -467,6 +498,43 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             print(json.dumps(report.as_dict(), sort_keys=True))
         else:
             print(f"Entity routines: {getattr(report, 'status', 'completed')}")
+        return exit_code
+    elif action == "agency":
+        agency_action = getattr(args, "agency_action", None)
+        try:
+            if agency_action == "status":
+                report = AgencyRoutineManager(ctx).status()
+                exit_code = 0 if report.status.startswith("installed_") else 1
+                payload = report.as_dict()
+            elif agency_action == "install":
+                report = AgencyRoutineManager(ctx).install(
+                    activate=bool(getattr(args, "activate", False))
+                )
+                exit_code = 0
+                payload = report.as_dict()
+            elif agency_action == "run":
+                report = AgencyRoutineService(ctx).run_once(trigger="manual")
+                exit_code = 0
+                payload = report.as_dict()
+            elif agency_action == "evaluation":
+                payload = AgencyRoutineService(ctx).evaluation()
+                exit_code = 0
+            else:
+                print("Usage: hermes volmarr agency {status|install|run|evaluation} [options]")
+                return 2
+        except (IdentityError, AgencyRoutineError, RoutineError, OSError) as exc:
+            print(
+                json.dumps(
+                    {"error": "agency_routine_failed", "detail": str(exc)},
+                    sort_keys=True,
+                ),
+                file=sys.stderr,
+            )
+            return 1
+        if getattr(args, "json_output", False):
+            print(json.dumps(payload, sort_keys=True, default=str))
+        else:
+            print(f"Agency routine: {payload.get('status', 'completed')}")
         return exit_code
     elif action == "sleep":
         sleep_action = getattr(args, "sleep_action", None)
