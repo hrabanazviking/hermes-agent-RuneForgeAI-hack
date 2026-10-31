@@ -226,6 +226,57 @@ portable state: any agent (Muse or Hermes) resumes from here.
   in this tree before specifying/enabling any of Huginn ingestion,
   Muninn reinforcement, consolidation, or decay). Banked locally
   only; pushes beyond the ordered refresh still await Volmarr's word.
+- 2026-10-30 ~23:09 EDT keeper tick: **Slice 86 DONE (Gate 0 audit
+  only, no code), banked locally only, no push.** In-tree surface
+  verified: the whole Bifröst attachment is `memory_fabric.py`
+  (construct-only bridge, Mímir default, all enable flags forced
+  off; read-only Mímir probe that never calls the bridge), the
+  `memory health` CLI action, two `plugin.yaml` path keys, and 3
+  stub-package contracts — no caller of any bridge method exists,
+  and `bifrost` is not a dependency of this tree (absent from
+  pyproject/uv.lock, not installed; `package_missing` is the stock
+  status). External package audited in a scratch clone:
+  `hrabanazviking/bifrost` at `b66e98cc` (v1.0.0;
+  `COMPONENT_LICENSES.md` pins exactly that commit as provenance —
+  a same-tick correction to this entry's first draft, which wrongly
+  said no pin exists — but the package is not a dependency in
+  pyproject/uv.lock and `huginn`/`muninn` have no pins anywhere).
+  **Verdict: NO-GO for every Bifröst write path**, on
+  three independent grounds: (1) `decay()`/`consolidate()` delegate
+  entirely to an external `muninn` package and Huginn
+  ingestion/search to an external `huginn` package, but both are
+  bare unpinned extras whose PyPI names are unrelated projects, no
+  public repo exists under those names, and no copy is in this
+  tree — mutation semantics NOT PROVEN, and installing the extras
+  by name would pull wrong software (name-collision defect recorded
+  in the audit); (2) bridge reads write — `recall()` always logs a
+  Muninn activation, `search()` reinforces when enabled, every
+  method (health included) lazily constructs both write backends,
+  and the bridge's Mímir open is read-write + WAL pragma; (3) the
+  auto flags are dead — `auto_consolidate`/`auto_decay`/
+  `consolidation_threshold`/`decay_interval_hours` are declared
+  and never read; consolidation/decay run only via explicit calls.
+  The entity consolidation checkpoint (Phase 7) is separate and
+  does not discharge this item. Full audit appended to
+  `PERSISTENT_ENTITY_ACCEPTANCE_AUDIT.md`; roadmap §29 Milestone 3
+  gained the slice-86 paragraph. Verification: memory-fabric
+  contracts 3/3 pass (docs-only slice; no code changed).
+- **Next resume point: Slice 87 — Muninn read-only
+  association-store probe**, specified implementation-ready at the
+  end of `PERSISTENT_ENTITY_ACCEPTANCE_AUDIT.md` (`probe_bifrost_muninn`
+  + `hermes volmarr memory muninn health`, read-only sqlite,
+  `hebbian_connections`/`activation_log` schema + counts, no
+  package import, no bridge construction, profile-isolated).
+- **BLOCKER needing Volmarr's word (name once, plainly): the
+  canonical `muninn` and `huginn` package sources.** The Bifröst
+  write paths (Huginn ingestion, Muninn reinforcement, Bifröst
+  consolidation/decay) cannot be specified or enabled until
+  Volmarr supplies where those packages canonically live (repo or
+  pin); Gate 0 reopens on them when supplied. After Slice 87 the
+  write paths stay parked on this blocker and the campaign moves
+  to roadmap queue item 2 (Emergent Agency, Phase 0). Banked
+  locally only; pushes beyond the ordered refresh still await
+  Volmarr's word.
 
 ## Standing bounds for this campaign
 

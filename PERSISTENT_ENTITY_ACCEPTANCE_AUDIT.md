@@ -414,3 +414,199 @@ no new failures.
 **Next resume point:** the Bifröst Huginn/Muninn/consolidation/decay
 contracts — Milestone 3's last remaining item. Banked locally only;
 no push.
+---
+
+# Slice 86 — Bifröst Huginn/Muninn/Consolidation/Decay Gate 0 Audit (2026-10-30)
+
+**Verdict: NO-GO for every Bifröst write path at this time; the audit
+itself is complete and the one safe next step is specified as Slice 87
+below (a read-only Muninn store probe, no package import, no bridge
+call). No bridge code, no config change, and no enabling in this
+slice.** Three independent grounds, each sufficient on its own:
+
+1. **The two backend packages the write paths live in cannot be
+   audited.** `BifrostBridge.decay()` and `.consolidate()` delegate
+   entirely to the external `muninn` package, Muninn reinforcement
+   writes through it, and Huginn ingestion/search go through the
+   external `huginn` package. Neither package has an auditable
+   canonical source (details below), so their mutation semantics —
+   what decay prunes, what consolidation rewrites, what an activation
+   writes — are **NOT PROVEN** and cannot be specified honestly.
+2. **Reads through the bridge are not reads.** In the audited bridge
+   source, `recall()` always logs a Muninn activation, and `search()`
+   reinforces co-activations whenever reinforcement is enabled — both
+   are writes on the read path, into a store whose package is ground 1.
+3. **The auto flags are dead.** `auto_consolidate`, `auto_decay`,
+   `consolidation_threshold`, and `decay_interval_hours` are declared
+   in `BifrostConfig` and never read anywhere in the bridge. Flipping
+   the Hermes wrapper's `False` values would change nothing; there is
+   no scheduler in the package. Consolidation/decay happen only via
+   explicit `bridge.decay()` / `bridge.consolidate()` calls, which no
+   code in this tree makes.
+
+## The in-tree attachment surface (verified on this tree)
+
+- The whole Bifröst **code** surface in this tree is:
+  `plugins/volmarr-core/memory_fabric.py` (`BifrostSettings`,
+  `build_bifrost_bridge`, `probe_bifrost`), the
+  `hermes volmarr memory health` CLI action that calls `probe_bifrost`,
+  two path keys in `plugin.yaml` (`bifrost_mimir_db_path`,
+  `bifrost_muninn_db_path`), and
+  `tests/plugins/test_volmarr_memory_fabric.py` (3 contracts, which
+  stub the `bifrost` package in `sys.modules`). Around that code sit
+  documentation/provenance mentions only: `ARCHITECTURE_VOLMARR.md`
+  § Slice 8, the `CUSTOMIZATIONS.md` ledger row, `THIRD_PARTY_NOTICES.md`,
+  and the `COMPONENT_LICENSES.md` pin — no other code path touches
+  Bifröst.
+- `build_bifrost_bridge` only constructs: it resolves both DB paths
+  against the active profile (relative escapes are rejected before
+  construction), imports `bifrost`, and builds a `BifrostConfig` with
+  `default_backend=MIMIR`, `enable_hebbian_reinforcement=False`,
+  `auto_consolidate=False`, `auto_decay=False`. **No caller in this
+  tree calls any bridge method** (`search`, `store`, `recall`,
+  `decay`, `consolidate`, `health`, `stats` are all uncalled);
+  `probe_bifrost` discards the constructed bridge and validates Mímir
+  itself through a read-only sqlite URI (`mode=ro`), requiring the
+  `memories` table and returning its count, rejecting symlinks and
+  missing files without creating anything.
+- The `bifrost` package is **not a dependency of this tree**: it is
+  absent from `pyproject.toml` and `uv.lock` and is not installed in
+  the test environment (import fails), so `package_missing` is the
+  normal health status on a stock tree and the contract tests stub it.
+- Not to be conflated: `plugins/volmarr-core/consolidation.py` is the
+  entity consolidation *checkpoint* (identity/relationships/goals/
+  heartbeat digests; its own docstring states it does not rewrite
+  memory). It is complete under Phase 7 and is **not** Bifröst
+  consolidation; it does not discharge this item.
+
+## The external package (audited source)
+
+- `hrabanazviking/bifrost` at `b66e98cc8a79d4dede22ba11d68a1a5ecd22ebd6`
+  (HEAD of `main` at audit time; package version 1.0.0, zero core
+  dependencies, `huginn`/`muninn` as optional extras).
+  `COMPONENT_LICENSES.md` in this tree pins exactly this commit as
+  the provenance record — so the audited source is precisely the
+  recorded version — but the package is still not a dependency in
+  `pyproject.toml`/`uv.lock` (below) and no equivalent pin exists
+  for `huginn` or `muninn`. Audited in a scratch clone outside the
+  tree. (Correction appended the same tick: an earlier draft of this
+  section wrongly said no pin exists in this tree; the
+  `COMPONENT_LICENSES.md` pin was found by the full-tree sweep after
+  the first banking and the text was fixed before any push.)
+- Upstream `BifrostConfig` defaults run opposite to this tree's
+  attachment law: `default_backend=ALL`,
+  `enable_hebbian_reinforcement=True`, `auto_consolidate=True`,
+  `auto_decay=True`, DB paths anchored to `~/.hermes` (launch home,
+  not the active profile), `qdrant_url=http://localhost:6333`. The
+  Hermes wrapper overrides the paths, the default backend, and the
+  three enable flags — but not `min_activation_threshold` (default 3),
+  the scoring weights, `max_results_per_backend`, `qdrant_url`, or
+  the (dead) consolidation/decay knobs.
+- **Lazy-init trap:** every bridge method calls
+  `_ensure_initialized()`, which unconditionally tries to construct
+  Huginn (`HuginnMemory(config=None)` — the configured `qdrant_url`
+  is never passed) and Muninn (`HebbianMemory(MuninnConfig(db_path=…))`)
+  regardless of the requested backend. A Mímir-only `search()` would
+  still construct both. Their constructors' side effects (DB creation,
+  migrations) live in the unauditable packages of ground 1.
+  `_ensure_mimir` itself opens sqlite read-write and executes
+  `PRAGMA journal_mode=WAL` — an open that can change the store's
+  journal mode and create WAL sidecars. The existing probe's refusal
+  to touch the bridge is therefore load-bearing, not incidental.
+- Operation inventory in `src/bifrost/core.py`:
+  - `search(query, …)` — Mímir FTS5 + Huginn semantic + Muninn
+    association reads, composite-scored; then, if
+    `enable_hebbian_reinforcement` and >1 result,
+    `_reinforce_coactivation()` writes Muninn activations/connections
+    (anchor-gated by `min_activation_threshold`: at/above → full
+    `activate_batch`; below → individual `activate()` logs only —
+    still writes). The wrapper's `False` keeps this tree's config on
+    the safe side, but only as a config value on an uncalled object.
+  - `recall(memory_id)` — Mímir row read that **always** calls
+    `muninn.activate(memory_id)` when Muninn loaded. Write-on-read.
+  - `store(content, …)` — the only ingestion path: Mímir
+    `INSERT` + commit, Huginn `upsert_memory` (this is "Huginn
+    ingestion"), Muninn `activate`. Unbounded, ungated, no opt-in
+    exists for it in `plugin.yaml`.
+  - `decay(days=1.0)` — returns `muninn.decay(days=days)` only.
+    Rate, floor, and pruning semantics are entirely Muninn's.
+  - `consolidate()` — returns `muninn.consolidate()` only;
+    `consolidation_threshold` is never consulted.
+  - `health()` / `stats()` — also run `_ensure_initialized()`, so
+    even the bridge's own health check constructs the write backends.
+- `src/bifrost/bridges/memory_bridge.py` (`BifrostMemory`, an
+  NSE-facing Mímir+Hebbian retrieve/store shim) is a separate surface:
+  it is not exported by `bifrost/__init__.py`, its default paths are
+  `Path.home()/.hermes`-anchored, its connections are read-write with
+  WAL pragmas, and its `store_memory` writes Mímir. It is **not**
+  attached by this tree and stays out of scope.
+
+## The dependency blocker (ground 1, in full)
+
+- `pyproject.toml` of the audited package declares the extras as bare
+  unpinned names: `huginn = ["huginn"]`, `muninn = ["muninn"]` — no
+  version, no index, no URL.
+- The public PyPI projects under those exact names are unrelated
+  packages (PyPI `huginn` is an anomalous-spike investigation tool;
+  PyPI `muninn` is an unrelated legacy package); neither provides
+  `HebbianMemory` or `HuginnMemory`. Installing the extras by name
+  would pull the wrong software — a name-collision hazard, recorded
+  as a discovered defect of the audited package's packaging.
+- No public repository exists under `hrabanazviking/muninn` or
+  `hrabanazviking/huginn` (`git ls-remote`: repository not found),
+  and no copy of either package exists in this tree. The bridge's own
+  test suite (`tests/test_hebbian_guard.py`) imports the real
+  `muninn`, proving a canonical package exists somewhere — on
+  Volmarr's own machines/history — but its location is not recorded
+  in either repo. **What is needed from Volmarr: the canonical
+  `muninn` (and, if Huginn is still wanted, `huginn`) source
+  locations or pins.** Until then, Huginn ingestion, Muninn
+  reinforcement, and Bifröst consolidation/decay cannot be specified,
+  let alone enabled; Gate 0 reopens on those sources when supplied.
+- Schema evidence that *is* available from the audited bridge code
+  alone: the Muninn store is expected to carry `activation_log`
+  (`memory_id`, read by `_get_activation_count`) and, per the NSE
+  bridge, `hebbian_connections` (`memory_a_id`, `memory_b_id`,
+  `strength`, `co_activation_count`). That is enough for a read-only
+  store probe (Slice 87) and for nothing more.
+
+## Slice 87 — Muninn read-only association-store probe (implementation-ready spec)
+
+- Extend `plugins/volmarr-core/memory_fabric.py` with
+  `probe_bifrost_muninn(ctx) -> BifrostMuninnHealth` (frozen dataclass,
+  `as_dict()`), mirroring `probe_bifrost`'s discipline exactly:
+  resolve the Muninn path through the existing `BifrostSettings`
+  (same profile-escape rejection), reject symlinks and missing files
+  without creating anything, open via the read-only sqlite URI
+  (`mode=ro`, 1 s timeout), require both `hebbian_connections` and
+  `activation_log` tables, and report their row counts. Statuses:
+  `healthy`, `storage_missing`, `schema_missing`, `storage_error`,
+  `configuration_error`, with `error_type` on failures. The probe
+  must **not** import `bifrost` or `muninn`, must not construct a
+  bridge, and must not require the `bifrost` package to be installed.
+- CLI: add the `muninn health` sub-action beside the existing memory
+  health actions in `plugins/volmarr-core/cli.py`
+  (`hermes volmarr memory muninn health [--json]`, label "Bifröst
+  Muninn"), following the mempalace/openviking/sessiondb pattern.
+- No config changes, no packet producer, no writes of any kind: this
+  slice only attests that a Muninn store exists for the active
+  profile, matches the schema the audited bridge code expects, and
+  how much association state it holds.
+- Tests (new file `tests/plugins/test_volmarr_bifrost_muninn.py`,
+  real plugin discovery with a temp `HERMES_HOME`, per
+  `tests/AGENTS.md`): healthy store reports both counts; A→B→A
+  profile isolation; missing store reports `storage_missing` and
+  creates nothing; a store missing either table reports
+  `schema_missing`; store bytes identical before/after the probe;
+  profile-escaping path reports `configuration_error`; the probe
+  succeeds with no `bifrost` package present (the stock-tree case).
+- Bookkeeping on completion: `CUSTOMIZATIONS.md` ledger row (the CLI
+  surface widens); roadmap §29 Milestone 3 slice-87 paragraph;
+  `CAMPAIGN_STATE.md` update. Bank locally only; no push.
+- After Slice 87, Milestone 3's write paths (Huginn ingestion,
+  Muninn reinforcement, Bifröst consolidation/decay) stay parked on
+  the dependency blocker above — they are the one Milestone 3 item
+  that cannot proceed without Volmarr's word on the canonical
+  package sources. The campaign then moves to roadmap queue item 2
+  (Emergent Agency, Phase 0) per `CAMPAIGN_STATE.md` ordering, and
+  returns here when the sources are supplied.

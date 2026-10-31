@@ -1854,6 +1854,33 @@ environmental failures — no new failures. Live-server measurement remains NOT 
 Slice 84 honesty class). Milestone 3's remaining items are now only the Bifröst
 Huginn/Muninn/consolidation/decay contracts. Ingestion remains disabled.
 
+Slice 86 (2026-10-30) is the Gate 0 audit for those Bifröst contracts, against the in-tree
+attachment (`memory_fabric.py`: construct-only bridge with Mímir default and all three enable
+flags forced off, a read-only Mímir probe that never calls the bridge, and no caller of any
+bridge method anywhere in the tree) and the external package (`hrabanazviking/bifrost` at
+`b66e98cc`, v1.0.0, audited in a scratch clone; `COMPONENT_LICENSES.md` pins exactly that
+commit as provenance, though the package is not a dependency in `pyproject.toml`/`uv.lock`
+and no pin exists for `huginn`/`muninn`). Verdict:
+NO-GO for every write path, on three independent grounds. (1) The packages the writes live in
+cannot be audited: `decay()`/`consolidate()` delegate entirely to an external `muninn`
+package and Huginn ingestion/search to an external `huginn` package, yet both are declared
+as bare unpinned extras whose PyPI names belong to unrelated projects, no public repo exists
+under those names, and no copy is in this tree — their mutation semantics are NOT PROVEN, and
+the canonical source locations must come from Volmarr before Gate 0 can reopen. (2) Bridge
+reads are not reads: `recall()` always logs a Muninn activation and `search()` reinforces
+co-activations when enabled — writes on the read path — and every bridge method, health
+included, lazily constructs both write backends regardless of the requested backend, while
+the bridge's Mímir open is read-write with a WAL pragma (which is why the existing probe's
+refusal to touch the bridge is load-bearing). (3) The auto flags are dead:
+`auto_consolidate`, `auto_decay`, `consolidation_threshold`, and `decay_interval_hours` are
+declared in `BifrostConfig` and never read; consolidation/decay run only via explicit calls
+nothing in this tree makes. The entity consolidation checkpoint (Phase 7) is a separate,
+complete thing and does not discharge this item. The full audit and the one safe next step —
+Slice 87, a read-only Muninn association-store probe (no package import, no bridge call,
+schema and counts attested per profile) — live in `PERSISTENT_ENTITY_ACCEPTANCE_AUDIT.md`.
+After Slice 87 the write paths stay parked on the dependency blocker and the campaign moves
+to the next roadmap in queue order. Ingestion remains disabled.
+
 ## Milestone 4: Affective Continuity
 
 - port current affective nervous system;
