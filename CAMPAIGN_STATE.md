@@ -324,3 +324,35 @@ portable state: any agent (Muse or Hermes) resumes from here.
 - Workspace-wide content sweep (2026-10-30) for `HebbianMemory|HuginnMemory|MuninnConfig`: NO standalone `huginn`/`muninn` packages exist in any of Volmarr's trees — the names occur only in Bifröst's own code (GitHub repo + the Ember monorepo's `bifrost/` copy), Verdandi's `eir/core.py` references, docs, and this campaign's audit.
 - The ravens' canonical ancestors ARE in the records: NorseSagaEngine `yggdrasil/ravens/huginn.py` (`class Huginn`) and `yggdrasil/ravens/muninn.py` (`class Muninn`), with interface/test docs, ingested at `~/workspace/your_files/repos-ingest/NorseSagaEngine/` (a second copy in the Viking-Code-Mythic-Engineering ingest). Different class names — ancestors, not drop-ins.
 - Consequence for the Slice 86 Gate 0: the write paths stay NO-GO until either (a) Volmarr points to copies elsewhere, or (b) the campaign builds the two thin packages to Bifröst's expected interface from his own ravens code. Slice 87 (read-only Muninn association-store probe) is unaffected and proceeds.
+
+## Roadmap progress (continued)
+
+- 2026-10-30 ~23:5x EDT keeper tick: **Slice 88 DONE — Emergent
+  Agency Phase 0 (Agency Contracts Before Intelligence) complete,
+  banked locally only, no push.** `plugins/volmarr-core/agency_contracts.py`:
+  all eight roadmap contracts as frozen dataclasses over the shared
+  `Provenance` model (12 source types), canonical-UUID owner on every
+  record, bounded text, unit-interval scores, risk classes 0–5,
+  timezone-aware timestamps, strict round-trip parsing that rejects
+  unknown fields (a reflection record therefore has no field that
+  could carry raw chain-of-thought). Contracts only — no stores, no
+  behavior. The slice's owner test caught a real validator bug
+  (uppercase UUIDs accepted as canonical) — fixed in scope, exact
+  canonical form now required. Tests: targeted 7/7 pass; full
+  volmarr/kista run (41 files): **244 passed, 7 failed, 1 skipped** —
+  the same name-identical pre-existing environmental set; no new
+  failures. Bookkeeping: CUSTOMIZATIONS.md ledger row, Phase 0
+  completion note in the Emergent Agency roadmap §7.
+- **Next resume point: Slice 89 — Emergent Agency Phase 1 (§8,
+  Persistent Self-Model)**: `plugins/volmarr-core/self_model.py` +
+  `entity/self_model.yaml` store on the Slice 88 `SelfClaim`
+  contract (create-once, owner/symlink/size validation in the
+  established GoalStore pattern, deterministic evidence merge —
+  the LLM may propose, the merge layer decides — bounded packet
+  contribution, contract tests incl. A→B→A isolation and no
+  identity rewrite). The Bifröst write paths stay parked until the
+  main session's commissioned ravens build (`~/workspace/ravens/`)
+  reports done + verified, per Volmarr's ruling above. Banked
+  locally only; pushes beyond the ordered refresh still await
+  Volmarr's word.
+- **VOLMARR'S RULING (2026-10-30 ~23:37 EDT, main chat): option (b), in his words: "Look at the ancestors and the glossary and what they are supposed to be, and build them true, as robust, self healing, error correcting, threaded, crash-proof, very efficient modules that can be useful in all my projects for their functions."** A dedicated build is commissioned in the main session (tree `~/workspace/ravens/`: two standalone packages, `muninn` + `huginn`, Bifröst-interface-compatible, grown from the NorseSagaEngine ravens + the Bifröst contract). When that build reports done + verified, this blocker clears and Gate 0 for the Bifröst write paths can be re-audited against the real packages.

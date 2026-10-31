@@ -430,6 +430,22 @@ Avoid storing raw private conversation content in agency telemetry.
 
 Do not start autonomous behavior until the schemas, bounds, owner checks, and tests exist.
 
+**Phase 0 implemented (campaign Slice 88, 2026-10-30):** the gate is met.
+`plugins/volmarr-core/agency_contracts.py` defines all eight contracts
+(`SelfClaim`, `DriveState`, `ReflectionRecord`, `CuriosityQuestion`,
+`ActionProposal`, `PolicyDecision`, `ActionResult`,
+`AgencyCycleReport`) as frozen dataclasses over the shared `Provenance`
+model (the twelve source types above), each with a canonical-UUID
+owner, bounded text, unit-interval scores, risk classes 0–5,
+timezone-aware timestamps, and strict `to_dict`/`from_dict`
+round-tripping that rejects unknown fields — so a reflection record
+has no field that could carry raw chain-of-thought. The module is
+contracts only: no stores, no behavior, no execution.
+`tests/plugins/test_volmarr_agency_contracts.py` covers round-trips,
+provenance, owner checks, unknown-field rejection, bounds, cycle
+aggregate invariants, and immutability. Next: Phase 1 (§8) builds the
+persistent self-model store on the `SelfClaim` contract.
+
 ---
 
 # 8. Phase 1 - Persistent Self-Model
