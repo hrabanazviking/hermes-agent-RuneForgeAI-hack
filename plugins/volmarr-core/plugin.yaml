@@ -421,6 +421,18 @@ config_schema:
     type: int
     default: 200
     description: "Maximum motivation lifecycle log records retained by rotation (clamped to 10-500)."
+  reflection_detail_enabled:
+    type: bool
+    default: false
+    description: "Enable detailed reflection records (Self-Aware Agency §9). Disabled by default; keeps the §9.2 detailed record (confidence before/after, assumptions, evidence, error class, self-model change proposals, next test) in its own bounded log beside the Phase 3 metacognition store, with the §9.3 reflection level computed deterministically from the record. Self-model changes are proposal text only and are never applied here (§9.4). Recording is explicit only."
+  reflection_detail_log_path:
+    type: str
+    default: entity/reflections.jsonl
+    description: "Reflection detail log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  reflection_detail_log_limit:
+    type: int
+    default: 200
+    description: "Maximum reflection detail log records retained by rotation (clamped to 10-500)."
   heartbeat_enabled:
     type: bool
     default: true

@@ -1246,3 +1246,63 @@ portable state: any agent (Muse or Hermes) resumes from here.
   next_test, confidence before/after — and the §9.3 reflection
   levels), not a second metacognition engine; §9.4's
   no-unrestricted-self-editing bounds already stand in code.
+- 2026-10-31 ~07:1x EDT keeper tick: **Slice 107 DONE —
+  Self-Aware Agency §9 (Metacognition) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found
+  (tree clean, HEAD == origin/main at `b5ee0c9315`; Slice 106's
+  commit had landed minutes before this tick's start and was
+  verified complete/pushed, not in-progress work).
+  Reconciliation exactly as the resume note directed — no
+  second metacognition engine: `plugins/volmarr-core/
+  reflection_detail.py` keeps the §9.2 detailed record in its
+  own bounded log at `entity/reflections.jsonl`, derived from
+  a Phase 3 `ReflectionRecord` via `build_detail` (identity
+  fields, trigger, subject, first lesson carried over;
+  confidence-before defaults to the Phase 3 predicted success)
+  and adding the fields the Phase 3 record has no place for:
+  confidence before/after, bounded assumptions, bounded
+  evidence, slug error class, self-model changes, next test.
+  The §9.3 reflection level is a deterministic function of
+  the record — Level 0 for the named deterministic triggers
+  (repeated_tool_failure, model_escalation) and for a
+  confidence/evidence mismatch (confidence ≥ 0.8 with no
+  evidence), Level 2 for the deep-reflection error classes
+  (identity_conflict, major_contradiction, ethical_conflict,
+  long_term_planning_failure), Level 1 otherwise — and strict
+  read validation refuses a stored level that disagrees with
+  the function (the Slice 104 flag-agreement pattern).
+  `history_for` answers §9.1's "have I failed at this before"
+  read-only (prior records per subject, failures counted by
+  error class, latest lesson/next test). §9.4 stands:
+  self-model changes are proposal text only, never applied —
+  the module imports no other store and writes only its own
+  log, only on an explicit `record_detail` call. The
+  cognition router remains authoritative for Level 2
+  reasoning; this module classifies, it does not reason.
+  Disabled by default (`reflection_detail_enabled`); bounded
+  content-bearing packet producer. Tests: targeted 7/7 pass;
+  full volmarr/kista run (60 files): **414 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback), verified
+  in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice107_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §9 completion note in the Self-Aware Agency roadmap.
+  Honest gaps: Verðandi reflection-detail events NOT yet
+  emitted — deferred to a later telemetry slice, recorded in
+  both bookkeeping spots; the Phase 3 ConsolidationService
+  metacognition digest remains unwired (recorded at Slice 93).
+- **Next resume point: Slice 108 — Self-Aware Agency §10
+  (Curiosity)**: reconcile the §10 spec against the
+  already-banked Emergent Agency Phase 4 curiosity frontier
+  (Slice 94) when read at slice start — expect a
+  verification/reconciliation slice implementing only genuine
+  §10 gaps (e.g. the §10.2 question `origin` field and §10.3
+  scoring factors — usefulness/identity_relevance/
+  affordability vs the Phase 4 relevance/expected_value/
+  risk-adjusted formula — the §10.5 budget block
+  (investigations/day, local token budget, cloud budget
+  default-zero, usefulness floor), and §10.6 investigation
+  outcomes), not a second curiosity engine.

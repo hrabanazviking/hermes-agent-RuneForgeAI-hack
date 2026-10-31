@@ -903,6 +903,39 @@ Reflection may not directly rewrite:
 - canonical world truth;
 - raw historical records.
 
+**§9 completion note (Slice 107, 2026-10-31):** metacognition
+stands reconciled in
+`plugins/volmarr-core/reflection_detail.py` — deliberately not
+a second metacognition engine: the summary, calibration, and
+bounded conclusion log remain Emergent Agency Phase 3
+(Slice 93). The §9.2 detailed record lives in its own bounded
+log at `entity/reflections.jsonl`, derived from a Phase 3
+`ReflectionRecord` (identity fields, trigger, subject, and
+lesson carried over; confidence-before defaults to the Phase 3
+predicted success) and adding the fields the Phase 3 record has
+no place for: confidence before/after, assumptions, evidence,
+error class, self-model changes, and next test. The §9.3
+reflection level is a deterministic function of the record —
+Level 0 for the named deterministic triggers (repeated tool
+failure, repeated route escalation) and for a
+confidence/evidence mismatch (confidence ≥ 0.8 with no
+evidence), Level 2 for the deep-reflection error classes
+(identity conflict, major contradiction, ethical conflict,
+long-term planning failure), Level 1 otherwise — and the stored
+level must agree with the function on read. §9.1's "have I
+failed at this before" is answered by `history_for` (prior
+records per subject, failures counted by error class, latest
+lesson and next test). §9.4 stands: self-model changes are
+recorded as proposal text only and never applied here; the
+module writes only its own log, only on an explicit record
+call. The cognition router remains authoritative for any
+Level 2 reasoning — this module classifies, it does not
+reason. Disabled by default (`reflection_detail_enabled`).
+Honest gaps: Verðandi reflection-detail events are NOT yet
+emitted — deferred to a later telemetry slice; the Phase 3
+ConsolidationService metacognition digest remains unwired,
+as recorded at Slice 93.
+
 ---
 
 # 10. Curiosity

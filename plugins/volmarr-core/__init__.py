@@ -28,6 +28,7 @@ from .self_improvement import SelfImprovementBridge
 from .awareness import AwarenessBridge
 from .self_model_layers import LayeredSelfModelBridge
 from .motivation_lifecycle import MotivationLifecycleBridge
+from .reflection_detail import ReflectionDetailBridge
 from .subjective_report import SubjectiveReportBridge
 from .timescales import TimescaleBridge
 from .self_model import SelfModelBridge
@@ -79,6 +80,7 @@ def register(ctx) -> None:
         ctx.register_hook(hook_name, callback)
     subjective_report = SubjectiveReportBridge(ctx)
     motivation_lifecycle = MotivationLifecycleBridge(ctx)
+    reflection_detail = ReflectionDetailBridge(ctx)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -111,6 +113,7 @@ def register(ctx) -> None:
             awareness.packet_items,
             subjective_report.packet_items,
             motivation_lifecycle.packet_items,
+            reflection_detail.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():
