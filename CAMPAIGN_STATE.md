@@ -202,6 +202,30 @@ portable state: any agent (Muse or Hermes) resumes from here.
   the Bifröst Huginn/Muninn/consolidation/decay contracts. Banked
   locally only; pushes beyond the ordered refresh still await
   Volmarr's word.
+- 2026-10-30 ~23:20 EDT keeper tick: **Slice 85 DONE, banked locally
+  only, no push.** Implemented exactly per the Slice 84 spec:
+  `plugins/volmarr-core/openviking_retrieval.py`
+  (`OpenVikingRetrievalBridge`, one added `packet_sources` producer),
+  opt-in `openviking_retrieval_enabled` default off, gated in order on
+  `probe_openviking` healthy and `/health` `auth_mode == "dev"` (the
+  probe additively exposes `auth_mode`; api_key/trusted/unreported
+  modes never receive the query; no credentials anywhere). Only the
+  audited `/find` body is sent; query cap 2,000 chars; ≤5 memory hits
+  at 800 chars (content, abstract fallback); bounded timeout;
+  fail-open. Tests: targeted 21/21 pass (8 new stub-server contracts);
+  full volmarr/kista run (39 files): **229 passed, 7 failed,
+  1 skipped** — the failures are the same name-identical pre-existing
+  environmental set in the same 3 files; no new failures.
+  Bookkeeping done: CUSTOMIZATIONS.md ledger row, roadmap §29
+  Milestone 3 slice-85 paragraph, Slice 85 outcome appended to
+  `PERSISTENT_ENTITY_ACCEPTANCE_AUDIT.md`. Live-server measurement
+  remains NOT PROVEN (Slice 84 honesty class).
+- **Next resume point: the Bifröst Huginn/Muninn/consolidation/decay
+  contracts** — Milestone 3's last remaining item (Slice 86: begin
+  with a Gate-0-style audit of the existing Bifröst attachment surface
+  in this tree before specifying/enabling any of Huginn ingestion,
+  Muninn reinforcement, consolidation, or decay). Banked locally
+  only; pushes beyond the ordered refresh still await Volmarr's word.
 
 ## Standing bounds for this campaign
 

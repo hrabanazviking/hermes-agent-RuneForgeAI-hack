@@ -374,3 +374,43 @@ on that route under the stated conditions. No bridge code in this slice.**
   §29 Milestone 3 slice-85 paragraph; `CAMPAIGN_STATE.md` update
   naming the next resume point (the Bifröst Huginn/Muninn/
   consolidation/decay contracts). Bank locally only; no push.
+
+---
+
+# Slice 85 — Implementation outcome (2026-10-30, later tick)
+
+**Implemented as specified.** `plugins/volmarr-core/openviking_retrieval.py`
+(`OpenVikingRetrievalBridge`), registered as one added `packet_sources`
+producer in `plugins/volmarr-core/__init__.py`. The probe grew the
+additive optional `auth_mode` field on `OpenVikingHealth` (populated
+from `/health` on the healthy, unhealthy, and outdated returns), and
+the bridge gates in order: opt-in config → non-empty capped query →
+`probe_openviking` healthy → `auth_mode == "dev"` → POST. The request
+body is exactly `{query, limit: 5, context_type: "memory",
+read_content: true}`; timeout reuses the probe's bounded
+`openviking_probe_timeout_ms` semantics; transport reuses the probe's
+no-redirect/no-proxy loopback opener; responses are byte-capped
+(1 MiB) and any non-200, malformed envelope, timeout, or exception
+returns `[]`. Items come from `result.memories` only, content falling
+back to `abstract`, capped at 800 chars, `uri` as record_id with the
+sha256-16 fallback, `score` as priority when finite in [0, 1] else 0.5.
+
+**Tests:** new `tests/plugins/test_volmarr_openviking_retrieval.py`
+(8 tests) against a stub server implementing only the audited
+`/health` + `/find` shapes — disabled-by-default makes no requests at
+all; dev-mode retrieval emits both content and abstract-fallback
+episodes with provenance and the exact audited request body;
+api_key/trusted/unreported auth modes consult health but never POST;
+A→B→A profile isolation; bounds; fence escaping; query discipline
+(empty → no request, oversize truncated to 2,000 asserted from the
+received body); `/find` 500 / non-JSON / malformed-envelope fail-open
+with other producers' items intact. Targeted run (new file + OpenViking
+health + MemPalace retrieval): 21 passed, 0 failed. Full volmarr/kista
+contract run (39 files): **229 passed, 7 failed, 1 skipped** — the
+failures are the same name-identical pre-existing environmental set
+(5 core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner loopback);
+no new failures.
+
+**Next resume point:** the Bifröst Huginn/Muninn/consolidation/decay
+contracts — Milestone 3's last remaining item. Banked locally only;
+no push.

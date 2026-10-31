@@ -12,6 +12,7 @@ from .heartbeat import HeartbeatBridge, register_heartbeat_tool
 from .identity import IdentityBridge
 from .lifecycle import LifecycleBridge
 from .mempalace_retrieval import MemPalaceRetrievalBridge
+from .openviking_retrieval import OpenVikingRetrievalBridge
 from .present_state import PresentStateBridge
 from .relationships import RelationshipBridge, register_relationship_tools
 from .wyrd_tools import register_wyrd_tools
@@ -40,12 +41,14 @@ def register(ctx) -> None:
         ctx.register_hook(hook_name, callback)
     wyrd_context = WyrdContextBridge(ctx)
     mempalace_retrieval = MemPalaceRetrievalBridge(ctx)
+    openviking_retrieval = OpenVikingRetrievalBridge(ctx)
     present_state = PresentStateBridge(
         ctx,
         packet_sources=(
             affective.packet_items,
             wyrd_context.packet_items,
             mempalace_retrieval.packet_items,
+            openviking_retrieval.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():

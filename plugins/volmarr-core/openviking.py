@@ -87,6 +87,10 @@ class OpenVikingHealth:
     minimum_server_version: str = MINIMUM_SERVER_VERSION
     latency_ms: int | None = None
     error_type: str | None = None
+    # Additive (Slice 85): the server's effective auth mode as reported by
+    # /health ("dev" / "api_key" / "trusted"), when it reports one. The
+    # credential-free retrieval bridge fails closed unless this is "dev".
+    auth_mode: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -139,6 +143,8 @@ def probe_openviking(ctx) -> OpenVikingHealth:
         if not isinstance(payload, dict):
             raise ValueError("OpenViking health response is not an object")
         version = payload.get("version")
+        auth_mode = payload.get("auth_mode")
+        auth_mode = auth_mode if isinstance(auth_mode, str) else None
         if payload.get("status") != "ok" or payload.get("healthy") is not True:
             return OpenVikingHealth(
                 False,
@@ -147,6 +153,7 @@ def probe_openviking(ctx) -> OpenVikingHealth:
                 True,
                 server_version=version if isinstance(version, str) else None,
                 latency_ms=latency_ms,
+                auth_mode=auth_mode,
             )
         if not isinstance(version, str):
             raise ValueError("OpenViking health response has no version")
@@ -158,6 +165,7 @@ def probe_openviking(ctx) -> OpenVikingHealth:
                 True,
                 server_version=version,
                 latency_ms=latency_ms,
+                auth_mode=auth_mode,
             )
         return OpenVikingHealth(
             True,
@@ -166,6 +174,7 @@ def probe_openviking(ctx) -> OpenVikingHealth:
             True,
             server_version=version,
             latency_ms=latency_ms,
+            auth_mode=auth_mode,
         )
     except urllib.error.HTTPError as exc:
         latency_ms = max(0, round((time.monotonic() - started) * 1_000))

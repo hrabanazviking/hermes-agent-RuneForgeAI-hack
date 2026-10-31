@@ -1839,6 +1839,21 @@ Slice 85 bridge spec (opt-in, health- and dev-mode-gated, `/find` only, memories
 bounded and fail-open) live in `PERSISTENT_ENTITY_ACCEPTANCE_AUDIT.md`. Ingestion remains
 disabled.
 
+Slice 85 (2026-10-30) implements that bridge exactly as specified:
+`plugins/volmarr-core/openviking_retrieval.py` (`OpenVikingRetrievalBridge`), registered as
+one added `packet_sources` producer; opt-in (`openviking_retrieval_enabled`, default off),
+gated in order on the existing health probe and on `/health` reporting `auth_mode == "dev"`
+(the probe additively exposes `auth_mode`; api_key/trusted/unreported modes never receive
+the query, and no credential is ever read, sent, or stored). Requests are the audited
+`/find` body only (`{query, limit: 5, context_type: "memory", read_content: true}`, no
+session id, no target_uri), query capped at 2,000 chars, at most 5 memory hits at 800 chars
+(content, falling back to the hit abstract), bounded timeout, fail-open throughout.
+Contracts: 8 new tests against a stub server implementing only the audited shapes; the
+full volmarr/kista run (39 files) shows 229 passed with only the same 7 pre-existing
+environmental failures — no new failures. Live-server measurement remains NOT PROVEN (the
+Slice 84 honesty class). Milestone 3's remaining items are now only the Bifröst
+Huginn/Muninn/consolidation/decay contracts. Ingestion remains disabled.
+
 ## Milestone 4: Affective Continuity
 
 - port current affective nervous system;
