@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-18).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-20).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -212,6 +212,38 @@ What stands here, and nothing more:
   persona hash), so anchor edits are detectable like any
   other persona change. A profile with no anchors
   compiles exactly as before this section stood.
+- §19 persona hash: every compile carries its *hash
+  record* — the stored form §19 names: the persona
+  version (the persona config format version,
+  ``PERSONA_CONFIG_VERSION``; per-persona versioning is
+  §22, a later section), the per-document sha256 hashes
+  by role, the kernel hash, and the combined persona
+  hash. The pure ``detect_changes`` function compares
+  two records and names exactly what changed (documents
+  added, removed, or hash-changed; kernel changed;
+  persona changed). §19's compile timestamp is NOT
+  inside the deterministic artefact — identical inputs
+  must compile identically (§6) — so a timestamp enters
+  a record only when a caller explicitly stamps one
+  (``hash_record(compiled, compiled_at=...)``, a
+  timezone-aware ISO timestamp, validated); the record
+  a compile carries always has ``compiled_at`` None.
+- §20 hot reload: an explicit change check, not a
+  resident file watcher (this plugin owns no watcher and
+  starts none). ``PersonaReloader.check(previous)``
+  recompiles and, via the pure ``reload_plan`` function,
+  walks the §20 chain only as far as the hashes require:
+  detect the hash change, reparse the changed documents
+  (the fresh compile is the reparse), update the
+  PersonaIR and rebuild the retrieval index when any
+  document changed, and recompile the kernel only when
+  the kernel hash itself changed — an edit to a
+  non-kernel section therefore never recompiles the
+  kernel, and an unchanged persona returns the previous
+  artefact untouched. No restart is required or claimed
+  beyond this explicit check; wiring the check into a
+  live session is a caller decision, like compilation
+  itself (§6).
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -233,6 +265,7 @@ from __future__ import annotations
 import hashlib
 import math
 import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -1328,6 +1361,211 @@ def budget_items(items: list[dict[str, Any]],
     }
 
 
+# The §19 hash record's fields, in stored order.
+HASH_RECORD_FIELDS = (
+    "persona_id", "persona_version", "document_hashes",
+    "kernel_hash", "persona_hash", "compiled_at",
+)
+
+# The §20 reload chain's steps, in roadmap order. A plan
+# names only the steps the hashes actually require.
+RELOAD_STEPS = (
+    "detect_hash_change", "reparse_changed_documents",
+    "update_persona_ir", "rebuild_retrieval_index",
+    "recompile_kernel",
+)
+
+
+def reload_steps() -> list[str]:
+    return list(RELOAD_STEPS)
+
+
+def _validate_compiled_at(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise PersonaRuntimeError("compiled_at is invalid")
+    try:
+        parsed = datetime.fromisoformat(value.strip())
+    except ValueError as exc:
+        raise PersonaRuntimeError("compiled_at is invalid") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise PersonaRuntimeError(
+            "compiled_at must be timezone-aware")
+    return value.strip()
+
+
+def hash_record(compiled: dict[str, Any],
+                compiled_at: str | None = None) -> dict[str, Any]:
+    """The §19 stored hash record for one compiled artefact.
+
+    Pure and deterministic for a given artefact: persona
+    version (the config format version — per-persona
+    versioning is §22), the per-document sha256 hashes by
+    role in document order, the kernel hash, and the
+    combined persona hash. ``compiled_at`` stays None
+    unless a caller explicitly stamps a timezone-aware
+    ISO timestamp; no clock is read here, so a compile
+    remains deterministic (§6).
+    """
+    if not isinstance(compiled, dict):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    persona_id = compiled.get("persona_id")
+    documents = compiled.get("documents")
+    kernel = compiled.get("kernel")
+    persona_hash = compiled.get("persona_hash")
+    if not isinstance(persona_id, str) or not persona_id \
+            or not isinstance(documents, list) \
+            or not isinstance(kernel, dict) \
+            or not isinstance(kernel.get("sha256"), str) \
+            or not isinstance(persona_hash, str):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    document_hashes: dict[str, str] = {}
+    for document in documents:
+        if not isinstance(document, dict) \
+                or not isinstance(document.get("role"), str) \
+                or not isinstance(document.get("sha256"), str):
+            raise PersonaRuntimeError("compiled persona is invalid")
+        document_hashes[document["role"]] = document["sha256"]
+    return {
+        "persona_id": persona_id,
+        "persona_version": PERSONA_CONFIG_VERSION,
+        "document_hashes": document_hashes,
+        "kernel_hash": kernel["sha256"],
+        "persona_hash": persona_hash,
+        "compiled_at": None if compiled_at is None
+        else _validate_compiled_at(compiled_at),
+    }
+
+
+def _validate_hash_record(record: Any) -> dict[str, Any]:
+    if not isinstance(record, dict) \
+            or set(record) != set(HASH_RECORD_FIELDS):
+        raise PersonaRuntimeError("persona hash record is invalid")
+    if not isinstance(record["persona_id"], str) \
+            or not record["persona_id"] \
+            or record["persona_version"] != PERSONA_CONFIG_VERSION \
+            or not isinstance(record["document_hashes"], dict) \
+            or not record["document_hashes"] \
+            or not all(
+                isinstance(role, str) and isinstance(digest, str)
+                for role, digest in record["document_hashes"].items()) \
+            or not isinstance(record["kernel_hash"], str) \
+            or not isinstance(record["persona_hash"], str):
+        raise PersonaRuntimeError("persona hash record is invalid")
+    if record["compiled_at"] is not None:
+        _validate_compiled_at(record["compiled_at"])
+    return record
+
+
+def detect_changes(previous: dict[str, Any],
+                   current: dict[str, Any]) -> dict[str, Any]:
+    """Compare two §19 hash records; name exactly what changed.
+
+    Pure. Records for different personas are not
+    comparable and are refused. ``compiled_at`` never
+    counts as a change — it is a caller stamp, not
+    persona material.
+    """
+    previous = _validate_hash_record(previous)
+    current = _validate_hash_record(current)
+    if previous["persona_id"] != current["persona_id"]:
+        raise PersonaRuntimeError(
+            "hash records name different personas")
+    before = previous["document_hashes"]
+    after = current["document_hashes"]
+    added = [role for role in after if role not in before]
+    removed = [role for role in before if role not in after]
+    changed = [
+        role for role in after
+        if role in before and before[role] != after[role]]
+    kernel_changed = previous["kernel_hash"] != current["kernel_hash"]
+    persona_changed = previous["persona_hash"] != current["persona_hash"]
+    return {
+        "changed": bool(
+            added or removed or changed
+            or kernel_changed or persona_changed),
+        "persona_changed": persona_changed,
+        "kernel_changed": kernel_changed,
+        "documents_added": added,
+        "documents_removed": removed,
+        "documents_changed": changed,
+        "documents_unchanged": sum(
+            1 for role in after
+            if role in before and before[role] == after[role]),
+    }
+
+
+def reload_plan(previous: dict[str, Any] | None,
+                current: dict[str, Any] | None) -> dict[str, Any]:
+    """The §20 reload chain for two compiled artefacts.
+
+    Pure. Either side may be None (no persona compiled):
+    a first compile walks the full chain, a removed
+    persona only detects the change, and two absent
+    personas change nothing. The kernel step stands only
+    when the kernel hash itself changed, so an edit to a
+    non-kernel section reparses and rebuilds the IR and
+    index without recompiling the kernel. No step here
+    requires a restart.
+    """
+    if previous is None and current is None:
+        return {
+            "changed": False, "steps": [],
+            "documents_reparsed": [], "documents_removed": [],
+            "ir_updated": False, "index_rebuilt": False,
+            "kernel_recompile_required": False,
+            "kernel_changed": False, "persona_changed": False,
+            "restart_required": False,
+        }
+    if previous is None:
+        record = hash_record(current)  # type: ignore[arg-type]
+        return {
+            "changed": True, "steps": list(RELOAD_STEPS),
+            "documents_reparsed": list(record["document_hashes"]),
+            "documents_removed": [],
+            "ir_updated": True, "index_rebuilt": True,
+            "kernel_recompile_required": True,
+            "kernel_changed": True, "persona_changed": True,
+            "restart_required": False,
+        }
+    if current is None:
+        record = hash_record(previous)
+        return {
+            "changed": True, "steps": ["detect_hash_change"],
+            "documents_reparsed": [],
+            "documents_removed": list(record["document_hashes"]),
+            "ir_updated": False, "index_rebuilt": False,
+            "kernel_recompile_required": False,
+            "kernel_changed": True, "persona_changed": True,
+            "restart_required": False,
+        }
+    diff = detect_changes(hash_record(previous), hash_record(current))
+    documents_touched = bool(
+        diff["documents_added"] or diff["documents_removed"]
+        or diff["documents_changed"])
+    steps: list[str] = []
+    if diff["changed"]:
+        steps.append("detect_hash_change")
+        if documents_touched:
+            steps.extend([
+                "reparse_changed_documents", "update_persona_ir",
+                "rebuild_retrieval_index"])
+        if diff["kernel_changed"]:
+            steps.append("recompile_kernel")
+    return {
+        "changed": diff["changed"],
+        "steps": steps,
+        "documents_reparsed":
+            diff["documents_added"] + diff["documents_changed"],
+        "documents_removed": diff["documents_removed"],
+        "ir_updated": documents_touched,
+        "index_rebuilt": documents_touched,
+        "kernel_recompile_required": diff["kernel_changed"],
+        "kernel_changed": diff["kernel_changed"],
+        "persona_changed": diff["persona_changed"],
+        "restart_required": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -1560,7 +1798,7 @@ class PersonaCompiler:
                     "priority_authored":
                         section.get("authored_priority") is not None,
                 })
-        return {
+        compiled = {
             "persona_id": config["id"],
             "display_name": config["display_name"],
             "anchors": list(config["anchors"]),
@@ -1572,6 +1810,10 @@ class PersonaCompiler:
             "ir": build_persona_ir(config["id"], index),
             "persona_hash": self._persona_hash(documents, kernel),
         }
+        # §19: the stored hash record rides the artefact,
+        # unstamped — a compile stays deterministic (§6).
+        compiled["hash_record"] = hash_record(compiled)
+        return compiled
 
     @staticmethod
     def _kernel(
@@ -1832,6 +2074,38 @@ class PersonaContextBudgeter:
         return result
 
 
+class PersonaReloader:
+    """Explicit §20 hot-reload check over a fresh compile.
+
+    One explicit call recompiles (deterministically,
+    writing nothing) and compares the fresh artefact
+    against the caller's previous one through the §19
+    hash records. Unchanged: the previous artefact is
+    returned untouched — no reparse effect, no rebuild.
+    Changed: the fresh compile *is* the §20 chain carried
+    out (changed documents reparsed, IR and index rebuilt
+    as part of the compile, kernel recompiled), and the
+    returned plan names which steps the hashes required —
+    including whether the kernel step was necessary at
+    all. No file watcher, no hook, no restart.
+    """
+
+    def __init__(self, ctx) -> None:
+        self._compiler = PersonaCompiler(ctx)
+
+    def check(self, previous: dict[str, Any] | None = None
+              ) -> dict[str, Any]:
+        current = self._compiler.compile()
+        plan = reload_plan(previous, current)
+        return {
+            "changed": plan["changed"],
+            "plan": plan,
+            "compiled": current if plan["changed"] else previous,
+            "hash_record": None if current is None
+            else current["hash_record"],
+        }
+
+
 class PersonaRuntimeBridge:
     """Surface the compiled persona's identity, counts only.
 
@@ -1867,7 +2141,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-18): persona "
+            f"Persona runtime (§§3-20): persona "
             f"{compiled['persona_id']} compiled from "
             f"{len(compiled['documents'])} documents / "
             f"{len(compiled['index'])} sections; kernel "
@@ -1908,6 +2182,16 @@ class PersonaRuntimeBridge:
             f"{kernel['anti_anchor_count']} negative anchors "
             f"stand verbatim at the head of every kernel, "
             f"never evicted to fit the §5 ceiling. "
+            f"§19 hash record: every compile carries its "
+            f"stored record (persona version, per-document "
+            f"hashes, kernel hash, persona hash), unstamped "
+            f"so compiles stay deterministic. §20 hot reload "
+            f"is an explicit PersonaReloader check, never a "
+            f"watcher: it detects hash changes and walks the "
+            f"reload chain only as far as the hashes require "
+            f"— reparse changed documents, update the IR, "
+            f"rebuild the index, recompile the kernel only "
+            f"when its hash changed — with no restart. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -1940,6 +2224,9 @@ __all__ = [
     "PersonaRetriever",
     "PersonaRouter",
     "PersonaContextBudgeter",
+    "PersonaReloader",
+    "HASH_RECORD_FIELDS",
+    "RELOAD_STEPS",
     "BUDGET_CATEGORIES",
     "CONTEXT_CLASSES",
     "SUGGESTED_BUDGETS",
@@ -1968,6 +2255,10 @@ __all__ = [
     "budget_allocations",
     "budget_categories",
     "budget_items",
+    "detect_changes",
+    "hash_record",
+    "reload_plan",
+    "reload_steps",
     "context_classes",
     "suggested_budgets",
     "section_priority",

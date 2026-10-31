@@ -1285,6 +1285,28 @@ kernel hash
 This lets Hermes detect when humans modify persona files.
 
 
+> **Completion note — Slice 127 (2026-10-31): §19 stands
+> in `plugins/volmarr-core/persona_runtime.py` (extended
+> in place; the `persona_runtime_enabled` description in
+> `plugin.yaml` now covers §§3–20). Every compile carries
+> its stored hash record (the pure `hash_record`
+> function): persona version — the config format version
+> (`PERSONA_CONFIG_VERSION`); per-persona versioning is
+> §22, a later section — the per-document sha256 hashes
+> by role in document order, the kernel hash, and the
+> combined persona hash. The compile timestamp §19
+> names is deliberately NOT inside the deterministic
+> artefact (§6: identical inputs compile identically), so
+> the record a compile carries is unstamped; a timestamp
+> enters only as an explicit caller stamp
+> (`compiled_at`, timezone-aware ISO, validated), and a
+> stamp alone never counts as a change. The pure
+> `detect_changes` function compares two records and
+> names documents added, removed, or hash-changed, plus
+> kernel and persona change; records naming different
+> personas, and tampered record shapes, are refused.**
+
+
 ---
 
 
@@ -1310,6 +1332,34 @@ recompile kernel if necessary
 
 
 Do not require Hermes restart.
+
+
+> **Completion note — Slice 127 (2026-10-31): §20 stands
+> as an explicit reload check, not a resident file
+> watcher — this plugin owns no watcher and starts none,
+> just as compilation itself is explicit (§6). The pure
+> `reload_plan` function walks the chain above only as
+> far as the §19 hashes require: detect the hash change,
+> reparse the changed documents, update the PersonaIR,
+> rebuild the retrieval index (the last three only when
+> a document changed), and recompile the kernel only
+> when the kernel hash itself changed — so an edit to a
+> non-kernel section never recompiles the kernel, while
+> an anchor-only change (config material, no document)
+> recompiles the kernel with no reparse. A first compile
+> walks the full chain; a removed persona only detects.
+> `PersonaReloader.check(previous)` performs the check:
+> it recompiles explicitly and returns the previous
+> artefact untouched when nothing changed, or the fresh
+> compile — which is the chain carried out — when it
+> did. No restart is required (`restart_required` is
+> always False). Targeted persona run (11 files): 89/89
+> pass (7 new hash/reload contracts); full volmarr/kista
+> run (80 files): 568 passed, 7 failed, 1 skipped — the
+> failures the same name-identical pre-existing
+> environmental set. Honest gaps: no live session wires
+> the check in (a caller decision, like compilation);
+> semantic change impact classification is §21, later.**
 
 
 ---
