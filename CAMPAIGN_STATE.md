@@ -2142,3 +2142,66 @@ portable state: any agent (Muse or Hermes) resumes from here.
   against the current heading-slug ids, which are stable
   within a document but not role-prefixed — implementing
   only genuine gaps, in the established pattern.
+- 2026-10-31 ~12:1x EDT keeper tick: **Slice 121 DONE —
+  Persona Runtime §11 (Section-Aware Markdown Parser) and
+  §12 (Stable Section IDs) complete, banked and PUSHED
+  under the standing go-ahead.** No live work found (tree
+  clean, HEAD == origin/main at `f20f7995ad`; Slice 120's
+  state mtime minutes earlier was its own completed push,
+  verified, not in-progress work).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no second parser, no new file or config key.
+  §11: `parse_sections` splits only at heading boundaries
+  (conceptual sections, never arbitrary token chunks — a
+  2,000-line section stays one whole section,
+  contract-proven) and headings are semantic: the pure
+  `display_heading` function strips a leading enumeration
+  prefix, so the roadmap's own example compiles exactly
+  as specified (`# 37. WHEN CADUCEA DISAGREES` →
+  heading `WHEN CADUCEA DISAGREES`, section
+  `when_caducea_disagrees`) and renumbering a section
+  never changes its identity (stable ids + kernel hash
+  unchanged across a 37→41 renumber, contract-proven).
+  Every compiled index entry carries the §11 record shape
+  (document = role, section = bare slug, heading,
+  content = verbatim text, plus the legacy keys) and a
+  derived priority from the pure `section_priority`
+  function (in kernel 0.90 / kernel-marked 0.80 /
+  persona-defining IR category 0.60 / else 0.40 —
+  derived, never authored or stored). §12: every section
+  carries a persistent role-prefixed stable id via the
+  pure `stable_section_id` function
+  (`relationship.when_caducea_disagrees`,
+  `relationship.settled_decisions`), unique across all
+  documents (duplicate headings disambiguated in document
+  order; same bare slug in two documents = two stable
+  ids), carried also by the kernel's `stable_ids` list
+  and every PersonaIR entry. Tests: targeted 35/35 pass
+  (10 new section contracts + 8 foundations + 8 IR +
+  9 kernel); full volmarr/kista run (74 files): **522
+  passed, 7 failed, 1 skipped** — the same name-identical
+  pre-existing environmental set in the same 3 files (5
+  core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback), verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice121_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §§11–12 completion note in the Persona Runtime
+  roadmap. Honest gaps: the §11 example's 0.87 is
+  illustrative — priority here is a derived band, not an
+  authored value; §16's authored P0–P4 priority metadata
+  remains a later section.
+- **Next resume point: Slice 122 — Persona Runtime §13
+  (Hybrid Persona Retrieval)**: reconcile the §13 hybrid
+  retrieval (semantic similarity + keyword matching +
+  document role + section tags + current task
+  classification + priority; results named by §12 stable
+  ids, e.g. the §13 git example loading
+  `service_bible.coding_preferences` +
+  `tool_policy.git_policy` for a coding/git task) against
+  the banked Layer B index (Slice 121 stable ids +
+  derived priorities) when read at slice start — expect a
+  deterministic keyword/role/task/priority retrieval layer
+  over the compiled index, with any embedding/semantic
+  component honestly gated on a surface this plugin does
+  not yet own, not a second index.

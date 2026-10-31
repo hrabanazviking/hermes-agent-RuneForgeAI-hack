@@ -760,6 +760,44 @@ memory_policy.contradiction_resolution
 This makes retrieval explainable.
 
 
+**§§11–12 completion note (Slice 121, 2026-10-31):**
+implemented in `plugins/volmarr-core/persona_runtime.py`,
+extended in place — no second parser, no new file or
+config key. §11: the parser splits only at heading
+boundaries — conceptual sections, never arbitrary token
+chunks (a 2,000-line section stays one whole section,
+contract-proven) — and headings are semantic: the pure
+`display_heading` function strips a leading enumeration
+prefix, so the roadmap's own example compiles exactly as
+specified (`# 37. WHEN CADUCEA DISAGREES` in the
+relationship document → heading `WHEN CADUCEA DISAGREES`,
+section `when_caducea_disagrees`), and renumbering a
+section never changes its identity. Every compiled index
+entry carries the §11 record shape — document (the
+semantic role), section (the bare slug), heading, content
+(the verbatim section text) — plus a derived priority
+from the pure `section_priority` function: deterministic
+bands over signals this layer already computes (in the
+kernel 0.90; kernel-marked but not selected 0.80;
+persona-defining IR categories 0.60; everything else,
+including the unheaded preamble, 0.40). §12: every
+section carries a persistent role-prefixed stable id
+(the pure `stable_section_id` function:
+`relationship.when_caducea_disagrees`,
+`relationship.settled_decisions`), unique across all
+documents — duplicate headings are disambiguated in
+document order and the same bare slug in two documents
+yields two stable ids — and carried by the kernel's
+`stable_ids` list and every PersonaIR entry, so a
+retrieval result can always name the exact document and
+section it came from. Honest gaps: the §11 example's
+0.87 is illustrative — priority here is a derived band,
+not an authored value, and §16's authored P0–P4 priority
+metadata remains a later section; retrieval (§13),
+routing (§14), and budgeting (§15) are later sections
+that will consume these ids and priorities.
+
+
 ---
 
 

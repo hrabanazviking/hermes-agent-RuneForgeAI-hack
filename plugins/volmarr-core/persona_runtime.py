@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-10).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-12).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -96,6 +96,33 @@ What stands here, and nothing more:
   prompt assembly (§53, a later section); this layer
   injects nothing and claims no placement it does not
   perform.
+- §11 section-aware Markdown parser: documents are split
+  only at heading boundaries — conceptual sections, never
+  arbitrary token chunks; a long section stays one whole
+  section. Headings are semantic: a leading enumeration
+  prefix (``37. ``) is presentation, not identity, and is
+  stripped from the display heading and the slug. Every
+  compiled index entry carries the §11 record shape —
+  document (the semantic role), section (the bare slug),
+  heading (the display heading), content (the verbatim
+  section text) — plus a derived priority.
+- §12 stable section ids: every section also carries a
+  persistent, role-prefixed identifier
+  (``relationship.when_disagreeing``) — unique across all
+  documents, deterministic for identical documents, and
+  unchanged when a section is merely renumbered, so
+  retrieval results stay explainable across recompiles.
+  The within-document bare slug remains as ``section_id``
+  for the kernel and IR surfaces that already use it.
+- Priority here is *derived*, never authored or stored:
+  the pure ``section_priority`` function bands a section
+  by signals this layer already computes deterministically
+  (in the kernel 0.90; kernel-marked but not selected
+  0.80; identity/values/boundaries/rules/motivations/
+  relationship material 0.60; everything else, including
+  the unheaded preamble, 0.40). §16's authored P0–P4
+  priority metadata is a later section and is not
+  claimed here.
 
 Token counts are deterministic estimates (ceil(chars / 4)),
 named as estimates wherever they surface. Disabled by
@@ -223,19 +250,53 @@ def _slugify(heading: str) -> str:
     return slug or "section"
 
 
+_ENUM_PREFIX = re.compile(r"^\d+(?:\.\d+)*[.)]\s+")
+
+
+def display_heading(raw: str) -> str:
+    """The §11 semantic heading: enumeration is not identity.
+
+    A leading enumeration prefix (``37. ``, ``11.2) ``) is
+    presentation — the roadmap's own example turns
+    ``37. WHEN CADUCEA DISAGREES`` into the heading
+    ``WHEN CADUCEA DISAGREES``. Pure function of the raw
+    heading text; a heading that is only a number keeps it.
+    """
+    cleaned = _ENUM_PREFIX.sub("", raw.strip(), count=1).strip()
+    return cleaned or raw.strip()
+
+
+def stable_section_id(role: str, section_id: str) -> str:
+    """The §12 persistent identifier: ``role.section``.
+
+    Role-prefixed so an id is unique across every document
+    and explains which document it names; deterministic, so
+    identical documents always produce identical ids.
+    """
+    return f"{role}.{section_id}"
+
+
 def core_roles() -> list[str]:
     return list(CORE_ROLES)
 
 
 def parse_sections(text: str) -> list[dict[str, Any]]:
-    """Split Markdown into sections by heading (§6 parse step).
+    """Split Markdown into sections by heading (§§6, 11).
 
-    Content before the first heading becomes a ``preamble``
-    section. Section ids are stable slugs of the heading text,
-    disambiguated in document order (``name``, ``name_2``, ...).
-    Section text is normalised: trailing whitespace stripped,
-    runs of blank lines collapsed — the §6 normalise step; the
-    wording itself is never summarised or rewritten (§7).
+    §11: the split respects conceptual boundaries only —
+    sections begin at headings and are never cut at an
+    arbitrary token count, however long they run. Content
+    before the first heading becomes a ``preamble`` section.
+    Headings are semantic (§11): a leading enumeration
+    prefix is stripped (``display_heading``), so renumbering
+    a section never changes its identity. Section ids are
+    stable slugs of the semantic heading, disambiguated in
+    document order (``name``, ``name_2``, ...); the §12
+    persistent form prefixes the document role
+    (``stable_section_id``). Section text is normalised:
+    trailing whitespace stripped, runs of blank lines
+    collapsed — the §6 normalise step; the wording itself
+    is never summarised or rewritten (§7).
     """
     sections: list[dict[str, Any]] = []
     heading = "preamble"
@@ -256,7 +317,7 @@ def parse_sections(text: str) -> list[dict[str, Any]]:
         if match:
             flush()
             level = len(match.group(1))
-            heading = match.group(2).strip()
+            heading = display_heading(match.group(2))
             lines = []
         else:
             lines.append(line.rstrip())
@@ -360,6 +421,39 @@ def classify_section(role: str, heading: str) -> str:
     return "identity"
 
 
+# §11 priority bands (derived, §16 authored metadata is a
+# later section): the kernel is identity-critical material;
+# kernel-marked sections that did not fit are the next band;
+# the persona-defining IR categories follow; the rest —
+# preferences, background, the unheaded preamble — are last.
+_PRIORITY_MID_CATEGORIES = frozenset({
+    "identity", "values", "boundaries", "behavioral_rules",
+    "motivations", "relationship",
+})
+
+
+def section_priority(role: str, heading: str,
+                     in_kernel: bool = False) -> float:
+    """The §11 derived priority of a section, in [0, 1].
+
+    Pure deterministic function of (role, heading, kernel
+    membership) over signals this layer already computes —
+    never an authored or stored value. Bands: in the kernel
+    0.90; kernel-marked (§9) but not selected 0.80; sections
+    classifying into a persona-defining §8 category 0.60;
+    everything else 0.40.
+    """
+    if in_kernel:
+        return 0.90
+    if heading == "preamble":
+        return 0.40
+    if kernel_source_kind(role, heading) is not None:
+        return 0.80
+    if classify_section(role, heading) in _PRIORITY_MID_CATEGORIES:
+        return 0.60
+    return 0.40
+
+
 def build_persona_ir(persona_id: str,
                      index: list[dict[str, Any]]) -> dict[str, Any]:
     """Build the §8 PersonaIR from the compiled section index.
@@ -377,6 +471,9 @@ def build_persona_ir(persona_id: str,
         categories[category].append({
             "role": entry["role"],
             "section_id": entry["section_id"],
+            "stable_id": entry.get(
+                "stable_id",
+                stable_section_id(entry["role"], entry["section_id"])),
             "heading": entry["heading"],
             "estimated_tokens": entry["estimated_tokens"],
             "text": entry["text"],
@@ -590,16 +687,34 @@ class PersonaCompiler:
                 "estimated_tokens": _estimate_tokens(text),
             })
             for section in sections:
-                index.append({
-                    "role": document["role"],
-                    "section_id": section["section_id"],
-                    "heading": section["heading"],
-                    "estimated_tokens": _estimate_tokens(section["text"]),
-                    "text": section["text"],
-                })
                 sections_by_role.setdefault(
                     document["role"], []).append(section)
         kernel = self._kernel(sections_by_role)
+        # The §11 index is built after the kernel so each
+        # record's derived priority can see kernel membership.
+        kernel_keys = {
+            (row["role"], row["section_id"])
+            for row in kernel["sources"]}
+        for document in config["documents"]:
+            for section in sections_by_role.get(document["role"], []):
+                role = document["role"]
+                index.append({
+                    "role": role,
+                    "document": role,
+                    "section_id": section["section_id"],
+                    "section": section["section_id"],
+                    "stable_id": stable_section_id(
+                        role, section["section_id"]),
+                    "heading": section["heading"],
+                    "level": section["level"],
+                    "estimated_tokens": _estimate_tokens(section["text"]),
+                    "text": section["text"],
+                    "content": section["text"],
+                    "priority": section_priority(
+                        role, section["heading"],
+                        in_kernel=(role, section["section_id"])
+                        in kernel_keys),
+                })
         return {
             "persona_id": config["id"],
             "display_name": config["display_name"],
@@ -668,6 +783,9 @@ class PersonaCompiler:
         }
         return {
             "section_ids": [s["section_id"] for s in picked_sections],
+            "stable_ids": [
+                stable_section_id(role, section["section_id"])
+                for role, _, section in picked],
             "sources": sources,
             "source_counts": source_counts,
             "text": text,
@@ -730,7 +848,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-10): persona "
+            f"Persona runtime (§§3-12): persona "
             f"{compiled['persona_id']} compiled from "
             f"{len(compiled['documents'])} documents / "
             f"{len(compiled['index'])} sections; kernel "
@@ -747,7 +865,9 @@ class PersonaRuntimeBridge:
             f"{compiled['ir']['ir_hash'][:12]} with {populated} "
             f"of {len(compiled['ir']['categories'])} categories "
             f"populated; persona hash "
-            f"{compiled['persona_hash'][:12]}. Canonical document "
+            f"{compiled['persona_hash'][:12]}. Every section "
+            f"carries a §12 stable id (role.section) and a "
+            f"derived §11 priority. Canonical document "
             f"text is compiled, not injected by this layer."
         )
         return [ContextItem(
@@ -778,8 +898,11 @@ __all__ = [
     "build_persona_ir",
     "classify_section",
     "core_roles",
+    "display_heading",
     "ir_categories",
     "kernel_source_kind",
     "kernel_source_kinds",
     "parse_sections",
+    "section_priority",
+    "stable_section_id",
 ]
