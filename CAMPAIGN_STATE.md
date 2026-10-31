@@ -2827,3 +2827,68 @@ portable state: any agent (Muse or Hermes) resumes from here.
   trait/state classification with a deterministic decay
   rule for states), not a summariser or a live state
   tracker this plugin does not own.
+- 2026-10-31 ~17:3x EDT keeper tick: **Slice 130 DONE —
+  Persona Runtime §25 (Conversation Summaries Must Not
+  Define Persona) and §26 (Trait vs State) complete,
+  banked and PUSHED under the standing go-ahead.** The
+  slice's code was found in the tree uncommitted at tick
+  start (files mtime 17:11–17:16 EDT, targeted run
+  complete at 17:15 EDT); its first full run was cut off
+  by the VM restart at 21:23 UTC, leaving an incomplete
+  log (`slice130_full_run.log`) and no live worker —
+  this tick continued the stopped work per keeper law:
+  verified no live work on this tree, re-ran the full
+  suite to completion, smoke, and the push. Code (from
+  the interrupted tick, verified by this tick's runs):
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §25's pure
+  `classify_summary_claim` classifies a claim's form by
+  explicit grammatical markers only (trait-form markers
+  win, then temporal/state markers, otherwise
+  unclassified and refused fail-closed); a summary may
+  record only state-form claims and no form may define
+  persona or redefine traits (a summary inherits the
+  §24 conversation tier). §26's pure
+  `trait_state_separation` / `classify_attribute` /
+  `decayed_strength` / `state_decay` stand the explicit
+  separation: traits come from canonical persona files
+  only and never decay; every non-canonical source is
+  at most a state, and states decay deterministically
+  under this layer's recorded convention (24-hour
+  half-life, expired below 0.05). Packet label updated
+  to §§3–26 (seven older persona files' packet
+  assertions updated in-slice). Tests: targeted persona
+  run (14 files): **114 passed, 0 failed**
+  (`slice130_persona_all.log`); full volmarr/kista run
+  (83 files): **593 passed, 7 failed, 1 skipped** — the
+  failures the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin,
+  1 Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice130_full_run2.log`);
+  593 is exactly Slice 129's 584 + the 9 new contracts.
+  Smoke: `hermes --version` runs (v0.20.0); README.md
+  sha256 invariant held (`4e022de7…c4910`).
+  Bookkeeping: CUSTOMIZATIONS.md ledger row (full-run
+  numbers added by this tick), §25 + §26 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–26. Honest gaps: marker-free
+  trait prose is refused as unclassified rather than
+  interpreted (§7); no summariser is built, no summary
+  is read, no live state is tracked, and no caller
+  consumes the classification yet.
+- **Next resume point: Slice 131 — Persona Runtime §27
+  (Persona Watchdog) and §28 (Drift Dimensions)**:
+  §27 names a `PersonaWatchdog` that evaluates draft
+  responses (it does not generate them) and produces a
+  drift score routing acceptable → output, drift →
+  repair; §28 names the ten drift dimensions (identity,
+  tone, relationship, decision behavior, counsel style,
+  initiative, truthfulness, deference, technical
+  competence, boundaries) — reconcile against the
+  banked §23 drift defenses when read at slice start;
+  expect a pure contract surface naming the watchdog
+  pipeline, the dimensions, and a deterministic
+  score-shape/threshold rule (§29's score/repair are
+  later sections), not a live response evaluator or
+  repair loop this plugin does not own.
