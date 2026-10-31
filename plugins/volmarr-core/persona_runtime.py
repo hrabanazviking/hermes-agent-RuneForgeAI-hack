@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-12).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-13).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -114,6 +114,24 @@ What stands here, and nothing more:
   retrieval results stay explainable across recompiles.
   The within-document bare slug remains as ``section_id``
   for the kernel and IR surfaces that already use it.
+- §13 hybrid persona retrieval: an explicit, deterministic
+  retrieval layer over the Layer B index — never only
+  embeddings. Five of the §13 components stand here:
+  keyword matching over heading + verbatim text, document
+  role affinity, section tags (role + §8 category + heading /
+  section tokens), current task classification (the pure
+  ``classify_task`` lexicon over the query/task text), and
+  the §11 derived priority, combined by the pure
+  ``retrieval_score`` function into an explainable score
+  whose components are returned with every result. Results
+  are named by their §12 stable ids. The sixth component,
+  semantic similarity, is honestly unavailable: this plugin
+  owns no embedding surface, so every score records
+  ``semantic: None`` and ``hybrid_components`` names it
+  unavailable rather than faking a similarity value.
+  Retrieval is an explicit call only — no hook, no router
+  (§14 is later), no budgeter (§15 is later), and nothing
+  retrieved is injected by this layer.
 - Priority here is *derived*, never authored or stored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -498,6 +516,245 @@ def build_persona_ir(persona_id: str,
     }
 
 
+# --- §13 hybrid retrieval -------------------------------------------
+#
+# Deterministic, explainable retrieval over the compiled
+# Layer B index. Tokenisation reuses the slug vocabulary the
+# parser already speaks, so a query, a heading, and a stable
+# id all tokenise the same way.
+
+RETRIEVAL_DEFAULT_LIMIT = 5
+RETRIEVAL_MAX_LIMIT = 20
+
+# Task lexicon: tag -> words in a user message / task text
+# that signal the tag. Order is roadmap-example order first.
+_TASK_LEXICON = (
+    ("coding", frozenset({
+        "code", "coding", "refactor", "debug", "bug", "implement",
+        "function", "class", "python", "typescript", "compile",
+        "test", "tests", "testing"})),
+    ("git", frozenset({
+        "git", "branch", "commit", "push", "pull", "merge",
+        "rebase", "repository", "repo"})),
+    ("filesystem", frozenset({
+        "file", "files", "filesystem", "directory", "folder",
+        "path", "rename", "move", "copy", "delete"})),
+    ("external_mutation", frozenset({
+        "push", "publish", "send", "post", "deploy", "release",
+        "upload", "remote", "external"})),
+    ("memory", frozenset({
+        "memory", "remember", "recall", "forget", "contradiction",
+        "history"})),
+    ("relationship", frozenset({
+        "relationship", "disagree", "disagrees", "counsel",
+        "decision", "decisions", "trust"})),
+    ("communication", frozenset({
+        "write", "writing", "draft", "tone", "voice", "explain",
+        "message", "speak"})),
+    ("research", frozenset({
+        "research", "search", "investigate", "explore", "compare",
+        "documentation", "docs"})),
+    ("planning", frozenset({
+        "plan", "planning", "roadmap", "schedule", "organize",
+        "organise", "prioritize", "prioritise"})),
+)
+
+TASK_TAGS = tuple(tag for tag, _ in _TASK_LEXICON)
+
+# Section keywords each task tag looks for in a section's tags.
+_TASK_SECTION_KEYWORDS = {
+    "coding": frozenset({
+        "coding", "code", "execution", "dependencies", "tests",
+        "testing"}),
+    "git": frozenset({"git", "remote", "reversibility"}),
+    "filesystem": frozenset({
+        "filesystem", "file", "files", "directory"}),
+    "external_mutation": frozenset({
+        "remote", "reversibility", "external", "mutation", "git"}),
+    "memory": frozenset({"memory", "contradiction", "remembrance"}),
+    "relationship": frozenset({
+        "relationship", "disagrees", "disagreeing", "counsel",
+        "decisions"}),
+    "communication": frozenset({
+        "communication", "voice", "tone", "style"}),
+    "research": frozenset({"research", "documentation", "exploration"}),
+    "planning": frozenset({"planning", "roadmap", "goals", "projects"}),
+}
+
+# Document roles each task tag has affinity for (§13's
+# document-role component).
+_TASK_ROLE_AFFINITY = {
+    "coding": frozenset({"service_bible", "tool_policy", "core"}),
+    "git": frozenset({"tool_policy", "service_bible"}),
+    "filesystem": frozenset({"tool_policy", "service_bible"}),
+    "external_mutation": frozenset({"tool_policy"}),
+    "memory": frozenset({"memory_policy", "core"}),
+    "relationship": frozenset({"relationship", "core"}),
+    "communication": frozenset({"core", "relationship"}),
+    "research": frozenset({"service_bible", "memory_policy"}),
+    "planning": frozenset({"core", "service_bible"}),
+}
+
+
+# Retrieval stopwords: function words carry no topical
+# signal, and counting them lets an unrelated section float
+# on a shared "and"/"my" (the §13 example's core sections
+# outranked tool_policy.reversibility on exactly that).
+# _tokens is used only by the §13 retrieval functions, so
+# the filter is scoped to retrieval.
+_RETRIEVAL_STOPWORDS = frozenset({
+    "a", "an", "and", "are", "as", "at", "be", "by", "for",
+    "from", "in", "into", "is", "it", "its", "my", "of",
+    "on", "or", "the", "to", "with", "you", "your",
+})
+
+
+def _tokens(text: str) -> set[str]:
+    return {tok for tok in _slugify(text).split("_")
+            if tok and tok not in _RETRIEVAL_STOPWORDS}
+
+
+def classify_task(text: str) -> list[str]:
+    """The §13 task tags a message signals, in lexicon order.
+
+    Pure function of the text: a tag is present when any of
+    its lexicon words appears as a token. No model call.
+    """
+    tokens = _tokens(text or "")
+    return [tag for tag, words in _TASK_LEXICON if tokens & words]
+
+
+def task_tags() -> list[str]:
+    return list(TASK_TAGS)
+
+
+def section_tags(entry: dict[str, Any]) -> list[str]:
+    """A compiled section's §13 tags, sorted deterministically.
+
+    Tags are the document role, the §8 IR category, the
+    role's own fallback category (the category its document
+    exists for, when the heading classifies elsewhere —
+    a tool_policy section headed "Git Policy" is tools
+    material even though "policy" classifies it as
+    behavioral rules), and the heading / section-id tokens
+    — all signals this layer already computes; nothing is
+    authored or stored.
+    """
+    tags = {entry["role"], classify_section(entry["role"], entry["heading"])}
+    fallback = _ROLE_FALLBACK.get(entry["role"])
+    if fallback is not None:
+        tags.add(fallback)
+    tags |= _tokens(entry["heading"])
+    tags |= _tokens(entry["section_id"])
+    return sorted(tags)
+
+
+def hybrid_components() -> list[dict[str, Any]]:
+    """The §13 retrieval components and their honest status."""
+    return [
+        {"name": "semantic_similarity", "available": False,
+         "reason": "no embedding surface is owned by this plugin"},
+        {"name": "keyword_matching", "available": True, "reason": ""},
+        {"name": "document_role", "available": True, "reason": ""},
+        {"name": "section_tags", "available": True, "reason": ""},
+        {"name": "task_classification", "available": True, "reason": ""},
+        {"name": "priority", "available": True, "reason": ""},
+    ]
+
+
+def retrieval_score(entry: dict[str, Any], query: str = "",
+                    task_tags_: list[str] | None = None) -> dict[str, Any]:
+    """The explainable §13 score for one section.
+
+    Pure function. Components are each in [0, 1] except
+    ``semantic``, which is None (unavailable, never faked).
+    The total is the fixed weighted sum: keyword 0.35,
+    heading 0.10, task 0.25, role 0.10, priority 0.20.
+    """
+    query_tokens = _tokens(query or "")
+    heading_tokens = _tokens(entry["heading"])
+    text_tokens = _tokens(entry["text"])
+    if query_tokens:
+        keyword = len(query_tokens & (heading_tokens | text_tokens)) \
+            / len(query_tokens)
+        heading_match = len(query_tokens & heading_tokens) / len(query_tokens)
+    else:
+        keyword = 0.0
+        heading_match = 0.0
+    tags = set(section_tags(entry))
+    task_match = 0.0
+    role_match = 0.0
+    wanted = [t for t in (task_tags_ or []) if t in _TASK_SECTION_KEYWORDS]
+    if wanted:
+        task_match = max(
+            len(_TASK_SECTION_KEYWORDS[t] & tags)
+            / len(_TASK_SECTION_KEYWORDS[t]) for t in wanted)
+        affinity: set[str] = set()
+        for tag in wanted:
+            affinity |= _TASK_ROLE_AFFINITY[tag]
+        role_match = 1.0 if entry["role"] in affinity else 0.0
+    priority = float(entry.get("priority", 0.40))
+    total = (0.35 * keyword + 0.10 * heading_match + 0.25 * task_match
+             + 0.10 * role_match + 0.20 * priority)
+    return {
+        "total": round(total, 6),
+        "keyword": round(keyword, 6),
+        "heading": round(heading_match, 6),
+        "task": round(task_match, 6),
+        "role": round(role_match, 6),
+        "priority": priority,
+        "semantic": None,
+    }
+
+
+def retrieve_sections(index: list[dict[str, Any]], query: str = "",
+                      task_text: str | None = None,
+                      limit: int = RETRIEVAL_DEFAULT_LIMIT
+                      ) -> list[dict[str, Any]]:
+    """Rank compiled sections for a query/task (§13).
+
+    Deterministic: sorted by descending score, ties broken
+    by stable id. Sections scoring zero are excluded, and a
+    query with no tokens and no task signal retrieves
+    nothing. Each result names its §12 stable id, carries
+    its verbatim text (§7), its tags, and the full score
+    breakdown — retrieval stays explainable.
+    """
+    tags_wanted = classify_task(task_text if task_text is not None else query)
+    if not _tokens(query or "") and not tags_wanted:
+        return []
+    try:
+        bounded = int(limit)
+    except (TypeError, ValueError):
+        bounded = RETRIEVAL_DEFAULT_LIMIT
+    bounded = max(1, min(RETRIEVAL_MAX_LIMIT, bounded))
+    results = []
+    for entry in index:
+        score = retrieval_score(entry, query=query, task_tags_=tags_wanted)
+        if score["total"] <= 0.0:
+            continue
+        # A section must connect to the request: a bare
+        # priority/role float with no keyword, heading, or
+        # task contact is not a retrieval result.
+        if not (score["keyword"] or score["heading"] or score["task"]):
+            continue
+        results.append({
+            "stable_id": entry.get(
+                "stable_id",
+                stable_section_id(entry["role"], entry["section_id"])),
+            "role": entry["role"],
+            "section_id": entry["section_id"],
+            "heading": entry["heading"],
+            "priority": float(entry.get("priority", 0.40)),
+            "task_tags": list(tags_wanted),
+            "tags": section_tags(entry),
+            "score": score,
+            "text": entry["text"],
+        })
+    results.sort(key=lambda row: (-row["score"]["total"], row["stable_id"]))
+    return results[:bounded]
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -813,6 +1070,29 @@ class PersonaCompiler:
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+class PersonaRetriever:
+    """Explicit §13 retrieval over a fresh compile.
+
+    One explicit call compiles (deterministically, writing
+    nothing) and ranks its index. No hook, no per-message
+    call, no injection — routing (§14) and budgeting (§15)
+    decide what any caller does with the results.
+    """
+
+    def __init__(self, ctx) -> None:
+        self._compiler = PersonaCompiler(ctx)
+
+    def retrieve(self, query: str = "", task_text: str | None = None,
+                 limit: int = RETRIEVAL_DEFAULT_LIMIT
+                 ) -> list[dict[str, Any]]:
+        compiled = self._compiler.compile()
+        if compiled is None:
+            return []
+        return retrieve_sections(
+            compiled["index"], query=query, task_text=task_text,
+            limit=limit)
+
+
 class PersonaRuntimeBridge:
     """Surface the compiled persona's identity, counts only.
 
@@ -848,7 +1128,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-12): persona "
+            f"Persona runtime (§§3-13): persona "
             f"{compiled['persona_id']} compiled from "
             f"{len(compiled['documents'])} documents / "
             f"{len(compiled['index'])} sections; kernel "
@@ -867,7 +1147,11 @@ class PersonaRuntimeBridge:
             f"populated; persona hash "
             f"{compiled['persona_hash'][:12]}. Every section "
             f"carries a §12 stable id (role.section) and a "
-            f"derived §11 priority. Canonical document "
+            f"derived §11 priority. §13 hybrid retrieval is "
+            f"explicit-only over those stable ids (keyword, "
+            f"role, tags, task classification, priority; the "
+            f"semantic component is unavailable — no embedding "
+            f"surface is owned). Canonical document "
             f"text is compiled, not injected by this layer."
         )
         return [ContextItem(
@@ -894,15 +1178,23 @@ __all__ = [
     "PersonaRuntimeError",
     "PersonaConfigStore",
     "PersonaCompiler",
+    "PersonaRetriever",
     "PersonaRuntimeBridge",
+    "TASK_TAGS",
     "build_persona_ir",
     "classify_section",
+    "classify_task",
     "core_roles",
     "display_heading",
     "ir_categories",
     "kernel_source_kind",
     "kernel_source_kinds",
+    "hybrid_components",
     "parse_sections",
+    "retrieval_score",
+    "retrieve_sections",
     "section_priority",
+    "section_tags",
     "stable_section_id",
+    "task_tags",
 ]

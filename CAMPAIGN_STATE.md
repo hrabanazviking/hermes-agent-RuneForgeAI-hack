@@ -2205,3 +2205,148 @@ portable state: any agent (Muse or Hermes) resumes from here.
   over the compiled index, with any embedding/semantic
   component honestly gated on a surface this plugin does
   not yet own, not a second index.
+- 2026-10-31 ~12:3x EDT keeper tick: **Slice 122 CODE
+  COMPLETE, banked LOCALLY ONLY — NOT PUSHED, TESTS NOT
+  RUN (environment blocker, below).** No live work found
+  (tree clean, HEAD == origin/main at `1cea4744d2`).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no second index, no new file or config key:
+  §13 hybrid retrieval as an explicit, deterministic
+  layer over the compiled Layer B index. Five of the six
+  §13 components stand — keyword matching over heading +
+  verbatim text, document-role affinity, section tags
+  (pure `section_tags`: role + §8 category + heading/
+  section tokens), current task classification (pure
+  `classify_task` lexicon: coding, git, filesystem,
+  external_mutation, memory, relationship, communication,
+  research, planning), and the §11 derived priority —
+  combined by the pure `retrieval_score` function
+  (keyword 0.35, heading 0.10, task 0.25, role 0.10,
+  priority 0.20); every result is named by its §12
+  stable id, carries verbatim text (§7) and the full
+  score breakdown, and a section with no keyword/
+  heading/task contact is not a result. The sixth
+  component, semantic similarity, is honestly
+  unavailable — this plugin owns no embedding surface —
+  so `hybrid_components` names it unavailable and every
+  score records `semantic: None`, never faked.
+  `PersonaRetriever` compiles + ranks in one explicit
+  call; the packet item now covers §§3–13 (still no
+  persona text). Contract file written (8 tests).
+  Verification without tests: files parse-verified
+  (ast + YAML), and the retrieval math was verified
+  against the real module imported read-only — the §13
+  example load set (`service_bible.coding_preferences`,
+  `tool_policy.git_policy`,
+  `tool_policy.remote_git_operations`,
+  `tool_policy.reversibility`) ranks in the top 5 for
+  the example query with unrelated sections excluded.
+  **Blocker: the VM's write(2) EPERM failure recurred
+  mid-tick** (the Slice 115 class: Python tempfile and
+  git index/file writes fail EPERM while bash-builtin
+  and file-tool writes succeed; /tmp also filled to
+  100% early in the tick and later cleared). A subagent
+  `run_tests.sh` attempt died in uv environment setup
+  with the same EPERM — no test verdict is claimed, and
+  git commit/push are impossible while git cannot
+  write. **Incident + repair, recorded plainly: an
+  early python edit script truncated
+  `plugins/volmarr-core/plugin.yaml` to 0 bytes before
+  its write failed; the file was restored BYTE-FOR-BYTE
+  via the file tools (transcription assembled from
+  `git show` pipe reads and verified — sha256
+  `6b4bd969…` == HEAD, 595 lines / 36,029 bytes) before
+  the slice's own one-line description edit was applied
+  on top; a verified copy of the HEAD text remains at
+  `~/workspace/.verify-tmp/plugin_yaml_restore.txt`.**
+  Working tree now holds exactly the Slice 122 set
+  (persona_runtime.py + plugin.yaml modified, the new
+  contract file, CUSTOMIZATIONS.md + roadmap +
+  this file). README.md untouched (sha256
+  `4e022de7…c4910` re-measured at tick start; no smoke
+  run was possible).
+- **Next resume point: FIRST verify the write blocker
+  is gone (python tempfile write + a git write), then
+  run Slice 122's targeted contracts (the retrieval
+  file + the four earlier persona files) + the full
+  volmarr/kista suite + smoke + README invariant; fix
+  any failures in scope, then push Slice 122 under the
+  standing go-ahead (fetch + remote-diff first,
+  ls-remote verify). Only then Slice 123 — Persona
+  Runtime §14 (Persona Router)**: `PersonaRouter`
+  deciding which persona sections a task requires
+  (inputs: user message, current task, active project,
+  tool intent, conversation state; output: required
+  persona sections named by §12 stable ids, e.g. the
+  §14 code_generation example) on top of the Slice 122
+  retrieval layer, per the §14 spec when read at slice
+  start.
+- 2026-10-31 ~12:51 EDT keeper tick: **Blocker re-verified
+  STILL PRESENT — Slice 122 remains untested/unpushed, no
+  test run attempted this tick.** No live work found (no
+  hermes/pytest process on this tree; the uncommitted set
+  is exactly the Slice 122 set: persona_runtime.py +
+  plugin.yaml modified, the new retrieval contract file,
+  CUSTOMIZATIONS.md + roadmap + this file). Direct probes:
+  system python3.12 and the checkout's venv python both
+  create/truncate a fresh file to 0 bytes and fail
+  write-close with EPERM in /tmp, ~/workspace/.verify-tmp,
+  and ~; `tempfile` fails the same way; a scratch
+  `git init` fails with `copy-fd: write returned:
+  Operation not permitted` — while bash-builtin and
+  file-tool writes to the workspace succeed, confirming
+  the Slice 115/122 Python/C write failure class. /tmp is
+  at 1% used, so this is not the earlier /tmp-full event.
+  HEAD == origin/main == `1cea4744d2` (ls-remote verified
+  this tick); README.md sha256 invariant re-measured and
+  held (`4e022de7…c4910`). Tests were NOT run —
+  `scripts/run_tests.sh` cannot run while tempfile/Python
+  writes fail, and running Python against the tree risks
+  truncating files it opens for write (the Slice 122
+  plugin.yaml incident). Git commit/push are likewise
+  impossible while git cannot write. Resume point
+  unchanged: verify the blocker is gone first, then the
+  Slice 122 targeted + full suite + smoke + push sequence
+  above, then Slice 123.
+- 2026-10-31 ~13:0x EDT keeper tick: **Python-write blocker
+  GONE — Slice 122 verified, fixed in scope, banked and
+  PUSHED under the standing go-ahead.** Direct probes at
+  tick start: system python3.12, the checkout's venv
+  python 3.14, and `tempfile` all write regular files
+  successfully again, and a scratch `git init`/`git add`
+  succeeds; README.md sha256 invariant held
+  (`4e022de7…c4910`). No live work found on this tree
+  (running Python belonged to other campaigns). The first
+  targeted run caught two real defects in the Slice 122
+  code, both fixed in scope: (1) retrieval tokens are now
+  stopword-filtered — a shared "and" had given the
+  unrelated core sections keyword contact, and their
+  kernel priority floated them above
+  `tool_policy.reversibility`, breaking the §13 example
+  load set; (2) `section_tags` now also carries the
+  role's fallback category — a tool_policy section headed
+  "Git Policy" is tools material even though "policy"
+  classifies it as behavioral rules in the IR. Targeted
+  persona run (5 files): **43/43 pass**. Full
+  volmarr/kista run (75 files): **530 passed, 7 failed,
+  1 skipped** — the failures are the same name-identical
+  pre-existing environmental set in the same 3 files (5
+  core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback), verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice122_full_run.log`); 530
+  is exactly Slice 121's 522 + the 8 new retrieval
+  contracts. Smoke: `hermes --version` runs. Bookkeeping
+  corrected in place: the CUSTOMIZATIONS.md ledger row
+  and the roadmap §13 completion note no longer record
+  the un-run state — both now carry the verified numbers
+  and the two in-scope fixes.
+- **Next resume point: Slice 123 — Persona Runtime §14
+  (Persona Router)**: `PersonaRouter` deciding which
+  persona sections a task requires (inputs: user message,
+  current task, active project, tool intent, conversation
+  state; output: required persona sections named by §12
+  stable ids, e.g. the §14 code_generation example loading
+  `core.execution` + `service_bible.coding_preferences` +
+  `service_bible.dependencies` + `tool_policy.filesystem`)
+  on top of the Slice 122 retrieval layer, per the §14
+  spec when read at slice start.

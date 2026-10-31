@@ -856,6 +856,57 @@ tool_policy.reversibility
 ```
 
 
+**§13 completion note (Slice 122, 2026-10-31).**
+Implemented in
+`plugins/volmarr-core/persona_runtime.py`, extended in
+place — no second index, no new file or config key.
+Hybrid retrieval stands as an explicit, deterministic
+layer over the compiled Layer B index: keyword matching
+over heading + verbatim text, document-role affinity,
+section tags (the pure `section_tags` function: role +
+§8 category + the role's fallback category +
+heading/section tokens; retrieval tokens are
+stopword-filtered so a shared function word gives a
+section no keyword contact), current task
+classification (the pure `classify_task` lexicon —
+coding, git, filesystem, external_mutation, memory,
+relationship, communication, research, planning), and
+the §11 derived priority, combined by the pure
+`retrieval_score` function (keyword 0.35, heading 0.10,
+task 0.25, role 0.10, priority 0.20) into an explainable
+score whose full breakdown returns with every result.
+Results are named by their §12 stable ids and carry
+verbatim text (§7); a section with no keyword, heading,
+or task contact is not a result, empty signals retrieve
+nothing, and limits clamp to 1–20 (default 5) with
+stable-id tiebreaks. The roadmap's own example is
+contract-proven: a coding/git task retrieves
+`service_bible.coding_preferences`,
+`tool_policy.git_policy`,
+`tool_policy.remote_git_operations`, and
+`tool_policy.reversibility` in its top results. Honest
+gap: the sixth component, semantic similarity, is
+unavailable — this plugin owns no embedding surface, so
+`hybrid_components` names it unavailable and every
+score records `semantic: None` rather than faking a
+similarity value; it stands gated on an embedding
+surface a later slice may own. Retrieval is an explicit
+`PersonaRetriever` call only — routing (§14) and
+budgeting (§15) are later sections, and nothing
+retrieved is injected by this layer. Verification was
+first blocked by the VM's Python/git write(2) EPERM
+failure (the Slice 115 class); when it cleared, the
+first targeted run caught two real defects, both
+fixed in scope — retrieval tokens are now
+stopword-filtered (a shared "and" had floated
+unrelated kernel sections above
+`tool_policy.reversibility`), and `section_tags` also
+carries the role's fallback category. Targeted
+43/43 pass; full volmarr/kista run (75 files):
+530 passed, 7 failed, 1 skipped — the failures the
+same name-identical pre-existing environmental set.
+
+
 ---
 
 
