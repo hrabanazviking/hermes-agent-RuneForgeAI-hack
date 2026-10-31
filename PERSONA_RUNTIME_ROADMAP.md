@@ -959,6 +959,53 @@ persona_context:
 ```
 
 
+**§14 completion note (Slice 123, 2026-10-31).**
+Implemented in
+`plugins/volmarr-core/persona_runtime.py`, extended in
+place — no second retrieval layer, no new file or
+config key. `PersonaRouter` is an explicit,
+deterministic decision layer over the §13 retrieval
+scores. The pure `route_sections` function takes the
+five §14 inputs (user message, current task, active
+project, tool intent, conversation state — any subset
+may be present; the result names which inputs were
+present, never their text), classifies their combined
+text with the §13 lexicon, and derives the task label
+via the pure `route_task_label` function (an explicit
+current task wins, slugified; a placeholder such as
+`general` does not; otherwise the first classified tag
+in label precedence order names the task; no signal is
+`general`). Required sections are selected per task
+tag first — the top 3 sections in §13 score order
+whose section tags contact that tag's keywords — then
+filled from the §13 retrieval ranking, capped
+(clamped 1–20, default 8) and ordered by descending
+score with stable-id tiebreaks. Every required section
+is named by its §12 stable id, returned both as
+`required` and in this section's `persona_context`
+shape, with a per-section row carrying the tags that
+required it, an explicit `via_retrieval` marker when
+keyword contact alone required it (never a reasonless
+row), and its explainable §13 score (semantic still
+null, never faked). The example above is
+contract-proven: `code_generation` with a filesystem
+tool intent requires `core.execution`,
+`service_bible.coding_preferences`,
+`service_bible.dependencies`, and
+`tool_policy.filesystem`, with unrelated material not
+required; project and conversation inputs shape the
+route independently of the user message. With no
+persona config the router still names the task, with
+nothing required. Honest gaps: routing injects
+nothing and no budgeter has trimmed its output —
+budgeting is §15, a later section; the router's
+per-tag cap is a coverage bound, not a token budget.
+Targeted 51/51 pass; full volmarr/kista run (76
+files): 538 passed, 7 failed, 1 skipped — the failures
+the same name-identical pre-existing environmental
+set.
+
+
 ---
 
 

@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-13).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-14).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -129,9 +129,26 @@ What stands here, and nothing more:
   owns no embedding surface, so every score records
   ``semantic: None`` and ``hybrid_components`` names it
   unavailable rather than faking a similarity value.
-  Retrieval is an explicit call only — no hook, no router
-  (§14 is later), no budgeter (§15 is later), and nothing
-  retrieved is injected by this layer.
+  Retrieval is an explicit call only — no hook, no budgeter
+  (§15 is later), and nothing retrieved is injected by
+  this layer.
+- §14 persona router: ``PersonaRouter`` decides which
+  persona sections a task *requires*, from the five §14
+  inputs (user message, current task, active project, tool
+  intent, conversation state — any subset may be present).
+  The pure ``route_sections`` function classifies the
+  combined signals with the §13 lexicon, derives a task
+  label (an explicit current task wins, slugified; else a
+  deterministic label from the first matching tag; else
+  ``general``), and selects required sections per task tag
+  — the top sections in §13 score order whose tags contact
+  that tag's section keywords — filled from the §13
+  retrieval ranking, capped, and ordered by score with
+  stable-id tiebreaks. Every required section is named by
+  its §12 stable id and carries the tags that required it
+  plus its explainable §13 score. Routing is an explicit
+  call only: it writes nothing, injects nothing, and no
+  budgeter (§15) has trimmed its output yet.
 - Priority here is *derived*, never authored or stored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -755,6 +772,185 @@ def retrieve_sections(index: list[dict[str, Any]], query: str = "",
     return results[:bounded]
 
 
+# --- §14 persona router ---------------------------------------------
+#
+# The router decides which sections a task requires. It is a
+# deterministic decision layer over §13 retrieval: per-tag
+# coverage first (so a task's every facet names its sections),
+# then the retrieval ranking as fill, under a hard cap.
+
+ROUTER_DEFAULT_LIMIT = 8
+ROUTER_MAX_LIMIT = 20
+ROUTER_PER_TAG_LIMIT = 3
+
+# The five §14 inputs, in canonical order.
+ROUTER_INPUTS = (
+    "user_message", "current_task", "active_project",
+    "tool_intent", "conversation_state",
+)
+
+# Task labels for a derived route, in precedence order: the
+# first tag present names the task when no explicit current
+# task was supplied.
+_TASK_LABELS = (
+    ("coding", "code_generation"),
+    ("git", "git_operations"),
+    ("filesystem", "filesystem_operations"),
+    ("external_mutation", "external_mutation"),
+    ("memory", "memory_work"),
+    ("relationship", "relationship_counsel"),
+    ("communication", "communication"),
+    ("research", "research"),
+    ("planning", "planning"),
+)
+
+
+def router_inputs() -> list[str]:
+    return list(ROUTER_INPUTS)
+
+
+def route_task_label(current_task: str = "",
+                     task_tags_: list[str] | None = None) -> str:
+    """The §14 task label for a route. Pure function.
+
+    An explicit current task wins, slugified (``code_generation``
+    stays ``code_generation``); a placeholder (``general`` /
+    ``task`` / empty) does not. Otherwise the first §13 tag in
+    label precedence order names the task; no signal at all is
+    ``general``.
+    """
+    slug = _slugify(current_task) if (current_task or "").strip() else ""
+    if slug and slug not in ("general", "task", "none", "section"):
+        return slug
+    wanted = set(task_tags_ or [])
+    for tag, label in _TASK_LABELS:
+        if tag in wanted:
+            return label
+    return "general"
+
+
+def _tag_contact(entry: dict[str, Any], tag: str) -> float:
+    keywords = _TASK_SECTION_KEYWORDS.get(tag)
+    if not keywords:
+        return 0.0
+    return len(keywords & set(section_tags(entry))) / len(keywords)
+
+
+def route_sections(index: list[dict[str, Any]], user_message: str = "",
+                   current_task: str = "", active_project: str = "",
+                   tool_intent: str = "", conversation_state: str = "",
+                   limit: int = ROUTER_DEFAULT_LIMIT
+                   ) -> dict[str, Any]:
+    """Decide the persona sections a task requires (§14).
+
+    Pure deterministic function of the compiled index and the
+    five §14 inputs. Selection is per-tag first — for each
+    classified tag, the top ``ROUTER_PER_TAG_LIMIT`` sections
+    in §13 score order whose tags contact that tag — then
+    filled from the §13 retrieval ranking, capped at ``limit``
+    (clamped 1–20) and ordered by descending score with
+    stable-id tiebreaks. Empty signals route to ``general``
+    with nothing required. The result names the task, the
+    tags, which inputs were present (names only, never their
+    text), and the required stable ids both as ``required``
+    and in the §14 example's ``persona_context`` shape, with
+    a per-section row carrying the tags that required it and
+    its explainable §13 score. A row required by keyword
+    retrieval alone (no tag contact) is marked
+    ``via_retrieval`` rather than left reasonless.
+    """
+    raw = {
+        "user_message": user_message, "current_task": current_task,
+        "active_project": active_project, "tool_intent": tool_intent,
+        "conversation_state": conversation_state,
+    }
+    present = [name for name in ROUTER_INPUTS
+               if str(raw[name] or "").strip()]
+    combined = "\n".join(str(raw[name]) for name in ROUTER_INPUTS
+                         if name in present)
+    tags_wanted = classify_task(combined)
+    label = route_task_label(current_task, tags_wanted)
+    base: dict[str, Any] = {
+        "task": label,
+        "task_tags": list(tags_wanted),
+        "inputs_present": present,
+        "required": [],
+        "persona_context": [],
+        "sections": [],
+    }
+    if not present or (not _tokens(combined) and not tags_wanted):
+        return base
+    try:
+        bounded = int(limit)
+    except (TypeError, ValueError):
+        bounded = ROUTER_DEFAULT_LIMIT
+    bounded = max(1, min(ROUTER_MAX_LIMIT, bounded))
+    scores = {
+        id(entry): retrieval_score(
+            entry, query=combined, task_tags_=tags_wanted)
+        for entry in index
+    }
+
+    def stable(entry: dict[str, Any]) -> str:
+        return entry.get(
+            "stable_id",
+            stable_section_id(entry["role"], entry["section_id"]))
+
+    selected: dict[str, dict[str, Any]] = {}
+
+    def add(entry: dict[str, Any], reason_tags: list[str]) -> None:
+        sid = stable(entry)
+        row = selected.get(sid)
+        if row is None:
+            row = {
+                "stable_id": sid, "role": entry["role"],
+                "section_id": entry["section_id"],
+                "heading": entry["heading"],
+                "priority": float(entry.get("priority", 0.40)),
+                "task_tags": [],
+                "via_retrieval": False,
+                "score": scores[id(entry)],
+            }
+            selected[sid] = row
+        for tag in reason_tags:
+            if tag not in row["task_tags"]:
+                row["task_tags"].append(tag)
+
+    for tag in tags_wanted:
+        candidates = [
+            entry for entry in index if _tag_contact(entry, tag) > 0.0]
+        candidates.sort(
+            key=lambda e: (-scores[id(e)]["total"], stable(e)))
+        for entry in candidates[:ROUTER_PER_TAG_LIMIT]:
+            add(entry, [tag])
+    for row in retrieve_sections(
+            index, query=combined, limit=ROUTER_MAX_LIMIT):
+        entry = next(
+            (e for e in index if stable(e) == row["stable_id"]), None)
+        if entry is None or row["stable_id"] in selected:
+            continue
+        contact = [t for t in tags_wanted
+                   if _tag_contact(entry, t) > 0.0]
+        add(entry, contact)
+        if not contact:
+            # Required by keyword/heading retrieval contact,
+            # not by any tag — say so, never leave the row
+            # reasonless.
+            selected[row["stable_id"]]["via_retrieval"] = True
+    ordered = sorted(
+        selected.values(),
+        key=lambda r: (-r["score"]["total"], r["stable_id"]))
+    ordered = ordered[:bounded]
+    for row in ordered:
+        row["task_tags"] = [
+            t for t in tags_wanted if t in row["task_tags"]]
+    ids = [row["stable_id"] for row in ordered]
+    base["required"] = ids
+    base["persona_context"] = list(ids)
+    base["sections"] = ordered
+    return base
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -1093,6 +1289,42 @@ class PersonaRetriever:
             limit=limit)
 
 
+class PersonaRouter:
+    """Explicit §14 routing over a fresh compile.
+
+    One explicit call compiles (deterministically, writing
+    nothing) and routes its index. With no persona config the
+    route still names its task and tags, with nothing
+    required. No hook, no per-message call, no injection —
+    budgeting (§15) and prompt assembly (§53) decide what a
+    caller does with the required sections.
+    """
+
+    def __init__(self, ctx) -> None:
+        self._compiler = PersonaCompiler(ctx)
+
+    def route(self, user_message: str = "", current_task: str = "",
+              active_project: str = "", tool_intent: str = "",
+              conversation_state: str = "",
+              limit: int = ROUTER_DEFAULT_LIMIT) -> dict[str, Any]:
+        compiled = self._compiler.compile()
+        if compiled is None:
+            empty = route_sections(
+                [], user_message=user_message,
+                current_task=current_task, active_project=active_project,
+                tool_intent=tool_intent,
+                conversation_state=conversation_state, limit=limit)
+            empty["persona_id"] = None
+            return empty
+        result = route_sections(
+            compiled["index"], user_message=user_message,
+            current_task=current_task, active_project=active_project,
+            tool_intent=tool_intent, conversation_state=conversation_state,
+            limit=limit)
+        result["persona_id"] = compiled["persona_id"]
+        return result
+
+
 class PersonaRuntimeBridge:
     """Surface the compiled persona's identity, counts only.
 
@@ -1100,7 +1332,7 @@ class PersonaRuntimeBridge:
     The packet item is content-bearing only and carries no
     persona text: Layer A injection into prompt assembly,
     Layer B retrieval, and Layer C use are later roadmap
-    sections (§§13-15, §53), not this slice.
+    sections (§15, §53), not this slice.
     """
 
     def __init__(self, ctx) -> None:
@@ -1128,7 +1360,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-13): persona "
+            f"Persona runtime (§§3-14): persona "
             f"{compiled['persona_id']} compiled from "
             f"{len(compiled['documents'])} documents / "
             f"{len(compiled['index'])} sections; kernel "
@@ -1151,7 +1383,10 @@ class PersonaRuntimeBridge:
             f"explicit-only over those stable ids (keyword, "
             f"role, tags, task classification, priority; the "
             f"semantic component is unavailable — no embedding "
-            f"surface is owned). Canonical document "
+            f"surface is owned). §14 routing is explicit-only: "
+            f"PersonaRouter decides the required sections for a "
+            f"task from its five inputs, named by stable id. "
+            f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
         return [ContextItem(
@@ -1179,7 +1414,12 @@ __all__ = [
     "PersonaConfigStore",
     "PersonaCompiler",
     "PersonaRetriever",
+    "PersonaRouter",
     "PersonaRuntimeBridge",
+    "ROUTER_DEFAULT_LIMIT",
+    "ROUTER_INPUTS",
+    "ROUTER_MAX_LIMIT",
+    "ROUTER_PER_TAG_LIMIT",
     "TASK_TAGS",
     "build_persona_ir",
     "classify_section",
@@ -1193,6 +1433,9 @@ __all__ = [
     "parse_sections",
     "retrieval_score",
     "retrieve_sections",
+    "route_sections",
+    "route_task_label",
+    "router_inputs",
     "section_priority",
     "section_tags",
     "stable_section_id",

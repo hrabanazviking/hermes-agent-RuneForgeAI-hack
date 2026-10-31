@@ -2350,3 +2350,57 @@ portable state: any agent (Muse or Hermes) resumes from here.
   `service_bible.dependencies` + `tool_policy.filesystem`)
   on top of the Slice 122 retrieval layer, per the §14
   spec when read at slice start.
+- 2026-10-31 ~13:2x EDT keeper tick: **Slice 123 DONE —
+  Persona Runtime §14 (Persona Router) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found
+  (tree clean, HEAD == origin/main at `93d25a5658`; the only
+  running Python belonged to another campaign's tree).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no second retrieval layer, no new file or config
+  key: `PersonaRouter` / the pure `route_sections` function
+  decide which persona sections a task requires from the
+  five §14 inputs (user message, current task, active
+  project, tool intent, conversation state — any subset;
+  the result names which inputs were present, never their
+  text). The combined signals are classified with the §13
+  lexicon; the task label comes from the pure
+  `route_task_label` function (explicit current task wins
+  slugified, placeholders do not, else first tag in label
+  precedence order, else `general`). Selection is per-tag
+  first — top 3 sections in §13 score order whose section
+  tags contact that tag — filled from the §13 retrieval
+  ranking, capped 1–20 (default 8), ordered by score with
+  stable-id tiebreaks; required ids return as both
+  `required` and the §14 `persona_context` shape, each
+  with the tags that required it and its §13 score. The
+  §14 example is contract-proven (code_generation +
+  filesystem intent → `core.execution`,
+  `service_bible.coding_preferences`,
+  `service_bible.dependencies`, `tool_policy.filesystem`).
+  One in-slice fix: retrieval-fill rows could carry no
+  reason — they now record an explicit `via_retrieval`
+  marker when keyword contact alone required them (caught
+  by the slice's own contract on the first targeted run).
+  Tests: targeted 51/51 pass (8 new router contracts + the
+  five earlier persona files 43/43); full volmarr/kista
+  run (76 files): **538 passed, 7 failed, 1 skipped** —
+  the same name-identical pre-existing environmental set
+  in the same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice123_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §14 completion note in the Persona Runtime roadmap.
+  Honest gaps: routing injects nothing and no budgeter has
+  trimmed its output — budgeting is §15, the next section.
+- **Next resume point: Slice 124 — Persona Runtime §15
+  (Token Budgeter)**: `PersonaContextBudgeter` with the
+  §15 suggested budgets (kernel 500–1500, dynamic persona
+  retrieval 300–2500, relevant memories 500–3000, project
+  state 500–3000 estimated tokens), configurable, with
+  larger/smaller allocations by model context class, per
+  the §15 spec when read at slice start — expect a pure
+  budgeting layer over the §14 route + §13 retrieval
+  outputs (trimming persona context to budget in priority
+  order), not a prompt assembler (§53 remains later).
