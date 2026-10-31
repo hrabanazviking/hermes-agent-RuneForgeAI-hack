@@ -465,6 +465,26 @@ config_schema:
     type: float
     default: 0.35
     description: "Usefulness floor a curiosity assessment must clear under the §10.5 budget (clamped to 0-1)."
+  autonomy_detail_enabled:
+    type: bool
+    default: false
+    description: "Enable the bounded-autonomy reconciliation (Self-Aware Agency §11). Disabled by default; names the §11.3 risk classes, stands the §11.4 permission block with its own defaults (deny can never be upgraded here), reconciles the Phase 5 registry classes against §11.3 read-only (differences surfaced, never silently fixed — the policy is human-authoritative), and records short-lived operation-scoped §11.5 capability grants in its own bounded log. Recording is explicit only; this layer executes nothing and the Phase 5 gate remains the only proposal gate."
+  autonomy_detail_log_path:
+    type: str
+    default: entity/autonomy_grants.jsonl
+    description: "Autonomy grant log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  autonomy_detail_log_limit:
+    type: int
+    default: 200
+    description: "Maximum autonomy grant log records retained by rotation (clamped to 10-500)."
+  autonomy_detail_default_class_limit:
+    type: int
+    default: 2
+    description: "Default class limit from the §11.4 policy format (clamped to 0-5): allow-default permissions hold only at or below this risk class."
+  autonomy_detail_max_grant_hours:
+    type: int
+    default: 168
+    description: "Maximum lifetime in hours of a §11.5 capability grant (clamped to 1-720)."
   heartbeat_enabled:
     type: bool
     default: true

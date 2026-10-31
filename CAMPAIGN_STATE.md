@@ -1367,3 +1367,62 @@ portable state: any agent (Muse or Hermes) resumes from here.
   the Phase 5 registry classes, and any human-owned-policy
   provisions §11 names that the Phase 5 policy does not
   carry), not a second autonomy engine.
+- 2026-10-31 ~07:5x EDT keeper tick: **Slice 109 DONE —
+  Self-Aware Agency §11 (Bounded Autonomy) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found (tree
+  clean, HEAD == origin/main at `f0f4225407`; Slice 108's commit
+  had landed ~1 minute before this tick's start and was verified
+  complete/pushed, not in-progress work). Reconciliation exactly
+  as the resume note directed — no second autonomy engine, and
+  this layer executes nothing (the Phase 5 gate remains the only
+  proposal gate): `plugins/volmarr-core/autonomy_detail.py`
+  names the §11.3 six risk classes with their
+  automatic-execution rules; stands the §11.4 permission block
+  with the roadmap's own defaults (5 allow, 6 ask, 3 deny), each
+  permission mapped to its §11.3 class, resolved
+  deterministically by `permission_decision` (a deny default can
+  never be upgraded here — §11.2/§3.6; an allow default holds
+  only within `autonomy_detail_default_class_limit`, roadmap
+  default 2; an ask default is lifted only by an active §11.5
+  grant); and records §11.5 capability grants — short-lived,
+  operation-scoped, lifetime bounded at 168h by default, built
+  only for ask permissions, status a deterministic function of
+  the bounded `entity/autonomy_grants.jsonl` log and an explicit
+  clock, uses recorded as separate records, explicit recording
+  only. `reconcile_registry` compares the Phase 5 registry
+  against §11.3 read-only and surfaces, never fixes, four
+  differences: `github_push` registry 3 vs §11.3 class 4, and
+  `run_local_tests` / `update_self_model_evidence` /
+  `organize_curiosity_queue` registry 1 vs §11.3 class 2;
+  `local_readonly_research` and `generate_private_report` are
+  honestly unmapped. The Phase 5 policy+state files stay
+  sha256-identical across recording (contract-proven). Disabled
+  by default (`autonomy_detail_enabled`); bounded
+  content-bearing packet producer. Tests: targeted 7/7 pass;
+  full volmarr/kista run (62 files): **428 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback), verified
+  in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice109_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §11 completion note in the Self-Aware Agency roadmap.
+  Honest gaps: Verðandi autonomy-detail events NOT yet emitted
+  — deferred to a later telemetry slice, recorded in both
+  bookkeeping spots; grants are a record/evaluation layer — no
+  caller consumes them yet and the Phase 5 gate does not read
+  them (wiring a grant into the gate would change the gate's
+  contract and is a separate slice); the registry class
+  differences stand surfaced for a human policy edit.
+- **Next resume point: Slice 110 — Self-Aware Agency §12
+  (The Agency Cycle)**: reconcile the §12 twelve-step cycle
+  (observe → orient → reflect if needed → generate candidates
+  → rank → policy check → act or request approval → verify →
+  record → reflect → update self-model → emit content-free
+  Verðandi events) and its hard maximum-actions-per-cycle bound
+  against the already-banked Emergent Agency Phase 6
+  orchestrator (Slice 96) when read at slice start — expect a
+  verification/reconciliation slice implementing only genuine
+  §12 gaps (e.g. an explicit step-trace/cycle-shape record, or
+  the ranking-factor mapping), not a second orchestrator.

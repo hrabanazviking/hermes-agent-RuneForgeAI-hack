@@ -1229,6 +1229,45 @@ allow:
 
 This is safer than vague global autonomy.
 
+**§11 completion note (Slice 109, 2026-10-31):** bounded autonomy
+is reconciled against the already-banked Emergent Agency Phase 5
+autonomy policy engine (Slice 95) and Phase 8 limited local
+autonomy (Slice 98) in `plugins/volmarr-core/autonomy_detail.py` —
+no second autonomy engine, and this layer executes nothing: the
+Phase 5 gate remains the only gate that decides proposals.
+Disabled by default (`autonomy_detail_enabled`). §11.3's six risk
+classes are named (observe, think, local reversible, external
+reversible, consequential, sensitive/destructive), each with its
+automatic-execution rule. §11.4's permission block stands with the
+roadmap's own defaults (five allow, six ask, three deny), each
+permission mapped to its §11.3 class, and `permission_decision`
+resolves deterministically: a deny default can never be upgraded
+by anything in this module (§11.2/§3.6 — the entity may not expand
+its own authority), an allow default holds only within the
+default class limit (roadmap default 2), and an ask default is
+lifted only by an active §11.5 grant. §11.5 capability grants are
+short-lived and operation-scoped (bounded scope, expiry, max
+actions; lifetime bounded at 168 hours by default) in the bounded
+`entity/autonomy_grants.jsonl` log — a grant may be built only for
+an ask permission, its status (active/expired/exhausted) is a
+deterministic function of the log and an explicit clock, uses are
+recorded as separate records, and recording is explicit only; the
+Phase 5 policy and state files stay sha256-identical across
+recording (contract-proven). The registry reconciliation is
+read-only and surfaces, never fixes, the differences between the
+Phase 5 registry classes and §11.3's implied classes:
+`github_push` registry 3 vs §11.3 class 4 (modifying a shared
+repository is consequential), and `run_local_tests`,
+`update_self_model_evidence`, `organize_curiosity_queue` registry
+1 vs §11.3 class 2; `local_readonly_research` and
+`generate_private_report` are honestly unmapped (§11.3 does not
+name them). Reclassifying any registry entry remains a human
+policy edit. Honest gaps: Verðandi autonomy-detail events are NOT
+yet emitted — deferred to a later telemetry slice; grants are a
+record/evaluation layer — no caller consumes them yet, and the
+Phase 5 gate does not read them (wiring a grant into the gate
+would change the gate's contract and is a separate slice).
+
 ---
 
 # 12. The Agency Cycle
