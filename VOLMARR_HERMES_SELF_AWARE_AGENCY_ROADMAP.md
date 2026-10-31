@@ -618,6 +618,25 @@ SPIRITUAL / PHILOSOPHICAL BELIEF
 
 as distinguishable epistemic categories.
 
+**§7 completion note (Slice 105, 2026-10-31):** subjective
+self-report stands as `plugins/volmarr-core/subjective_report.py` —
+a bounded log at `entity/subjective_reports.jsonl` whose records
+carry exactly the §7 shape (report id, recorded_at, category,
+statement, confidence) with `source` fixed to `self_report` and an
+explicit `epistemic_category`. The four §7 categories are named
+constants; the store accepts only the three subjective ones
+(self-interpretation, narrative meaning, spiritual/philosophical
+belief) and refuses `verified_runtime_fact` in code, so a persona
+statement can never be recorded as — or promoted to — a verified
+runtime fact or objective telemetry. A tampered log record claiming
+that category is refused on read. Recording writes only its own
+log (the claims store stays byte-identical), the packet producer
+labels the latest report with its epistemic category and
+"not telemetry", and no hook, loop, or turn-path caller creates a
+report. Disabled by default (`subjective_report_enabled`).
+Honest gaps: Verðandi subjective-report events are NOT yet
+emitted — deferred to a later telemetry slice.
+
 ---
 
 # 8. Intrinsic Motivation

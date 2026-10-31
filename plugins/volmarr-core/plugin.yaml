@@ -397,6 +397,18 @@ config_schema:
     type: str
     default: entity/awareness.json
     description: "Awareness snapshot JSON path relative to the active Hermes profile; escaping paths fall back to the default."
+  subjective_report_enabled:
+    type: bool
+    default: false
+    description: "Enable subjective self-report (Self-Aware Agency §7). Disabled by default; keeps persona phenomenology reports in their own bounded log, epistemically labelled (self-interpretation, narrative meaning, or spiritual/philosophical belief) and never recorded as — or promoted to — verified runtime facts or telemetry. Recording is explicit only."
+  subjective_report_log_path:
+    type: str
+    default: entity/subjective_reports.jsonl
+    description: "Subjective report log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  subjective_report_log_limit:
+    type: int
+    default: 200
+    description: "Maximum subjective report log records retained by rotation (clamped to 10-500)."
   heartbeat_enabled:
     type: bool
     default: true

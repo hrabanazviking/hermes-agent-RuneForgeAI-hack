@@ -27,6 +27,7 @@ from .relationships import RelationshipBridge, register_relationship_tools
 from .self_improvement import SelfImprovementBridge
 from .awareness import AwarenessBridge
 from .self_model_layers import LayeredSelfModelBridge
+from .subjective_report import SubjectiveReportBridge
 from .timescales import TimescaleBridge
 from .self_model import SelfModelBridge
 from .wyrd_tools import register_wyrd_tools
@@ -75,6 +76,7 @@ def register(ctx) -> None:
     awareness = AwarenessBridge(ctx)
     for hook_name, callback in awareness.hooks():
         ctx.register_hook(hook_name, callback)
+    subjective_report = SubjectiveReportBridge(ctx)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -105,6 +107,7 @@ def register(ctx) -> None:
             timescales.packet_items,
             self_model_layers.packet_items,
             awareness.packet_items,
+            subjective_report.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():

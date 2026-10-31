@@ -1139,3 +1139,53 @@ portable state: any agent (Muse or Hermes) resumes from here.
   phenomenology report kept distinct from machine telemetry —
   expect a bounded report/assembly layer over existing stores,
   no new telemetry claims).
+- 2026-10-31 ~06:4x EDT keeper tick: **Slice 105 DONE —
+  Self-Aware Agency §7 (Subjective Self-Report Without Confusing
+  It With Telemetry) complete, banked and PUSHED under the
+  standing go-ahead.** No live work found (tree clean, HEAD ==
+  origin/main at `d693e68fe`; Slice 104's state mtime minutes
+  earlier was its own completed push, verified, not in-progress
+  work). `plugins/volmarr-core/subjective_report.py`: bounded
+  log at `entity/subjective_reports.jsonl` whose records carry
+  exactly the §7 shape (canonical-UUID report id, tz-aware
+  recorded_at, slug category defaulting to `self_experience`,
+  bounded statement, unit-interval confidence) with `source`
+  fixed to `self_report` and an explicit `epistemic_category`.
+  The four §7 categories are named constants; the store accepts
+  only the three subjective categories (self_interpretation,
+  narrative_meaning, spiritual_philosophical_belief) and refuses
+  `verified_runtime_fact` at record time — and strict read
+  validation refuses a tampered record claiming it — so a
+  subjective report can never be recorded as, or promoted to, a
+  verified runtime fact or objective telemetry. Recording is
+  explicit only (no hook, loop, or turn-path caller) and writes
+  only its own log (claims store sha256-identical, contract-
+  proven); rotation by `subjective_report_log_limit`, symlink
+  refusal, strict owner/field validation. Bounded packet
+  contribution (latest report, labelled with its epistemic
+  category and "not telemetry") wired as one added
+  `packet_sources` producer; config keys
+  `subjective_report_enabled`/`subjective_report_log_path`/
+  `subjective_report_log_limit` in `plugin.yaml`. One in-slice
+  fix, test-side: the invalid-inputs test passed `recorded_at`
+  twice for one case — split out (no production change). Tests:
+  targeted 10/10 pass; full volmarr/kista run (58 files): **397
+  passed, 7 failed, 1 skipped** — the same name-identical
+  pre-existing environmental set in the same 3 files (5
+  core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback), verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice105_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger row,
+  §7 completion note in the Self-Aware Agency roadmap. Honest
+  gaps: Verðandi subjective-report events NOT yet emitted —
+  deferred to a later telemetry slice, recorded in both
+  bookkeeping spots.
+- **Next resume point: Slice 106 — Self-Aware Agency §8
+  (Intrinsic Motivation)**: reconcile the §8 spec against the
+  already-banked Emergent Agency Phase 2 drive store (Slice 91)
+  and goals schema v2 origin provenance (Slice 99) when read at
+  slice start — expect a verification/reconciliation slice that
+  implements only genuine §8 gaps (e.g. §8.2 drive bounds /
+  §8.5 lifecycle points not already covered), not a second
+  motivation engine.
