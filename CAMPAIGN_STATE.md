@@ -2666,3 +2666,95 @@ portable state: any agent (Muse or Hermes) resumes from here.
   config format version — the §22 per-persona version is
   a distinct field, likely an optional human-authored
   config field defaulting to 0.1.0 or absent).
+- 2026-10-31 ~16:4x EDT keeper tick: **Slice 128 DONE —
+  Persona Runtime §21 (Change Impact Detection) and §22
+  (Persona Versioning) complete, banked and PUSHED under
+  the standing go-ahead.** No live work found (tree clean,
+  HEAD == origin/main at `1191007971`; Slice 127's state
+  commit minutes earlier was its own completed push,
+  verified, not in-progress work; the Python-write blocker
+  was probed absent at tick start). Implemented exactly
+  as the resume note specified, in
+  `plugins/volmarr-core/persona_runtime.py` (extended in
+  place — no second compiler, no new file): §21's pure
+  `change_impact` diffs two compiles at section level
+  (§12 stable ids added / removed / changed in text,
+  semantic heading, heading level, §8 category, or §16
+  priority level) and classifies each change by role,
+  category, priority level, and kernel membership —
+  kernel material of the core or relationship documents
+  and identity/relationship material at P0–P1 is major;
+  any other kernel change, a behavior-category change
+  (behavioral_rules / boundaries / values / motivations),
+  a P0–P1 change, or a newly added preference / project /
+  tool / memory / communication section is minor;
+  everything else is patch. A §17/§18 anchor change is
+  major; a document-hash change with no section or anchor
+  change (renumbering, formatting) is patch. Kernel
+  rebuild is reported separately, required exactly when
+  the §19 kernel hash changed — both roadmap examples
+  contract-proven (avatar skirt-material edit = patch, no
+  kernel rebuild; core relationship-authority edit =
+  major, kernel rebuild). §22: the §3 config gains one
+  optional human-authored `version` field (strict semver,
+  no leading zeroes; absent defaults to `0.1.0`; invalid
+  fails the config closed), distinct from §19's
+  `persona_version` (still the config format version);
+  every compile carries it, the pure `version_record`
+  returns the §22 record (persona_id, persona_version,
+  compiled_at as an explicit validated caller stamp or
+  None, source_hash = the persona hash), and
+  `change_impact` suggests the next version from the
+  previous artefact's version via the pure
+  `suggested_next_version` function (MAJOR identity /
+  relationship architecture, MINOR new preferences or
+  meaningful behavior extension, PATCH wording /
+  formatting / minor clarification, none = unchanged) —
+  a suggestion only; the human confirms by editing the
+  config and the runtime never bumps a version itself.
+  Packet label updated to §§3–22 (the five older persona
+  files' packet assertions updated in-slice). Tests: new
+  file 8/8 pass; targeted persona run (11 files): **89
+  passed, 0 failed**; full volmarr/kista run (81 files):
+  **576 passed, 7 failed, 1 skipped** — the failures the
+  same name-identical pre-existing environmental set in
+  the same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice128_full_run.log`); 576
+  is exactly Slice 127's 568 + the 8 new contracts.
+  Smoke: `hermes --version` runs; README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §21 + §22 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–22. Push: fast-forward, no force —
+  origin/main moved `1191007971` → Slice 128 commit,
+  verified by `git ls-remote` (remote == local HEAD).
+  Honest gaps: the §21 classification is deterministic
+  over structural signals (role / category / priority /
+  kernel membership), not a semantic reading of prose —
+  a wording-only edit inside a kernel identity section
+  is major by membership, deliberately (§7); no caller
+  consumes the impact classification or the version
+  suggestion yet.
+- **Next resume point: Slice 129 — Persona Runtime §23
+  (Conversation Drift Problem) and §24 (Do Not Derive
+  Character From Chat History)**: §23 names the seven
+  drift dangers (recent-message dominance, summary
+  mutation, context truncation, assistant self-imitation,
+  memory contamination, user mood overfitting, temporary
+  roleplay overriding identity) the persona system must
+  explicitly defend against, and §24 stands the rule
+  that conversation history may affect mood / immediate
+  context / recent events but must never redefine
+  foundational personality, with the conceptual priority
+  order (PERSONA CORE > RELATIONSHIP MODEL > SERVICE
+  BIBLE > long-term memory > current conversation >
+  temporary emotional state) — reconcile against the
+  banked surfaces when read at slice start (the §10
+  pinning order, the §24-adjacent priority the kernel
+  already carries, persona canon, and the context
+  packet) and implement only genuine gaps (expect a
+  pure drift-defense / precedence surface naming the
+  defenses and the priority order in contract form, not
+  a conversation monitor this plugin does not own).
