@@ -36,6 +36,7 @@ from .self_state import SelfStateBridge
 from .verdandi_events import VerdandiEventsBridge
 from .background_life import BackgroundLifeBridge
 from .persona_canon import PersonaCanonBridge
+from .blind_spots import BlindSpotBridge
 from .subjective_report import SubjectiveReportBridge
 from .timescales import TimescaleBridge
 from .self_model import SelfModelBridge
@@ -95,6 +96,7 @@ def register(ctx) -> None:
     verdandi_events = VerdandiEventsBridge(ctx)
     background_life = BackgroundLifeBridge(ctx)
     persona_canon = PersonaCanonBridge(ctx)
+    blind_spots = BlindSpotBridge(ctx)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -135,6 +137,7 @@ def register(ctx) -> None:
             verdandi_events.packet_items,
             background_life.packet_items,
             persona_canon.packet_items,
+            blind_spots.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():

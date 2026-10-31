@@ -545,6 +545,18 @@ config_schema:
     type: int
     default: 200
     description: "Maximum persona canon evaluation receipts retained by rotation (clamped to 10-500)."
+  blind_spots_enabled:
+    type: bool
+    default: false
+    description: "Enable explicit blind-spot tracking (Self-Aware Agency §17): the thirteen §17 categories with snapshot records carrying category, evidence_count, confidence, mitigation, and last_observed_at in a bounded log. Blind spots discount metacognitive confidence (a pure function supplied for the metacognition surfaces) and never become permanent identity labels — this layer writes no self-model or identity store. Contrary evidence lowers confidence by a fixed step and decays, then retires, the spot; a retired spot can start a fresh cycle on a new observation. Disabled by default; observations and contrary evidence are explicit calls only."
+  blind_spots_log_path:
+    type: str
+    default: entity/blind_spots.jsonl
+    description: "Blind spot snapshot log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  blind_spots_log_limit:
+    type: int
+    default: 200
+    description: "Maximum blind spot snapshot records retained by rotation (clamped to 10-500)."
   heartbeat_enabled:
     type: bool
     default: true

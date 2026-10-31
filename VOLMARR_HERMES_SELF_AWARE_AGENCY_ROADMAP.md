@@ -1732,6 +1732,40 @@ Blind spots should affect metacognitive confidence, not become permanent identit
 
 They can decay or be retired after contrary evidence.
 
+**§17 completion note (Slice 115, 2026-10-31):** explicit
+blind-spot tracking stands in
+`plugins/volmarr-core/blind_spots.py` — no second
+metacognition engine, and no self-model or identity store is
+ever written by this layer. Disabled by default
+(`blind_spots_enabled`). Snapshot records in the bounded
+`entity/blind_spots.jsonl` log carry the §17 fields —
+category (the thirteen categories above, in roadmap order),
+evidence_count, confidence, mitigation, last_observed_at —
+plus contrary_count and status. Status is a deterministic
+function of the snapshot (retired at three contrary records,
+decayed at one or two, active otherwise) and strict read
+validation refuses a stored status that disagrees with it.
+An explicit observation increments evidence and reactivates
+(a retired spot starts a fresh cycle, so no spot is a
+permanent label); explicit contrary evidence drops
+confidence by a fixed 0.25 step without counting as an
+observation. The metacognitive effect is the pure
+`adjusted_confidence` function (base discounted by half the
+strongest active spot's confidence, a quarter for decayed,
+nothing for retired), supplied for the metacognition
+surfaces; this module applies it to nothing itself. Bounded
+content-bearing packet producer (strongest live spot, named
+a confidence note, never an identity label). Verification
+(2026-10-31, later the same day): the bank-time blocker
+(the VM's Python interpreters failing write(2) with EPERM)
+cleared; targeted contracts 8/8 pass and the full
+volmarr/kista run (68 files) shows 472 passed with only
+the 7 pre-existing environmental failures, and the slice
+is pushed. Honest gaps: no caller observes or records
+yet; the metacognition
+surfaces do not yet apply the discount (a separate slice);
+Verðandi blind-spot events are NOT emitted by this layer.
+
 ---
 
 # 18. Confidence and Epistemic State

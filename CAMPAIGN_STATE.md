@@ -1716,3 +1716,145 @@ portable state: any agent (Muse or Hermes) resumes from here.
   read at slice start; expect a bounded record/evaluation
   layer over the Slice 93/107 metacognition surfaces, not a
   second metacognition engine.
+- 2026-10-31 ~09:3x EDT keeper tick: **Slice 115 CODE
+  COMPLETE, banked LOCALLY ONLY — NOT PUSHED, TESTS NOT
+  RUN (environment blocker, below).** No live work found
+  (tree clean, HEAD == origin/main at `9bab08b4e2`).
+  `plugins/volmarr-core/blind_spots.py`: the thirteen §17
+  categories with snapshot records in the bounded
+  `entity/blind_spots.jsonl` log carrying category /
+  evidence_count / confidence / mitigation /
+  last_observed_at (+ contrary_count, status). Status is a
+  deterministic function of the snapshot (retired at 3
+  contrary records, decayed at 1–2, active otherwise),
+  enforced on read; explicit observation increments
+  evidence and reactivates (a retired spot starts a fresh
+  cycle — never a permanent identity label); explicit
+  contrary evidence drops confidence by a fixed 0.25 step
+  without counting as an observation. The metacognitive
+  effect is the pure `adjusted_confidence` function (half
+  the strongest active spot, a quarter for decayed, none
+  for retired), supplied for later wiring; this layer
+  writes no other store. Disabled by default
+  (`blind_spots_enabled`); bounded content-bearing packet
+  producer. Contract file written (8 tests). **Blocker:
+  every Python interpreter on this VM currently fails
+  write(2) to regular files with EPERM** (verified by
+  strace on system python3.12 and the checkout's uv
+  python 3.14, incl. a renamed copy; C, perl, node, and
+  bash writes in the same sessions succeed; the failure
+  began after the VM's 13:21 UTC restart). tempfile is
+  therefore unusable and `scripts/run_tests.sh` cannot
+  start pytest (three attempts + one subagent attempt,
+  all the same failure). Files were parse-verified (ast +
+  YAML) and the discount arithmetic was verified by
+  stdout-only computation, but NO test verdict is claimed.
+  README.md untouched (invariant not re-measured — no
+  smoke run was possible for the same reason).
+  Bookkeeping: CUSTOMIZATIONS.md ledger row, §17
+  completion note in the Self-Aware Agency roadmap — both
+  record the un-run state plainly.
+- **Next resume point: FIRST verify the Python-write
+  blocker is gone (`python3 -c` writing a temp file), then
+  run Slice 115's targeted contracts + the full
+  volmarr/kista suite + smoke + README invariant; fix any
+  failures in scope, then push Slice 115 under the
+  standing go-ahead (fetch + remote-diff first, ls-remote
+  verify). Only then Slice 116 — Self-Aware Agency §18
+  (Confidence and Epistemic State)**: the reusable
+  confidence contract (confidence + basis list +
+  last_verified_at, epistemic labels verified /
+  strongly_supported / supported / uncertain / speculative
+  / subjective / symbolic) per the §18 spec when read at
+  slice start.
+- 2026-10-31 ~09:5x EDT keeper tick: **Blocker re-verified
+  STILL PRESENT — Slice 115 remains untested/unpushed, no
+  test run attempted this tick.** Direct verification:
+  system python3.12 and the checkout's venv python 3.14
+  both fail write(2) to a fresh regular file with EPERM
+  (strace: openat succeeds, write returns -1 EPERM; the
+  file is created/truncated to 0 bytes); `tempfile` finds
+  no usable temp directory as a consequence. Bash writes
+  to fresh files in the same directories succeed, so this
+  remains the Python-specific write failure first seen
+  after the VM's 13:21 UTC restart. No local cause was
+  found in a brief check (no dmesg access; mounts normal).
+  Slice 115's files are intact and uncommitted in the
+  working tree (5 modified + 2 new files, exactly the
+  Slice 115 set); README.md sha256 invariant re-measured
+  and held (`4e022de7…c4910`). Tests were NOT run —
+  `scripts/run_tests.sh` cannot start pytest while
+  tempfile is unusable, and running Python against the
+  tree risks truncating files it opens for write.
+  Resume point unchanged: verify the blocker is gone
+  first, then the Slice 115 test/smoke/push sequence
+  above, then Slice 116.
+- 2026-10-31 ~09:55 EDT keeper tick: **Blocker re-verified
+  STILL PRESENT again — Slice 115 remains untested/unpushed,
+  no test run attempted this tick.** No live work found on
+  this tree (running Python belonged to other campaigns).
+  Direct probes: system python3.12 failed `tempfile` close
+  with PermissionError EPERM and left the probe file at
+  0 bytes; the checkout's venv python 3.14 failed the same
+  way on a fresh /tmp file (0 bytes). Bash writes to fresh
+  files in /tmp and the workspace succeed, confirming the
+  Python-specific write failure. Slice 115's files remain
+  intact and uncommitted (5 modified + 2 new, exactly the
+  Slice 115 set); HEAD == origin/main ==
+  `9bab08b4e2` (ls-remote verified this tick); README.md
+  sha256 invariant re-measured and held (`4e022de7…c4910`).
+  Tests were NOT run — `scripts/run_tests.sh` cannot start
+  pytest while tempfile is unusable. Resume point unchanged:
+  verify the blocker is gone first, then the Slice 115
+  test/smoke/push sequence above, then Slice 116.
+- 2026-10-31 ~10:01 EDT keeper tick: **Blocker re-verified
+  STILL PRESENT again — Slice 115 remains untested/unpushed,
+  no test run attempted this tick.** No live work found on
+  this tree (the running Python belonged to the yggdrasil
+  campaign). Direct probes: system python3.12 and the
+  checkout's venv python 3.14 both fail write(2) to fresh
+  regular files with EPERM in /tmp, ~/workspace/.verify-tmp,
+  the hermes tree, and ~ — probe files created/truncated to
+  0 bytes; bash writes in the same directories succeed,
+  confirming the Python-specific write failure. Slice 115's
+  files remain intact and uncommitted (5 modified + 2 new,
+  exactly the Slice 115 set); HEAD == origin/main ==
+  `9bab08b4e2` (ls-remote verified this tick); README.md
+  sha256 invariant re-measured and held (`4e022de7…c4910`).
+  Tests were NOT run — `scripts/run_tests.sh` cannot start
+  pytest while tempfile is unusable. Resume point unchanged:
+  verify the blocker is gone first, then the Slice 115
+  test/smoke/push sequence above, then Slice 116.
+- 2026-10-31 ~10:11 EDT keeper tick: **Python-write blocker
+  GONE — Slice 115 verified, banked and PUSHED under the
+  standing go-ahead.** Direct probes at tick start: system
+  python3.12, the checkout's venv python 3.14, and `tempfile`
+  all write regular files successfully again (bash writes had
+  never failed); README.md sha256 invariant held
+  (`4e022de7…c4910`). No live work found on this tree (running
+  Python belonged to the yggdrasil / mythic-coder campaigns).
+  Verification sequence per the resume point: targeted
+  blind-spot contracts **8/8 pass**; full volmarr/kista run
+  (68 files): **472 passed, 7 failed, 1 skipped** — the
+  failures are the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback), verified
+  in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice115_full_run.log`); 472 is
+  exactly Slice 114's 464 + the 8 new contracts. Smoke:
+  `hermes --version` runs (`vgit.9bab08b.dirty` pre-commit).
+  Bookkeeping corrected in place: the CUSTOMIZATIONS.md
+  ledger row and the roadmap §17 completion note no longer
+  record the un-run state — both now carry the verified
+  numbers. No in-slice fixes were needed.
+- **Next resume point: Slice 116 — Self-Aware Agency §18
+  (Confidence and Epistemic State)**: the reusable confidence
+  contract (confidence + basis list + last_verified_at;
+  basis values runtime_fact / memory / user_feedback /
+  self_report / inference / persona_canon / external_source;
+  epistemic labels verified / strongly_supported / supported
+  / uncertain / speculative / subjective / symbolic) per the
+  §18 spec when read at slice start — §19 of the same roadmap
+  names `plugins/volmarr-core/epistemics.py` as the proposed
+  home; expect a pure contract/derivation layer the existing
+  stores can adopt, not a rewrite of any store.
