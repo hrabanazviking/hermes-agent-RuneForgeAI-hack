@@ -15,6 +15,7 @@ from .mempalace_retrieval import MemPalaceRetrievalBridge
 from .openviking_retrieval import OpenVikingRetrievalBridge
 from .present_state import PresentStateBridge
 from .relationships import RelationshipBridge, register_relationship_tools
+from .self_model import SelfModelBridge
 from .wyrd_tools import register_wyrd_tools
 from .wyrd_context import WyrdContextBridge
 
@@ -33,6 +34,9 @@ def register(ctx) -> None:
     goals = GoalBridge(ctx)
     for hook_name, callback in goals.hooks():
         ctx.register_hook(hook_name, callback)
+    self_model = SelfModelBridge(ctx)
+    for hook_name, callback in self_model.hooks():
+        ctx.register_hook(hook_name, callback)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -49,6 +53,7 @@ def register(ctx) -> None:
             wyrd_context.packet_items,
             mempalace_retrieval.packet_items,
             openviking_retrieval.packet_items,
+            self_model.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():

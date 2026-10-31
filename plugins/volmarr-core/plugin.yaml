@@ -181,6 +181,18 @@ config_schema:
     type: int
     default: 100
     description: "Maximum append-only transition events retained per goal (clamped to 1-500)."
+  self_model_enabled:
+    type: bool
+    default: true
+    description: "Create and expose the active entity's persistent self-model ledger (Emergent Agency Phase 1)."
+  self_model_path:
+    type: str
+    default: entity/self_model.yaml
+    description: "Self-model YAML path relative to the active Hermes profile; escaping paths fall back to the default."
+  self_model_evidence_limit:
+    type: int
+    default: 50
+    description: "Maximum evidence entries retained per self-model claim (clamped to 1-50)."
   heartbeat_enabled:
     type: bool
     default: true

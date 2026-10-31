@@ -356,3 +356,36 @@ portable state: any agent (Muse or Hermes) resumes from here.
   locally only; pushes beyond the ordered refresh still await
   Volmarr's word.
 - **VOLMARR'S RULING (2026-10-30 ~23:37 EDT, main chat): option (b), in his words: "Look at the ancestors and the glossary and what they are supposed to be, and build them true, as robust, self healing, error correcting, threaded, crash-proof, very efficient modules that can be useful in all my projects for their functions."** A dedicated build is commissioned in the main session (tree `~/workspace/ravens/`: two standalone packages, `muninn` + `huginn`, Bifröst-interface-compatible, grown from the NorseSagaEngine ravens + the Bifröst contract). When that build reports done + verified, this blocker clears and Gate 0 for the Bifröst write paths can be re-audited against the real packages.
+- **RAVENS BUILD COMPLETE + VERIFIED (2026-10-30 ~23:59 EDT):** `~/workspace/ravens/` holds muninn 1.0.0 (36/36 tests) + huginn 1.0.0 (27/27), Bifröst-contract-exact; Bifröst's own suites pass 25/25 against the real packages and the end-to-end `BifrostBridge` verification passed (store/search/recall/decay/consolidate; Huginn honestly "degraded" to its local backend when qdrant-client is absent). NOT PROVEN: live Qdrant server round-trip, sentence-transformers embedder path. Detail: `~/workspace/ravens/BUILD_NOTES.md`. The Hermes integration slice (installing/binding the ravens + Gate 0 re-audit of the write paths) awaits Volmarr's word — it has NOT been started.
+- 2026-10-31 ~00:0x EDT keeper tick: **Slice 89 DONE — Emergent
+  Agency Phase 1 (§8, Persistent Self-Model) complete, banked locally
+  only, no push.** `plugins/volmarr-core/self_model.py`:
+  versioned `entity/self_model.yaml` store on the Slice 88
+  `SelfClaim` contract (six domains; create-once; owner/symlink/size
+  validation in the GoalStore pattern; identity read for ownership
+  only, never written), plus a bounded `packet_items` producer wired
+  into the PresentState packet sources (quotas: 3 capability,
+  2 limitation, 2 commitment, 2 uncertainty, CURRENT STATE section).
+  The deterministic merge layer decides all confidence changes:
+  new-claim caps by provenance strength (strong 0.95 / medium 0.65 /
+  weak 0.35 — weak evidence cannot create high-confidence beliefs),
+  confirming deltas +0.15/+0.08/+0.03, contradiction deltas
+  −0.20/−0.10/−0.04 with the conflicting statement recorded, and only
+  strong evidence may restate a claim. Config keys
+  `self_model_enabled`/`self_model_path`/`self_model_evidence_limit`
+  added to `plugin.yaml`. Tests: targeted 8/8 pass; full
+  volmarr/kista run (42 files): **251 passed, 7 failed, 1 skipped**
+  — the failures verified as the same name-identical pre-existing
+  environmental set by rerunning their 3 files (5 core-plugin, 1
+  Verðandi-stimuli, 1 voice-runner). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, Phase 1 completion note in the Emergent Agency
+  roadmap §8. Honest gaps: Verðandi self-model events (§8 metadata
+  types) are NOT yet emitted — deferred to a later telemetry slice,
+  recorded in both bookkeeping spots.
+- **Next resume point: Slice 90 — Emergent Agency Phase 2 (§9,
+  Intrinsic Motivation)**: drive store on the Slice 88 `DriveState`
+  contract (per the §9 spec when read at slice start). The Bifröst
+  write-path integration stays parked — per the ravens entry above
+  it awaits Volmarr's word and has NOT been started. Banked locally
+  only; pushes beyond the ordered refresh still await Volmarr's
+  word.

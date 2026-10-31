@@ -653,6 +653,30 @@ After several sessions and restarts, the entity can accurately answer:
 
 without depending on one model's transient context.
 
+**Phase 1 implemented (campaign Slice 89, 2026-10-30):**
+`plugins/volmarr-core/self_model.py` provides the versioned
+`entity/self_model.yaml` store on the Phase 0 `SelfClaim` contract —
+create-once, owner/symlink/size validation in the GoalStore pattern,
+create/restart persistence independent of provider or model, and a
+bounded `packet_items()` contribution (3 capability, 2 limitation, 2
+commitment, 2 uncertainty claims) into the central user-side context
+packet's CURRENT STATE section. The deterministic merge layer is the
+heart of it: a new claim's confidence is capped by provenance strength
+(strong 0.95, medium 0.65, weak 0.35 — weak evidence can never create
+a high-confidence belief), confirming evidence moves confidence by a
+fixed per-strength delta (+0.15/+0.08/+0.03), contradictions move it
+down (−0.20/−0.10/−0.04) and are recorded with the conflicting
+statement, and only strong evidence (explicit user correction,
+deterministic tool result, canonical identity/system state) may
+restate a claim. The store never writes canonical identity.
+`tests/plugins/test_volmarr_self_model.py` covers create-once,
+restart persistence, A→B→A isolation, wrong-owner/malformed/version/
+symlink refusal, strength caps, merge deltas, contradiction handling,
+packet quotas, no identity rewrite, and fail-open packet behavior.
+Verðandi self-model events (§8) are not yet emitted; they arrive with
+the telemetry wiring of a later phase. Next: Phase 2 (§9) builds the
+intrinsic-motivation drive store on the `DriveState` contract.
+
 ---
 
 # 9. Phase 2 - Intrinsic Motivation
