@@ -1189,3 +1189,60 @@ portable state: any agent (Muse or Hermes) resumes from here.
   implements only genuine §8 gaps (e.g. §8.2 drive bounds /
   §8.5 lifecycle points not already covered), not a second
   motivation engine.
+- 2026-10-31 ~07:0x EDT keeper tick: **Slice 106 DONE —
+  Self-Aware Agency §8 (Intrinsic Motivation) complete, banked
+  and PUSHED under the standing go-ahead.** No live work found
+  (tree clean, HEAD == origin/main at `ea80154346`; Slice 105's
+  commit had landed ~1 minute before this tick's start and was
+  verified complete/pushed, not in-progress work). Reconciliation
+  exactly as the resume note directed — no second motivation
+  engine: `plugins/volmarr-core/motivation_lifecycle.py` maps the
+  §8.2 twelve drives onto the Slice 91 drive store
+  deterministically (direct; alias creative_expression→creation,
+  resource_stewardship→stewardship, world_understanding→
+  exploration; missing honestly: goal_completion, truthfulness,
+  system_health, self_improvement) and walks one drive intent
+  proposal through the §8.5 stages in order — drive pressure
+  (existing tension threshold/cooldown) → deduplication (exact
+  duplicate of a live intrinsic goal yields `already_exists` with
+  its id; rejected-fingerprint cooldown + near-duplicate evasion
+  refused via the Slice 99 helpers) → value/identity check
+  (forbidden/unknown drives refused) → resource check (Slice 99
+  intrinsic quota) → autonomy-policy check (human-authoritative
+  policy mode/paused/breaker decide pass vs awaiting) — returning
+  planned_candidate / awaiting_approval / already_exists /
+  rejected with a per-stage record and the §8.4 motivation block
+  (drive, deterministic tension score, bounded rationale).
+  Evaluation is read-only (source stores sha256-identical,
+  contract-proven) and creates no goal; only explicit
+  `record_evaluation` appends to the bounded
+  `entity/motivation_lifecycle.jsonl` log (rotation, symlink
+  refusal, strict owner/field/stage validation). Promotion
+  remains the Phase 9 service's call; execution/reflection stay
+  later stages outside this evaluation. Disabled by default
+  (`motivation_lifecycle_enabled`); bounded content-bearing
+  packet producer. Tests: targeted 10/10 pass; full volmarr/kista
+  run (59 files): **407 passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set in the same 3
+  files (5 core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback), verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice106_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger row,
+  §8 completion note in the Self-Aware Agency roadmap. Honest
+  gaps: Verðandi lifecycle events NOT yet emitted — deferred to
+  a later telemetry slice, recorded in both bookkeeping spots;
+  the §8.4 relationship/curiosity goal-origin types cannot yet
+  be stored in the goals ledger's flat origin set
+  (user/intrinsic/maintenance); four §8.2 drives have no backing
+  drive in the store yet (see above).
+- **Next resume point: Slice 107 — Self-Aware Agency §9
+  (Metacognition)**: reconcile the §9 spec against the
+  already-banked Emergent Agency Phase 3 metacognition store
+  (Slice 93) when read at slice start — expect a
+  verification/reconciliation slice implementing only genuine
+  §9 gaps (e.g. the §9.2 reflection-record fields the Phase 3
+  record does not carry — assumptions/evidence/error_class/
+  next_test, confidence before/after — and the §9.3 reflection
+  levels), not a second metacognition engine; §9.4's
+  no-unrestricted-self-editing bounds already stand in code.

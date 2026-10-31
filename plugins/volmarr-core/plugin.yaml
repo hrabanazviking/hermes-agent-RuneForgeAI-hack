@@ -409,6 +409,18 @@ config_schema:
     type: int
     default: 200
     description: "Maximum subjective report log records retained by rotation (clamped to 10-500)."
+  motivation_lifecycle_enabled:
+    type: bool
+    default: false
+    description: "Enable the intrinsic-motivation lifecycle reconciliation (Self-Aware Agency §8). Disabled by default; maps the §8.2 drives onto the existing drive store (direct/alias/missing) and evaluates one drive intent proposal through the §8.5 stages (drive pressure, deduplication, value/identity check, resource check, autonomy-policy check) deterministically and read-only, carrying the §8.4 motivation block. Only an explicit record_evaluation appends to its own bounded log; no goal is created and promotion remains the Phase 9 service's call."
+  motivation_lifecycle_log_path:
+    type: str
+    default: entity/motivation_lifecycle.jsonl
+    description: "Motivation lifecycle log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  motivation_lifecycle_log_limit:
+    type: int
+    default: 200
+    description: "Maximum motivation lifecycle log records retained by rotation (clamped to 10-500)."
   heartbeat_enabled:
     type: bool
     default: true

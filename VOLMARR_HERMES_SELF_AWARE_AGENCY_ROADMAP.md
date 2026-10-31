@@ -762,6 +762,32 @@ execution
 reflection
 ```
 
+**§8 completion note (Slice 106, 2026-10-31):** intrinsic
+motivation stands reconciled in
+`plugins/volmarr-core/motivation_lifecycle.py` — deliberately not
+a second motivation engine: the drive store is Emergent Agency
+Phase 2 (Slice 91) and durable intrinsic goals are Phase 9
+(Slice 99). §8.2 coverage maps the twelve suggested drives onto
+the existing store: direct, by alias (creative_expression =
+creation, resource_stewardship = stewardship, world_understanding
+= exploration), or honestly missing (goal_completion,
+truthfulness, system_health, self_improvement have no backing
+drive yet). The §8.5 lifecycle is one explicit deterministic
+evaluation — drive pressure → deduplication → value/identity
+check → resource check → autonomy-policy check — returning
+planned_candidate / awaiting_approval / already_exists /
+rejected with a per-stage record and the §8.4 motivation block
+(drive, tension score, rationale summary). Evaluation writes
+nothing and creates no goal; only an explicit record appends to
+the bounded lifecycle log, and promotion remains the Phase 9
+service's call; execution and reflection stay later stages
+outside this evaluation. Disabled by default
+(`motivation_lifecycle_enabled`). Honest gaps: Verðandi
+lifecycle events are NOT yet emitted — deferred to a later
+telemetry slice; the §8.4 relationship/curiosity goal-origin
+types cannot yet be stored in the goals ledger's flat origin set
+(user/intrinsic/maintenance).
+
 ---
 
 # 9. Metacognition
