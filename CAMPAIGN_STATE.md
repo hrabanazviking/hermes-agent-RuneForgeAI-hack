@@ -2079,3 +2079,66 @@ portable state: any agent (Muse or Hermes) resumes from here.
   slice; this slice records/stands whatever §10 names that
   the compiled artefact can already guarantee, e.g. kernel
   stability across a session's compiles).
+- 2026-10-31 ~12:1x EDT keeper tick: **Slice 120 DONE —
+  Persona Runtime §9 (Persona Kernel Generation) and §10
+  (Pin the Kernel) complete, banked and PUSHED under the
+  standing go-ahead.** No live work found (tree clean, HEAD
+  == origin/main at `3125de7ce1`; Slice 119's state entry
+  minutes earlier was its own completed push, verified, not
+  in-progress work). `plugins/volmarr-core/persona_runtime.py`
+  extended in place — no second compiler, no new file or
+  config key. §9: the kernel is generated from the roadmap's
+  source mix in formula order — the §5 kernel-marked core
+  sections (leading-sections fallback unchanged) +
+  highest-priority relationship rules + highest-priority
+  service-bible rules + critical tool-policy boundaries,
+  where highest-priority/critical is deterministic heading
+  marking via the pure `kernel_source_kind` function (a
+  non-core section enters only when its heading names a
+  rule, law, principle, boundary, policy, or a
+  critical/forbidden/prohibition marker; narrative,
+  preference, and guidance sections stay in the retrieval
+  index; memory-policy/avatar/extension roles never enter).
+  Whole sections only under the §5 ceiling — an overflowing
+  candidate is skipped so a later small critical boundary
+  can still fit; a single oversized section still surfaces
+  over-band. The kernel records provenance (role, section
+  id, source kind, in formula order regardless of config
+  order) and per-kind counts. §10 stands as the compiled
+  artefact's pinning spec (designated order: system runtime
+  rules, persona kernel at position 1, active context, user
+  message; kernel precedes context; never buried in
+  retrieved memory) plus the guarantee this layer can
+  actually stand behind — identical documents compile to an
+  identical kernel hash, and changing a non-kernel section
+  never changes the kernel (both contract-proven). The
+  Slice 118 foundations contract was updated in-slice for
+  the one legitimate change this implies (the service
+  bible's Shell Policy section now enters as a service
+  rule). Tests: targeted 25/25 pass (9 new kernel contracts
+  + 8 foundations + 8 IR); full volmarr/kista run (73
+  files): **512 passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set in the same
+  3 files (5 core-plugin, 1 Verðandi-stimuli socket, 1
+  voice-runner loopback), verified in the run log's own
+  summary line (`~/workspace/.verify-tmp/slice120_full_run.log`).
+  Smoke: `hermes --version` runs; README.md sha256 invariant
+  held (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §§9–10 completion note in the Persona Runtime
+  roadmap. Honest gaps: actual placement of the kernel in a
+  live prompt belongs to prompt assembly (§53) and is NOT
+  claimed — the pinning spec names §53 as its enforcer;
+  §16's P0–P4 priority metadata is a later section (marking
+  here is heading-based, not a stored priority field).
+- **Next resume point: Slice 121 — Persona Runtime §11
+  (Section-Aware Markdown Parser) and §12 (Stable Section
+  IDs)**: reconcile the §11 semantic parser (sections by
+  conceptual boundary, never arbitrary token chunks; the
+  §11 example carries document/section/heading/content and
+  a priority field) against the banked `parse_sections`
+  parser when read at slice start, and §12's persistent
+  per-section identifiers (the §12 examples are
+  role-prefixed, e.g. `relationship.when_disagreeing`)
+  against the current heading-slug ids, which are stable
+  within a document but not role-prefixed — implementing
+  only genuine gaps, in the established pattern.

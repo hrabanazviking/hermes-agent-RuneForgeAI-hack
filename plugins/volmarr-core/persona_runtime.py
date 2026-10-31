@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-8).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-10).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -66,6 +66,36 @@ What stands here, and nothing more:
   carries an ``ir_hash`` over its canonical form, and is
   never written to disk by this layer, so no human is ever
   asked to edit it.
+- §9 persona kernel generation: the kernel's source mix is
+  the roadmap's formula, in roadmap order — PERSONA_CORE
+  (the §5 kernel-marked core sections, with the leading-
+  sections fallback) + highest-priority RELATIONSHIP_MODEL
+  rules + highest-priority SERVICE_BIBLE rules + critical
+  TOOL_POLICY boundaries. "Highest-priority" / "critical"
+  is deterministic and explicit here: a non-core section
+  enters the kernel only when its heading names a rule,
+  law, principle, boundary, policy, or a critical /
+  forbidden / prohibition marker (``kernel_source_kind``);
+  narrative, preference, and guidance sections of those
+  documents stay in the retrieval index, and no other role
+  (memory policy, avatar, extensions) ever enters the
+  kernel. Whole sections only, under the §5 band: a
+  candidate that would overflow the ceiling is skipped, so
+  a later small critical boundary can still fit. The
+  kernel records its provenance (role, section id, source
+  kind) and per-kind counts.
+- §10 pin the kernel: the compiled artefact carries the
+  kernel's pinning spec — the designated prompt order
+  (system runtime rules, then the persona kernel, then
+  active context, then the user message; the kernel is
+  never buried in retrieved memory) and the stability this
+  layer can actually guarantee (a deterministic compile:
+  identical documents produce an identical kernel hash,
+  and changing a non-kernel section never changes the
+  kernel). Actual placement in a live prompt belongs to
+  prompt assembly (§53, a later section); this layer
+  injects nothing and claims no placement it does not
+  perform.
 
 Token counts are deterministic estimates (ceil(chars / 4)),
 named as estimates wherever they surface. Disabled by
@@ -119,6 +149,59 @@ KERNEL_HEADING_WORDS = frozenset({
     "style", "law", "laws", "boundary", "boundaries", "role",
     "quirk", "quirks", "essence", "character",
 })
+
+# §9 kernel source mix, in the roadmap's formula order. Only
+# these roles can enter the kernel, each under its own kind.
+KERNEL_SOURCE_ORDER = (
+    "core", "relationship", "service_bible", "tool_policy",
+)
+_KERNEL_SOURCE_KIND = {
+    "core": "core",
+    "relationship": "relationship_rule",
+    "service_bible": "service_rule",
+    "tool_policy": "tool_boundary",
+}
+
+# Heading words that mark a non-core section as highest-
+# priority / critical for §9: the heading explicitly names a
+# rule, law, principle, boundary, or policy, or carries a
+# critical / forbidden / prohibition marker. Narrative,
+# preference, and guidance headings carry none of these.
+RULE_HEADING_WORDS = frozenset({
+    "rule", "rules", "law", "laws", "principle", "principles",
+    "boundary", "boundaries", "policy", "policies", "critical",
+    "forbidden", "prohibition", "prohibitions",
+})
+
+# §10 pinning: the designated prompt order. The kernel sits
+# in the highest practical persistent layer — directly under
+# the system runtime rules, ahead of active context and the
+# user message, never buried in retrieved memory.
+PINNING_ORDER = (
+    "system_runtime_rules", "persona_kernel", "active_context",
+    "user_message",
+)
+
+
+def kernel_source_kind(role: str, heading: str) -> str | None:
+    """The §9 kernel source kind for a section, or None.
+
+    Pure function of (role, heading). The core document uses
+    the §5 kernel heading words; the three other named roles
+    use the rule/boundary heading words; every other role
+    never enters the kernel.
+    """
+    kind = _KERNEL_SOURCE_KIND.get(role)
+    if kind is None:
+        return None
+    tokens = set(_slugify(heading).split("_"))
+    words = KERNEL_HEADING_WORDS if role == "core" \
+        else RULE_HEADING_WORDS
+    return kind if tokens & words else None
+
+
+def kernel_source_kinds() -> list[str]:
+    return [_KERNEL_SOURCE_KIND[role] for role in KERNEL_SOURCE_ORDER]
 
 _SLUG = re.compile(r"^[a-z][a-z0-9_-]*$")
 _HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
@@ -476,7 +559,7 @@ class PersonaCompiler:
         documents: list[dict[str, Any]] = []
         missing_optional: list[str] = []
         index: list[dict[str, Any]] = []
-        kernel_source: list[dict[str, Any]] = []
+        sections_by_role: dict[str, list[dict[str, Any]]] = {}
         for document in config["documents"]:
             path = self._store.document_path(config, document)
             if path.is_symlink():
@@ -514,9 +597,9 @@ class PersonaCompiler:
                     "estimated_tokens": _estimate_tokens(section["text"]),
                     "text": section["text"],
                 })
-                if document["role"] == "core":
-                    kernel_source.append(section)
-        kernel = self._kernel(kernel_source)
+                sections_by_role.setdefault(
+                    document["role"], []).append(section)
+        kernel = self._kernel(sections_by_role)
         return {
             "persona_id": config["id"],
             "display_name": config["display_name"],
@@ -529,39 +612,78 @@ class PersonaCompiler:
         }
 
     @staticmethod
-    def _kernel(core_sections: list[dict[str, Any]]) -> dict[str, Any]:
-        """Layer A: kernel sections of the core document (§5).
+    def _kernel(
+            sections_by_role: dict[str, list[dict[str, Any]]],
+    ) -> dict[str, Any]:
+        """Layer A: the §9 kernel, from the §9 source mix.
 
-        Sections whose headings name kernel material come
-        first, in document order; if none do, the leading
-        sections stand as the kernel. Whole sections are taken
-        until the §5 kernel ceiling (1,500 estimated tokens);
-        at least one section is always included, so a single
-        oversized section surfaces as an over-band kernel
-        rather than an empty one.
+        Candidates stand in the roadmap's formula order —
+        core, relationship, service bible, tool policy — in
+        document order within each role. Core candidates are
+        the §5 kernel-marked sections (the core document's
+        leading sections when none are marked); the other
+        roles contribute only their rule/boundary-marked
+        sections (``kernel_source_kind``). Whole sections
+        only, under the §5 ceiling: a candidate that would
+        overflow is skipped so a later small critical
+        boundary can still fit; at least one section is
+        always included, so a single oversized section
+        surfaces as an over-band kernel rather than an
+        empty one. The kernel records its provenance and
+        the §10 pinning spec it is compiled under.
         """
-        marked = [
-            section for section in core_sections
-            if KERNEL_HEADING_WORDS & set(
-                _slugify(section["heading"]).split("_"))
-        ]
-        chosen = marked or list(core_sections)
-        picked: list[dict[str, Any]] = []
+        candidates: list[tuple[str, str, dict[str, Any]]] = []
+        for role in KERNEL_SOURCE_ORDER:
+            sections = sections_by_role.get(role, [])
+            marked = [
+                section for section in sections
+                if kernel_source_kind(role, section["heading"])
+                is not None
+            ]
+            if role == "core" and not marked:
+                marked = list(sections)
+            for section in marked:
+                kind = kernel_source_kind(role, section["heading"])
+                candidates.append((
+                    role, kind or "core", section))
+        picked: list[tuple[str, str, dict[str, Any]]] = []
         total = 0
-        for section in chosen:
+        for role, kind, section in candidates:
             tokens = _estimate_tokens(section["text"])
             if picked and total + tokens > KERNEL_TOKEN_MAX:
-                break
-            picked.append(section)
+                continue
+            picked.append((role, kind, section))
             total += tokens
-        text = "\n\n".join(section["text"] for section in picked)
+        picked_sections = [section for _, _, section in picked]
+        text = "\n\n".join(
+            section["text"] for section in picked_sections)
+        digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        sources = [{
+            "role": role, "kind": kind,
+            "section_id": section["section_id"],
+        } for role, kind, section in picked]
+        source_counts = {
+            kind: sum(1 for row in sources if row["kind"] == kind)
+            for kind in kernel_source_kinds()
+        }
         return {
-            "section_ids": [s["section_id"] for s in picked],
+            "section_ids": [s["section_id"] for s in picked_sections],
+            "sources": sources,
+            "source_counts": source_counts,
             "text": text,
             "estimated_tokens": _estimate_tokens(text),
             "within_band": KERNEL_TOKEN_MIN <= _estimate_tokens(text)
             <= KERNEL_TOKEN_MAX,
-            "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            "sha256": digest,
+            "pinning": {
+                "order": list(PINNING_ORDER),
+                "position": list(PINNING_ORDER).index("persona_kernel"),
+                "kernel_precedes_context": True,
+                "buried_in_retrieved_memory": False,
+                "kernel_hash": digest,
+                "stable_for_identical_documents": True,
+                "enforced_by": "prompt_assembly (§53, later section)",
+            },
         }
 
     @staticmethod
@@ -606,15 +728,22 @@ class PersonaRuntimeBridge:
         populated = sum(
             1 for count in compiled["ir"]["category_counts"].values()
             if count)
+        counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-8): persona "
+            f"Persona runtime (§§3-10): persona "
             f"{compiled['persona_id']} compiled from "
             f"{len(compiled['documents'])} documents / "
             f"{len(compiled['index'])} sections; kernel "
             f"{kernel['sha256'][:12]} "
             f"({kernel['estimated_tokens']} estimated tokens, "
             f"{'within' if kernel['within_band'] else 'outside'} "
-            f"the §5 band); PersonaIR hash "
+            f"the §5 band) from the §9 mix — core "
+            f"{counts['core']}, relationship rules "
+            f"{counts['relationship_rule']}, service rules "
+            f"{counts['service_rule']}, tool boundaries "
+            f"{counts['tool_boundary']} — pinned at position "
+            f"{kernel['pinning']['position']} of the §10 order; "
+            f"PersonaIR hash "
             f"{compiled['ir']['ir_hash'][:12]} with {populated} "
             f"of {len(compiled['ir']['categories'])} categories "
             f"populated; persona hash "
@@ -637,8 +766,11 @@ __all__ = [
     "DEFAULT_DIRECTORY",
     "CORE_ROLES",
     "IR_CATEGORIES",
+    "KERNEL_SOURCE_ORDER",
     "KERNEL_TOKEN_MIN",
     "KERNEL_TOKEN_MAX",
+    "PINNING_ORDER",
+    "RULE_HEADING_WORDS",
     "PersonaRuntimeError",
     "PersonaConfigStore",
     "PersonaCompiler",
@@ -647,5 +779,7 @@ __all__ = [
     "classify_section",
     "core_roles",
     "ir_categories",
+    "kernel_source_kind",
+    "kernel_source_kinds",
     "parse_sections",
 ]

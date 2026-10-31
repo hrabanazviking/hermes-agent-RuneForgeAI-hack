@@ -137,10 +137,16 @@ def test_compile_builds_three_layers_from_roles_not_filenames():
     assert [doc["role"] for doc in compiled["documents"]] == [
         "core", "service_bible", "avatar"]
     assert compiled["missing_optional"] == []
-    # Layer A: only the kernel-marked core sections, not the lore.
+    # Layer A (§9, Slice 120): the kernel-marked core sections
+    # plus the service bible's policy section as a service
+    # rule — not the lore, not coding preferences.
     assert compiled["kernel"]["section_ids"] == [
-        "core_identity", "communication_style"]
+        "core_identity", "communication_style", "shell_policy"]
+    assert compiled["kernel"]["sources"][-1] == {
+        "role": "service_bible", "kind": "service_rule",
+        "section_id": "shell_policy"}
     assert "lore line" not in compiled["kernel"]["text"]
+    assert "Test everything twice" not in compiled["kernel"]["text"]
     # Layer B: every section of every document is indexed.
     index_keys = {(row["role"], row["section_id"])
                   for row in compiled["index"]}

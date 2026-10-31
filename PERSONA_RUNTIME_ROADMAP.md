@@ -655,6 +655,48 @@ Do not bury persona identity deep inside retrieved memory.
 
 Core identity must always be visible to the model.
 
+**§§9–10 completion note (Slice 120, 2026-10-31):**
+implemented in `plugins/volmarr-core/persona_runtime.py`,
+extended in place — no second compiler, no new file or
+config key. §9: the kernel is now generated from the
+roadmap's source mix in formula order — the §5
+kernel-marked PERSONA_CORE sections (leading-sections
+fallback unchanged) + highest-priority RELATIONSHIP_MODEL
+rules + highest-priority SERVICE_BIBLE rules + critical
+TOOL_POLICY boundaries. Highest-priority / critical is
+deterministic heading marking (the pure
+`kernel_source_kind` function): a non-core section enters
+only when its heading names a rule, law, principle,
+boundary, policy, or a critical / forbidden / prohibition
+marker; narrative, preference, and guidance sections of
+those documents stay in the retrieval index, and no other
+role (memory policy, avatar, extensions) ever enters the
+kernel. Whole sections only under the §5 ceiling — an
+overflowing candidate is skipped so a later small critical
+boundary can still fit, and a single oversized section
+still surfaces over-band rather than empty. The kernel
+records its provenance (role, section id, source kind, in
+formula order regardless of config order) and per-kind
+counts; the Slice 118 foundations contract was updated
+in-slice for the one legitimate change it implies (the
+service bible's Shell Policy section now enters as a
+service rule). §10 stands as the compiled artefact's
+pinning spec: the designated order (system runtime rules,
+persona kernel at position 1, active context, user
+message), kernel-precedes-context, never buried in
+retrieved memory, plus the stability this layer can
+actually guarantee — identical documents compile to an
+identical kernel hash, and changing a non-kernel section
+never changes the kernel (both contract-proven).
+Honest gaps: actual placement of the kernel in a live
+prompt belongs to prompt assembly (§53) and is NOT
+claimed — this layer injects nothing, and the pinning spec
+names §53 as its enforcer; §16's P0–P4 priority metadata
+is a later section — §9 marking here is heading-based,
+not a stored priority field; retrieval (§13) and the
+compilation cache / generated directory (§§48–49) are
+later sections.
+
 
 ---
 
