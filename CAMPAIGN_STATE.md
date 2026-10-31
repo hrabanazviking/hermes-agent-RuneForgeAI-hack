@@ -931,3 +931,64 @@ portable state: any agent (Muse or Hermes) resumes from here.
   per the §18 spec when read at slice start; expect the first
   slice to be the proposal/pipeline-record layer only, with any
   actual patch execution gated separately.
+- 2026-10-31 ~05:5x EDT keeper tick: **Slice 101 DONE — Emergent
+  Agency Phase 11 (§18, Autonomous Self-Improvement Sandbox)
+  complete, banked and PUSHED under the standing go-ahead.** No
+  live work found (tree clean, HEAD == origin/main at
+  `3acebf0ce`). First slice of this phase is the
+  proposal/pipeline-record layer only, exactly as the Slice 100
+  resume note expected: `plugins/volmarr-core/self_improvement.py`,
+  disabled by default (`self_improvement_enabled`). Proposals are
+  created from a registered source kind (curiosity, metacognition,
+  manual, background_research) against an allowlisted target area
+  and advance in strict sequential order (hypothesis →
+  branch_proposal → patch_plan → focused_tests →
+  regression_tests → diff_review → commit_proposal →
+  human_review → closed) in the bounded
+  `entity/self_improvement.jsonl` log (rotation, symlink refusal,
+  strict owner/field validation on read), closing only from
+  human review with an explicit approved/rejected decision. The
+  §18 hard boundaries are enforced in code at creation and every
+  advance: the six forbidden target areas (autonomy_policy,
+  security_controls, credential_protections, branch_protection,
+  canonical_identity, persona_constitution), forbidden actions in
+  text (force push, disable security, weaken autonomy,
+  remove/delete tests, credential handling, bypass branch
+  protection, rewrite identity, persona constitution), and risk
+  classes 4–5 are refused; a refused advance records nothing.
+  Open-proposal cap via `self_improvement_max_open`. Bounded
+  packet contribution (proposal awaiting human review only) wired
+  as one added `packet_sources` producer; config keys
+  `self_improvement_enabled`/`self_improvement_log_path`/
+  `self_improvement_log_limit`/`self_improvement_max_open` in
+  `plugin.yaml`. This layer executes NOTHING — no git, branch/
+  worktree, patch, test run, commit, or push; patch execution
+  remains a separate, separately gated slice. Tests: targeted 9/9
+  pass (the very first targeted run reported 1 plugin-load
+  AttributeError flake in the disabled-default test; the file then
+  passed 9/9 twice, including with file retries disabled and
+  alongside the background-research + present-state files 22/22);
+  full volmarr/kista run (54 files): **359 passed, 7 failed,
+  1 skipped** — the failures are the same name-identical
+  pre-existing environmental set in the same 3 files (5
+  core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback), verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice101_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger row,
+  Phase 11 completion note in the Emergent Agency roadmap §18.
+  Honest gaps: Verðandi self-improvement events NOT yet emitted —
+  deferred to a later telemetry slice, recorded in both
+  bookkeeping spots; no actual patch/branch/test execution exists
+  in this layer (see above).
+- **Next resume point: Slice 102 — Emergent Agency Phase 12
+  (§19, Multi-Timescale Cognition)**: the five timescales (reflex,
+  frequent continuity, agency, daily sleep, weekly/long-horizon)
+  run through Hermes cron rather than a resident loop, per the
+  §19 spec when read at slice start; expect the first slice to
+  define/register the timescale structure against the existing
+  heartbeat/agency/consolidation routines rather than new
+  schedulers. With Phase 12 the Emergent Agency roadmap's phases
+  are complete; the campaign then returns to roadmap queue item 3
+  (Self-Aware Agency) per the queue above, unless §19's own
+  follow-on slices say otherwise.

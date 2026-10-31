@@ -357,6 +357,22 @@ config_schema:
     type: float
     default: 0.10
     description: "Minimum frontier score a curiosity question needs for the value gate to permit a background research run (clamped to 0-1)."
+  self_improvement_enabled:
+    type: bool
+    default: false
+    description: "Enable the autonomous self-improvement sandbox (Emergent Agency Phase 11). Disabled by default; records proposals and pipeline stages only — no patch, branch, test, commit, or push execution happens in this layer."
+  self_improvement_log_path:
+    type: str
+    default: entity/self_improvement.jsonl
+    description: "Self-improvement pipeline log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  self_improvement_log_limit:
+    type: int
+    default: 200
+    description: "Maximum self-improvement pipeline log records retained by rotation (clamped to 10-500)."
+  self_improvement_max_open:
+    type: int
+    default: 10
+    description: "Maximum simultaneously open (not closed) self-improvement proposals (clamped to 1-50)."
   heartbeat_enabled:
     type: bool
     default: true

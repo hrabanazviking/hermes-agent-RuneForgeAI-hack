@@ -24,6 +24,7 @@ from .metacognition import MetacognitionBridge
 from .openviking_retrieval import OpenVikingRetrievalBridge
 from .present_state import PresentStateBridge
 from .relationships import RelationshipBridge, register_relationship_tools
+from .self_improvement import SelfImprovementBridge
 from .self_model import SelfModelBridge
 from .wyrd_tools import register_wyrd_tools
 from .wyrd_context import WyrdContextBridge
@@ -65,6 +66,7 @@ def register(ctx) -> None:
     agency_routine = AgencyRoutineBridge(ctx)
     local_autonomy = LocalAutonomyBridge(ctx)
     background_research = BackgroundResearchBridge(ctx)
+    self_improvement = SelfImprovementBridge(ctx)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -91,6 +93,7 @@ def register(ctx) -> None:
             local_autonomy.packet_items,
             intrinsic_goals.packet_items,
             background_research.packet_items,
+            self_improvement.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():

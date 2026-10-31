@@ -2110,6 +2110,32 @@ learning
 
 That is far closer to an evolving digital organism than static prompt engineering.
 
+**Phase 11 completion note (Slice 101, 2026-10-31):** the
+proposal/pipeline-record layer stands in
+`plugins/volmarr-core/self_improvement.py`, disabled by default
+(`self_improvement_enabled`). A pipeline is recorded stage by stage
+in strict sequential order (hypothesis → branch_proposal →
+patch_plan → focused_tests → regression_tests → diff_review →
+commit_proposal → human_review → closed) in the bounded
+`entity/self_improvement.jsonl` log (rotation, symlink refusal,
+strict owner/field validation), and closes only from human review
+with an explicit approved/rejected decision. The §18 hard
+boundaries are enforced in code at creation and at every advance:
+the six forbidden target areas (autonomy policy, security controls,
+credential protections, branch protection, canonical identity,
+persona constitutions), forbidden actions in text (force push,
+disable security, weaken autonomy, remove/delete tests, credential
+handling, bypass branch protection, rewrite identity, persona
+constitution), and risk classes 4–5 are all refused, and a refused
+advance records nothing. The open-proposal cap is configurable
+(`self_improvement_max_open`). A bounded packet contribution
+surfaces only a proposal awaiting human review. This layer executes
+nothing — no git, branch/worktree, patch, test run, commit, or
+push; actual patch execution remains a separate, separately gated
+slice. Verðandi self-improvement events are not yet emitted; they
+arrive with a later telemetry slice. Next: Phase 12 (§19) opens
+multi-timescale cognition.
+
 ---
 
 # 19. Phase 12 - Multi-Timescale Cognition
