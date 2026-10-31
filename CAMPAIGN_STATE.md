@@ -2758,3 +2758,72 @@ portable state: any agent (Muse or Hermes) resumes from here.
   pure drift-defense / precedence surface naming the
   defenses and the priority order in contract form, not
   a conversation monitor this plugin does not own).
+- 2026-10-31 ~16:3x EDT keeper tick: **Slice 129 DONE —
+  Persona Runtime §23 (Conversation Drift Problem) and §24
+  (Do Not Derive Character From Chat History) complete,
+  banked and PUSHED under the standing go-ahead.** No live
+  work found (tree clean, HEAD == origin/main at
+  `c5e7ddc7ef`; Slice 128's state commit was its own
+  completed push, verified, not in-progress work).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §23's pure
+  `drift_defenses` names the seven drift dangers in
+  roadmap order, each with its defense and honest
+  grounding — mechanism where a banked surface enforces
+  it (§10 kernel pinning; §7 verbatim + §19 hash + §20
+  reload; §15/§16 never-evict; §§17/18 anchors) and
+  `rule` where it is a contract obligation for callers /
+  prompt assembly (§53), labelled as such in the data
+  itself. §24's pure `precedence_order` stands the
+  six-tier conceptual priority (PERSONA CORE >
+  RELATIONSHIP MODEL > SERVICE BIBLE > long-term memory
+  > current conversation > temporary emotional state),
+  mapping the document tiers to the compiler roles
+  core/relationship/service_bible; the pure
+  `classify_influence` / `influence_allowed` /
+  `precedence_winner` / `outranks` functions classify a
+  claimed source — a summary inherits the conversation
+  tier and can never outrank the history it summarises;
+  non-§24 document roles refused as sources — and a
+  non-document source may affect current mood, immediate
+  context, and recent events only, never redefine
+  foundational personality, identity, or traits; only a
+  canonical document tier may. Packet label updated to
+  §§3–24 (six older persona files' packet assertions
+  updated in-slice). Tests: new file 8/8 pass; targeted
+  persona run (13 files): **105 passed, 0 failed**; full
+  volmarr/kista run (82 files): **584 passed, 7 failed,
+  1 skipped** — the failures the same name-identical
+  pre-existing environmental set in the same 3 files
+  (5 core-plugin, 1 Verðandi-stimuli socket, 1
+  voice-runner loopback), verified in the run log's own
+  summary line
+  (`~/workspace/.verify-tmp/slice129_full_run.log`); 584
+  is exactly Slice 128's 576 + the 8 new contracts.
+  Smoke: `hermes --version` runs; README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §23 + §24 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–24. Push: fast-forward, no force —
+  origin/main moved `c5e7ddc7ef` → Slice 129 commit,
+  verified by `git ls-remote` (remote == local HEAD).
+  Honest gaps: the `rule`-kind defenses are contract
+  obligations, not mechanisms this layer enforces; no
+  caller consumes the drift/precedence classification
+  yet; no conversation monitor was built or claimed.
+- **Next resume point: Slice 130 — Persona Runtime §25
+  (Conversation Summaries Must Not Define Persona) and
+  §26 (Trait vs State)**: §25 stands the rule that a
+  conversation summary may record state ("was frustrated
+  during debugging") but must never become a trait claim
+  ("is a frustrated personality") — reconcile against
+  Slice 129's summary-inherits-conversation-tier rule
+  when read at slice start; §26 stands the explicit
+  trait/state separation (traits come from persona
+  files; temporary states decay) — expect pure
+  contract/classification surfaces over the banked
+  surfaces (a summary-claim classifier refusing
+  trait-form claims from summary sources, and a
+  trait/state classification with a deterministic decay
+  rule for states), not a summariser or a live state
+  tracker this plugin does not own.
