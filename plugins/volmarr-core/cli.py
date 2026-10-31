@@ -19,6 +19,12 @@ from .heartbeat import HeartbeatError, HeartbeatService, probe_heartbeat
 from .identity import IdentityError, probe_identity
 from .memory_fabric import probe_bifrost, probe_bifrost_muninn
 from .ravens import probe_ravens
+from .ravens_writes import (
+    consolidate_memories,
+    decay_memories,
+    ingest_memory,
+    reinforce_memories,
+)
 from .mempalace import probe_mempalace
 from .openviking import probe_openviking
 from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
@@ -123,6 +129,40 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Attest the ravens package contract import-only, constructing nothing",
     )
     ravens_health.add_argument("--json", action="store_true", dest="json_output")
+    ravens_reinforce = ravens_subcommands.add_parser(
+        "reinforce",
+        help="Muninn reinforcement for the given memory ids (write; flag-gated)",
+    )
+    ravens_reinforce.add_argument(
+        "--ids",
+        required=True,
+        help="Comma-separated positive memory ids to activate and wire",
+    )
+    ravens_reinforce.add_argument("--valence", type=float, default=0.0)
+    ravens_reinforce.add_argument("--json", action="store_true", dest="json_output")
+    ravens_decay = ravens_subcommands.add_parser(
+        "decay",
+        help="Run Muninn decay over the profile store (write; flag-gated)",
+    )
+    ravens_decay.add_argument("--days", type=float, default=1.0)
+    ravens_decay.add_argument("--json", action="store_true", dest="json_output")
+    ravens_consolidate = ravens_subcommands.add_parser(
+        "consolidate",
+        help="Run Muninn consolidation on the profile store (write; flag-gated)",
+    )
+    ravens_consolidate.add_argument("--json", action="store_true", dest="json_output")
+    ravens_ingest = ravens_subcommands.add_parser(
+        "ingest",
+        help="Ingest one memory into the profile's Huginn store (write; flag-gated)",
+    )
+    ravens_ingest.add_argument("--content", required=True)
+    ravens_ingest.add_argument("--category", default="general")
+    ravens_ingest.add_argument("--importance", type=int, default=5)
+    ravens_ingest.add_argument(
+        "--tags", default="", help="Comma-separated tags (may be empty)"
+    )
+    ravens_ingest.add_argument("--valence", type=float, default=0.0)
+    ravens_ingest.add_argument("--json", action="store_true", dest="json_output")
     world = subcommands.add_parser(
         "world",
         help="Inspect the WYRD world-model attachment",
@@ -310,11 +350,48 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             report = probe_bifrost_muninn(ctx)
             label = "Bifröst Muninn"
         elif memory_action == "ravens":
-            if getattr(args, "ravens_action", None) != "health":
-                print("Usage: hermes volmarr memory ravens health [--json]")
+            ravens_action = getattr(args, "ravens_action", None)
+            if ravens_action == "health":
+                report = probe_ravens(ctx)
+                label = "Ravens"
+            elif ravens_action in {"reinforce", "decay", "consolidate", "ingest"}:
+                if ravens_action == "reinforce":
+                    tokens = [
+                        token.strip()
+                        for token in str(getattr(args, "ids", "")).split(",")
+                    ]
+                    try:
+                        memory_ids = [int(token) for token in tokens]
+                    except ValueError:
+                        memory_ids = tokens
+                    result = reinforce_memories(
+                        ctx, memory_ids, getattr(args, "valence", 0.0)
+                    )
+                elif ravens_action == "decay":
+                    result = decay_memories(ctx, getattr(args, "days", 1.0))
+                elif ravens_action == "consolidate":
+                    result = consolidate_memories(ctx)
+                else:
+                    raw_tags = str(getattr(args, "tags", "") or "")
+                    result = ingest_memory(
+                        ctx,
+                        getattr(args, "content", ""),
+                        category=getattr(args, "category", "general"),
+                        importance=getattr(args, "importance", 5),
+                        tags=[tag.strip() for tag in raw_tags.split(",") if tag.strip()],
+                        emotional_valence=getattr(args, "valence", 0.0),
+                    )
+                if getattr(args, "json_output", False):
+                    print(json.dumps(result.as_dict(), sort_keys=True))
+                else:
+                    print(f"Ravens {result.operation}: {result.status}")
+                return 0 if result.healthy else 1
+            else:
+                print(
+                    "Usage: hermes volmarr memory ravens "
+                    "{health|reinforce|decay|consolidate|ingest} [--json]"
+                )
                 return 2
-            report = probe_ravens(ctx)
-            label = "Ravens"
         elif memory_action == "health":
             report = probe_bifrost(ctx)
             label = "Bifröst"

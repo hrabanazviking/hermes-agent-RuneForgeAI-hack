@@ -746,3 +746,85 @@ server round-trip and the sentence-transformers embedder path (the
 ravens' own honesty list, unchanged).
 
 Tests: new `tests/plugins/test_volmarr_ravens.py` — 6 contracts (probe healthy/versions with zero constructions, stock-tree `package_missing`, `contract_mismatch` on a missing symbol, A→B→A builder path binding with `backend="local"`, profile-escape refusal, CLI health via real discovery). Targeted run with the memory-fabric + Muninn-probe contracts: 17/17 pass. Full volmarr/kista run (43 files): **257 passed, 7 failed, 1 skipped** — the failures verified as the same name-identical pre-existing environmental set by rerunning their 3 files (5 core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner loopback); no new failures.
+
+---
+
+# Slice 92 — Bifröst write-path enablement (2026-10-31)
+
+This section records the enablement Slice 90 left "separate, now
+unblocked". It supersedes nothing above: Slice 86's NO-GO stands as
+the verdict on the unauditable state, and Slice 90's verdicts stand
+as the measured basis for what is enabled here.
+
+## Dependency declaration (Slice 92a)
+
+The fork now declares its consumption of the ravens: an opt-in
+`volmarr-ravens` extra (`muninn==1.0.0`, `huginn==1.0.0`, never in
+`[all]`) bound by `[tool.uv.sources]` to editable paths in the
+canonical local ravens tree, with `pm.extras.ANCHORS` naming both
+modules and provenance rows in `COMPONENT_LICENSES.md`. The path
+binding is load-bearing: the bare names resolve on PyPI to unrelated
+projects (Slice 86 ground 1), so an index-resolved declaration would
+install wrong software. The packages have no GitHub home yet — repo
+creation is Volmarr's alone — so the local ravens tree is their
+canonical home until he gives them one. Recorded deviation: `hermes
+pm lock`'s release-age gate refuses to regenerate this lock for
+unpublished local packages (no index upload dates); the `uv.lock` on
+disk is the resolver's own internally consistent output, and
+`exclude-newer-package` was not widened (pm law reserves it for CA
+trust stores). Detail in `CUSTOMIZATIONS.md`.
+
+## The enabled operations
+
+`plugins/volmarr-core/ravens_writes.py`, reachable only as
+`hermes volmarr memory ravens {reinforce|decay|consolidate|ingest}`:
+
+- **reinforce** — `activate_batch` against the profile's Muninn via
+  the Slice 90 builder. Flag: `bifrost_reinforcement_enabled`,
+  default **false**.
+- **decay** — Muninn `decay(days=...)`, the package's own report
+  returned verbatim. Flag: `bifrost_decay_enabled`, default **false**.
+- **consolidate** — Muninn `consolidate()`, report verbatim. Flag:
+  `bifrost_consolidation_enabled`, default **false**.
+- **ingest** — `upsert_memory` against the profile's Huginn via the
+  Slice 90 direct builder (local backend, profile store). Flag:
+  `bifrost_ingestion_enabled`, default **false**.
+
+## How Slice 86's three grounds are answered in the implementation
+
+1. **Unauditable packages** — semantics now live in the canonical,
+   tested raven packages (muninn 36/36, huginn 27/27 in their own
+   suites; Bifröst's own suites 25/25 against them), declared as
+   above with pins and provenance.
+2. **Reads that write** — this module registers no hook and no packet
+   producer, and no read path imports it. A disabled operation
+   refuses before any package import; contract tests prove the health
+   probes construct nothing with every write flag enabled. Writes
+   occur only through the four named operations above.
+3. **Lazy, separate construction** — importing the module constructs
+   nothing; each operation builds only its own backend through the
+   profile-bound builders and closes it before returning.
+   Reinforcement/decay/consolidation never construct Huginn;
+   ingestion never constructs Muninn. Inputs are validated (bounded
+   id sets, valence range, decay window, content size, importance
+   range) before any construction.
+
+**Bifröst's Huginn path remains NO-GO and untouched** — ingestion
+goes through the direct binding only. Bifröst's auto flags remain
+dead upstream configuration; nothing here reads them. No turn path
+calls any of these operations: a packet producer that stores as part
+of a turn would be a further slice under its own gate.
+
+## Evidence
+
+Contracts: `tests/plugins/test_volmarr_ravens_writes.py` — 12 tests
+(default-off with zero constructions; gate precedes import; reinforce
+constructs only profile-bound Muninn with exact call recording;
+A→B→A profile following; decay/consolidate Muninn-only with verbatim
+reports; ingest constructs only direct profile-bound Huginn with
+`backend="local"`; `package_missing` when enabled without packages;
+validation refusals construct nothing; profile-escape is a
+configuration error; read probes pure with all flags on; CLI disabled
+exits 1 with `disabled`, CLI ingest enabled exits 0 through the flag).
+Targeted run: 12/12 pass. NOT PROVEN (unchanged from Slice 90): live
+Qdrant server round-trip; sentence-transformers embedder path.

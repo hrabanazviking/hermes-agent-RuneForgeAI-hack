@@ -454,3 +454,15 @@ portable state: any agent (Muse or Hermes) resumes from here.
   output. Next in this commission: Slice 92 — the flagged write
   operations on the Slice 90 builders, then the full-line push under
   the standing go-ahead.
+- **Slice 92 — Bifröst write-path enablement: BANKED 2026-10-31
+  (main-session integration commission).** `ravens_writes.py` wires
+  the four Slice 90-cleared writes as named operator operations
+  (`hermes volmarr memory ravens {reinforce|decay|consolidate|ingest}`),
+  each behind its own default-off flag, each constructing only its
+  own backend via the Slice 90 builders and closing it; no hook, no
+  packet producer, no turn-path caller; Bifröst's Huginn path stays
+  NO-GO. 12 contracts in `test_volmarr_ravens_writes.py`, targeted
+  12/12. Gate 0 addendum in the audit (Slice 92 section); roadmap §29
+  updated. Remaining in this commission: full suite, smoke, README
+  invariant, and the full-line push (Slices 83–92) under the standing
+  go-ahead, verified by ls-remote.

@@ -1910,6 +1910,21 @@ shared across profiles); Huginn through the direct profile-bound binding GO
 wired into a turn path yet; that enablement is a separate slice, now unblocked.
 Ingestion remains disabled in turn paths.
 
+Slice 92 (2026-10-31) is that enablement. The dependency is declared (opt-in
+`volmarr-ravens` extra bound by `[tool.uv.sources]` to the canonical local
+ravens tree; `hermes pm lock`'s release-age refusal for unpublished local
+packages recorded in `CUSTOMIZATIONS.md`, not worked around), and the four
+write operations Slice 90 cleared are wired as explicitly named operator
+commands — `hermes volmarr memory ravens {reinforce|decay|consolidate|ingest}`
+— each behind its own default-off flag (`bifrost_reinforcement_enabled`,
+`bifrost_decay_enabled`, `bifrost_consolidation_enabled`,
+`bifrost_ingestion_enabled`), each constructing only its own backend through
+the Slice 90 profile-bound builders, with 12 new contracts in
+`tests/plugins/test_volmarr_ravens_writes.py`. No hook, no packet producer,
+no turn-path caller: reads stay pure and ingestion remains disabled in turn
+paths. Bifröst's Huginn path remains NO-GO. Full record in
+`PERSISTENT_ENTITY_ACCEPTANCE_AUDIT.md` (Slice 92 section).
+
 ## Milestone 4: Affective Continuity
 
 - port current affective nervous system;

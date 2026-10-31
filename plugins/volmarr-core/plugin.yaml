@@ -65,6 +65,22 @@ config_schema:
     type: str
     default: memory/huginn_local.db
     description: "Huginn SQLite database path for the direct profile-bound ravens binding (Slice 90), absolute or relative to the active Hermes profile."
+  bifrost_reinforcement_enabled:
+    type: bool
+    default: false
+    description: "Allow the explicitly invoked Muninn reinforcement operation (Slice 92). Disabled by default; no automatic or turn-path reinforcement exists."
+  bifrost_decay_enabled:
+    type: bool
+    default: false
+    description: "Allow the explicitly invoked Muninn decay operation (Slice 92). Disabled by default."
+  bifrost_consolidation_enabled:
+    type: bool
+    default: false
+    description: "Allow the explicitly invoked Muninn consolidation operation (Slice 92). Disabled by default."
+  bifrost_ingestion_enabled:
+    type: bool
+    default: false
+    description: "Allow the explicitly invoked Huginn ingestion operation (Slice 92, direct profile-bound Huginn only). Disabled by default."
   present_state_path:
     type: str
     default: memory/present_state.json
