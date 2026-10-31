@@ -1949,6 +1949,36 @@ explicit urgent user goal
 
 The exact ordering should be configurable.
 
+**Slice 99 completion (2026-10-31):** Phase 9 is implemented across
+`plugins/volmarr-core/goals.py` (schema v2) and
+`plugins/volmarr-core/intrinsic_goals.py`. The goal ledger migrated
+to v2: every goal carries `origin` (`user` / `intrinsic` /
+`maintenance`), `origin_ref`, `urgency`, and `approved`; v1 files
+migrate on first ensure (pre-v2 records default to origin `user`),
+and `update` can never rewrite origin — it is preserved for the life
+of the record. Promotion is one explicit service call (no hook, no
+turn-path caller): a drive intent proposal becomes a durable
+intrinsic goal with the drive as `origin_ref`, a derived priority in
+the lower half of the scale, and `approved=False`, subject to the
+`intrinsic_goal_quota` cap on live intrinsic goals; an exact
+duplicate of a non-archived intrinsic goal returns that goal.
+Arbitration is one deterministic function over the §16 tiers —
+explicit urgent user > explicit normal user > safety/continuity
+maintenance > approved intrinsic > new intrinsic — with the order
+configurable via `intrinsic_goal_tier_order` (missing tiers fall
+back to the roadmap order). A user may approve, archive, or reject
+intrinsic goals through the service (non-intrinsic goals are
+refused there). Rejection archives the goal and records its
+fingerprint in the ledger with a configurable cooldown
+(`intrinsic_goal_rejection_cooldown_hours`, default 168); while the
+cooldown runs, the same fingerprint and any near-duplicate title
+(token Jaccard >= 0.8) are refused as evasion, and after it expires
+the goal may be proposed again. A bounded packet contribution
+surfaces the top-ranked intrinsic goal only when one exists.
+Verðandi intrinsic-goal events are not yet emitted; they arrive
+with a later telemetry slice. Next: Phase 10 (§17) enables
+background curiosity and research under its stated gates.
+
 ---
 
 # 17. Phase 10 - Background Curiosity and Research

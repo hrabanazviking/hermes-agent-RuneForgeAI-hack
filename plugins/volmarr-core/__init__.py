@@ -15,6 +15,7 @@ from .drives import DriveBridge
 from .goals import GoalBridge, register_goal_tools
 from .heartbeat import HeartbeatBridge, register_heartbeat_tool
 from .identity import IdentityBridge
+from .intrinsic_goals import IntrinsicGoalBridge
 from .lifecycle import LifecycleBridge
 from .local_autonomy import LocalAutonomyBridge
 from .mempalace_retrieval import MemPalaceRetrievalBridge
@@ -40,6 +41,9 @@ def register(ctx) -> None:
         ctx.register_hook(hook_name, callback)
     goals = GoalBridge(ctx)
     for hook_name, callback in goals.hooks():
+        ctx.register_hook(hook_name, callback)
+    intrinsic_goals = IntrinsicGoalBridge(ctx)
+    for hook_name, callback in intrinsic_goals.hooks():
         ctx.register_hook(hook_name, callback)
     self_model = SelfModelBridge(ctx)
     for hook_name, callback in self_model.hooks():
@@ -83,6 +87,7 @@ def register(ctx) -> None:
             agency.packet_items,
             agency_routine.packet_items,
             local_autonomy.packet_items,
+            intrinsic_goals.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():

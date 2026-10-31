@@ -18,11 +18,19 @@ from utils import atomic_yaml_write
 from .identity import IdentityError, IdentityStore, _as_bool
 
 
-GOALS_VERSION = 1
+GOALS_VERSION = 2
+SUPPORTED_GOALS_VERSIONS = {1, 2}
 DEFAULT_GOALS_PATH = Path("entity") / "goals.yaml"
 MAX_GOALS = 256
 MAX_FILE_BYTES = 2 * 1024 * 1024
+MAX_REJECTED_FINGERPRINTS = 256
 GOAL_STATUSES = {"planned", "active", "blocked", "completed", "archived"}
+# Schema v2 (Emergent Agency Phase 9, roadmap §16): every goal carries
+# its origin, preserved for the life of the record — ``update`` never
+# rewrites it — plus an urgency class for priority arbitration and an
+# approval flag intrinsic goals use until a user approves them.
+GOAL_ORIGINS = {"user", "intrinsic", "maintenance"}
+GOAL_URGENCIES = {"urgent", "normal", "low"}
 
 try:
     import fcntl
@@ -110,10 +118,27 @@ class GoalStore:
         path = self.path()
         with self._lock(path):
             if path.exists():
-                return self._read_unlocked(path, owner)
+                data = self._read_unlocked(path, owner)
+                if self._file_version(path) != GOALS_VERSION:
+                    # v1 -> v2 migration: the read above already
+                    # normalised every record (origin defaults to
+                    # "user"); persist the migrated document once.
+                    self._write(path, data)
+                return data
             data = self._empty(owner)
             self._write(path, data)
             return data
+
+    @staticmethod
+    def _file_version(path: Path) -> int | None:
+        try:
+            payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, yaml.YAMLError):
+            return None
+        if not isinstance(payload, dict):
+            return None
+        version = payload.get("goals_version")
+        return version if isinstance(version, int) and not isinstance(version, bool) else None
 
     def get(self, goal_id: str | None = None) -> dict[str, Any]:
         owner = self._identity.read().entity_id
@@ -134,7 +159,19 @@ class GoalStore:
         description: str,
         priority: int,
         next_action: str,
+        origin: str = "user",
+        origin_ref: str = "",
+        urgency: str = "normal",
+        approved: bool = False,
     ) -> dict[str, Any]:
+        if origin not in GOAL_ORIGINS:
+            raise GoalError("goal origin is invalid")
+        if urgency not in GOAL_URGENCIES:
+            raise GoalError("goal urgency is invalid")
+        if not isinstance(approved, bool):
+            raise GoalError("goal approved flag is invalid")
+        if _text(origin_ref, 200, required=False) is None:
+            raise GoalError("goal origin_ref is invalid")
         owner = self._identity.read().entity_id
         path = self.path()
         with self._lock(path):
@@ -150,6 +187,10 @@ class GoalStore:
                 "status": "planned",
                 "priority": priority,
                 "next_action": next_action,
+                "origin": origin,
+                "origin_ref": origin_ref,
+                "urgency": urgency,
+                "approved": approved,
                 "created_at": timestamp,
                 "updated_at": timestamp,
                 "completed_at": "",
@@ -176,9 +217,19 @@ class GoalStore:
                 raise GoalError("goal was not found")
             goal = dict(existing)
             timestamp = _now()
+            # Origin and origin_ref are deliberately absent: a goal's
+            # origin is preserved for the life of the record (§16).
             for field in ("title", "description", "status", "priority", "next_action"):
                 if field in changes:
                     goal[field] = changes[field]
+            if "urgency" in changes:
+                if changes["urgency"] not in GOAL_URGENCIES:
+                    raise GoalError("goal urgency is invalid")
+                goal["urgency"] = changes["urgency"]
+            if "approved" in changes:
+                if not isinstance(changes["approved"], bool):
+                    raise GoalError("goal approved flag is invalid")
+                goal["approved"] = changes["approved"]
             if "status" in changes:
                 if changes["status"] == "completed":
                     goal["completed_at"] = timestamp
@@ -199,6 +250,51 @@ class GoalStore:
             self._write(path, data)
             return goal
 
+    def rejected_fingerprints(self) -> dict[str, Any]:
+        owner = self._identity.read().entity_id
+        path = self.path()
+        with self._lock(path):
+            data = self._read_unlocked(path, owner)
+        return {key: dict(value) for key, value in data["rejected_fingerprints"].items()}
+
+    def note_rejection(
+        self,
+        fingerprint: str,
+        *,
+        title: str,
+        rejected_at: str,
+        cooldown_until: str,
+    ) -> None:
+        """Record a user-rejected intrinsic goal's fingerprint (§16).
+
+        The entry carries the rejected title so near-duplicate
+        promotions can be refused as rejection evasion while the
+        cooldown runs.
+        """
+        if _text(fingerprint, 64) is None or len(fingerprint) != 64:
+            raise GoalError("rejection fingerprint is invalid")
+        if _text(title, 200) is None:
+            raise GoalError("rejection title is invalid")
+        if not _timestamp(rejected_at) or not _timestamp(cooldown_until):
+            raise GoalError("rejection timestamps are invalid")
+        owner = self._identity.read().entity_id
+        path = self.path()
+        with self._lock(path):
+            data = self._read_unlocked(path, owner)
+            entries = dict(data["rejected_fingerprints"])
+            entries[fingerprint] = {
+                "title": title,
+                "rejected_at": rejected_at,
+                "cooldown_until": cooldown_until,
+            }
+            if len(entries) > MAX_REJECTED_FINGERPRINTS:
+                ordered = sorted(
+                    entries.items(), key=lambda item: item[1]["rejected_at"]
+                )
+                entries = dict(ordered[-MAX_REJECTED_FINGERPRINTS:])
+            data["rejected_fingerprints"] = entries
+            self._write(path, data)
+
     def _history_limit(self) -> int:
         try:
             value = int(self._ctx.get_config("goals_history_limit", 100))
@@ -212,6 +308,7 @@ class GoalStore:
             "goals_version": GOALS_VERSION,
             "owner_entity_id": owner,
             "goals": {},
+            "rejected_fingerprints": {},
         }
 
     def _read_unlocked(self, path: Path, owner: str) -> dict[str, Any]:
@@ -228,7 +325,7 @@ class GoalStore:
         if not isinstance(payload, dict):
             raise GoalError("goals document must be a mapping")
         version = payload.get("goals_version")
-        if isinstance(version, bool) or version != GOALS_VERSION:
+        if isinstance(version, bool) or version not in SUPPORTED_GOALS_VERSIONS:
             raise GoalError("goals version is unsupported")
         if payload.get("owner_entity_id") != owner:
             raise GoalError("goals owner does not match entity identity")
@@ -237,6 +334,26 @@ class GoalStore:
             raise GoalError("goals mapping is invalid or oversized")
         for key, goal in goals.items():
             self._validate_goal(key, goal)
+            # v1 -> v2 normalisation: pre-v2 records are explicit
+            # goals, so their origin defaults to "user".
+            goal.setdefault("origin", "user")
+            goal.setdefault("origin_ref", "")
+            goal.setdefault("urgency", "normal")
+            goal.setdefault("approved", False)
+        rejected = payload.get("rejected_fingerprints", {})
+        if not isinstance(rejected, dict) or len(rejected) > MAX_REJECTED_FINGERPRINTS:
+            raise GoalError("rejected fingerprints mapping is invalid or oversized")
+        for fingerprint, entry in rejected.items():
+            if not isinstance(fingerprint, str) or len(fingerprint) != 64:
+                raise GoalError("rejected fingerprint key is invalid")
+            if not isinstance(entry, dict) or _text(entry.get("title"), 200) is None:
+                raise GoalError("rejected fingerprint entry is invalid")
+            if not _timestamp(entry.get("rejected_at")) or not _timestamp(
+                entry.get("cooldown_until")
+            ):
+                raise GoalError("rejected fingerprint timestamps are invalid")
+        payload["goals_version"] = GOALS_VERSION
+        payload["rejected_fingerprints"] = rejected
         return payload
 
     @staticmethod
@@ -255,6 +372,15 @@ class GoalStore:
             raise GoalError("goal priority is invalid")
         if _text(goal.get("next_action"), 1000, required=False) is None:
             raise GoalError("goal next_action is invalid")
+        origin = goal.get("origin", "user")
+        if origin not in GOAL_ORIGINS:
+            raise GoalError("goal origin is invalid")
+        if _text(goal.get("origin_ref", ""), 200, required=False) is None:
+            raise GoalError("goal origin_ref is invalid")
+        if goal.get("urgency", "normal") not in GOAL_URGENCIES:
+            raise GoalError("goal urgency is invalid")
+        if not isinstance(goal.get("approved", False), bool):
+            raise GoalError("goal approved flag is invalid")
         if not _timestamp(goal.get("created_at")) or not _timestamp(
             goal.get("updated_at")
         ):
@@ -397,6 +523,9 @@ def build_goal_get_handler(ctx):
                         "status",
                         "priority",
                         "next_action",
+                        "origin",
+                        "urgency",
+                        "approved",
                         "updated_at",
                     )
                 }

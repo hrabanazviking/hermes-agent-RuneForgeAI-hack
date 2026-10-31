@@ -321,6 +321,22 @@ config_schema:
     type: int
     default: 200
     description: "Maximum local autonomy log records retained by rotation (clamped to 10-500)."
+  intrinsic_goals_enabled:
+    type: bool
+    default: true
+    description: "Enable durable intrinsic goals (Emergent Agency Phase 9): explicit promotion of drive intent proposals into the schema-v2 goal ledger, with quota, tier arbitration, and user approve/archive/reject."
+  intrinsic_goal_quota:
+    type: int
+    default: 5
+    description: "Maximum live intrinsic goals in the ledger (clamped to 0-50)."
+  intrinsic_goal_rejection_cooldown_hours:
+    type: float
+    default: 168
+    description: "Cooldown for a user-rejected intrinsic goal's fingerprint; near-duplicates are refused while it runs (clamped to 0-8760 hours)."
+  intrinsic_goal_tier_order:
+    type: str
+    default: ""
+    description: "Comma-separated arbitration tier order (explicit_urgent_user, explicit_normal_user, safety_continuity, approved_intrinsic, new_intrinsic); empty or partial values fall back to the roadmap default for missing tiers."
   heartbeat_enabled:
     type: bool
     default: true

@@ -56,9 +56,10 @@ def test_lifecycle_creates_empty_goal_ledger_owned_by_identity():
         manager.unload()
 
     assert yaml.safe_load(first_bytes) == {
-        "goals_version": 1,
+        "goals_version": 2,
         "owner_entity_id": identity["entity_id"],
         "goals": {},
+        "rejected_fingerprints": {},
     }
     assert path.read_bytes() == first_bytes
 

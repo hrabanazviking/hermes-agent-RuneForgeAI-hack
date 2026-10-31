@@ -808,3 +808,66 @@ portable state: any agent (Muse or Hermes) resumes from here.
   intrinsic goals with rejected-fingerprint cooldown and
   near-duplicate evasion refusal (per the §16 spec when read at
   slice start).
+- 2026-10-31 ~03:4x EDT keeper tick: **Slice 99 DONE — Emergent
+  Agency Phase 9 (§16, Durable Intrinsic Goals) complete, banked
+  and PUSHED under the standing go-ahead.** No live work found
+  (tree clean, HEAD == origin/main at `b05df089`).
+  `plugins/volmarr-core/goals.py` migrated to schema v2: every
+  goal carries `origin` (`user`/`intrinsic`/`maintenance`),
+  `origin_ref`, `urgency`, and `approved`, plus a bounded
+  top-level `rejected_fingerprints` ledger; v1 files migrate on
+  first ensure (pre-v2 records default to origin `user`, owner
+  validation unchanged, migrated document persisted once) and
+  `update` can never rewrite origin. New
+  `plugins/volmarr-core/intrinsic_goals.py`: promotion is one
+  explicit `IntrinsicGoalService.promote` call (no hook, no
+  turn-path caller) turning a Phase 2 drive intent proposal into
+  a durable intrinsic goal (drive as `origin_ref`, derived
+  priority in the lower half of the scale, `approved=False`)
+  under the `intrinsic_goal_quota` cap on live intrinsic goals;
+  an exact duplicate of a non-archived intrinsic goal returns
+  that goal. `arbitrate()` orders live goals deterministically
+  by the §16 tiers (explicit urgent user > explicit normal user
+  > safety/continuity maintenance > approved intrinsic > new
+  intrinsic; configurable via `intrinsic_goal_tier_order`,
+  missing tiers fall back to the roadmap order), then priority,
+  creation time, id. Users approve/archive/reject intrinsic
+  goals through the service only (non-intrinsic refused);
+  rejection archives the goal and records its fingerprint with
+  a cooldown (`intrinsic_goal_rejection_cooldown_hours`,
+  default 168) during which the same fingerprint and any
+  near-duplicate title (token Jaccard >= 0.8) are refused as
+  evasion; after expiry the goal may be proposed again as a new
+  goal. Bounded packet contribution (top-ranked intrinsic goal,
+  content-bearing only) wired as one added `packet_sources`
+  producer; config keys `intrinsic_goals_enabled`/
+  `intrinsic_goal_quota`/`intrinsic_goal_rejection_cooldown_hours`/
+  `intrinsic_goal_tier_order` in `plugin.yaml`. One in-slice fix:
+  the first full run caught a test-side ordering bug (byte-
+  stability asserted after a legitimate create had rewritten the
+  ledger) — the assertion now sits at the create-once point it
+  contracts; the fixed file passes 9/9 with file retries disabled
+  and in the confirming full run. Tests: targeted 9/9 + goals
+  file green; full volmarr/kista run (52 files): **341 passed,
+  7 failed, 1 skipped** — the failures are the same
+  name-identical pre-existing environmental set in the same 3
+  files (5 core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback). Smoke: `hermes --version` runs; README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, Phase 9 completion note in the
+  Emergent Agency roadmap §16, and the pre-existing goals
+  contract file updated in-slice for the v2 empty-ledger shape.
+  Honest gaps: Verðandi intrinsic-goal events NOT yet emitted —
+  deferred to a later telemetry slice, recorded in both
+  bookkeeping spots.
+- **Next resume point: Slice 100 — Emergent Agency Phase 10
+  (§17, Background Curiosity and Research)**: enable low-cost
+  exploration only when no urgent user goal is pending, health
+  is good, resource budget permits, and curiosity has a
+  sufficiently valuable open question — first safe forms are
+  local only (inspect local project docs/source, examine own
+  metrics, compare self-model claims, find documentation
+  inconsistencies, explore local knowledge bases, run
+  deterministic experiments); external/network research stays
+  behind explicit network policy and is NOT part of the first
+  slice unless the §17 spec read at slice start says otherwise.
