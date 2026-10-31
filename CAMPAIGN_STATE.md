@@ -564,3 +564,50 @@ portable state: any agent (Muse or Hermes) resumes from here.
   Curiosity Engine)**: `plugins/volmarr-core/curiosity.py` +
   `entity/curiosity.yaml` on the Slice 88 `CuriosityQuestion`
   contract (per the §11 spec when read at slice start).
+- 2026-10-31 ~01:2x EDT keeper tick: **Slice 94 DONE — Emergent
+  Agency Phase 4 (§11, Curiosity Engine) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found (tree
+  clean, HEAD == origin/main at `997932fba3`).
+  `plugins/volmarr-core/curiosity.py`: versioned
+  `entity/curiosity.yaml` frontier on the Slice 88
+  `CuriosityQuestion` contract (bounded 100, create-once,
+  owner/symlink/size validation in the established store pattern).
+  Duplicate detection by normalised text across
+  open/investigating/deferred/resolved (resolved-question memory);
+  deterministic §11 score (relevance × uncertainty × novelty ×
+  expected_value × (1 − cost) × (1 − 0.1 × risk_class)).
+  Anti-rabbit-hole bounds in code: attempt limit (config
+  `curiosity_max_attempts`, 1–10, default 3; last attempt defers),
+  per-question cooldown (`curiosity_cooldown_hours`, 0–168,
+  default 6), subquestion depth limit 2, frontier suppression of
+  risk classes 4–5 / low scores / cooldown-active /
+  attempt-exhausted. Fixed status-transition map, terminal states
+  closed. Frontier cheapest steps are local only (cheap local
+  inspection, local deterministic tools, ask-user for flagged
+  questions); the module performs no research, sends nothing,
+  calls no tools, creates no goals. Bounded (5) deduplicated
+  `questions_for_user` queue. Bounded packet contribution (top 3
+  frontier questions) wired as one added `packet_sources`
+  producer; config keys `curiosity_enabled`/`curiosity_path`/
+  `curiosity_cooldown_hours`/`curiosity_max_attempts` in
+  `plugin.yaml`. One in-slice fix: path resolution hid a symlinked
+  store file — `path()` now returns the lexical path when the
+  final component is a symlink so readers refuse it (Slice 87
+  lesson, caught by the slice's own symlink contract on the first
+  targeted run). Tests: targeted 9/9 pass; full volmarr/kista run
+  (47 files): **296 passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger row,
+  Phase 4 completion note in the Emergent Agency roadmap §11.
+  Honest gaps: Verðandi curiosity events (§11 metadata) NOT yet
+  emitted — deferred to a later telemetry slice, recorded in both
+  bookkeeping spots.
+- **Next resume point: Slice 95 — Emergent Agency Phase 5 (§12,
+  Autonomy Policy Engine)**: `plugins/volmarr-core/autonomy.py` +
+  human-authoritative `entity/autonomy_policy.yaml` (read-only to
+  the runtime; changes only via human edit / explicit CLI) +
+  `entity/autonomy_state.json` on the Slice 88 `ActionProposal` /
+  `PolicyDecision` contracts (per the §12 spec when read at slice
+  start).

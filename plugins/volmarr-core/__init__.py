@@ -7,6 +7,7 @@ from functools import partial
 from .affective_bridge import AffectiveBridge
 from .cli import health_command, register_cli
 from .consolidation import register_sleep_tool
+from .curiosity import CuriosityBridge
 from .drives import DriveBridge
 from .goals import GoalBridge, register_goal_tools
 from .heartbeat import HeartbeatBridge, register_heartbeat_tool
@@ -45,6 +46,9 @@ def register(ctx) -> None:
     metacognition = MetacognitionBridge(ctx)
     for hook_name, callback in metacognition.hooks():
         ctx.register_hook(hook_name, callback)
+    curiosity = CuriosityBridge(ctx)
+    for hook_name, callback in curiosity.hooks():
+        ctx.register_hook(hook_name, callback)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -64,6 +68,7 @@ def register(ctx) -> None:
             self_model.packet_items,
             drives.packet_items,
             metacognition.packet_items,
+            curiosity.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():

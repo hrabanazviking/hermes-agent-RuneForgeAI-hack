@@ -1348,6 +1348,39 @@ The entity can answer:
 
 > What am I currently curious about, why does it matter, and what is the cheapest useful thing I can do to learn more?
 
+**Phase 4 completion note (Slice 94, 2026-10-31):** implemented in
+`plugins/volmarr-core/curiosity.py`. A versioned
+`entity/curiosity.yaml` frontier (owner/symlink/size-validated,
+create-once, bounded at 100 questions) holds `CuriosityQuestion`
+records, deduplicated by normalised text across open / investigating
+/ deferred / resolved statuses — resolved questions stay as memory,
+so a resolved question is never silently re-asked. The score is the
+single deterministic §11 formula (relevance × uncertainty × novelty
+× expected_value × (1 − cost) × (1 − 0.1 × risk_class)). The
+anti-rabbit-hole controls are enforced in code: an attempt limit
+(configurable 1–10, default 3; spending the last attempt defers the
+question), a per-question cooldown (configurable 0–168 h, default
+6), a subquestion depth limit of 2, and frontier suppression of risk
+classes 4–5, low scores, and cooldown-active or attempt-exhausted
+questions. Status transitions follow a fixed allowed-transition map;
+terminal states are closed. The frontier's cheapest steps are local
+only (cheap local inspection, local deterministic tools, or
+ask-the-user for flagged questions): the module performs no research,
+sends no messages, calls no tools, and creates no goals — external
+research remains policy-controlled elsewhere per the §11 default
+policy. A bounded (5), deduplicated `questions_for_user` queue
+surfaces flagged open questions, and a bounded packet contribution
+(top 3 frontier questions with score and cheapest step) enters
+CURRENT STATE. `tests/plugins/test_volmarr_curiosity.py` covers
+create-once byte stability + score formula, duplicate detection +
+resolved-question memory, subquestion depth, cooldown + attempt
+limit, cost/risk suppression, the user-question queue, wrong-owner /
+malformed / symlink refusal, restart persistence, A→B→A isolation,
+and packet / fail-open behavior. Verðandi curiosity events (§11) are
+not yet emitted; they arrive with a later telemetry slice. Next:
+Phase 5 (§12) builds the autonomy policy engine on the `ActionProposal`
+/ `PolicyDecision` contracts.
+
 ---
 
 # 12. Phase 5 - Autonomy Policy Engine

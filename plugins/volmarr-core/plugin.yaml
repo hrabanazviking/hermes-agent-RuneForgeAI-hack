@@ -241,6 +241,22 @@ config_schema:
     type: int
     default: 500
     description: "Maximum reflection log entries retained by rotation (clamped to 10-500)."
+  curiosity_enabled:
+    type: bool
+    default: true
+    description: "Create and expose the active entity's curiosity frontier (Emergent Agency Phase 4). Local steps only; no external research is performed."
+  curiosity_path:
+    type: str
+    default: entity/curiosity.yaml
+    description: "Curiosity YAML path relative to the active Hermes profile; escaping paths fall back to the default."
+  curiosity_cooldown_hours:
+    type: float
+    default: 6
+    description: "Cooldown after a curiosity question is investigated (clamped to 0-168 hours)."
+  curiosity_max_attempts:
+    type: int
+    default: 3
+    description: "Maximum investigation attempts per curiosity question before it defers (clamped to 1-10)."
   heartbeat_enabled:
     type: bool
     default: true
