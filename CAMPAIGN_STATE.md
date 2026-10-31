@@ -1306,3 +1306,64 @@ portable state: any agent (Muse or Hermes) resumes from here.
   (investigations/day, local token budget, cloud budget
   default-zero, usefulness floor), and §10.6 investigation
   outcomes), not a second curiosity engine.
+- 2026-10-31 ~07:2x EDT keeper tick: **Slice 108 DONE —
+  Self-Aware Agency §10 (Curiosity) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found
+  (tree clean, HEAD == origin/main at `6e4c72a110`; Slice 107's
+  state mtime minutes earlier was its own completed push,
+  verified, not in-progress work). Reconciliation exactly as
+  the resume note directed — no second curiosity engine:
+  `plugins/volmarr-core/curiosity_detail.py` keeps §10
+  assessments and §10.6 outcomes in one bounded log at
+  `entity/curiosity_details.jsonl` beside the Phase 4 store.
+  §10.2 origin is derived deterministically from a question's
+  provenance source type onto the §10.4 source list (explicit
+  origins from that list validated); §10.3 priority is the
+  pure product uncertainty x usefulness x novelty x
+  identity_relevance x affordability (usefulness defaults to
+  the Phase 4 `expected_value`, affordability is `1 - cost`,
+  identity_relevance supplied explicitly — the Phase 4
+  contract has no such field), and strict read validation
+  refuses a stored priority that disagrees with the function.
+  §10.5's budget block stands with the roadmap defaults
+  (8 investigations/day, 50,000 local tokens/day, cloud
+  budget 0.00 so cloud is refused until explicitly
+  configured, 20 minutes/investigation, usefulness floor
+  0.35), evaluated deterministically and read-only — it
+  spends and investigates nothing. §10.6 outcomes cover all
+  seven named kinds plus `unknown` (valid); a
+  `deeper_question` outcome must name its question and
+  `uncertainty_reduced` must strictly lower uncertainty.
+  The module writes only its own log, only on explicit
+  record calls (Phase 4 store sha256-identical across
+  recording, contract-proven); disabled by default
+  (`curiosity_detail_enabled`); bounded content-bearing
+  packet producer. One in-slice fix, test-side: the
+  rotation test's record count was miscounted (11 records
+  at cap 10 drops only the first) — corrected, no
+  production change. Tests: targeted 7/7 pass; full
+  volmarr/kista run (61 files): **421 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice108_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §10 completion note in the Self-Aware Agency roadmap.
+  Honest gaps: Verðandi curiosity-detail events NOT yet
+  emitted — deferred to a later telemetry slice, recorded
+  in both bookkeeping spots; §10.4's sources are a
+  provenance mapping, not new question generators, and the
+  §10.6 goal-proposal/self-model-update effects remain
+  later stages' explicit calls, not this log.
+- **Next resume point: Slice 109 — Self-Aware Agency §11
+  (Bounded Autonomy)**: reconcile the §11 spec against the
+  already-banked Emergent Agency Phase 5 autonomy policy
+  engine (Slice 95) and Phase 8 limited local autonomy
+  (Slice 98) when read at slice start — expect a
+  verification/reconciliation slice implementing only
+  genuine §11 gaps (e.g. the §11 risk-class taxonomy vs
+  the Phase 5 registry classes, and any human-owned-policy
+  provisions §11 names that the Phase 5 policy does not
+  carry), not a second autonomy engine.

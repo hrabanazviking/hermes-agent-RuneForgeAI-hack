@@ -433,6 +433,38 @@ config_schema:
     type: int
     default: 200
     description: "Maximum reflection detail log records retained by rotation (clamped to 10-500)."
+  curiosity_detail_enabled:
+    type: bool
+    default: false
+    description: "Enable the curiosity detail reconciliation (Self-Aware Agency §10). Disabled by default; keeps §10 assessments (origin from the §10.4 sources, §10.3 priority = uncertainty x usefulness x novelty x identity_relevance x affordability) and §10.6 investigation outcomes in its own bounded log beside the Phase 4 curiosity store, with the §10.5 budget block (investigations/day, local token budget, cloud budget default zero, max minutes, usefulness floor) evaluated deterministically and read-only. No second curiosity engine; recording is explicit only and no investigation is performed here."
+  curiosity_detail_log_path:
+    type: str
+    default: entity/curiosity_details.jsonl
+    description: "Curiosity detail log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  curiosity_detail_log_limit:
+    type: int
+    default: 200
+    description: "Maximum curiosity detail log records retained by rotation (clamped to 10-500)."
+  curiosity_detail_investigations_per_day:
+    type: int
+    default: 8
+    description: "Maximum curiosity investigations per day under the §10.5 budget (clamped to 0-100)."
+  curiosity_detail_local_token_budget_per_day:
+    type: int
+    default: 50000
+    description: "Local token budget per day under the §10.5 budget (clamped to 0-1000000)."
+  curiosity_detail_cloud_budget_usd_per_day:
+    type: float
+    default: 0.0
+    description: "Cloud budget in USD per day under the §10.5 budget (clamped to 0-10000). Default zero: cloud research is refused until explicitly configured."
+  curiosity_detail_max_minutes_per_investigation:
+    type: int
+    default: 20
+    description: "Maximum minutes per curiosity investigation under the §10.5 budget (clamped to 1-240)."
+  curiosity_detail_usefulness_floor:
+    type: float
+    default: 0.35
+    description: "Usefulness floor a curiosity assessment must clear under the §10.5 budget (clamped to 0-1)."
   heartbeat_enabled:
     type: bool
     default: true

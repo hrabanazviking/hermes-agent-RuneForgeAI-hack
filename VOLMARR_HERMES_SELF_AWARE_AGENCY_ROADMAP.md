@@ -1044,6 +1044,40 @@ An investigation may:
 
 "Unknown" is a valid outcome.
 
+**§10 completion note (Slice 108, 2026-10-31):** curiosity is
+reconciled against the already-banked Emergent Agency Phase 4
+frontier (Slice 94) in `plugins/volmarr-core/curiosity_detail.py` —
+no second curiosity engine. Disabled by default
+(`curiosity_detail_enabled`). §10.2's `origin` is derived
+deterministically from a question's provenance source type onto the
+§10.4 source list (an explicit origin from that list may be supplied
+instead); §10.3's priority is the pure product uncertainty x
+usefulness x novelty x identity_relevance x affordability, where
+usefulness defaults to the Phase 4 `expected_value`, affordability
+is `1 - cost`, and identity_relevance — which the Phase 4 contract
+has no field for — is supplied explicitly by the caller; strict
+read validation refuses a stored priority that disagrees with the
+function. §10.5's budget block stands with the roadmap's own
+defaults (8 investigations/day, 50,000 local tokens/day, cloud
+budget 0.00 — cloud research refused until explicitly configured,
+20 minutes per investigation, usefulness floor 0.35) and is
+evaluated deterministically and read-only by `evaluate_budget`;
+evaluation spends nothing and investigates nothing. §10.6 outcomes
+are recorded beside the assessment in the same bounded log
+(`entity/curiosity_details.jsonl`, rotation, symlink refusal,
+strict owner/field validation): all seven named kinds plus
+`unknown`; a `deeper_question` outcome must name the deeper
+question, and an `uncertainty_reduced` outcome must carry a
+strictly lower new uncertainty. The module writes only its own
+log, only on explicit record calls — the Phase 4 store stays
+sha256-identical across recording (contract-proven), no goals are
+created, and no self-model is updated here (those §10.6 effects
+remain the later stages' explicit calls, as in §8/§9). Honest
+gaps: Verðandi curiosity-detail events are NOT yet emitted —
+deferred to a later telemetry slice; §10.4's sources are a
+provenance mapping, not new question generators — nothing here
+creates questions.
+
 ---
 
 # 11. Bounded Autonomy
