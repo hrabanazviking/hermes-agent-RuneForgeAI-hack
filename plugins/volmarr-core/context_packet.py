@@ -9,13 +9,14 @@ from typing import Any, Iterable
 
 
 PACKET_SCHEMA = "runeforge.memory-packet"
-PACKET_VERSION = 1
+PACKET_VERSION = 2
 DEFAULT_MAX_CHARS = 6000
 MIN_MAX_CHARS = 512
 MAX_MAX_CHARS = 16000
 
 SECTION_ORDER = (
     "current_state",
+    "self_state",
     "relevant_episodes",
     "durable_knowledge",
     "associations",
@@ -23,6 +24,7 @@ SECTION_ORDER = (
 )
 SECTION_LABELS = {
     "current_state": "CURRENT STATE",
+    "self_state": "SELF STATE",
     "relevant_episodes": "RELEVANT EPISODES",
     "durable_knowledge": "DURABLE KNOWLEDGE",
     "associations": "ASSOCIATIONS",
@@ -30,6 +32,7 @@ SECTION_LABELS = {
 }
 SECTION_LIMITS = {
     "current_state": 10,
+    "self_state": 7,
     "relevant_episodes": 5,
     "durable_knowledge": 8,
     "associations": 3,

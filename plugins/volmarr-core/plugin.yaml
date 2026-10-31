@@ -501,6 +501,10 @@ config_schema:
     type: int
     default: 3
     description: "Hard maximum executed actions per agency cycle under §12 (clamped to 1-10); a trace exceeding it is refused at record time."
+  self_state_enabled:
+    type: bool
+    default: false
+    description: "Enable the SELF STATE context integration (Self-Aware Agency §13): the packet schema v2 SELF STATE section carries at most the seven compact §13 fields (identity summary, current attention, active self-originated goal, major discrepancy, confidence/uncertainty, known limitation, curiosity target), assembled deterministically and read-only from the layered self-model (Slice 103), Phase 9 intrinsic-goal arbitration, and the Phase 4 curiosity frontier. Requires the layered self-model to be enabled; never a full self-model dump. Disabled by default."
   heartbeat_enabled:
     type: bool
     default: true

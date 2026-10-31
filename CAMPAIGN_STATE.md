@@ -1488,3 +1488,54 @@ portable state: any agent (Muse or Hermes) resumes from here.
   at slice start — expect a verification/reconciliation slice
   implementing only genuine §13 gaps, not a second packet
   builder.
+- 2026-10-31 ~08:1x EDT keeper tick: **Slice 111 DONE —
+  Self-Aware Agency §13 (Context Integration) complete, banked
+  and PUSHED under the standing go-ahead.** No live work found
+  (tree clean, HEAD == origin/main at `8bb9a07be`; Slice 110's
+  state mtime minutes earlier was its own completed push,
+  verified, not in-progress work). The genuine §13 gap was the
+  packet itself: schema v1 with no SELF STATE section.
+  `plugins/volmarr-core/context_packet.py` now stands at
+  PACKET_VERSION 2 with a `self_state` section (label SELF
+  STATE, limit 7) between CURRENT STATE and RELEVANT EPISODES,
+  and `plugins/volmarr-core/self_state.py` assembles at most the
+  seven compact §13 fields deterministically and read-only — no
+  new persistent file, never a full self-model dump. Identity
+  summary, current attention, major discrepancy,
+  confidence/uncertainty, and known limitation come from the
+  Slice 103 layered snapshot; the active self-originated goal is
+  the top-ranked live intrinsic goal under Phase 9 arbitration
+  (only when that surface is enabled); the curiosity target is
+  the top Phase 4 frontier question (only when enabled). Each
+  field is bounded at 240 chars; absent/unreadable optional
+  sources omit their field; assembly requires the layered
+  self-model enabled (a partial SELF STATE would misrepresent
+  itself as the §5 view). Disabled by default
+  (`self_state_enabled`); one added `packet_sources` producer.
+  Tests: targeted 10/10 pass (7 new self-state contracts + the
+  context-packet file updated in-slice for v2/section order);
+  full volmarr/kista run (64 files): **442 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback), verified in
+  the run log's own summary line
+  (`~/workspace/.verify-tmp/slice111_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger row,
+  §13 completion note in the Self-Aware Agency roadmap. Honest
+  gaps: Verðandi self-state events (§14) NOT yet emitted — that
+  is the next slice.
+- **Next resume point: Slice 112 — Self-Aware Agency §14
+  (Verðandi Events)**: the content-free event families §14 names
+  (hermes.self_model.updated, hermes.awareness.snapshot,
+  hermes.awareness.discrepancy_detected, hermes.reflection.*,
+  hermes.motivation.drive_changed, hermes.goal.intrinsic_*,
+  hermes.curiosity.*, hermes.autonomy.*, hermes.agency.cycle_*)
+  with envelopes carrying only identifiers, classes, numeric
+  scores, reason codes, and outcome metadata — never raw private
+  reflections, prompts, secrets, or conversation text — per the
+  §14 spec when read at slice start; this is the deferred
+  telemetry slice every prior Self-Aware/Emergent slice has
+  recorded. Expect a Gate-0-style audit of the existing Verðandi
+  bridge/telemetry surface first, then the widest safe subset of
+  families wired from the stores that already own those facts.

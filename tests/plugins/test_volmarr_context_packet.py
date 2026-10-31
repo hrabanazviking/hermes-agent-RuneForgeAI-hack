@@ -75,7 +75,7 @@ def test_real_plugin_emits_one_deterministic_fenced_packet_without_mutating_inpu
     assert messages == original
     assert first.count("<memory-context>") == 1
     assert first.count("</memory-context>") == 1
-    assert "schema=runeforge.memory-packet; version=1" in first
+    assert "schema=runeforge.memory-packet; version=2" in first
     assert "CURRENT STATE" in first
     assert "source=present_state/profile/memory_tool" in first
     assert first.count("Same durable fact.") == 1
@@ -140,6 +140,7 @@ def test_builder_orders_sections_deduplicates_and_rejects_partial_items():
                 )
                 for index in range(12)
             ],
+            item("self_state", "self fact", "self_state", "identity_summary", 1, 1),
             item("relevant_episodes", "episode", "mempalace", "3", 1, 1),
             item("world_state", "world", "wyrd", "4", 1, 1),
             item("invalid", "must not appear", "bad", "5", 1, 1),
@@ -149,7 +150,8 @@ def test_builder_orders_sections_deduplicates_and_rejects_partial_items():
 
     assert packet.count("shared") == 1
     assert packet.count("[source=present;") == 10
-    assert packet.index("CURRENT STATE") < packet.index("RELEVANT EPISODES")
+    assert packet.index("CURRENT STATE") < packet.index("SELF STATE")
+    assert packet.index("SELF STATE") < packet.index("RELEVANT EPISODES")
     assert packet.index("RELEVANT EPISODES") < packet.index("WORLD STATE")
     assert "must not appear" not in packet
     assert "y" * 2000 not in packet

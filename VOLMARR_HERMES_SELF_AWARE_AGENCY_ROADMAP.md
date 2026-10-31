@@ -1425,6 +1425,32 @@ SELF STATE
 
 This preserves token efficiency.
 
+**§13 completion note (Slice 111, 2026-10-31):** the packet
+schema is upgraded to v2 in the plugin's own packet builder
+(`plugins/volmarr-core/context_packet.py`): a `self_state`
+section (label SELF STATE, limit 7) stands between CURRENT STATE
+and RELEVANT EPISODES in the canonical section order. The fields
+are assembled by `plugins/volmarr-core/self_state.py`,
+deterministically and read-only, from the stores that already own
+them — no second packet builder and no new persistent file:
+identity summary and current attention, major discrepancy,
+confidence/uncertainty, and known limitation come from the
+Slice 103 layered self-model snapshot; the active
+self-originated goal is the top-ranked live intrinsic goal under
+the Phase 9 arbitration (Slice 99, only when that surface is
+enabled); the current curiosity target is the top Phase 4
+frontier question (only when that surface is enabled). Each
+field is bounded at 240 characters, absent fields are omitted
+rather than invented, and an unreadable optional source degrades
+to an omitted field. Assembly requires the layered self-model to
+be enabled — a SELF STATE section built from partial sources
+would misrepresent itself as the §5 view — and the whole surface
+is disabled by default (`self_state_enabled`). The full
+self-model is never dumped: at most one item per named §13
+field reaches the packet. Honest gaps: Verðandi self-state
+events (§14) are NOT yet emitted — deferred to a later telemetry
+slice.
+
 ---
 
 # 14. Verðandi Events
