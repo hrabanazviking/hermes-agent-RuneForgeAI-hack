@@ -18,6 +18,7 @@ from .health import probe_verdandi
 from .heartbeat import HeartbeatError, HeartbeatService, probe_heartbeat
 from .identity import IdentityError, probe_identity
 from .memory_fabric import probe_bifrost, probe_bifrost_muninn
+from .ravens import probe_ravens
 from .mempalace import probe_mempalace
 from .openviking import probe_openviking
 from .routing import CognitionRequest, CognitionRouter, RoutingRequestError
@@ -112,6 +113,16 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Validate the Muninn association store read-only, importing no package",
     )
     muninn_health.add_argument("--json", action="store_true", dest="json_output")
+    ravens = memory_subcommands.add_parser(
+        "ravens",
+        help="Inspect the installed muninn + huginn ravens packages",
+    )
+    ravens_subcommands = ravens.add_subparsers(dest="ravens_action")
+    ravens_health = ravens_subcommands.add_parser(
+        "health",
+        help="Attest the ravens package contract import-only, constructing nothing",
+    )
+    ravens_health.add_argument("--json", action="store_true", dest="json_output")
     world = subcommands.add_parser(
         "world",
         help="Inspect the WYRD world-model attachment",
@@ -298,6 +309,12 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                 return 2
             report = probe_bifrost_muninn(ctx)
             label = "Bifröst Muninn"
+        elif memory_action == "ravens":
+            if getattr(args, "ravens_action", None) != "health":
+                print("Usage: hermes volmarr memory ravens health [--json]")
+                return 2
+            report = probe_ravens(ctx)
+            label = "Ravens"
         elif memory_action == "health":
             report = probe_bifrost(ctx)
             label = "Bifröst"
@@ -305,7 +322,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             print(
                 "Usage: hermes volmarr memory "
                 "{health|mempalace health|openviking health|sessiondb health|"
-                "muninn health} [--json]"
+                "muninn health|ravens health} [--json]"
             )
             return 2
     elif action == "health":

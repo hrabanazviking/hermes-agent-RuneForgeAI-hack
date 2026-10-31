@@ -389,3 +389,52 @@ portable state: any agent (Muse or Hermes) resumes from here.
   it awaits Volmarr's word and has NOT been started. Banked locally
   only; pushes beyond the ordered refresh still await Volmarr's
   word.
+- 2026-10-31 ~00:1x EDT keeper tick: **Slice 90 DONE — ravens
+  integration (supersedes the Phase 2 slot above; Phase 2 becomes
+  Slice 91).** Volmarr's general standing go-ahead (2026-10-31
+  ~00:05 EDT, main chat) names this integration as its first
+  application and authorizes pushing finished slices. **Gate 0
+  re-audit measured against the real ravens** (scratch venv, Bifröst
+  @ `b66e98cc`, muninn 1.0.0/huginn 1.0.0 editable from
+  `~/workspace/ravens` @ `fc761f0`): bridge construction alone = no
+  I/O; `health()` creates both stores (write-side, never a probe);
+  store×3 → Muninn activations 0→3; reinforced search → 3→5 (guard
+  deferred wiring below threshold, connections 0); recall → +1;
+  decay/consolidate return real reports; auto flags measured dead.
+  Verdicts: Muninn reinforcement GO (explicit paths only);
+  consolidation/decay GO (explicit calls only); **Huginn through
+  Bifröst NO-GO** — measured default-home store
+  (`~/.hermes/memory/huginn_local.db`) shared across profiles;
+  **Huginn direct GO**. Binding banked: `plugins/volmarr-core/
+  ravens.py` (`probe_ravens` import-only, `hermes volmarr memory
+  ravens health`; `build_muninn_memory`/`build_huginn_memory`
+  profile-bound constructors, Huginn `backend="local"`, new config
+  key `bifrost_huginn_db_path`). Real-package verification: probe
+  healthy creating no files, builders construct healthy profile
+  stores, Muninn store/retrieve + Huginn upsert/search pass. Tests:
+  targeted 17/17 (6 new ravens contracts); full volmarr/kista run
+  (43 files): **257 passed, 7 failed, 1 skipped** — same
+  name-identical pre-existing environmental set, verified by
+  rerunning their 3 files. Bookkeeping: audit Slice 90 section,
+  CUSTOMIZATIONS.md ledger row, roadmap §29 Milestone 3 slice-90
+  paragraph, COMPONENT_LICENSES.md muninn/huginn rows. No turn-path
+  write caller wired yet — that enablement is a separate slice, now
+  unblocked. **Push HELD this tick**: at ~00:17–00:18 EDT a
+  concurrent writer touched this same tree (a `volmarr-ravens`
+  extra with editable `../ravens` paths appeared in `uv.lock` —
+  not this tick's work and inconsistent with the on-disk
+  `pyproject.toml`, which carries no such extra — and
+  `pyproject.toml`/`COMPONENT_LICENSES.md` were restored to HEAD in
+  the same second, wiping this tick's first licenses edit, since
+  re-applied). Slice 90 is banked LOCALLY only, committed with an
+  explicit file list (`uv.lock` excluded — not this tick's change).
+  Next tick: if the tree is quiet and `uv.lock`'s extra is either
+  committed by its author or gone, push all banked slices under the
+  standing go-ahead and verify with ls-remote; if the concurrent
+  writer is the main session's own integration work, reconcile
+  (their pyproject-extra binding vs this slice's runtime binding —
+  the two compose: extra installs the packages, `ravens.py` binds
+  them profile-safely).
+- **Next resume point: Slice 91 — Emergent Agency Phase 2 (§9,
+  Intrinsic Motivation)**: drive store on the Slice 88 `DriveState`
+  contract (per the §9 spec when read at slice start).

@@ -657,3 +657,92 @@ and the campaign moves to roadmap queue item 2 (Emergent Agency,
 Phase 0: agency contracts before intelligence) per `CAMPAIGN_STATE.md`
 ordering, returning here when the sources are supplied. Banked locally
 only; no push.
+
+# Slice 90 — Bifröst Gate 0 RE-AUDIT against the real ravens + profile-bound ravens binding (2026-10-31, DONE)
+
+The Slice 86 blocker is cleared: the canonical `muninn`/`huginn`
+packages now exist (Volmarr's ruling 2026-10-30: build them true from
+the ancestors), at `~/workspace/ravens` — muninn 1.0.0 (commit
+`4eafc31`, 36/36 tests) and huginn 1.0.0 (commit `54dd839`, 27/27),
+repo HEAD `fc761f0`, Bifröst-contract-exact, with Bifröst's own suites
+passing 25/25 against them (ravens BUILD_NOTES §5). Volmarr's general
+standing go-ahead (2026-10-31 ~00:05 EDT) names this integration as
+its first application: bind the ravens, re-audit Gate 0, push when
+green.
+
+## Measured re-audit (scratch venv, real packages, temp HOME + fake profile)
+
+Exercised `BifrostBridge` (Bifröst @ `b66e98cc`, ravens editable from
+`~/workspace/ravens`) with Mímir/Muninn paths pointed at a fake
+profile directory and `enable_hebbian_reinforcement=True`:
+
+- Bridge **construction alone performs no I/O** (no store files
+  created) — Hermes' existing construct-only attachment stays honest.
+- **`health()` is a write-side operation**: calling it alone created
+  BOTH raven stores (Muninn at the configured profile path; Huginn at
+  `~/.hermes/memory/huginn_local.db` under the temp HOME). No bridge
+  method may be treated as a read-only probe.
+- `store()` ×3 → Mímir ids 1–3, Huginn ids 1–3, Muninn activations
+  0→3 (one per stored memory, as Bifröst's design states).
+- `search()` with reinforcement on → activations 3→5 for the two
+  merged hits; connections stayed 0 because the anchor was below
+  Bifröst's Hebbian guard threshold (3) — wiring deferred, activations
+  logged, exactly the guard semantics.
+- `recall(id)` → activations +1 exactly.
+- `decay(days=1)` / `consolidate()` → real Muninn reports through the
+  bridge (factors/counts returned; maintenance backups taken).
+- **`auto_consolidate=True` / `auto_decay=True` did nothing on their
+  own** — no decay or consolidation happened except at the explicit
+  calls. Ground 3 of Slice 86 confirmed measured, not just read: the
+  flags are dead in Bifröst; Hermes keeps them `False` permanently.
+
+## Verdicts per write path
+
+1. **Muninn reinforcement — GO (explicit paths only).** Bifröst passes
+   the configured profile path into `MuninnConfig`; semantics are the
+   audited ravens semantics. Reinforcement happens only through
+   explicitly write-named operations (`store`, `search` with
+   reinforcement enabled, `recall`) — never from a Hermes read-only
+   surface, and Hermes' bridge config keeps reinforcement off.
+2. **Consolidation / decay — GO (explicit calls only).** Real,
+   deterministic, re-runnable Muninn reports; never via the dead
+   auto flags.
+3. **Huginn ingestion/search through Bifröst — NO-GO (profile
+   isolation defect, measured).** Bifröst constructs
+   `HuginnMemory(config=None)`; its local store landed in the default
+   home (`~/.hermes/memory/huginn_local.db`) while the profile's
+   Mímir/Muninn stores sat in the fake profile — `huginn store under
+   profile: false` in the measured run. All profiles would share one
+   Huginn store through the bridge.
+4. **Huginn through a direct Hermes binding — GO.** The binding below
+   constructs `HuginnMemory(HuginnConfig(local_db_path=<profile
+   path>, backend="local"))`: profile-scoped, deterministic local
+   backend, no Qdrant probe.
+
+## The binding (this slice)
+
+`plugins/volmarr-core/ravens.py`:
+
+- `probe_ravens(ctx)` — import-only attestation of both packages
+  (required symbols + `__version__`), exposed as
+  `hermes volmarr memory ravens health [--json]`; constructs nothing,
+  opens nothing; stock tree reports `package_missing`.
+- `build_muninn_memory(ctx)` / `build_huginn_memory(ctx)` —
+  write-side constructors pinned to the active profile's configured
+  paths (new config key `bifrost_huginn_db_path`, default
+  `memory/huginn_local.db`; Muninn reuses `bifrost_muninn_db_path`),
+  with the established profile-escape rejection.
+- Verified against the REAL packages in the scratch venv: probe
+  healthy with versions 1.0.0/1.0.0 and zero files created; builders
+  construct healthy stores at the profile paths (Huginn
+  `backend: local`, `status: healthy` — not degraded), Muninn
+  store/retrieve and Huginn upsert/search round-trips pass.
+
+No Hermes caller yet invokes the builders or any bridge write method
+in a turn path: enablement of an actual write caller (e.g. a memory
+packet producer that stores, or an explicit operator command) is a
+separate future slice, now unblocked. NOT PROVEN still: live Qdrant
+server round-trip and the sentence-transformers embedder path (the
+ravens' own honesty list, unchanged).
+
+Tests: new `tests/plugins/test_volmarr_ravens.py` — 6 contracts (probe healthy/versions with zero constructions, stock-tree `package_missing`, `contract_mismatch` on a missing symbol, A→B→A builder path binding with `backend="local"`, profile-escape refusal, CLI health via real discovery). Targeted run with the memory-fabric + Muninn-probe contracts: 17/17 pass. Full volmarr/kista run (43 files): **257 passed, 7 failed, 1 skipped** — the failures verified as the same name-identical pre-existing environmental set by rerunning their 3 files (5 core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner loopback); no new failures.

@@ -61,6 +61,10 @@ config_schema:
     type: str
     default: memory/muninn_hebbian.db
     description: "Muninn SQLite database path, absolute or relative to the active Hermes profile."
+  bifrost_huginn_db_path:
+    type: str
+    default: memory/huginn_local.db
+    description: "Huginn SQLite database path for the direct profile-bound ravens binding (Slice 90), absolute or relative to the active Hermes profile."
   present_state_path:
     type: str
     default: memory/present_state.json

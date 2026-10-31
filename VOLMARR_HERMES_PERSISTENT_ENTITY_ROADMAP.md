@@ -1898,6 +1898,18 @@ complete; the write paths stay parked on the dependency blocker (canonical
 `muninn`/`huginn` package sources must come from Volmarr) and the campaign moves to the
 Emergent Agency roadmap, Phase 0. Ingestion remains disabled.
 
+Slice 90 (2026-10-31) clears the blocker: the canonical ravens were built from the
+ancestors at Volmarr's word (muninn 1.0.0 + huginn 1.0.0, `~/workspace/ravens`), the
+Gate 0 re-audit was measured against the real packages, and the binding is banked in
+`plugins/volmarr-core/ravens.py`. Verdicts: Muninn reinforcement GO on explicit
+write paths only; consolidation/decay GO on explicit calls only (Bifröst's auto
+flags measured dead); Huginn through Bifröst NO-GO (measured default-home store
+shared across profiles); Huginn through the direct profile-bound binding GO
+(`backend="local"`, profile store). Full detail in
+`PERSISTENT_ENTITY_ACCEPTANCE_AUDIT.md` (Slice 90 section). No write caller is
+wired into a turn path yet; that enablement is a separate slice, now unblocked.
+Ingestion remains disabled in turn paths.
+
 ## Milestone 4: Affective Continuity
 
 - port current affective nervous system;
