@@ -2588,3 +2588,81 @@ portable state: any agent (Muse or Hermes) resumes from here.
   implementing only genuine gaps (e.g. a deterministic
   `detect_changes` comparison between two compiles),
   not a resident file watcher this plugin does not own.
+- 2026-10-31 ~15:5x EDT keeper tick: **Slice 127 DONE —
+  Persona Runtime §19 (Persona Hash) and §20 (Hot
+  Reload) complete, banked and PUSHED under the standing
+  go-ahead.** No live work found (tree clean, HEAD ==
+  origin/main at `985a7e2fbe`; Slice 126's state-file
+  mtime at tick start was its own banked commit, not
+  in-progress work). `plugins/volmarr-core/
+  persona_runtime.py` extended in place — no new file
+  or config key: every compile now carries its §19
+  stored hash record via the pure `hash_record`
+  function (persona version = the config format version
+  `PERSONA_CONFIG_VERSION` — per-persona versioning is
+  §22, later; per-document sha256 by role in document
+  order; kernel hash; combined persona hash;
+  `compiled_at` None). §19's compile timestamp is
+  deliberately NOT inside the deterministic artefact
+  (§6 determinism): a timestamp enters only as an
+  explicit caller stamp (timezone-aware ISO, validated)
+  and never counts as a change. The pure
+  `detect_changes` names documents added / removed /
+  hash-changed plus kernel and persona change, refusing
+  cross-persona comparisons and tampered records. §20
+  stands as an explicit `PersonaReloader.check`, never
+  a resident watcher: the pure `reload_plan` walks the
+  §20 chain only as far as the hashes require (an edit
+  to a non-kernel section reparses + updates IR +
+  rebuilds the index with NO kernel recompile; an
+  anchor-only change recompiles the kernel with no
+  document reparse; a first compile walks the full
+  chain; a removed persona only detects;
+  `restart_required` always False), and an unchanged
+  check returns the previous artefact by identity.
+  Packet label updated to §§3–20 (the four older persona
+  files' packet assertions updated in-slice). Tests:
+  new file 7/7 pass with file retries disabled;
+  targeted persona run (11 files): **89 passed,
+  0 failed**; full volmarr/kista run (80 files):
+  **568 passed, 7 failed, 1 skipped** — the failures
+  the same name-identical pre-existing environmental
+  set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback),
+  re-verified by rerunning those 3 files (4 passed,
+  7 failed); 568 is exactly Slice 126's 561 + the 7 new
+  contracts. Smoke: `hermes --version` runs; README.md
+  sha256 invariant held (`4e022de7…c4910`).
+  Bookkeeping: CUSTOMIZATIONS.md ledger row, §19 + §20
+  completion notes in the Persona Runtime roadmap,
+  plugin.yaml description now §§3–20. Push:
+  fast-forward, no force — origin/main moved
+  `985a7e2fbe` → `6e0e5164b9`, verified by
+  `git ls-remote` (remote == local HEAD). Honest gaps:
+  no live session wires the reload check in (a caller
+  decision, like compilation itself); semantic change
+  impact classification is §21 and per-persona
+  versioning is §22 — both later, not claimed.
+- **Next resume point: Slice 128 — Persona Runtime §21
+  (Change Impact Detection) and §22 (Persona
+  Versioning)**: §21 classify a change's semantic
+  impact (the roadmap's own examples: an AVATAR edit
+  does not touch the behavioral kernel; a PERSONA_CORE
+  relationship-authority edit does) — reconcile against
+  the §20 plan's hash-level kernel signal when read at
+  slice start (expect a pure classification over two
+  compiles' section-level diffs: which stable ids were
+  added/removed/changed, their §8 categories / roles /
+  kernel membership, mapped to impact classes), then
+  §22's version record (persona_id, persona_version
+  semver with MAJOR identity/relationship architecture,
+  MINOR new preferences or meaningful behavior
+  extension, PATCH wording/formatting/minor
+  clarification; compiled_at; source_hash) — reconcile
+  the semver *suggestion* against §21's classification
+  (a deterministic suggested bump the human confirms by
+  editing the config, never a runtime write) and
+  against §19's record (whose persona_version is the
+  config format version — the §22 per-persona version is
+  a distinct field, likely an optional human-authored
+  config field defaulting to 0.1.0 or absent).
