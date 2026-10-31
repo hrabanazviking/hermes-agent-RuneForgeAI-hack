@@ -168,6 +168,40 @@ portable state: any agent (Muse or Hermes) resumes from here.
   read-only-safe path before any code), then the Bifröst
   Huginn/Muninn/consolidation/decay contracts. Banked locally only;
   pushes beyond the ordered refresh still await Volmarr's word.
+- 2026-10-30 ~22:42 EDT keeper tick: **Slice 84 DONE (audit only, no
+  code), banked locally only, no push.** Gate 0 against the
+  catalog-pinned official source (`volcengine/OpenViking` at
+  `e855796c83f9eb575d9b0f3082926660730f6a63`, Hermes plugin 2.1.2,
+  server 0.5.x; latest PyPI 0.5.2.1), audited in a scratch clone
+  outside the tree. **Verdict: CONDITIONAL PASS** for
+  `POST /api/v1/search/find` only — its call chain (router →
+  SearchService → VikingFS → HierarchicalRetriever → vector search)
+  contains no corpus writes, loads no session, and runs no intent
+  analysis; `/search` (session load, LLM intent pass, context-mode
+  dedup state) and deprecated `/recall` are excluded as stateful, and
+  a plain hit carries `abstract` only (full text arrives via the
+  router's own `read_content=true` visible-content read). Conditions
+  recorded in full in `PERSISTENT_ENTITY_ACCEPTANCE_AUDIT.md`: (1) the
+  server's usage-audit store records search calls by default —
+  server-owned accounting identical to what the official provider's
+  prefetch already triggers, disclosed, not a corpus mutation; (2)
+  credential-free retrieval exists only when `/health` reports
+  `auth_mode == "dev"` (api_key/trusted require a key even on
+  localhost; this attachment never carries credentials, so the bridge
+  fails closed otherwise); (3) the server embeds the query with its
+  own configured embedder, whose locality health cannot attest —
+  enablement stays opt-in; (4) live-server byte measurement is NOT
+  PROVEN in this sandbox (no embedding provider configured there) —
+  the verdict rests on the pinned-source audit. Roadmap §29
+  Milestone 3 gained the slice-84 paragraph.
+- **Next resume point: Slice 85 — OpenViking bounded retrieval
+  bridge**, specified implementation-ready at the end of
+  `PERSISTENT_ENTITY_ACCEPTANCE_AUDIT.md` (opt-in default-off,
+  health- + dev-mode-gated, `/find` only, memories only, ≤5 items at
+  800 chars, fail-open, stub-server contract tests). After Slice 85:
+  the Bifröst Huginn/Muninn/consolidation/decay contracts. Banked
+  locally only; pushes beyond the ordered refresh still await
+  Volmarr's word.
 
 ## Standing bounds for this campaign
 

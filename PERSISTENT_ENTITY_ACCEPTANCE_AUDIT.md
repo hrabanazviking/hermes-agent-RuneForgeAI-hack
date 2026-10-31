@@ -216,3 +216,161 @@ same 3 files recorded in `CAMPAIGN_STATE.md` — no new failures.
 **Next resume point: Slice 84 — OpenViking retrieval audit** (Phase 3's
 remaining retrieval connection), then the Bifröst
 Huginn/Muninn/consolidation/decay contracts.
+
+---
+
+# Slice 84 — OpenViking Retrieval Audit (Gate 0, 2026-10-30)
+
+**Verdict: CONDITIONAL PASS — corpus-read-only retrieval exists via
+`POST /api/v1/search/find` only; Slice 85 (below) may implement a bridge
+on that route under the stated conditions. No bridge code in this slice.**
+
+## Sources audited
+
+- The catalog-pinned official source: `volcengine/OpenViking` at
+  `e855796c83f9eb575d9b0f3082926660730f6a63` — the exact pin in this
+  repo's `plugin-catalog/openviking.yaml` (Hermes plugin 2.1.2; Quick
+  Local installs the newest OpenViking 0.5.x server from PyPI; latest
+  PyPI release at audit time: 0.5.2.1). Audited in a scratch clone
+  outside the tree.
+- The existing attachment in this tree: `plugins/volmarr-core/openviking.py`
+  (credential-free, loopback-only health probe; server floor 0.4.21).
+- Official docs for find-vs-search semantics (docs.openviking.ai,
+  retrieval concept page).
+
+## The retrieval surface
+
+- `POST /api/v1/search/find` — semantic search **without session
+  context**. Request (`FindRequest`, extra fields forbidden): `query`,
+  `target_uri`, `context_type` (`memory`/`resource`/`skill`),
+  `limit` (≥1), `score_threshold`, `filter`, `level`, `read_content`,
+  `telemetry` (default false), plus time/tag filters. Response envelope:
+  `{status: "ok", result: {memories: [...], resources: [...],
+  skills: [...], total: N}}`; each hit carries `context_type`, `uri`,
+  `level`, `score`, `abstract`, `tags` (and `origin_score`/`time_score`
+  when rerank provenance exists). Full text is NOT in a plain hit: with
+  `read_content=true` the router additionally inlines a `content` field
+  per hit via the server's own visible-content read.
+- `POST /api/v1/search/search` — **excluded.** With a `session_id` it
+  loads session state and, when intent analysis is enabled, runs an LLM
+  intent pass over session content; `mode="context"` adds budgeting,
+  query expansion/rewrite, and cross-turn dedup state. Not a stateless
+  read from the caller's side.
+- `POST /api/v1/search/recall` — deprecated preset over the same
+  context assembly as search mode=context. **Excluded** for the same
+  reason.
+- `POST /api/v1/search/grep` and `/glob` — filesystem pattern walks,
+  not episodic semantic retrieval. Out of scope for this phase.
+- The official Hermes provider's own prefetch (examples/hermes-plugin)
+  confirms the shape: it posts to `/search/search` with a session id
+  and falls back to `/search/find` with `{query, limit,
+  score_threshold, context_type}` — i.e. `/find` is the session-free
+  face of the same API.
+
+## Read-only evidence (corpus)
+
+- The `/find` call chain — router → `SearchService.find` →
+  `VikingFS.find` (`openviking/storage/viking_fs/_semantic.py`) →
+  `HierarchicalRetriever` → vector-store `search_by_vector` /
+  `search_by_keywords` — contains **no corpus writes**: no insert,
+  update, upsert, or delete against the context/vector store anywhere
+  on the path (grep-verified at the pin). `_ensure_retrieval_scope` is
+  an ACL/existence check, not creation. `RetrievalStats` is an
+  in-memory, process-lifetime accumulator only.
+- `/find` never loads a session, never runs intent analysis, and
+  creates no session state (contrast `/search` above).
+- No ingestion or extraction is triggered by `/find`; extraction/write
+  paths live on entirely different routes (resources, skills, session
+  commit).
+
+## Conditions and disclosed side effects
+
+1. **Server-owned usage audit (default ON).** The server's
+   observability config defaults `usage_audit.enabled=true` (sqlite
+   backend). `/health` is audit-excluded, but the search routes are
+   deliberately projected into usage/audit rows and retrieval counters
+   (`openviking/observability/usage_audit/projection.py`). A `/find`
+   call therefore causes the **server itself** to append audit rows to
+   its own observability store — the same accounting the official
+   provider's prefetch already triggers on every turn it serves. This
+   is not a corpus mutation and not ingestion, but it is a real
+   server-side write, disclosed here rather than hidden: the Slice 85
+   bridge stays opt-in default-off, and a server operator who wants
+   zero audit writes can set `observability.usage_audit.enabled=false`
+   server-side. Volmarr-core cannot read that setting remotely (the
+   health response does not expose it), so the bridge does not claim
+   to verify it.
+2. **Auth gate.** `/health` exposes the server's effective
+   `auth_mode`. Credential-free retrieval exists only in `dev` mode
+   (auto-selected when no root API key is configured). `api_key` and
+   `trusted` modes require a key **even on localhost**. The existing
+   attachment law is credential-free and loopback-only, so the bridge
+   must fail closed (no items) unless health reports `auth_mode ==
+   "dev"`, and must never read, send, or store a credential.
+3. **Embedding egress is server-side and unattestable remotely.** The
+   query text goes only to the loopback server, but the server embeds
+   it with **its own configured embedder**, which may be a remote API;
+   `/health` does not expose embedder locality. Opt-in enablement is
+   the operator's attestation; the bridge sends only the current user
+   message (capped), never history, never a session id.
+4. **Live-server measurement NOT PROVEN in this sandbox.** Unlike
+   Slice 83's library-level byte measurement, no live OpenViking
+   server was run here: the server cannot embed without a configured
+   embedding model/provider, and none is available in this sandbox.
+   The verdict rests on the pinned-source audit above plus the
+   upstream test suite's coverage of these routes, and is recorded as
+   such — the same honesty class as Phase 2's live Verðandi transport.
+
+## Slice 85 — OpenViking bounded retrieval bridge (implementation-ready spec)
+
+- New module `plugins/volmarr-core/openviking_retrieval.py`:
+  `OpenVikingRetrievalBridge(ctx)` with `packet_items(session_id,
+  user_message) -> list[ContextItem]`, following the Slice 83 producer
+  pattern. One added `packet_sources` entry in
+  `plugins/volmarr-core/__init__.py`; no core files, no provider
+  registration, no credentials anywhere.
+- Opt-in only: config `openviking_retrieval_enabled`, default `false`.
+- Gates, in order: existing `probe_openviking` healthy → health
+  `auth_mode == "dev"` (the bridge reads `auth_mode` from its own
+  bounded health GET reusing `openviking.py`'s loopback validation, or
+  the probe grows an optional `auth_mode` field — implementer's choice,
+  additive either way) → only then POST.
+- Request: `POST {base}/api/v1/search/find`, JSON body exactly
+  `{query, limit: 5, context_type: "memory", read_content: true}`,
+  `telemetry` omitted (false), no session id, no target_uri (server
+  default scope), headers mirroring the probe (`Accept:
+  application/json`, the runeforgeai user-agent), no redirects, no
+  proxy, loopback base URL validated by the existing
+  `_loopback_base_url`. HTTP timeout from
+  `openviking_probe_timeout_ms` semantics (bounded, ≤10 s).
+- Query discipline: current user message only, stripped, hard-capped
+  at 2,000 chars; empty/non-string → no items and no request.
+- Items: from `result.memories` only (resources/skills are not
+  episodes); content = hit `content` when a non-empty string, else hit
+  `abstract`; hard cap 800 chars; `section="relevant_episodes"`,
+  `source="openviking/memories"`, `record_id` = hit `uri` when a
+  non-empty string, else sha256-16 of content; `priority` = hit
+  `score` when a finite number in [0, 1], else 0.5; at most 5 items.
+- Fail-open: any non-200 (including 401/403 in non-dev modes),
+  malformed envelope, timeout, or exception returns `[]`.
+- Privacy: retrieved text enters only the central context packet
+  (already fence-escaped, untrusted). Nothing is logged, published, or
+  persisted by the bridge. Disclosed server side effects when enabled:
+  the server's own usage-audit rows (condition 1) and its embedding of
+  the query with its configured embedder (condition 3).
+- Tests (new file `tests/plugins/test_volmarr_openviking_retrieval.py`):
+  behaviour contracts through real plugin discovery with a temp
+  `HERMES_HOME` and a local stub HTTP server implementing only the
+  audited `/health` + `/find` shapes — disabled by default; enabled +
+  dev-mode health returns the seeded episode as one packet item with
+  provenance; api_key-mode health → no request to `/find` at all
+  (asserted on the stub's request log); A→B→A profile isolation;
+  bounds (>5 hits truncated, oversize content capped, fence-shaped
+  content escaped by the packet); empty message → no request; query
+  truncated to the cap (asserted from the stub's received body);
+  `/find` raising/500/malformed → fail-open with other producers'
+  items intact.
+- Bookkeeping on completion: `CUSTOMIZATIONS.md` ledger row; roadmap
+  §29 Milestone 3 slice-85 paragraph; `CAMPAIGN_STATE.md` update
+  naming the next resume point (the Bifröst Huginn/Muninn/
+  consolidation/decay contracts). Bank locally only; no push.

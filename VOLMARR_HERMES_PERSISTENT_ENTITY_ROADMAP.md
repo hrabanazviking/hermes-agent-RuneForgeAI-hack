@@ -1819,6 +1819,26 @@ the honest scope of the read-only-safe official surface. Ingestion remains disab
 3's remaining items are OpenViking retrieval and the Bifröst Huginn/Muninn/consolidation/decay
 contracts.
 
+Slice 84 (2026-10-30) is the Gate 0 audit for OpenViking retrieval, measured against the
+catalog-pinned official source (`volcengine/OpenViking` at `e855796c`, Hermes plugin 2.1.2,
+server 0.5.x). Verdict: conditional pass. `POST /api/v1/search/find` is the one session-free
+retrieval face: its call chain (router → SearchService → VikingFS → HierarchicalRetriever →
+vector search) contains no corpus writes, loads no session, and runs no intent analysis, while
+`/search` (session load plus optional LLM intent pass, context-mode dedup state) and the
+deprecated `/recall` preset are excluded as stateful. Two conditions bind the bridge slice:
+the server's own usage-audit store records search calls by default (server-owned accounting,
+the same the official provider's prefetch already triggers — disclosed, not a corpus
+mutation), and credential-free retrieval exists only when the health endpoint reports
+`auth_mode == "dev"`, since api_key/trusted modes require a key even on localhost and this
+attachment never carries credentials. The server also embeds the query with its own
+configured embedder, whose locality the health surface cannot attest; enablement stays
+opt-in for that reason too. No live server was run in the audit sandbox (no embedding
+provider is configured there), so the verdict rests on the pinned-source audit and is
+recorded as live-measurement NOT PROVEN. The full audit and the implementation-ready
+Slice 85 bridge spec (opt-in, health- and dev-mode-gated, `/find` only, memories only,
+bounded and fail-open) live in `PERSISTENT_ENTITY_ACCEPTANCE_AUDIT.md`. Ingestion remains
+disabled.
+
 ## Milestone 4: Affective Continuity
 
 - port current affective nervous system;
