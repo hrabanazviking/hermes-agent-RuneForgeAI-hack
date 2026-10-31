@@ -385,6 +385,10 @@ config_schema:
     type: int
     default: 200
     description: "Maximum timescale log records retained by rotation (clamped to 10-500)."
+  layered_self_model_enabled:
+    type: bool
+    default: false
+    description: "Enable the five-layer persistent self-model view (Self-Aware Agency §5). Disabled by default; assembles objective/narrative/ideal/relational/experiential layers deterministically and read-only over the existing claims, goals, and relationships stores, with cross-layer discrepancies made explicit. Owns no writes and no new persistent file."
   heartbeat_enabled:
     type: bool
     default: true

@@ -25,6 +25,7 @@ from .openviking_retrieval import OpenVikingRetrievalBridge
 from .present_state import PresentStateBridge
 from .relationships import RelationshipBridge, register_relationship_tools
 from .self_improvement import SelfImprovementBridge
+from .self_model_layers import LayeredSelfModelBridge
 from .timescales import TimescaleBridge
 from .self_model import SelfModelBridge
 from .wyrd_tools import register_wyrd_tools
@@ -69,6 +70,7 @@ def register(ctx) -> None:
     background_research = BackgroundResearchBridge(ctx)
     self_improvement = SelfImprovementBridge(ctx)
     timescales = TimescaleBridge(ctx)
+    self_model_layers = LayeredSelfModelBridge(ctx)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -97,6 +99,7 @@ def register(ctx) -> None:
             background_research.packet_items,
             self_improvement.packet_items,
             timescales.packet_items,
+            self_model_layers.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():

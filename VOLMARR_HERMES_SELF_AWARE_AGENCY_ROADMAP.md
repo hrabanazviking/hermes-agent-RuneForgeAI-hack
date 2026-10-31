@@ -413,6 +413,37 @@ It must not own:
 - affective transitions;
 - autonomy permissions.
 
+**§5 completion note (Slice 103, 2026-10-31):** the five-layer
+self-model stands as `plugins/volmarr-core/self_model_layers.py`, a
+derived, read-only assembly over the Phase 1 claims store (which
+gained a validated raw `records()` view for contradiction data),
+the goals ledger, the relationships ledger, and the heartbeat
+probe — no new persistent file, since §5.3's `entity/self_model.yaml`
+is the claims store itself and the layers are a deterministic
+function of the source stores. Objective layer: entity id, home
+runtime, heartbeat status/health, goal counts, relationship count,
+claim count, and verified capabilities (strong-evidence capability
+claims only — weak-evidence claims stay beliefs, never objective
+facts). Narrative: highest-confidence identity claim as summary,
+identity claims as bounded milestones. Ideal: preference claims as
+traits, commitment claims as principles, limitation keys as growth
+targets — reported beside the objective layer, never overwriting
+it. Relational: verbatim bounded summaries from the relationships
+ledger (the authority). Experiential: attention (top active goal),
+load (blocked share of live goals), uncertainty (mean inverse
+confidence of uncertainty claims), active goal ids. Cross-layer
+disagreement is explicit: contradicted claims, high-confidence
+capability claims while the heartbeat is unhealthy, blocked goals
+with no next action, and high experiential uncertainty surface as
+structured discrepancies; unreadable sources degrade to an empty
+layer plus a `source_unreadable` discrepancy, never invented
+content. Disabled by default (`layered_self_model_enabled`); one
+bounded content-bearing packet producer. Honest gaps: Verðandi
+layered-self-model events are NOT yet emitted — deferred to a
+later telemetry slice; §6's awareness process (snapshot,
+discrepancy-driven attention) is the next slice, building on this
+layer's discrepancy list.
+
 ---
 
 # 6. Self-Awareness Layer

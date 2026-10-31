@@ -1039,3 +1039,53 @@ portable state: any agent (Muse or Hermes) resumes from here.
   Self-Model)**: the five-layer self-model design/implementation
   on top of the Emergent Agency Phase 1 self-model store, per
   the §5 spec when read at slice start.
+- 2026-10-31 ~06:1x EDT keeper tick: **Slice 103 DONE —
+  Self-Aware Agency §5 (Persistent Self-Model, five layers)
+  complete, banked and PUSHED under the standing go-ahead.** No
+  live work found (tree clean, HEAD == origin/main at
+  `71b83d622`; Slice 102's state mtime minutes earlier was its
+  own completed push, verified, not in-progress work).
+  `plugins/volmarr-core/self_model_layers.py`: the five §5 layers
+  assembled deterministically and read-only over the existing
+  stores — no new persistent file (§5.3's
+  `entity/self_model.yaml` IS the claims store; the layers are a
+  pure function of the sources). Objective: entity id, home
+  runtime, heartbeat probe status/health, goal/relationship/
+  claim counts, verified capabilities (strong-evidence capability
+  claims only — weak-evidence claims stay beliefs, never facts).
+  Narrative: top identity claim as summary, identity claims as
+  bounded milestones. Ideal: preference claims as traits,
+  commitment claims as principles, limitation keys as growth
+  targets (beside objective, never overwriting it). Relational:
+  verbatim bounded summaries from the relationships ledger (the
+  authority). Experiential: attention (top active goal), load
+  (blocked share of live goals), uncertainty (mean inverse
+  confidence of uncertainty claims), active goal ids. Plus known
+  limitations, low-confidence active assumptions, unresolved
+  contradictions, and structured discrepancies (contradicted
+  claims, high-confidence capability vs unhealthy heartbeat,
+  blocked goal without next action, high uncertainty); unreadable
+  sources degrade to an empty layer + `source_unreadable`
+  discrepancy, never invented content. The claims store gained
+  one additive validated raw `records()` view (contradiction data
+  the contract view does not carry). Disabled by default
+  (`layered_self_model_enabled`); bounded content-bearing packet
+  producer. Tests: targeted 9/9 pass; full volmarr/kista run
+  (56 files): **377 passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set in the same 3
+  files (5 core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback), verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice103_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger row,
+  §5 completion note in the Self-Aware Agency roadmap. Honest
+  gaps: Verðandi layered-self-model events NOT yet emitted —
+  deferred to a later telemetry slice, recorded in both
+  bookkeeping spots.
+- **Next resume point: Slice 104 — Self-Aware Agency §6
+  (Self-Awareness Layer)**: `plugins/volmarr-core/awareness.py` —
+  the awareness snapshot (attention, load, uncertainty, active
+  goals, salient state per §6.2/§6.3) built on Slice 103's
+  layered snapshot + discrepancy list (§6.4), bounded and
+  replaceable, per the §6 spec (incl. §6.5's
+  no-constant-rumination bound) when read at slice start.

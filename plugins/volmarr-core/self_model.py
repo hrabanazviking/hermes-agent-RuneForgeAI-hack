@@ -197,6 +197,26 @@ class SelfModelStore:
             data = self._read_unlocked(path, owner)
         return [self._claim_of(record) for record in data["claims"].values()]
 
+    def records(self) -> list[dict[str, Any]]:
+        """Validated raw claim records (claim contract + evidence lists).
+
+        Read-only view for layered consumers (the §5 five-layer
+        self-model) that need the recorded contradictions the
+        ``SelfClaim`` contract view does not carry.
+        """
+        owner = self._identity.read().entity_id
+        path = self.path()
+        with self._lock(path):
+            data = self._read_unlocked(path, owner)
+        return [
+            {
+                "claim": self._claim_of(record),
+                "evidence": list(record["evidence"]),
+                "contradictions": list(record["contradictions"]),
+            }
+            for record in data["claims"].values()
+        ]
+
     def propose(self, claim: SelfClaim) -> SelfClaim:
         """Merge one proposed claim deterministically; return the stored claim."""
         if not isinstance(claim, SelfClaim):
