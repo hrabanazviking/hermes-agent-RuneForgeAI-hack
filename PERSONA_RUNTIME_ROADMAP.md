@@ -1518,6 +1518,37 @@ temporary roleplay overriding identity
 
 The persona system must explicitly defend against these.
 
+> **Completion note — Slice 129 (2026-10-31): §23 stands
+> in `plugins/volmarr-core/persona_runtime.py` (extended
+> in place; the `persona_runtime_enabled` description in
+> `plugin.yaml` now covers §§3–24). The pure
+> `drift_defenses` function names the seven dangers as
+> stable slugs in roadmap order (recent-message
+> dominance, summary mutation, context truncation,
+> assistant self-imitation, memory contamination, user
+> mood overfitting, temporary roleplay overriding
+> identity), each paired with a named defense, its kind,
+> its grounding, and a description. The defenses are
+> grounded in the surfaces already banked where they
+> exist: the §10 kernel pinning spec (recent-message
+> dominance), the §7 verbatim rule with the §19 hash and
+> §20 reload surfaces (summary mutation), the §15/§16
+> never-evict rules (context truncation), and the
+> §§17/18 anchors with the §24 precedence (temporary
+> roleplay). Where a defense stands as a contract rule
+> rather than code in this layer — assistant
+> self-imitation (the compiler compiles human-authored
+> canonical documents only) and memory contamination
+> (§24 precedence with the §67 canonical priority) — the
+> data labels it `rule`, honestly. Targeted run (new
+> file): 8/8 pass; all persona files (13): 105 passed,
+> 0 failed (the six earlier persona files' packet
+> assertions updated in-slice to §§3–24). Honest gaps:
+> this is a contract surface, not a conversation
+> monitor — no conversation is read, scored, or watched
+> here, and rule-kind defenses bind callers and prompt
+> assembly (§53, later), not this layer.**
+
 
 ---
 
@@ -1555,6 +1586,40 @@ current conversation
 >
 temporary emotional state
 ```
+
+> **Completion note — Slice 129 (2026-10-31): §24 stands
+> in the same module. The pure `precedence_order`
+> function returns the conceptual priority above in
+> roadmap order, mapping the three document tiers to
+> the compiler's semantic roles (PERSONA CORE →
+> `core`, RELATIONSHIP MODEL → `relationship`, SERVICE
+> BIBLE → `service_bible`); long-term memory, current
+> conversation, and temporary emotional state are
+> non-document tiers with no role. The pure
+> `classify_influence` function classifies a claimed
+> source — a canonical document role or canonical name,
+> long-term memory, conversation history or a summary
+> of it (a summary inherits the conversation tier; it
+> can never outrank the history it summarises), or a
+> temporary state/roleplay; names are slugified so the
+> roadmap's own spellings classify, and unknown or
+> malformed sources are refused, as are document roles
+> that are not §24 tiers (avatar, tool policy, memory
+> policy). A non-document source may affect current
+> mood, immediate context, and recent events only, and
+> must never redefine foundational personality,
+> identity, or traits; only a canonical document tier
+> may redefine foundational personality (a human edit,
+> classified by §21 and versioned by §22). The pure
+> `influence_allowed`, `precedence_winner`, and
+> `outranks` functions expose the same order as a
+> target check and a two-source comparison: core beats
+> conversation, conversation beats temporary state,
+> and memory sits below the service bible. Honest
+> gaps: no caller consumes the classification yet, and
+> nothing here derives — or watches anyone derive —
+> character from a live chat; the rule stands in
+> contract form for the callers that will.**
 
 
 ---

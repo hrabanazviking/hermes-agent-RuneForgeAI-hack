@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-22).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-24).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -273,6 +273,43 @@ What stands here, and nothing more:
   confirms a bump by editing the config, which this
   layer never writes, and the runtime never bumps a
   version itself.
+- §23 conversation drift problem: long conversations
+  create seven named dangers — recent-message dominance,
+  summary mutation, context truncation, assistant
+  self-imitation, memory contamination, user mood
+  overfitting, and temporary roleplay overriding
+  identity. The pure ``drift_defenses`` function names
+  each danger, in roadmap order, with the defense this
+  system stands against it, grounded in the surfaces
+  already banked where they exist (the §10 kernel
+  pinning spec, the §7 verbatim rule with the §19/§20
+  hash-and-reload surfaces, the §15/§16 never-evict
+  rules, the §§17/§18 anchors, and the §24 precedence
+  rule itself). Defenses that are contract rules rather
+  than mechanisms in code are labelled as rules in the
+  data, honestly; this layer is not a conversation
+  monitor and watches no conversation.
+- §24 do not derive character from chat history:
+  conversation history may affect current mood,
+  immediate context, and recent events, but must never
+  redefine foundational personality — canonical persona
+  always outranks conversational drift. The pure
+  ``precedence_order`` function returns the conceptual
+  priority in roadmap order (PERSONA CORE >
+  RELATIONSHIP MODEL > SERVICE BIBLE > long-term memory
+  > current conversation > temporary emotional state),
+  mapping the three document tiers to the compiler's
+  semantic roles (``core``, ``relationship``,
+  ``service_bible``); the other three tiers are
+  non-document sources. The pure ``classify_influence``
+  function classifies a claimed source (a canonical
+  document role or name, memory, conversation history
+  or a summary of it, or a temporary state/roleplay) by
+  what it may affect and whether it may redefine
+  foundational personality, and ``precedence_winner`` /
+  ``outranks`` compare two sources by tier. These are
+  contract functions only: no conversation is read,
+  scored, or monitored here.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -1832,6 +1869,380 @@ def change_impact(previous: dict[str, Any],
     }
 
 
+# --- §23 drift defenses + §24 precedence ------------------------------
+#
+# Pure contract data and functions. Nothing here reads,
+# watches, or scores a conversation: §23 names the dangers
+# and the defenses this system stands against them, and
+# §24 names what conversation-class sources may and may
+# not do. Defenses grounded in a mechanism this layer
+# already carries are labelled "mechanism"; defenses that
+# stand as contract rules (a caller / prompt-assembly
+# obligation, not code in this layer) are labelled "rule",
+# honestly, rather than claiming runtime behaviour that
+# does not exist.
+
+# The seven §23 drift dangers, as stable slugs, in
+# roadmap order.
+DRIFT_DANGERS = (
+    "recent_message_dominance",
+    "summary_mutation",
+    "context_truncation",
+    "assistant_self_imitation",
+    "memory_contamination",
+    "user_mood_overfitting",
+    "temporary_roleplay_overriding_identity",
+)
+
+_DRIFT_DEFENSES = (
+    {
+        "danger": "recent_message_dominance",
+        "defense": "kernel_pinning",
+        "kind": "mechanism",
+        "grounding": "§10 pinning + §24 precedence",
+        "description": (
+            "The compiled artefact carries the §10 pinning "
+            "spec: the persona kernel stands ahead of active "
+            "context and the user message in the designated "
+            "prompt order and is never buried in retrieved "
+            "memory, so recent messages cannot outrank "
+            "canonical persona material by position. Actual "
+            "placement is prompt assembly (§53, later), as "
+            "§10 already records."),
+    },
+    {
+        "danger": "summary_mutation",
+        "defense": "verbatim_only_no_blind_summary",
+        "kind": "mechanism",
+        "grounding": "§7 verbatim rule + §19 hash + §20 reload",
+        "description": (
+            "The kernel, the index, and the IR carry section "
+            "text verbatim (§7) and this layer produces no "
+            "generated summary or paraphrase, so no summary "
+            "can become a persona source here. A persona "
+            "change is visible only as a canonical-document "
+            "edit, detected by the §19 hashes and the §20 "
+            "reload check."),
+    },
+    {
+        "danger": "context_truncation",
+        "defense": "never_evict_kernel_or_p0",
+        "kind": "mechanism",
+        "grounding": "§15 budgeter + §16 priority + §§17/18 anchors",
+        "description": (
+            "Budgeting trims whole items only (§15), P0 "
+            "material is never excluded merely to save "
+            "tokens, kernel generation never evicts a P0 "
+            "section to fit the §5 band, and the §§17/18 "
+            "anchor block is never evicted (§16). Truncation "
+            "may drop lower-priority context; it never "
+            "evicts foundational persona material in this "
+            "layer."),
+    },
+    {
+        "danger": "assistant_self_imitation",
+        "defense": "canonical_documents_are_the_only_persona_source",
+        "kind": "rule",
+        "grounding": "§§3/6 compiler + §24 precedence",
+        "description": (
+            "The compiler compiles human-authored canonical "
+            "documents only, deterministically (§§3/6). "
+            "Assistant output is not a document role, is "
+            "never compiled, retrieved, or hashed as persona "
+            "material, and ranks as conversation at most "
+            "(§24). A self-description persists only when a "
+            "human writes it into a canonical document."),
+    },
+    {
+        "danger": "memory_contamination",
+        "defense": "memory_ranks_below_canonical_persona",
+        "kind": "rule",
+        "grounding": "§24 precedence + §67 canonical priority",
+        "description": (
+            "Long-term memory is tier 4 of the §24 order, "
+            "below persona core, the relationship model, "
+            "and the service bible — the same relative "
+            "authority §67 records for canonical files. "
+            "Retrieval (§13) ranks sections of the canonical "
+            "documents; a memory that conflicts with "
+            "canonical persona material loses, and no memory "
+            "may redefine foundational personality."),
+    },
+    {
+        "danger": "user_mood_overfitting",
+        "defense": "conversation_affects_state_not_character",
+        "kind": "rule",
+        "grounding": "§24",
+        "description": (
+            "Current conversation (tier 5) and temporary "
+            "emotional state (tier 6, the lowest tier) may "
+            "affect current mood, immediate context, and "
+            "recent events only. They must never redefine "
+            "foundational personality, identity, or traits "
+            "(§24), however strong or repeated the mood in "
+            "the conversation is."),
+    },
+    {
+        "danger": "temporary_roleplay_overriding_identity",
+        "defense": "anchors_plus_lowest_tier_for_temporary_state",
+        "kind": "mechanism_and_rule",
+        "grounding": "§§17/18 anchors + §24 precedence",
+        "description": (
+            "Authored anchors and anti-anchors stand "
+            "verbatim at the head of every kernel for drift "
+            "resistance (§§17/18), and temporary emotional "
+            "state — roleplay included — is the lowest §24 "
+            "tier, below even current conversation. A "
+            "temporary role ends with its context; it never "
+            "rewrites the kernel, the anchors, or any "
+            "canonical document."),
+    },
+)
+
+
+def drift_dangers() -> list[str]:
+    return list(DRIFT_DANGERS)
+
+
+def drift_defenses() -> list[dict[str, str]]:
+    """The §23 defenses, one row per danger, in roadmap order.
+
+    Pure contract data: each row names the danger (a stable
+    slug), the defense's name, its kind (``mechanism`` where
+    a surface this layer already carries does the work,
+    ``rule`` where the defense stands as a contract rule
+    rather than code here, ``mechanism_and_rule`` where
+    both), the banked surface it is grounded in, and a
+    description of the defense. No conversation is read or
+    monitored by this function.
+    """
+    return [dict(row) for row in _DRIFT_DEFENSES]
+
+
+# The six §24 precedence tiers, in roadmap order (highest
+# authority first), with the roadmap's canonical names and
+# the compiler's semantic document role for the three
+# document tiers. The remaining tiers are non-document
+# sources and carry no role.
+PRECEDENCE_TIERS = (
+    "persona_core",
+    "relationship_model",
+    "service_bible",
+    "long_term_memory",
+    "current_conversation",
+    "temporary_emotional_state",
+)
+_PRECEDENCE_ROWS = (
+    ("persona_core", "PERSONA CORE", "core"),
+    ("relationship_model", "RELATIONSHIP MODEL", "relationship"),
+    ("service_bible", "SERVICE BIBLE", "service_bible"),
+    ("long_term_memory", "long-term memory", None),
+    ("current_conversation", "current conversation", None),
+    ("temporary_emotional_state", "temporary emotional state", None),
+)
+_PRECEDENCE_RANK = {
+    tier: rank for rank, tier in enumerate(PRECEDENCE_TIERS)}
+_PRECEDENCE_ROLES = {
+    tier: role for tier, _name, role in _PRECEDENCE_ROWS}
+_CANONICAL_TIERS = frozenset({
+    "persona_core", "relationship_model", "service_bible"})
+
+# What conversation-class influence may affect (§24), and
+# what it must never redefine, as stable slugs.
+HISTORY_MAY_AFFECT = (
+    "current_mood", "immediate_context", "recent_events")
+HISTORY_MUST_NOT_REDEFINE = (
+    "foundational_personality", "identity", "traits")
+
+# Claimed-source aliases, keyed by slugified input. A
+# conversation summary inherits the conversation tier: it
+# is derived from history, so it can never outrank the
+# history it summarises (§23 summary mutation). Assistant
+# output likewise ranks as conversation at most.
+_SOURCE_ALIASES = {
+    "core": "persona_core",
+    "persona_core": "persona_core",
+    "persona": "persona_core",
+    "relationship": "relationship_model",
+    "relationship_model": "relationship_model",
+    "service_bible": "service_bible",
+    "service": "service_bible",
+    "long_term_memory": "long_term_memory",
+    "memory": "long_term_memory",
+    "memories": "long_term_memory",
+    "current_conversation": "current_conversation",
+    "conversation": "current_conversation",
+    "conversation_history": "current_conversation",
+    "chat_history": "current_conversation",
+    "history": "current_conversation",
+    "summary": "current_conversation",
+    "conversation_summary": "current_conversation",
+    "assistant_output": "current_conversation",
+    "assistant_self_imitation": "current_conversation",
+    "temporary_emotional_state": "temporary_emotional_state",
+    "temporary_state": "temporary_emotional_state",
+    "emotional_state": "temporary_emotional_state",
+    "temporary_roleplay": "temporary_emotional_state",
+    "roleplay": "temporary_emotional_state",
+}
+
+# Influence-target aliases, keyed by slugified input.
+_TARGET_ALIASES = {
+    "current_mood": "current_mood",
+    "mood": "current_mood",
+    "immediate_context": "immediate_context",
+    "context": "immediate_context",
+    "recent_events": "recent_events",
+    "recent_event": "recent_events",
+    "foundational_personality": "foundational_personality",
+    "personality": "foundational_personality",
+    "character": "foundational_personality",
+    "identity": "identity",
+    "traits": "traits",
+    "trait": "traits",
+}
+
+
+def precedence_tiers() -> list[str]:
+    return list(PRECEDENCE_TIERS)
+
+
+def precedence_order() -> list[dict[str, Any]]:
+    """The §24 conceptual priority order, highest first.
+
+    Pure. Each row names its tier (a stable slug), its rank
+    (0 is highest), the roadmap's canonical name, the
+    compiler's semantic document role for the three
+    document tiers (``core`` / ``relationship`` /
+    ``service_bible``; None for the non-document tiers),
+    and whether the tier is a canonical document tier.
+    Canonical persona always outranks conversational
+    drift: every document tier outranks long-term memory,
+    current conversation, and temporary emotional state.
+    """
+    return [{
+        "tier": tier,
+        "rank": rank,
+        "name": name,
+        "document_role": role,
+        "canonical": tier in _CANONICAL_TIERS,
+    } for rank, (tier, name, role) in enumerate(_PRECEDENCE_ROWS)]
+
+
+def history_may_affect() -> list[str]:
+    return list(HISTORY_MAY_AFFECT)
+
+
+def history_must_not_redefine() -> list[str]:
+    return list(HISTORY_MUST_NOT_REDEFINE)
+
+
+def _precedence_tier(source: Any) -> str:
+    if not isinstance(source, str) or not source.strip():
+        raise PersonaRuntimeError("influence source is invalid")
+    tier = _SOURCE_ALIASES.get(_slugify(source))
+    if tier is None:
+        raise PersonaRuntimeError(
+            f"unknown influence source: {source!r}")
+    return tier
+
+
+def _influence_target(target: Any) -> str:
+    if not isinstance(target, str) or not target.strip():
+        raise PersonaRuntimeError("influence target is invalid")
+    resolved = _TARGET_ALIASES.get(_slugify(target))
+    if resolved is None:
+        raise PersonaRuntimeError(
+            f"unknown influence target: {target!r}")
+    return resolved
+
+
+def classify_influence(source: Any) -> dict[str, Any]:
+    """Classify what one claimed source may do (§24). Pure.
+
+    ``source`` is a claimed influence: a canonical document
+    tier or role (``persona_core`` / ``core``,
+    ``relationship_model`` / ``relationship``,
+    ``service_bible``), or a non-document source
+    (``long_term_memory`` / ``memory``,
+    ``current_conversation`` / ``conversation_history`` /
+    ``summary``, ``temporary_emotional_state`` /
+    ``temporary_roleplay``); names are slugified, so the
+    roadmap's own spellings (``PERSONA CORE``,
+    ``long-term memory``) classify too. Unknown or
+    malformed sources are refused.
+
+    A canonical document tier is how foundational
+    personality is authored, so it may redefine it (a
+    human edit, classified by §21 and versioned by §22).
+    Every non-document tier may affect current mood,
+    immediate context, and recent events only, and must
+    never redefine foundational personality, identity, or
+    traits — however the conversation went.
+    """
+    tier = _precedence_tier(source)
+    canonical = tier in _CANONICAL_TIERS
+    return {
+        "source": tier,
+        "tier": tier,
+        "rank": _PRECEDENCE_RANK[tier],
+        "document_role": _PRECEDENCE_ROLES[tier],
+        "canonical": canonical,
+        "may_affect": list(HISTORY_MAY_AFFECT),
+        "may_redefine": [] if not canonical
+        else list(HISTORY_MUST_NOT_REDEFINE),
+        "must_not_redefine": [] if canonical
+        else list(HISTORY_MUST_NOT_REDEFINE),
+        "may_redefine_foundational_personality": canonical,
+    }
+
+
+def influence_allowed(source: Any, target: Any) -> bool:
+    """Whether ``source`` may affect ``target`` (§24). Pure.
+
+    Targets are the §24 effects (``current_mood`` /
+    ``mood``, ``immediate_context`` / ``context``,
+    ``recent_events``) and the protected foundations
+    (``foundational_personality`` / ``personality`` /
+    ``character``, ``identity``, ``traits``). Every
+    recognised source may affect the three effects; only
+    a canonical document tier may touch the foundations.
+    Unknown sources or targets are refused.
+    """
+    tier = _precedence_tier(source)
+    resolved = _influence_target(target)
+    if resolved in HISTORY_MAY_AFFECT:
+        return True
+    return tier in _CANONICAL_TIERS
+
+
+def precedence_winner(first: Any, second: Any) -> str:
+    """The higher §24 tier of two claimed sources. Pure.
+
+    Returns the winning tier's stable slug; on a tie the
+    shared tier wins (a source never loses to itself).
+    Unknown or malformed sources are refused.
+    """
+    first_tier = _precedence_tier(first)
+    second_tier = _precedence_tier(second)
+    if _PRECEDENCE_RANK[first_tier] <= _PRECEDENCE_RANK[second_tier]:
+        return first_tier
+    return second_tier
+
+
+def outranks(first: Any, second: Any) -> bool:
+    """Whether ``first`` strictly outranks ``second`` (§24).
+
+    Pure. Canonical persona outranks conversational drift:
+    ``core`` outranks ``conversation_history``, and
+    ``current_conversation`` outranks
+    ``temporary_emotional_state``. A tier does not outrank
+    itself. Unknown or malformed sources are refused.
+    """
+    return _PRECEDENCE_RANK[_precedence_tier(first)] \
+        < _PRECEDENCE_RANK[_precedence_tier(second)]
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -2413,7 +2824,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-22): persona "
+            f"Persona runtime (§§3-24): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -2484,7 +2895,26 @@ class PersonaRuntimeBridge:
             f"meaningful behavior extension, PATCH wording "
             f"or formatting) — a suggestion only, confirmed "
             f"by a human config edit this layer never makes. "
-            f"Canonical document "
+            f"§23 drift defenses: the seven conversation-"
+            f"drift dangers (recent-message dominance, "
+            f"summary mutation, context truncation, "
+            f"assistant self-imitation, memory "
+            f"contamination, user mood overfitting, "
+            f"temporary roleplay overriding identity) each "
+            f"carry a named defense in contract form, "
+            f"grounded in the §10 pinning, §7 verbatim, "
+            f"§§15/16 never-evict, and §§17/18 anchor "
+            f"surfaces where they exist and labelled a rule "
+            f"where they stand as rules — no conversation "
+            f"is monitored. §24 precedence: canonical "
+            f"persona always outranks conversational drift "
+            f"— persona core > relationship model > service "
+            f"bible > long-term memory > current "
+            f"conversation > temporary emotional state; "
+            f"conversation history may affect current mood, "
+            f"immediate context, and recent events only, "
+            f"and must never redefine foundational "
+            f"personality. Canonical document "
             f"text is compiled, not injected by this layer."
         )
         return [ContextItem(
@@ -2526,6 +2956,10 @@ __all__ = [
     "DEFAULT_PERSONA_VERSION",
     "IMPACT_CLASSES",
     "VERSION_RECORD_FIELDS",
+    "DRIFT_DANGERS",
+    "PRECEDENCE_TIERS",
+    "HISTORY_MAY_AFFECT",
+    "HISTORY_MUST_NOT_REDEFINE",
     "ROUTER_DEFAULT_LIMIT",
     "ROUTER_INPUTS",
     "ROUTER_MAX_LIMIT",
@@ -2558,6 +2992,16 @@ __all__ = [
     "parse_persona_version",
     "suggested_next_version",
     "version_record",
+    "drift_dangers",
+    "drift_defenses",
+    "precedence_tiers",
+    "precedence_order",
+    "history_may_affect",
+    "history_must_not_redefine",
+    "classify_influence",
+    "influence_allowed",
+    "precedence_winner",
+    "outranks",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
