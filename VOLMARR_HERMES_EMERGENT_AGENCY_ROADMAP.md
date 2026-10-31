@@ -2192,6 +2192,31 @@ Configurable, less frequent than heartbeat.
 
 Each timescale should use Hermes cron rather than a resident agent loop.
 
+**Phase 12 completion note (Slice 102, 2026-10-31):** the
+definition/registration layer stands in
+`plugins/volmarr-core/timescales.py`, disabled by default
+(`timescales_enabled`). All five §19 timescales are defined in
+order (reflex, frequent continuity, agency, daily sleep,
+weekly/long-horizon) with their §19 purposes and cadences
+(600s / 21600s / 86400s / 604800s for the cron timescales), and the
+cron-registerable timescales map to the Hermes-cron jobs that
+already exist (frequent continuity `every 10m`, agency review
+`every 360m`, daily consolidation `every 1440m`); the weekly
+timescale is registered by cadence and purpose only — no routine
+backs it yet, and its spec honestly reports `backed: false`.
+Reflex is turn-scoped: recording a cron run for it is refused, as
+are unknown timescales and invalid outcomes. Explicit run receipts
+land in the bounded `entity/timescales.jsonl` log (rotation,
+symlink refusal, strict owner/field validation), and status (runs,
+last run, due) is a deterministic function of the log and an
+explicit clock. A bounded packet contribution surfaces only the
+first due cron timescale. This layer installs nothing and executes
+nothing — no new scheduler, loop, or cron job; Hermes cron remains
+the only scheduler. Verðandi timescale events are not yet emitted;
+they arrive with a later telemetry slice. With Phase 12 the
+Emergent Agency roadmap's phases are complete; the campaign
+returns to roadmap queue item 3 (Self-Aware Agency).
+
 ---
 
 # 20. Context Integration Strategy

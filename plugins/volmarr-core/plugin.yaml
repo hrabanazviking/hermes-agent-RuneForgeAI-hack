@@ -373,6 +373,18 @@ config_schema:
     type: int
     default: 10
     description: "Maximum simultaneously open (not closed) self-improvement proposals (clamped to 1-50)."
+  timescales_enabled:
+    type: bool
+    default: false
+    description: "Enable the multi-timescale cognition registry (Emergent Agency Phase 12). Disabled by default; defines/registers the five §19 timescales against the existing Hermes-cron routines and records explicit run receipts only — no new scheduler, loop, or execution."
+  timescales_log_path:
+    type: str
+    default: entity/timescales.jsonl
+    description: "Timescale run-receipt log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  timescales_log_limit:
+    type: int
+    default: 200
+    description: "Maximum timescale log records retained by rotation (clamped to 10-500)."
   heartbeat_enabled:
     type: bool
     default: true
