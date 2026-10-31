@@ -1957,6 +1957,28 @@ The larger model generates difficult content.
 
 The local model keeps the personality coherent.
 
+> **Completion note — Slice 133 (2026-10-31): §31 stands
+> in `persona_runtime.py` as pure contract surfaces. The
+> pure `local_watchdog_tasks` function names the six
+> tasks in roadmap order (persona classification, drift
+> detection, section retrieval, tone checking, memory
+> routing, response scoring), each assigned to the local
+> model with no heavy inference required and no difficult
+> content generated, grounded in the banked surface that
+> performs it (§8 PersonaIR, §§27–28 drift score, §13
+> hybrid retrieval, the §28 tone dimension, the §14
+> router, the §29 score artefact). The pure
+> `local_watchdog_contract` function stands the worker
+> itself — the small local nervous-system model, which
+> keeps the personality coherent — and the pure
+> `watchdog_worker` function assigns one named task:
+> a §31 task to the local model, difficult-content
+> generation to the larger model, anything else refused
+> rather than assigned by guesswork. Honest gaps: this
+> layer runs no model, local or otherwise — the contract
+> names which worker each kind of work belongs to; no
+> caller consumes the assignment yet.**
+
 
 ---
 
@@ -1992,6 +2014,35 @@ relevant Service Bible anchors
 
 
 This prevents slow identity evaporation.
+
+> **Completion note — Slice 133 (2026-10-31): §32 stands
+> in the same module. The pure `refresh_triggers` /
+> `refresh_contents` functions name the three triggers
+> in roadmap order (message interval, context
+> summarization, model switch) and the three contents in
+> roadmap order (Persona Kernel, current relationship
+> state, relevant Service Bible anchors — nothing else);
+> the pure `refresh_contract` function stands the
+> refresh itself (named triggers and contents, the
+> recorded message-interval convention, the evaporation
+> it prevents, and that this layer injects no context).
+> The message interval is this layer's recorded
+> convention — the roadmap says every N messages and
+> names no N, so the convention stands at 50. The pure
+> `refresh_due` function decides one trigger
+> deterministically: an event trigger is due the moment
+> the named event has occurred, and the interval trigger
+> is due only at or past 50 caller-supplied messages
+> since the last refresh (a missing or malformed count
+> is refused, never guessed); the pure `refresh_plan`
+> function plans accordingly — a due plan carries
+> exactly the three contents, an unelapsed-interval plan
+> carries none and refreshes nothing. Honest gaps: this
+> layer watches no session, counts no messages in a live
+> conversation, assembles none of the contents, and
+> injects nothing — performing a refresh belongs to
+> prompt assembly (§53); §33's wider event list is the
+> next section, not claimed here.**
 
 
 ---

@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-30).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-32).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -358,6 +358,29 @@ What stands here, and nothing more:
   for insignificant drift is a deliver-without-repair
   plan with no steps. This layer rewrites no draft: the
   plan is a contract surface for whoever repairs.
+- §31 fast local persona watchdog: watchdog work is an
+  ideal job for the small local nervous-system model. The
+  pure ``local_watchdog_tasks`` / ``local_watchdog_contract``
+  / ``watchdog_worker`` functions name the six tasks it
+  performs without expensive heavy inference (persona
+  classification, drift detection, section retrieval,
+  tone checking, memory routing, response scoring), each
+  grounded in a banked surface; the larger model generates
+  difficult content, and the local model keeps the
+  personality coherent. This layer runs no model.
+- §32 persona refresh: for extremely long sessions the
+  active context is refreshed periodically — every N
+  messages (this layer's recorded convention: 50), after
+  context summarization, or after a model switch. The
+  pure ``refresh_triggers`` / ``refresh_contents`` /
+  ``refresh_contract`` / ``refresh_due`` / ``refresh_plan``
+  functions stand that shape: a refresh carries exactly
+  the Persona Kernel, the current relationship state, and
+  the relevant Service Bible anchors, preventing slow
+  identity evaporation. This layer watches no session,
+  counts no messages in a live conversation, assembles
+  none of the contents, and injects nothing; §33's wider
+  event list is a later section.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -2992,6 +3015,214 @@ def repair_plan(scores: Any, violated_anchors: Any = (),
     }
 
 
+# --- §31 fast local persona watchdog + §32 persona refresh -----------
+#
+# Pure contract data and functions, like §§23–30. §31
+# names the small local nervous-system model as the ideal
+# watchdog worker: the six lightweight tasks it can
+# perform without expensive heavy inference, while the
+# larger model generates difficult content — the local
+# model keeps the personality coherent. §32 names persona
+# refresh for extremely long sessions: the triggers that
+# call for one and the contents a refresh carries, so
+# identity does not slowly evaporate. Nothing here runs a
+# local model, watches a session, counts messages in a
+# live conversation, or injects a refresh into a context:
+# §33's wider event-based trigger list is a later section,
+# and actually performing a refresh belongs to prompt
+# assembly (§53). The §32 message interval is this layer's
+# recorded convention (the roadmap says every N messages
+# and names no N).
+
+# The six §31 local-watchdog tasks, in roadmap order.
+LOCAL_WATCHDOG_TASKS = (
+    "persona_classification", "drift_detection",
+    "section_retrieval", "tone_checking", "memory_routing",
+    "response_scoring",
+)
+
+# Each §31 task's grounding in the surfaces already
+# banked: the local worker performs the task over these,
+# never over a heavy-inference generation pass.
+_LOCAL_WATCHDOG_SURFACES = {
+    "persona_classification": "persona_ir",
+    "drift_detection": "drift_score",
+    "section_retrieval": "hybrid_retrieval",
+    "tone_checking": "drift_dimension_tone",
+    "memory_routing": "persona_router",
+    "response_scoring": "drift_score_artifact",
+}
+
+# The §32 refresh triggers, in roadmap order.
+REFRESH_TRIGGERS = (
+    "message_interval", "context_summarization",
+    "model_switch",
+)
+
+# The §32 refresh contents, in roadmap order: the Persona
+# Kernel, the current relationship state, and the
+# relevant Service Bible anchors — nothing else.
+REFRESH_CONTENTS = (
+    "persona_kernel", "current_relationship_state",
+    "relevant_service_bible_anchors",
+)
+
+# §32 convention (this layer's own — see the header note):
+# a message-interval refresh is due every 50 messages.
+REFRESH_MESSAGE_INTERVAL = 50
+
+
+def local_watchdog_tasks() -> list[dict[str, Any]]:
+    """The six §31 local-watchdog tasks, in roadmap order. Pure.
+
+    Each task is work the small local model performs
+    without expensive heavy inference, grounded in the
+    banked surface named in its row. Fresh copies are
+    returned; mutating a row does not poison the contract.
+    """
+    return [
+        {
+            "task": task,
+            "worker": "local_model",
+            "heavy_inference_required": False,
+            "generates_difficult_content": False,
+            "surface": _LOCAL_WATCHDOG_SURFACES[task],
+        }
+        for task in LOCAL_WATCHDOG_TASKS
+    ]
+
+
+def local_watchdog_contract() -> dict[str, Any]:
+    """The §31 fast local persona watchdog contract. Pure.
+
+    The watchdog worker is the small local nervous-system
+    model: it performs the six §31 tasks without expensive
+    heavy inference and keeps the personality coherent.
+    The larger model generates difficult content; the
+    local model generates none of it. This layer runs no
+    model — the contract names which worker each kind of
+    work belongs to.
+    """
+    return {
+        "name": "FastLocalPersonaWatchdog",
+        "worker": "small_local_model",
+        "role": "nervous_system",
+        "tasks": list(LOCAL_WATCHDOG_TASKS),
+        "heavy_inference_required": False,
+        "generates_difficult_content": False,
+        "difficult_content_worker": "larger_model",
+        "keeps_persona_coherent": True,
+    }
+
+
+def watchdog_worker(task: Any) -> str:
+    """Which model performs one named task (§31). Pure.
+
+    One of the six §31 tasks belongs to the local model;
+    generating difficult content belongs to the larger
+    model; anything else is refused rather than assigned
+    by guesswork.
+    """
+    if not isinstance(task, str):
+        raise PersonaRuntimeError("watchdog task is invalid")
+    resolved = _slugify(task)
+    if resolved in LOCAL_WATCHDOG_TASKS:
+        return "local_model"
+    if resolved in ("difficult_content_generation",
+                    "generate_difficult_content"):
+        return "larger_model"
+    raise PersonaRuntimeError("watchdog task is invalid")
+
+
+def refresh_triggers() -> list[str]:
+    return list(REFRESH_TRIGGERS)
+
+
+def refresh_contents() -> list[str]:
+    return list(REFRESH_CONTENTS)
+
+
+def refresh_contract() -> dict[str, Any]:
+    """The §32 persona refresh contract. Pure.
+
+    For extremely long sessions the active context is
+    refreshed periodically: on the message interval,
+    after context summarization, or after a model switch.
+    A refresh carries exactly the Persona Kernel, the
+    current relationship state, and the relevant Service
+    Bible anchors — and prevents slow identity
+    evaporation. This layer performs no refresh and
+    injects nothing; it names the trigger/contents shape
+    a refresher must follow.
+    """
+    return {
+        "name": "PersonaRefresh",
+        "triggers": list(REFRESH_TRIGGERS),
+        "message_interval": REFRESH_MESSAGE_INTERVAL,
+        "contents": list(REFRESH_CONTENTS),
+        "prevents": "slow_identity_evaporation",
+        "injects_context": False,
+    }
+
+
+def _validate_refresh_trigger(trigger: Any) -> str:
+    if not isinstance(trigger, str) \
+            or _slugify(trigger) not in REFRESH_TRIGGERS:
+        raise PersonaRuntimeError("refresh trigger is invalid")
+    return _slugify(trigger)
+
+
+def refresh_due(trigger: Any,
+                messages_since_refresh: Any = None) -> bool:
+    """Whether one §32 refresh trigger has fired. Pure.
+
+    The event triggers (context summarization, model
+    switch) are due the moment the named event has
+    occurred — naming the trigger is naming the event.
+    The message-interval trigger is due only when the
+    caller-supplied count of messages since the last
+    refresh reaches this layer's recorded interval; a
+    missing or malformed count for that trigger is
+    refused, never guessed. No session is watched and no
+    messages are counted by this layer.
+    """
+    resolved = _validate_refresh_trigger(trigger)
+    if resolved != "message_interval":
+        return True
+    if isinstance(messages_since_refresh, bool) \
+            or not isinstance(messages_since_refresh, int) \
+            or messages_since_refresh < 0:
+        raise PersonaRuntimeError(
+            "messages since refresh is invalid")
+    return messages_since_refresh >= REFRESH_MESSAGE_INTERVAL
+
+
+def refresh_plan(trigger: Any,
+                 messages_since_refresh: Any = None) -> dict[str, Any]:
+    """One §32 refresh plan for a named trigger. Pure.
+
+    A due plan carries exactly the three §32 contents —
+    the Persona Kernel (the §§9–10 compiled, pinned
+    kernel), the current relationship state, and the
+    relevant Service Bible anchors only. A plan whose
+    message interval has not yet elapsed carries no
+    contents and refreshes nothing. This layer assembles
+    none of the contents and injects nothing.
+    """
+    resolved = _validate_refresh_trigger(trigger)
+    due = refresh_due(resolved, messages_since_refresh)
+    return {
+        "trigger": resolved,
+        "due": due,
+        "action": "refresh" if due else "no_refresh",
+        "contents": list(REFRESH_CONTENTS) if due else [],
+        "prevents": "slow_identity_evaporation",
+        "message_interval": REFRESH_MESSAGE_INTERVAL,
+        "messages_since_refresh": messages_since_refresh
+        if resolved == "message_interval" else None,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -3573,7 +3804,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-30): persona "
+            f"Persona runtime (§§3-32): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -3687,7 +3918,21 @@ class PersonaRuntimeBridge:
             f"drift only — draft, identify violated "
             f"persona anchors, rewrite minimally, verify, "
             f"deliver; never regenerate everything. "
-            f"Canonical document "
+            f"§31 local watchdog: the small local "
+            f"nervous-system model is the ideal watchdog "
+            f"worker — persona classification, drift "
+            f"detection, section retrieval, tone checking, "
+            f"memory routing, and response scoring without "
+            f"expensive heavy inference; the larger model "
+            f"generates difficult content, the local model "
+            f"keeps the personality coherent. §32 refresh: "
+            f"for extremely long sessions the active "
+            f"context refreshes every 50 messages, after "
+            f"context summarization, or after a model "
+            f"switch — Persona Kernel plus current "
+            f"relationship state plus relevant Service "
+            f"Bible anchors, preventing slow identity "
+            f"evaporation. Canonical document "
             f"text is compiled, not injected by this layer."
         )
         return [ContextItem(
@@ -3807,6 +4052,18 @@ __all__ = [
     "repair_pipeline",
     "repair_contract",
     "repair_plan",
+    "LOCAL_WATCHDOG_TASKS",
+    "REFRESH_TRIGGERS",
+    "REFRESH_CONTENTS",
+    "REFRESH_MESSAGE_INTERVAL",
+    "local_watchdog_tasks",
+    "local_watchdog_contract",
+    "watchdog_worker",
+    "refresh_triggers",
+    "refresh_contents",
+    "refresh_contract",
+    "refresh_due",
+    "refresh_plan",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
