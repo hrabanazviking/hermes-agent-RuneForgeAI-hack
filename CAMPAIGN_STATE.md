@@ -2867,7 +2867,11 @@ portable state: any agent (Muse or Hermes) resumes from here.
   verified in the run log's own summary line
   (`~/workspace/.verify-tmp/slice130_full_run2.log`);
   593 is exactly Slice 129's 584 + the 9 new contracts.
-  Smoke: `hermes --version` runs (v0.20.0); README.md
+  Smoke: `hermes --version` runs — corrected on
+  re-verification by the same tick (`.venv/bin/hermes
+  --version`: Hermes Agent vgit.b1a228c, Python 3.14.9,
+  exit 0; a bare `hermes` via `run-in-hermes-env` fails
+  only its PATH lookup, not the product); README.md
   sha256 invariant held (`4e022de7…c4910`).
   Bookkeeping: CUSTOMIZATIONS.md ledger row (full-run
   numbers added by this tick), §25 + §26 completion
