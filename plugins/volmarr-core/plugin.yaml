@@ -213,6 +213,18 @@ config_schema:
     type: int
     default: 50
     description: "Maximum evidence entries retained per self-model claim (clamped to 1-50)."
+  motivation_enabled:
+    type: bool
+    default: true
+    description: "Create and expose the active entity's intrinsic-motivation drive ledger (Emergent Agency Phase 2). Proposals only; never creates goals."
+  motivation_path:
+    type: str
+    default: entity/motivation.yaml
+    description: "Motivation YAML path relative to the active Hermes profile; escaping paths fall back to the default."
+  motivation_cooldown_hours:
+    type: float
+    default: 6
+    description: "Cooldown after a drive is satisfied or its proposal is rejected (clamped to 0-168 hours)."
   heartbeat_enabled:
     type: bool
     default: true

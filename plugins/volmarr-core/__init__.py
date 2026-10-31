@@ -7,6 +7,7 @@ from functools import partial
 from .affective_bridge import AffectiveBridge
 from .cli import health_command, register_cli
 from .consolidation import register_sleep_tool
+from .drives import DriveBridge
 from .goals import GoalBridge, register_goal_tools
 from .heartbeat import HeartbeatBridge, register_heartbeat_tool
 from .identity import IdentityBridge
@@ -37,6 +38,9 @@ def register(ctx) -> None:
     self_model = SelfModelBridge(ctx)
     for hook_name, callback in self_model.hooks():
         ctx.register_hook(hook_name, callback)
+    drives = DriveBridge(ctx)
+    for hook_name, callback in drives.hooks():
+        ctx.register_hook(hook_name, callback)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -54,6 +58,7 @@ def register(ctx) -> None:
             mempalace_retrieval.packet_items,
             openviking_retrieval.packet_items,
             self_model.packet_items,
+            drives.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():

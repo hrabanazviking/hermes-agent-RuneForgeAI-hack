@@ -482,3 +482,43 @@ portable state: any agent (Muse or Hermes) resumes from here.
   commission, and the lock is committed consistently with pyproject.
   Campaign resume point returns to the keeper's line: Slice 91 —
   Emergent Agency Phase 2 (§9, Intrinsic Motivation).
+- 2026-10-31 ~00:51 EDT keeper tick: **Slice 91 DONE — Emergent
+  Agency Phase 2 (§9, Intrinsic Motivation) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found (tree
+  clean at `41710e16`, state commit pushed; the integration
+  commission's push had landed minutes earlier and its resume point
+  named this slice). `plugins/volmarr-core/drives.py`: versioned
+  `entity/motivation.yaml` store on the Slice 88 `DriveState`
+  contract — create-once seeding of the eight §9 starter drives
+  (human-editable), owner/symlink/size validation in the established
+  store pattern, deterministic updates only (fixed signal deltas;
+  satisfy sets the `motivation_cooldown_hours` cooldown; explicit-
+  clock decay — activation relaxes toward baseline 0.02/h,
+  satisfaction fades 0.01/h), tension = activation ×
+  (1 − satisfaction). The funnel stops at intent proposals: ≤5, one
+  per drive, tension ≥ 0.35, cooldown-suppressed, identical rejected
+  proposals permanently suppressed (rejection also cools the drive
+  down), deterministic for identical inputs, and **no goals are
+  created** — goal promotion / goals schema v2 origin metadata is a
+  later slice. Anti-runaway in code: authority/permissions/praise/
+  attention/money/compute drive ids refused at write and at file
+  validation. Bounded packet contribution (top 3 by tension) wired
+  as one added `packet_sources` producer; config keys
+  `motivation_enabled`/`motivation_path`/`motivation_cooldown_hours`
+  in `plugin.yaml`. Tests: targeted 9/9 pass; full volmarr/kista run
+  (46 files): **279 passed, 7 failed, 1 skipped** — the failures are
+  the same name-identical pre-existing environmental set (5
+  core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner loopback).
+  Smoke: `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger row,
+  Phase 2 completion note in the Emergent Agency roadmap §9.
+  Honest gaps: Verðandi drive events (§9 metadata) NOT yet emitted —
+  deferred to a later telemetry slice, recorded in both bookkeeping
+  spots; goal promotion not implemented (see above).
+- **Next resume point: Slice 93 — Emergent Agency Phase 3 (§10,
+  Metacognition)**: `plugins/volmarr-core/metacognition.py` +
+  `entity/metacognition.json` / `entity/reflection_log.jsonl` on the
+  Slice 88 `ReflectionRecord` contract (per the §10 spec when read
+  at slice start). (Slice numbering: 92 was taken by the ravens
+  write-path commission.) The Bifröst write paths are DONE (Slice
+  92, pushed); no parked blockers remain on this line.

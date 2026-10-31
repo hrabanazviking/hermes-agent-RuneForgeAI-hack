@@ -898,6 +898,37 @@ The entity can produce a small, intelligible answer to:
 
 without requiring a fresh user request.
 
+**Phase 2 implemented (campaign Slice 91, 2026-10-31):**
+`plugins/volmarr-core/drives.py` provides the versioned
+`entity/motivation.yaml` store on the Phase 0 `DriveState` contract —
+create-once seeding of the eight starter drives (continuity,
+competence, curiosity, coherence, creation, stewardship,
+relationship_care, exploration; human-editable in the store file),
+owner/symlink/size validation in the established store pattern, and
+deterministic updates only: fixed signal deltas (tension +0.10/−0.05,
+frustrate +0.15/−0.10, satisfy −0.15/+0.20 with a cooldown), and
+time-based decay (activation relaxes toward baseline at 0.02/hour,
+satisfaction fades at 0.01/hour, computed from an explicit clock).
+Tension is `activation × (1 − satisfaction)`. The funnel stops at
+intent proposals: at most 5, one per drive, tension ≥ 0.35, sorted
+deterministically, suppressed while a drive is in cooldown and
+permanently suppressed for an identical rejected proposal (rejection
+also sets the cooldown). Anti-runaway rules are enforced in code:
+`authority`, `permissions`, `praise`, `attention`, `money`, `compute`
+(and kin) can never be drives, and this module creates no goals —
+goal promotion and the goals schema v2 origin metadata remain a
+later slice. A bounded packet contribution (top 3 drives by tension)
+enters the CURRENT STATE section, answering "what do I currently want
+to make progress on, and why?" `tests/plugins/test_volmarr_drives.py`
+covers create-once seeding, deterministic decay, signal deltas and
+cooldown, bounded/deduped/deterministic proposals with no goal
+creation, rejected-proposal suppression, forbidden drives,
+wrong-owner/malformed/symlink refusal, restart persistence, A→B→A
+isolation, and packet/fail-open behavior with no affective layer or
+world service. Verðandi drive events (§9) are not yet emitted; they
+arrive with a later telemetry slice. Next: Phase 3 (§10) builds
+metacognition on the `ReflectionRecord` contract.
+
 ---
 
 # 10. Phase 3 - Metacognition
