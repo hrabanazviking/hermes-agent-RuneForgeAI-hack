@@ -2011,6 +2011,36 @@ With explicit network policy:
 
 External research findings should be routed through normal source verification and memory policy rather than treated as truth merely because curiosity discovered them.
 
+**Slice 100 completion (2026-10-31):** Phase 10 is implemented in
+`plugins/volmarr-core/background_research.py`. The service is
+disabled by default (`background_research_enabled`); one explicit
+`run_once` invocation runs one gated step and exits — no hook, loop,
+scheduler, model call, or network access. All four §17 gates are
+evaluated at invocation: no live urgent user goal pending (an
+unreadable goal ledger fails that gate closed), health good (the
+continuity heartbeat probe reports healthy), the resource budget
+permits (completed runs today, UTC, below
+`background_research_daily_budget`, default 5), and the curiosity
+frontier's top score reaches `background_research_min_score`
+(default 0.10). A blocked run writes nothing and names its blocking
+gates. A passing run investigates exactly one question through the
+Phase 4 store — its cooldown and attempt limits apply — and runs
+one of the five local first-safe forms: inspect local stores,
+examine own metrics, compare self-model claims, find
+documentation/state inconsistencies (duplicate live goal titles,
+blocked goals without a next action, duplicate claim keys,
+duplicate retired question texts), and a deterministic experiment
+(curiosity scoring recomputed twice must agree exactly). External
+and network forms are refused outright; they remain later forms
+behind an explicit network policy, which does not exist yet.
+Findings are recorded as facts in the bounded
+`entity/background_research.jsonl` log and are not treated as truth
+beyond what the local stores showed. A bounded packet contribution
+surfaces the last completed run only when one exists.
+Verðandi background-research events are not yet emitted; they
+arrive with a later telemetry slice. Next: Phase 11 (§18) opens the
+autonomous self-improvement sandbox under its hard boundaries.
+
 ---
 
 # 18. Phase 11 - Autonomous Self-Improvement Sandbox

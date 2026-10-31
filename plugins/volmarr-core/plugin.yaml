@@ -337,6 +337,26 @@ config_schema:
     type: str
     default: ""
     description: "Comma-separated arbitration tier order (explicit_urgent_user, explicit_normal_user, safety_continuity, approved_intrinsic, new_intrinsic); empty or partial values fall back to the roadmap default for missing tiers."
+  background_research_enabled:
+    type: bool
+    default: false
+    description: "Enable background curiosity and research (Emergent Agency Phase 10). Disabled by default; one explicit run_once invocation runs one gated local-only research step and exits."
+  background_research_log_path:
+    type: str
+    default: entity/background_research.jsonl
+    description: "Background research log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  background_research_log_limit:
+    type: int
+    default: 200
+    description: "Maximum background research log records retained by rotation (clamped to 10-500)."
+  background_research_daily_budget:
+    type: int
+    default: 5
+    description: "Maximum completed background research runs per UTC day (clamped to 1-20); the resource-budget gate refuses runs beyond it."
+  background_research_min_score:
+    type: float
+    default: 0.10
+    description: "Minimum frontier score a curiosity question needs for the value gate to permit a background research run (clamped to 0-1)."
   heartbeat_enabled:
     type: bool
     default: true

@@ -8,6 +8,7 @@ from .affective_bridge import AffectiveBridge
 from .agency import AgencyBridge
 from .agency_routines import AgencyRoutineBridge
 from .autonomy import AutonomyBridge
+from .background_research import BackgroundResearchBridge
 from .cli import health_command, register_cli
 from .consolidation import register_sleep_tool
 from .curiosity import CuriosityBridge
@@ -63,6 +64,7 @@ def register(ctx) -> None:
     agency = AgencyBridge(ctx)
     agency_routine = AgencyRoutineBridge(ctx)
     local_autonomy = LocalAutonomyBridge(ctx)
+    background_research = BackgroundResearchBridge(ctx)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -88,6 +90,7 @@ def register(ctx) -> None:
             agency_routine.packet_items,
             local_autonomy.packet_items,
             intrinsic_goals.packet_items,
+            background_research.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():

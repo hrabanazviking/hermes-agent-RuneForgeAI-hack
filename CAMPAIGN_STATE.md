@@ -871,3 +871,63 @@ portable state: any agent (Muse or Hermes) resumes from here.
   deterministic experiments); external/network research stays
   behind explicit network policy and is NOT part of the first
   slice unless the §17 spec read at slice start says otherwise.
+- 2026-10-31 ~05:5x EDT keeper tick: **Slice 100 DONE — Emergent
+  Agency Phase 10 (§17, Background Curiosity and Research)
+  complete, banked and PUSHED under the standing go-ahead.** No
+  live work found (tree clean, HEAD == origin/main at
+  `2e447b514`). `plugins/volmarr-core/background_research.py`:
+  gated exploration service, disabled by default
+  (`background_research_enabled`), one explicit `run_once` and it
+  exits (no hook, loop, scheduler, model call, or network). All
+  four §17 gates evaluated at invocation: no live urgent `user`
+  goal pending (unreadable goal ledger fails closed), health good
+  (continuity heartbeat probe healthy), resource budget permits
+  (completed runs today UTC below
+  `background_research_daily_budget`, default 5; unreadable log
+  closes the budget), frontier top score >=
+  `background_research_min_score` (default 0.10). Blocked runs
+  write nothing and name their gates. A passing run investigates
+  one question through the Phase 4 store (cooldown/attempt limits
+  apply) and runs one of five local first-safe forms — inspect
+  local stores, examine own metrics, compare self-model claims,
+  find doc/state inconsistencies, deterministic experiment
+  (scoring recomputed twice must agree) — read-only against the
+  profile's own stores; every external/network form is refused
+  (no network policy exists yet). Findings land in the bounded
+  `entity/background_research.jsonl` log (rotation, symlink
+  refusal, strict validation) and are not treated as truth beyond
+  what the stores showed. Bounded packet contribution (last
+  completed run, enabled only) wired as one added
+  `packet_sources` producer; config keys
+  `background_research_enabled`/`background_research_log_path`/
+  `background_research_log_limit`/`background_research_daily_budget`/
+  `background_research_min_score` in `plugin.yaml`. Tests:
+  targeted 9/9 pass; full volmarr/kista run (53 files): **350
+  passed, 7 failed, 1 skipped** — the failures are the same
+  name-identical pre-existing environmental set in the same 3
+  files (5 core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback), verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice100_full_run.log` — note: the
+  first two full-run attempts this tick lost their captured
+  output to a `tail` cut and a /tmp wipe respectively; the third
+  run, logged outside /tmp, supplied the verified totals).
+  Smoke: `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger row,
+  Phase 10 completion note in the Emergent Agency roadmap §17.
+  Honest gaps: Verðandi background-research events NOT yet
+  emitted — deferred to a later telemetry slice, recorded in
+  both bookkeeping spots; external/network research NOT
+  implemented (later §17 forms, behind an explicit network
+  policy that does not exist yet).
+- **Next resume point: Slice 101 — Emergent Agency Phase 11
+  (§18, Autonomous Self-Improvement Sandbox)**: the constrained
+  self-development pipeline (hypothesis → isolated branch/worktree
+  → bounded patch → focused tests → broader regression → diff
+  review → commit/PR proposal → human review or policy-authorized
+  next step) under the §18 hard boundaries (never weaken autonomy
+  policy, disable security controls, remove tests to pass, alter
+  credential protections, bypass branch protection, force-push,
+  rewrite canonical identity or human persona constitutions) —
+  per the §18 spec when read at slice start; expect the first
+  slice to be the proposal/pipeline-record layer only, with any
+  actual patch execution gated separately.
