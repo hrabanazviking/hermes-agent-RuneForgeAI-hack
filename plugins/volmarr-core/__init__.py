@@ -11,6 +11,7 @@ from .goals import GoalBridge, register_goal_tools
 from .heartbeat import HeartbeatBridge, register_heartbeat_tool
 from .identity import IdentityBridge
 from .lifecycle import LifecycleBridge
+from .mempalace_retrieval import MemPalaceRetrievalBridge
 from .present_state import PresentStateBridge
 from .relationships import RelationshipBridge, register_relationship_tools
 from .wyrd_tools import register_wyrd_tools
@@ -38,9 +39,14 @@ def register(ctx) -> None:
     for hook_name, callback in affective.hooks():
         ctx.register_hook(hook_name, callback)
     wyrd_context = WyrdContextBridge(ctx)
+    mempalace_retrieval = MemPalaceRetrievalBridge(ctx)
     present_state = PresentStateBridge(
         ctx,
-        packet_sources=(affective.packet_items, wyrd_context.packet_items),
+        packet_sources=(
+            affective.packet_items,
+            wyrd_context.packet_items,
+            mempalace_retrieval.packet_items,
+        ),
     )
     for hook_name, callback in present_state.hooks():
         ctx.register_hook(hook_name, callback)

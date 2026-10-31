@@ -164,3 +164,55 @@ the official package is importable in the test environment.
 - `CAMPAIGN_STATE.md`: record the slice, test numbers, and the next
   resume point.
 - Bank locally only; no push without Volmarr's word for this line.
+
+---
+
+# Slice 83 — Gate 0 outcome and implementation (2026-10-30, later tick)
+
+**Gate 0 verdict: PASS via the official BM25 route only.** Measured against
+the official `mempalace` 3.11.0 wheel (current PyPI release; floor is
+3.10.0), installed in a scratch venv outside the tree:
+
+- API surface: `mempalace.searcher.search_memories(query, palace_path,
+  wing=None, room=None, source_file=None, since=None, before=None,
+  n_results=5, max_distance=0.0, vector_disabled=False,
+  candidate_strategy="vector", collection_name=None, ...) -> dict` with
+  `results[]` hits carrying `drawer_id`, `text`, `wing`, `room`,
+  `source_file`, `similarity` (vector path).
+- Vector path NOT read-only-safe: `_open_search_collection` requests
+  `get_collection(..., create=False, read_only=True)`, but the Chroma
+  backend's own source states client opening/closing writes to
+  `chroma.sqlite3`. Measured: two consecutive `search_memories` calls on
+  a test palace each changed the `chroma.sqlite3` sha256, and the first
+  created `.blob_seq_ids_migrated` + `.collection_type_fixed` marker
+  files in the palace directory. This route is never used by the bridge.
+- BM25 route read-only-safe: `vector_disabled=True` routes to the
+  official sqlite-only fallback (`_bm25_only_via_sqlite`, response
+  marker `fallback: bm25_only_via_sqlite`), which reads `chroma.sqlite3`
+  through a read-only sqlite connection and never opens a Chroma client.
+  Measured on a populated palace (one mined drawer): the query returned
+  that drawer verbatim with its `drawer_id`, and the whole palace tree
+  was sha256-identical before/after. BM25 hits carry `similarity=None`,
+  so the bridge assigns the spec's fallback priority 0.5.
+- Scope honesty: this retrieval is lexical (exact-word BM25), not
+  semantic vector search. That is the full extent of the read-only-safe
+  official surface in 3.11.0.
+
+**Implementation (as specified):** `plugins/volmarr-core/mempalace_retrieval.py`
+(`MemPalaceRetrievalBridge`), registered as one added `packet_sources`
+producer in `plugins/volmarr-core/__init__.py`; opt-in
+`mempalace_retrieval_enabled` default false; health-probe gated
+(`probe_mempalace`); query cap 2,000 chars; ≤5 items, content cap 800
+chars; `drawer_id` as record_id with sha256 fallback; bounded timeout
+(`mempalace_retrieval_timeout_seconds`, default 5, clamped 1–30) via a
+daemon thread; fail-open throughout. New contracts:
+`tests/plugins/test_volmarr_mempalace_retrieval.py` (9 tests).
+
+**Tests:** targeted run (retrieval + mempalace health + context packet):
+17 passed, 0 failed. Full volmarr/kista contract run (38 files): the
+only failures are the same 7 pre-existing environmental failures in the
+same 3 files recorded in `CAMPAIGN_STATE.md` — no new failures.
+
+**Next resume point: Slice 84 — OpenViking retrieval audit** (Phase 3's
+remaining retrieval connection), then the Bifröst
+Huginn/Muninn/consolidation/decay contracts.

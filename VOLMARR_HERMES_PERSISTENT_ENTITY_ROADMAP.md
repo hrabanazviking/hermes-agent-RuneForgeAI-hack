@@ -1804,6 +1804,21 @@ fence-shaped recalled text, and injects one versioned envelope on the user side 
 is the first enabled producer. Precise episodic and durable retrieval remain the next explicit
 policy connections rather than being silently activated by the attachment probes.
 
+Slice 83 (2026-10-30) connects MemPalace retrieval under that policy. The Gate 0 audit of the
+official package (measured against 3.11.0, the current release above the v3.10.0 floor) found that
+`mempalace.searcher.search_memories`' vector path opens the palace through ChromaDB's
+PersistentClient, whose open rewrites `chroma.sqlite3` on every call and writes one-time migration
+markers — not read-only-safe, and never used from a turn hook. The same function's official
+sqlite-only BM25 fallback (`vector_disabled=True`) reads the store through a read-only sqlite
+connection, returned the correct verbatim drawer from a populated palace, and left every palace
+file byte-identical. The bridge therefore uses only that route: opt-in
+(`mempalace_retrieval_enabled`, default off), health-probe gated, query capped at 2,000 chars, at
+most 5 episodes at 800 chars each, bounded timeout, fail-open, profile-isolated through the
+existing palace path/collection config. Retrieval is lexical (exact-word BM25), not semantic —
+the honest scope of the read-only-safe official surface. Ingestion remains disabled. Milestone
+3's remaining items are OpenViking retrieval and the Bifröst Huginn/Muninn/consolidation/decay
+contracts.
+
 ## Milestone 4: Affective Continuity
 
 - port current affective nervous system;
