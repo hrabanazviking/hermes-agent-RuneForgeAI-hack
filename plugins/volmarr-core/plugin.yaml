@@ -545,6 +545,14 @@ config_schema:
     type: int
     default: 200
     description: "Maximum persona canon evaluation receipts retained by rotation (clamped to 10-500)."
+  persona_runtime_enabled:
+    type: bool
+    default: false
+    description: "Enable the persona runtime foundations (Persona Runtime Roadmap §§3-6): a human-authored, read-only config file naming a persona id, display name, persona directory, and a document map of semantic role to file/required — the runtime cares about roles, not filenames, and extra roles beyond the six core roles are first-class extensions needing no code change. An explicit, deterministic compiler parses the Markdown documents into sections, derives the Layer A persona kernel from the core document (bounded to the §5 500-1500 estimated-token band), builds the Layer B section index, and hashes every document and the kernel (Layer C canonical text is compiled, never injected by this layer). Compilation is explicit only, writes nothing, and never runs per message. Disabled by default; the runtime never writes the config or any document it names."
+  persona_config_path:
+    type: str
+    default: config/persona.yaml
+    description: "Human-authored persona config YAML path relative to the active Hermes profile; escaping paths fall back to the default. Read-only to the runtime."
   blind_spots_enabled:
     type: bool
     default: false

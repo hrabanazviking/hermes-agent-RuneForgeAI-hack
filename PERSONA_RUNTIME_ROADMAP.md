@@ -399,6 +399,45 @@ The compiler runs:
 It should NOT regenerate the persona kernel on every message.
 
 
+**§§3–6 foundations completion note (Slice 118, 2026-10-31):** the
+foundations stand in `plugins/volmarr-core/persona_runtime.py`,
+reconciled against the already-banked persona surfaces — the
+identity store's `persona_pack` remains a bounded name owning no
+persona text, persona canon (Self-Aware Agency §16) remains a
+single YAML assertion file evaluated against runtime facts, and
+the layered self-model remains runtime evidence, not authored
+persona material; no second persona system was built. §3: a
+human-authored, read-only config (`config/persona.yaml`,
+`persona_config_path`) naming persona id, display name, persona
+directory, and a document map of semantic role -> {file,
+required} — the runtime cares about roles, never filenames, and
+never writes the config or any document. §4: roles beyond the
+six core roles are first-class extensions accepted with no code
+change. §5, as a compiled artefact: Layer A is the kernel —
+core-document sections whose headings name kernel material
+(identity, motivation, relationship, communication, style,
+laws, boundaries, role, quirks, essence, character), falling
+back to leading sections, whole sections only, bounded to the
+§5 500–1,500 estimated-token band (token counts are
+deterministic ceil(chars/4) estimates); Layer B is the section
+index over every document (stable section ids from heading
+slugs, §11's parser in foundation form); Layer C is the
+canonical documents themselves — paths and sha256 hashes,
+compiled and never injected by this layer. §6: the compiler is
+explicit and deterministic (load -> section-parse -> normalise
+-> kernel -> index -> hashes, plus a persona hash), writes
+nothing, and runs only when called — never per message.
+Missing required documents fail the compile closed; missing
+optional documents are named, not silent; symlinked config,
+directory escapes, and symlinked documents are refused.
+Disabled by default (`persona_runtime_enabled`); the bounded
+packet item names only persona id, kernel hash, and
+document/section counts — no persona text. Honest gaps:
+retrieval (§13), routing (§14), budgeting (§15), prompt
+assembly (§53), the compilation cache (§48), and the generated
+directory (§49) are later sections, not this slice.
+
+
 ---
 
 

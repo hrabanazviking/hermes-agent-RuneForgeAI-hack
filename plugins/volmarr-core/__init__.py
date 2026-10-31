@@ -36,6 +36,7 @@ from .self_state import SelfStateBridge
 from .verdandi_events import VerdandiEventsBridge
 from .background_life import BackgroundLifeBridge
 from .persona_canon import PersonaCanonBridge
+from .persona_runtime import PersonaRuntimeBridge
 from .blind_spots import BlindSpotBridge
 from .epistemics import EpistemicsBridge
 from .subjective_report import SubjectiveReportBridge
@@ -97,6 +98,7 @@ def register(ctx) -> None:
     verdandi_events = VerdandiEventsBridge(ctx)
     background_life = BackgroundLifeBridge(ctx)
     persona_canon = PersonaCanonBridge(ctx)
+    persona_runtime = PersonaRuntimeBridge(ctx)
     blind_spots = BlindSpotBridge(ctx)
     epistemics = EpistemicsBridge(ctx)
     heartbeat = HeartbeatBridge(ctx)
@@ -139,6 +141,7 @@ def register(ctx) -> None:
             verdandi_events.packet_items,
             background_life.packet_items,
             persona_canon.packet_items,
+            persona_runtime.packet_items,
             blind_spots.packet_items,
             epistemics.packet_items,
         ),

@@ -1966,3 +1966,55 @@ portable state: any agent (Muse or Hermes) resumes from here.
   when read at slice start — expect a
   verification/reconciliation slice implementing only
   genuine gaps, not a second persona system.
+- 2026-10-31 ~11:2x EDT keeper tick: **Slice 118 DONE —
+  Persona Runtime §§3–6 foundations complete, banked and
+  PUSHED under the standing go-ahead.** No live work found
+  (tree clean, HEAD == origin/main at `457b60bf07`; the state
+  file's 11:14 EDT mtime was Slice 117's own completed entry,
+  not in-progress work). Reconciliation as specified: identity
+  `persona_pack` stays a name owning no text, persona canon
+  stays the §16 assertion file, the layered self-model stays
+  runtime evidence — the genuine gap (no persona config,
+  document-role loader, or compiler existed at all) is
+  implemented in `plugins/volmarr-core/persona_runtime.py`.
+  §3: human-authored read-only config `config/persona.yaml`
+  (`persona_config_path`) — persona id, display name,
+  directory, role -> {file, required} map; roles, never
+  filenames; runtime writes nothing it names. §4: extra roles
+  beyond the six core roles are first-class extensions, no
+  code change. §5 compiled artefact: Layer A kernel from
+  core sections whose headings name kernel material
+  (fallback leading sections), whole sections only, bounded
+  to the 500–1,500 estimated-token band (ceil(chars/4)
+  estimates); Layer B section index over all documents with
+  stable heading-slug ids; Layer C canonical documents as
+  paths + sha256 — compiled, never injected by this layer.
+  §6: `PersonaCompiler` explicit, deterministic, writes
+  nothing, never per message; missing required fails closed,
+  missing optional named; symlinked config/documents and
+  directory escapes refused. Disabled by default
+  (`persona_runtime_enabled`); packet item carries persona
+  id, kernel hash, and counts only. One in-slice fix,
+  test-side: the test config writer now preserves document
+  order (`sort_keys=False`); no production change. Tests:
+  targeted 8/8 pass; full volmarr/kista run (71 files):
+  **495 passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set in the same
+  3 files, verified in the run log
+  (`~/workspace/.verify-tmp/slice118_full_run.log`). Smoke:
+  `hermes --version` runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §§3–6 foundations completion note in the Persona
+  Runtime roadmap. Honest gaps: retrieval (§13), routing
+  (§14), budgeting (§15), prompt assembly (§53), compilation
+  cache (§48), and generated directory (§49) are later
+  sections, not implemented here.
+- **Next resume point: Slice 119 — Persona Runtime §7
+  (Do Not Summarize Blindly) and §8 (Persona Intermediate
+  Representation)**: verify the compiler's no-blind-summary
+  property in contract form (§7: kernel/index carry verbatim
+  section text, never generated summaries) and stand up the
+  §8 IR as the compiler's explicit intermediate artefact if
+  the §8 spec, read at slice start, names fields the current
+  compiled dict does not already carry — implementing only
+  genuine gaps, in the established pattern.
