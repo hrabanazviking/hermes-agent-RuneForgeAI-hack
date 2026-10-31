@@ -2967,3 +2967,77 @@ portable state: any agent (Muse or Hermes) resumes from here.
   everything) — expect a pure pipeline/contract surface
   reconciled against the §§17/18 anchors, not a live
   rewriter this plugin does not own.
+- 2026-10-31 ~18:2x EDT keeper tick: **Slice 132 DONE —
+  Persona Runtime §29 (Drift Score) and §30 (Drift
+  Repair) complete, banked and PUSHED under the standing
+  go-ahead.** No live work found at tick start (tree
+  clean, HEAD == origin/main at `5b268692c2`; Slice 131's
+  state mtime minutes earlier was its own completed push,
+  verified, not in-progress work; the Python-write
+  blocker was probed absent). `plugins/volmarr-core/
+  persona_runtime.py` extended in place — no new file or
+  config key: §29's pure `drift_score_artifact` builds
+  the conceptual artefact in the roadmap's YAML shape (a
+  `drift` mapping with the total and per-dimension
+  values over all ten §28 dimensions, plus the §28
+  routing fields so the artefact is self-contained), and
+  the pure `validate_drift_score_artifact` recomputes
+  every derived field and refuses tampered totals,
+  significance, routes, and sparse dimension sets (the
+  roadmap's 0.08 total is illustrative; the artefact's
+  total is the deterministic §28 mean — the example
+  artefacts at 0.025, routed to output). §30's pure
+  `repair_pipeline` / `repair_contract` / `repair_plan`
+  stand the repair pipeline in contract form (draft →
+  identify violated persona anchors → rewrite minimally
+  → verify → deliver; only the rewrite step rewrites,
+  scoped to the violated anchors; nothing regenerates
+  the whole draft), reconciled against the §§17/18
+  anchors — violated anchors are caller-named, bounded
+  and verbatim like the config lists; a significant
+  score plans the five steps, an insignificant score
+  plans deliver-without-repair with no steps. Packet
+  label updated to §§3–30 (nine older persona files'
+  packet assertions updated in-slice). Tests: targeted
+  15/15 pass (8 new drift-repair contracts + watchdog
+  file); targeted persona run (16 files): **129 passed,
+  0 failed**; full volmarr/kista run (85 files): **608
+  passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set in the
+  same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice132_full_run.log`); 608
+  is exactly Slice 131's 600 + the 8 new contracts.
+  Smoke: `hermes --version` runs (`vgit.5b26869.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §29 + §30 completion notes in the Persona
+  Runtime roadmap. Push: fast-forward, no force —
+  origin/main moved `5b268692c2` → `a7d51e2fb9`,
+  verified by `git ls-remote` (remote == local HEAD).
+  Honest gaps: no live draft is scored from prose, no
+  violation is identified in prose, and nothing is
+  rewritten or delivered by this layer; no caller
+  consumes the artefact or a repair plan yet.
+- **Next resume point: Slice 133 — Persona Runtime §31
+  (Fast Local Persona Watchdog) and §32 (Persona
+  Refresh)**: §31 names the small local nervous-system
+  model as the ideal watchdog worker (persona
+  classification, drift detection, section retrieval,
+  tone checking, memory routing, response scoring —
+  without expensive heavy inference; the larger model
+  generates difficult content, the local model keeps
+  the personality coherent) — reconcile against the
+  §27 watchdog contract when read at slice start,
+  expect a pure capability/role surface naming which
+  §27–§30 functions are local-suitable, not a local
+  model integration this plugin does not own; §32
+  names persona refresh for extremely long sessions
+  (every N messages, after context summarization, or
+  after a model switch; refresh = Persona Kernel +
+  current relationship state + relevant Service Bible
+  anchors, preventing slow identity evaporation) —
+  expect a pure refresh-trigger/contents surface over
+  the banked kernel (§§9–10) and reload (§20) surfaces,
+  not a session watcher or context injector.
