@@ -1187,6 +1187,32 @@ anchors:
 These anchors should appear in every Persona Kernel.
 
 
+> **Completion note — Slice 126 (2026-10-31): §17 stands
+> in `plugins/volmarr-core/persona_runtime.py` (extended
+> in place; the `persona_runtime_enabled` description in
+> `plugin.yaml` now covers §§3–18). The human-authored
+> §3 config may carry an `anchors` list — bounded
+> (≤32 entries, ≤240 chars each, no duplicates, no empty
+> entries; an invalid list fails the config closed). The
+> compiler carries the list verbatim (§7) into the
+> compiled artefact and stands it at the head of every
+> kernel, ahead of ordinary sections, unconditionally:
+> anchors are never evicted to fit the §5 ceiling (the
+> §16 P0 rule applied to authored identity material), so
+> an anchor-heavy kernel surfaces over-band honestly.
+> The kernel records the anchors and their count, and
+> changing an anchor changes the kernel hash (and so
+> the persona hash). A profile with no anchors compiles
+> exactly as before. Targeted persona run (10 files):
+> 82/82 pass (7 new anchor contracts + the earlier
+> persona files); full volmarr/kista run (79 files):
+> 561 passed, 7 failed, 1 skipped — the failures the
+> same name-identical pre-existing environmental set.
+> Honest gaps: no prompt assembly (§53) consumes the
+> kernel yet; anchor *authorship* stays a human config
+> edit, never a runtime write.**
+
+
 ---
 
 
@@ -1212,6 +1238,19 @@ anti_anchors:
 
 
 These are surprisingly useful for drift resistance.
+
+
+> **Completion note — Slice 126 (2026-10-31): §18 stands
+> beside §17 in the same layer: the config may carry an
+> `anti_anchors` list under the same bounds and
+> validation, carried verbatim into the compiled
+> artefact and into every kernel immediately after the
+> §17 anchors (what the character is, then what it is
+> not), under the same non-eviction rule. The roadmap's
+> own seven example anti-anchors are contract-proven in
+> the kernel head. The kernel records the anti-anchors
+> and their count; the packet item names both counts
+> only — no anchor prose ever enters the packet.**
 
 
 ---

@@ -2520,3 +2520,71 @@ portable state: any agent (Muse or Hermes) resumes from here.
   persona material carried into the kernel ahead of
   ordinary sections, not a second kernel builder), then
   §18 (Negative Identity Anchors).
+- 2026-10-31 ~14:5x EDT keeper tick: **Slice 126 DONE —
+  Persona Runtime §17 (Character Anchors) and §18
+  (Negative Identity Anchors) complete, banked and PUSHED
+  under the standing go-ahead.** No live work found (tree
+  clean, HEAD == origin/main at `5274d63f28`; Slice 125's
+  commit at 14:51 EDT was its own completed push, verified,
+  not in-progress work; the Python-write blocker was probed
+  absent at tick start). `plugins/volmarr-core/
+  persona_runtime.py` extended in place — no second kernel
+  builder, no new file or config key: the human-authored
+  §3 config may carry bounded `anchors` / `anti_anchors`
+  lists (≤32 entries, ≤240 chars, no duplicates, no empty
+  entries; invalid lists fail the config closed), carried
+  verbatim (§7) into the compiled artefact and stood at
+  the head of every kernel — anchors first, then
+  anti-anchors, each on its own line — ahead of ordinary
+  sections, unconditionally (never evicted to fit the §5
+  ceiling; anchor tokens count toward the kernel total,
+  so an anchor-heavy kernel surfaces over-band). The
+  kernel records both lists + counts; changing an anchor
+  changes the kernel hash and the persona hash. Two
+  in-slice test-side fixes, both caught by the slice's own
+  contracts (no production change): the no-anchors
+  assertion wrongly expected kernel text to start with a
+  heading (section text is the verbatim body), and the
+  over-ceiling anchor strings carried a trailing space
+  that config validation correctly strips. **Verification
+  honesty note: the first targeted and first full-run
+  exec-delivery summaries misreported the results (75/562
+  passed, 0 anchors failures); the run logs themselves
+  showed the 2 anchors failures — all numbers banked here
+  are read from the logs' own summary lines, and both runs
+  were re-run after the fixes.** Tests: anchors file 7/7
+  with file retries disabled; targeted persona run
+  (10 files): **82 passed, 0 failed**
+  (`~/workspace/.verify-tmp/slice126_targeted2.log`);
+  full volmarr/kista run (79 files): **561 passed,
+  7 failed, 1 skipped** — the same name-identical
+  pre-existing environmental set in the same 3 files
+  (5 core-plugin, 1 Verðandi-stimuli socket, 1
+  voice-runner loopback), verified in the run log's own
+  summary line
+  (`~/workspace/.verify-tmp/slice126_full_run2.log`); 561
+  is exactly Slice 125's 554 + the 7 new contracts (the
+  first full run was also interrupted once by a service
+  restart and re-run clean). Smoke: `hermes --version`
+  runs; README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §§17–18 completion notes in the Persona
+  Runtime roadmap. Honest gaps: no prompt assembly (§53)
+  consumes the kernel yet; anchor authorship stays a
+  human config edit, never a runtime write.
+- **Next resume point: Slice 127 — Persona Runtime §19
+  (Persona Hash) and §20 (Hot Reload)**: reconcile §19's
+  stored hash record (persona version, document hashes,
+  compile timestamp, kernel hash — the compiled artefact
+  already carries document sha256s, the kernel hash, and
+  the combined persona_hash; a compile *timestamp* sits
+  against the compiler's determinism, so expect the
+  genuine gap to be an explicit hash-record / change-
+  detection surface, not a timestamp inside the
+  deterministic artefact) and §20's hot-reload chain
+  (hash-change detection → reparse → IR/index rebuild →
+  kernel recompile if necessary, no restart) against the
+  explicit-compile model when read at slice start —
+  implementing only genuine gaps (e.g. a deterministic
+  `detect_changes` comparison between two compiles),
+  not a resident file watcher this plugin does not own.

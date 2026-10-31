@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-16).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-18).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -192,6 +192,26 @@ What stands here, and nothing more:
   excludes a P0 item in the persona-kernel category as
   ``over_budget`` (its category may report negative
   remaining rather than evict P0 material).
+- §17 character anchors / §18 negative identity anchors:
+  the human-authored config may carry two bounded lists —
+  ``anchors`` (explicit statements of what the character
+  *is*) and ``anti_anchors`` (explicit statements of what
+  the character is *not*, for drift resistance). Both are
+  validated in the config store (bounded count and length,
+  no duplicates, no empty entries) and carried *verbatim*
+  (§7) into the compiled artefact. Anchors are not a
+  second kernel builder: the kernel generation stands the
+  anchor block — anchors first, then anti-anchors, each
+  statement on its own line verbatim — ahead of every
+  ordinary section, unconditionally (anchors are never
+  evicted to fit the §5 ceiling, the §16 P0 rule applied
+  to authored identity material; a kernel heavy with
+  anchors surfaces over-band, honestly). The kernel
+  records both lists and their counts, and changing an
+  anchor changes the kernel hash (and therefore the
+  persona hash), so anchor edits are detectable like any
+  other persona change. A profile with no anchors
+  compiles exactly as before this section stood.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -232,6 +252,9 @@ MAX_DOCUMENTS = 32
 MAX_NAME_CHARS = 128
 KERNEL_TOKEN_MIN = 500
 KERNEL_TOKEN_MAX = 1500
+# §17/§18 anchor bounds: the authored lists in the config.
+MAX_ANCHORS = 32
+MAX_ANCHOR_CHARS = 240
 
 # The six semantic roles §3 names, in roadmap order. §4 roles
 # beyond these are first-class extensions, not errors.
@@ -307,10 +330,51 @@ def kernel_source_kind(role: str, heading: str) -> str | None:
 def kernel_source_kinds() -> list[str]:
     return [_KERNEL_SOURCE_KIND[role] for role in KERNEL_SOURCE_ORDER]
 
+
+def anchor_block(anchors: Any = (), anti_anchors: Any = ()) -> str:
+    """The §17/§18 anchor block, verbatim, or "" when empty.
+
+    Pure function: anchors first (what the character is),
+    then anti-anchors (what the character is not), each
+    statement on its own line exactly as authored (§7).
+    This block stands at the head of every kernel.
+    """
+    lines = [str(item) for item in (anchors or ())]
+    lines += [str(item) for item in (anti_anchors or ())]
+    return "\n".join(lines)
+
+
+def _validate_anchor_list(raw: Any, field: str) -> list[str]:
+    """One bounded §17/§18 anchor list from the config.
+
+    Absent means empty. A present list must be a list of
+    non-empty bounded strings with no duplicates — an
+    invalid anchor list fails the whole config closed
+    rather than silently dropping authored identity
+    material.
+    """
+    if raw is None:
+        return []
+    if not isinstance(raw, list) or len(raw) > MAX_ANCHORS:
+        raise PersonaRuntimeError(f"persona {field} are invalid")
+    anchors: list[str] = []
+    for item in raw:
+        if not isinstance(item, str) or not item.strip() \
+                or len(item.strip()) > MAX_ANCHOR_CHARS:
+            raise PersonaRuntimeError(f"persona {field} are invalid")
+        text = item.strip()
+        if text in anchors:
+            raise PersonaRuntimeError(f"persona {field} are invalid")
+        anchors.append(text)
+    return anchors
+
 _SLUG = re.compile(r"^[a-z][a-z0-9_-]*$")
 _HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
 _CONFIG_FIELDS = {"persona"}
-_PERSONA_FIELDS = {"id", "display_name", "directory", "documents"}
+_PERSONA_FIELDS = {
+    "id", "display_name", "directory", "documents",
+    "anchors", "anti_anchors",
+}
 _DOCUMENT_FIELDS = {"file", "required"}
 
 
@@ -1337,6 +1401,10 @@ class PersonaConfigStore:
             "display_name": display_name.strip(),
             "directory": directory.strip(),
             "documents": documents,
+            "anchors": _validate_anchor_list(
+                persona.get("anchors"), "anchors"),
+            "anti_anchors": _validate_anchor_list(
+                persona.get("anti_anchors"), "anti_anchors"),
         }
 
     @staticmethod
@@ -1455,7 +1523,10 @@ class PersonaCompiler:
             for section in sections:
                 sections_by_role.setdefault(
                     document["role"], []).append(section)
-        kernel = self._kernel(sections_by_role)
+        kernel = self._kernel(
+            sections_by_role,
+            anchors=config["anchors"],
+            anti_anchors=config["anti_anchors"])
         # The §11 index is built after the kernel so each
         # record's derived priority can see kernel membership.
         kernel_keys = {
@@ -1492,6 +1563,8 @@ class PersonaCompiler:
         return {
             "persona_id": config["id"],
             "display_name": config["display_name"],
+            "anchors": list(config["anchors"]),
+            "anti_anchors": list(config["anti_anchors"]),
             "documents": documents,
             "missing_optional": missing_optional,
             "kernel": kernel,
@@ -1503,8 +1576,17 @@ class PersonaCompiler:
     @staticmethod
     def _kernel(
             sections_by_role: dict[str, list[dict[str, Any]]],
+            anchors: list[str] | None = None,
+            anti_anchors: list[str] | None = None,
     ) -> dict[str, Any]:
         """Layer A: the §9 kernel, from the §9 source mix.
+
+        The §17/§18 anchor block (authored anchors, then
+        anti-anchors, verbatim) stands ahead of every
+        section, unconditionally — anchors are never
+        evicted to fit the §5 ceiling, and their tokens
+        count toward the kernel total like any other
+        kernel material.
 
         Candidates stand in the roadmap's formula order —
         core, relationship, service bible, tool policy — in
@@ -1537,8 +1619,9 @@ class PersonaCompiler:
                 kind = kernel_source_kind(role, section["heading"])
                 candidates.append((
                     role, kind or "core", section))
+        anchor_text = anchor_block(anchors, anti_anchors)
         picked: list[tuple[str, str, dict[str, Any]]] = []
-        total = 0
+        total = _estimate_tokens(anchor_text)
         for role, kind, section in candidates:
             tokens = _estimate_tokens(section["text"])
             # §16: P0 material is never evicted from the
@@ -1554,8 +1637,11 @@ class PersonaCompiler:
             picked.append((role, kind, section))
             total += tokens
         picked_sections = [section for _, _, section in picked]
-        text = "\n\n".join(
-            section["text"] for section in picked_sections)
+        blocks = [block for block in (
+            anchor_text,
+            *[section["text"] for section in picked_sections],
+        ) if block]
+        text = "\n\n".join(blocks)
         digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
         sources = [{
             "role": role, "kind": kind,
@@ -1566,6 +1652,10 @@ class PersonaCompiler:
             for kind in kernel_source_kinds()
         }
         return {
+            "anchors": list(anchors or []),
+            "anti_anchors": list(anti_anchors or []),
+            "anchor_count": len(anchors or []),
+            "anti_anchor_count": len(anti_anchors or []),
             "section_ids": [s["section_id"] for s in picked_sections],
             "stable_ids": [
                 stable_section_id(role, section["section_id"])
@@ -1777,7 +1867,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-16): persona "
+            f"Persona runtime (§§3-18): persona "
             f"{compiled['persona_id']} compiled from "
             f"{len(compiled['documents'])} documents / "
             f"{len(compiled['index'])} sections; kernel "
@@ -1813,6 +1903,11 @@ class PersonaRuntimeBridge:
             f"where present, otherwise derived), and P0 "
             f"material is never evicted from the kernel or "
             f"the kernel budget merely to save tokens. "
+            f"§17/§18 anchors: {kernel['anchor_count']} "
+            f"character anchors and "
+            f"{kernel['anti_anchor_count']} negative anchors "
+            f"stand verbatim at the head of every kernel, "
+            f"never evicted to fit the §5 ceiling. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -1835,6 +1930,8 @@ __all__ = [
     "KERNEL_SOURCE_ORDER",
     "KERNEL_TOKEN_MIN",
     "KERNEL_TOKEN_MAX",
+    "MAX_ANCHORS",
+    "MAX_ANCHOR_CHARS",
     "PINNING_ORDER",
     "RULE_HEADING_WORDS",
     "PersonaRuntimeError",
@@ -1852,6 +1949,7 @@ __all__ = [
     "ROUTER_MAX_LIMIT",
     "ROUTER_PER_TAG_LIMIT",
     "TASK_TAGS",
+    "anchor_block",
     "build_persona_ir",
     "classify_section",
     "classify_task",
