@@ -1116,6 +1116,34 @@ After a task, the entity can reliably answer:
 
 > What did I learn from what just happened, how certain am I, and what should I change next time?
 
+**Phase 3 completion note (Slice 93, 2026-10-31):** implemented in
+`plugins/volmarr-core/metacognition.py`. A compact
+`entity/metacognition.json` summary (owner/symlink/size-validated,
+create-once) plus a bounded `entity/reflection_log.jsonl` history
+(rotated to a configurable 10–500 entries) hold `ReflectionRecord`
+conclusions — the Phase 0 contract has no field that could carry raw
+chain-of-thought, and unknown triggers outside the §10 high-value set
+are refused. Calibration is deterministic: five prediction buckets
+track observed success frequency, and each record's label
+(calibrated / overconfident / underconfident / uncalibrated) is a pure
+function of prediction and outcome. Feedback is proposals only:
+self-model candidates and strategy changes are validated and returned
+by `proposals_for`, and `route_self_model_evidence` hands evidence to
+the self-model store's own merge layer (its fixed medium-evidence
+delta decides; missing claims are skipped, never created) — identity,
+goals, drives, and autonomy policy are never written from here. A
+bounded packet contribution (last 2 lessons + latest strategy change)
+enters CURRENT STATE. `tests/plugins/test_volmarr_metacognition.py`
+covers create-once byte stability, summary/log/calibration updates,
+trigger bounds and no-hidden-reasoning rejection, bounded rotation
+with totals surviving, pure proposals + merge-layer routing,
+wrong-owner/malformed/symlink refusal, restart persistence, A→B→A
+isolation, and packet/fail-open behavior. Verðandi reflection events
+(§10) and the ConsolidationService metacognition digest are not yet
+emitted/wired; they arrive with a later telemetry slice. Next:
+Phase 4 (§11) builds the curiosity engine on the `CuriosityQuestion`
+contract.
+
 ---
 
 # 11. Phase 4 - Curiosity Engine

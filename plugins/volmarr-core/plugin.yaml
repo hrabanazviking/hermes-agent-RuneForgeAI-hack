@@ -225,6 +225,22 @@ config_schema:
     type: float
     default: 6
     description: "Cooldown after a drive is satisfied or its proposal is rejected (clamped to 0-168 hours)."
+  metacognition_enabled:
+    type: bool
+    default: true
+    description: "Create and expose the active entity's metacognition summary and reflection log (Emergent Agency Phase 3). Conclusions only; never hidden reasoning."
+  metacognition_path:
+    type: str
+    default: entity/metacognition.json
+    description: "Metacognition summary JSON path relative to the active Hermes profile; escaping paths fall back to the default."
+  metacognition_log_path:
+    type: str
+    default: entity/reflection_log.jsonl
+    description: "Reflection log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  metacognition_log_limit:
+    type: int
+    default: 500
+    description: "Maximum reflection log entries retained by rotation (clamped to 10-500)."
   heartbeat_enabled:
     type: bool
     default: true

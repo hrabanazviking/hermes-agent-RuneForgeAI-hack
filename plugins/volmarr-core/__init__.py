@@ -13,6 +13,7 @@ from .heartbeat import HeartbeatBridge, register_heartbeat_tool
 from .identity import IdentityBridge
 from .lifecycle import LifecycleBridge
 from .mempalace_retrieval import MemPalaceRetrievalBridge
+from .metacognition import MetacognitionBridge
 from .openviking_retrieval import OpenVikingRetrievalBridge
 from .present_state import PresentStateBridge
 from .relationships import RelationshipBridge, register_relationship_tools
@@ -41,6 +42,9 @@ def register(ctx) -> None:
     drives = DriveBridge(ctx)
     for hook_name, callback in drives.hooks():
         ctx.register_hook(hook_name, callback)
+    metacognition = MetacognitionBridge(ctx)
+    for hook_name, callback in metacognition.hooks():
+        ctx.register_hook(hook_name, callback)
     heartbeat = HeartbeatBridge(ctx)
     for hook_name, callback in heartbeat.hooks():
         ctx.register_hook(hook_name, callback)
@@ -59,6 +63,7 @@ def register(ctx) -> None:
             openviking_retrieval.packet_items,
             self_model.packet_items,
             drives.packet_items,
+            metacognition.packet_items,
         ),
     )
     for hook_name, callback in present_state.hooks():

@@ -522,3 +522,45 @@ portable state: any agent (Muse or Hermes) resumes from here.
   at slice start). (Slice numbering: 92 was taken by the ravens
   write-path commission.) The Bifröst write paths are DONE (Slice
   92, pushed); no parked blockers remain on this line.
+- 2026-10-31 ~01:1x EDT keeper tick: **Slice 93 DONE — Emergent
+  Agency Phase 3 (§10, Metacognition) complete, banked and PUSHED
+  under the standing go-ahead.** No live work found (tree clean,
+  HEAD == origin/main at `99144b6f`). `plugins/volmarr-core/
+  metacognition.py`: compact `entity/metacognition.json` summary
+  (create-once, owner/symlink/size validation in the established
+  store pattern) + bounded `entity/reflection_log.jsonl` history
+  (rotation to a configurable 10–500 entries; totals survive
+  rotation) on the Slice 88 `ReflectionRecord` contract —
+  conclusions only, no field could carry raw chain-of-thought.
+  Only the §10 high-value triggers are accepted. Calibration is
+  deterministic: five prediction buckets track observed success
+  frequency; labels (calibrated/overconfident/underconfident/
+  uncalibrated) are pure functions of prediction vs outcome.
+  Feedback is proposals only: `proposals_for` validates/returns
+  self-model evidence + strategy-update proposals writing nothing;
+  `route_self_model_evidence` hands candidates to the self-model
+  store's own merge layer (medium +0.08 delta decides; missing
+  claims skipped, never created). Identity/goals/drives/autonomy
+  policy never written from here. Bounded packet contribution
+  (last 2 lessons + latest strategy change, CURRENT STATE) wired
+  as one added `packet_sources` producer; config keys
+  `metacognition_enabled`/`metacognition_path`/
+  `metacognition_log_path`/`metacognition_log_limit` in
+  `plugin.yaml`. One in-slice fix: path resolution hid a symlinked
+  log file — `_resolve` now returns the lexical path when the final
+  component is a symlink so readers refuse it (Slice 87 lesson).
+  Tests: targeted 8/8 pass; full volmarr/kista run (46 files):
+  **287 passed, 7 failed, 1 skipped** — the same name-identical
+  pre-existing environmental set (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback). Smoke: `hermes --version`
+  runs; README.md sha256 invariant held (`4e022de7…c4910`).
+  Bookkeeping: CUSTOMIZATIONS.md ledger row, Phase 3 completion
+  note in the Emergent Agency roadmap §10. Honest gaps: Verðandi
+  reflection events (§10 metadata) NOT yet emitted and the
+  ConsolidationService metacognition digest NOT yet wired —
+  deferred to a later telemetry slice, recorded in both
+  bookkeeping spots.
+- **Next resume point: Slice 94 — Emergent Agency Phase 4 (§11,
+  Curiosity Engine)**: `plugins/volmarr-core/curiosity.py` +
+  `entity/curiosity.yaml` on the Slice 88 `CuriosityQuestion`
+  contract (per the §11 spec when read at slice start).
