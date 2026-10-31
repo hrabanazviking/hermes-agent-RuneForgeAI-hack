@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-15).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-16).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -166,15 +166,40 @@ What stands here, and nothing more:
   another's allocation. Budgeting is an explicit call only:
   it writes nothing, injects nothing, and assembles no
   prompt (§53 is later).
-- Priority here is *derived*, never authored or stored:
+- §16 priority system: persona information carries a
+  priority level — P0 identity-critical, P1 strong
+  behavioral rule, P2 important preference, P3
+  context-specific preference, P4 aesthetic/background
+  detail (``PRIORITY_LEVELS``). A level may be *authored*:
+  a trailing ``[P0]``–``[P4]`` marker on a section heading
+  is this layer's authored-metadata convention — the
+  marker is stripped from the semantic heading (so it
+  never changes a section's stable id) and recorded as
+  the section's authored level. Where no marker stands,
+  the level is *derived* deterministically by the pure
+  ``priority_level`` function, reconciled with the §11
+  bands: kernel core sections are P0, other kernel
+  sections and kernel-marked rules are P1, the
+  persona-defining §8 categories are P2, preference /
+  project / tool / memory / communication material is
+  P3, and quirks, embodiment, the preamble, and the rest
+  are P4. An authored level wins over the derived one
+  everywhere (index float, retrieval, kernel, budgeter).
+  §16's hard rule stands in code in both places tokens
+  are saved: kernel generation never skips a P0 section
+  to fit the §5 ceiling (a P0-heavy kernel surfaces
+  over-band, honestly), and the §15 budgeter never
+  excludes a P0 item in the persona-kernel category as
+  ``over_budget`` (its category may report negative
+  remaining rather than evict P0 material).
+- The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
   (in the kernel 0.90; kernel-marked but not selected
   0.80; identity/values/boundaries/rules/motivations/
   relationship material 0.60; everything else, including
-  the unheaded preamble, 0.40). §16's authored P0–P4
-  priority metadata is a later section and is not
-  claimed here.
+  the unheaded preamble, 0.40); an authored §16 level
+  maps to its own float (P0 1.00 … P4 0.25) instead.
 
 Token counts are deterministic estimates (ceil(chars / 4)),
 named as estimates wherever they surface. Disabled by
@@ -304,6 +329,22 @@ def _slugify(heading: str) -> str:
 
 _ENUM_PREFIX = re.compile(r"^\d+(?:\.\d+)*[.)]\s+")
 
+# §16 authored priority: a trailing [P0]-[P4] marker on a
+# heading is authored metadata, not heading text.
+_PRIORITY_MARKER = re.compile(r"\[(P[0-4])\]\s*$", re.IGNORECASE)
+
+
+def authored_priority_level(raw: str) -> str | None:
+    """The §16 level authored on a raw heading, or None.
+
+    Pure function of the raw heading text: a trailing
+    ``[P0]``–``[P4]`` marker (any case) is the authored
+    level; anything else (including an out-of-range
+    ``[P9]``) is ordinary heading text, not metadata.
+    """
+    match = _PRIORITY_MARKER.search(raw.strip())
+    return match.group(1).upper() if match else None
+
 
 def display_heading(raw: str) -> str:
     """The §11 semantic heading: enumeration is not identity.
@@ -311,10 +352,15 @@ def display_heading(raw: str) -> str:
     A leading enumeration prefix (``37. ``, ``11.2) ``) is
     presentation — the roadmap's own example turns
     ``37. WHEN CADUCEA DISAGREES`` into the heading
-    ``WHEN CADUCEA DISAGREES``. Pure function of the raw
-    heading text; a heading that is only a number keeps it.
+    ``WHEN CADUCEA DISAGREES``. A trailing §16 authored
+    priority marker (``[P0]``–``[P4]``) is metadata, not
+    identity, and is likewise stripped, so authoring a
+    level never changes a section's stable id. Pure
+    function of the raw heading text; a heading that is
+    only a number keeps it.
     """
     cleaned = _ENUM_PREFIX.sub("", raw.strip(), count=1).strip()
+    cleaned = _PRIORITY_MARKER.sub("", cleaned).strip()
     return cleaned or raw.strip()
 
 
@@ -353,6 +399,7 @@ def parse_sections(text: str) -> list[dict[str, Any]]:
     sections: list[dict[str, Any]] = []
     heading = "preamble"
     level = 0
+    authored: str | None = None
     lines: list[str] = []
 
     def flush() -> None:
@@ -362,6 +409,7 @@ def parse_sections(text: str) -> list[dict[str, Any]]:
             return
         sections.append({
             "heading": heading, "level": level, "text": body,
+            "authored_priority": authored,
         })
 
     for line in text.splitlines():
@@ -369,6 +417,7 @@ def parse_sections(text: str) -> list[dict[str, Any]]:
         if match:
             flush()
             level = len(match.group(1))
+            authored = authored_priority_level(match.group(2))
             heading = display_heading(match.group(2))
             lines = []
         else:
@@ -473,28 +522,101 @@ def classify_section(role: str, heading: str) -> str:
     return "identity"
 
 
-# §11 priority bands (derived, §16 authored metadata is a
-# later section): the kernel is identity-critical material;
-# kernel-marked sections that did not fit are the next band;
-# the persona-defining IR categories follow; the rest —
-# preferences, background, the unheaded preamble — are last.
+# §11 priority bands (derived): the kernel is
+# identity-critical material; kernel-marked sections that
+# did not fit are the next band; the persona-defining IR
+# categories follow; the rest — preferences, background,
+# the unheaded preamble — are last.
 _PRIORITY_MID_CATEGORIES = frozenset({
     "identity", "values", "boundaries", "behavioral_rules",
     "motivations", "relationship",
 })
 
+# §16 priority levels, in roadmap order with the roadmap's
+# own names, and the float each authored level carries.
+PRIORITY_LEVELS = (
+    ("P0", "identity-critical"),
+    ("P1", "strong behavioral rule"),
+    ("P2", "important preference"),
+    ("P3", "context-specific preference"),
+    ("P4", "aesthetic/background detail"),
+)
+_PRIORITY_LEVEL_SCORES = {
+    "P0": 1.00, "P1": 0.85, "P2": 0.65, "P3": 0.45, "P4": 0.25,
+}
+# §8 categories whose derived level is P3; the §11 mid
+# categories derive P2; quirks/embodiment and everything
+# else derive P4.
+_PRIORITY_P3_CATEGORIES = frozenset({
+    "preferences", "projects", "tools", "memory", "communication",
+})
+
+
+def priority_levels() -> list[dict[str, str]]:
+    return [
+        {"level": level, "name": name}
+        for level, name in PRIORITY_LEVELS]
+
+
+def priority_level_score(level: str) -> float:
+    """The float an authored §16 level carries, in [0, 1]."""
+    try:
+        return _PRIORITY_LEVEL_SCORES[level]
+    except KeyError:
+        raise PersonaRuntimeError(
+            f"unknown priority level: {level!r}") from None
+
+
+def priority_level(role: str, heading: str,
+                   in_kernel: bool = False,
+                   authored: str | None = None) -> str:
+    """The §16 priority level of a section. Pure function.
+
+    An authored level (a trailing ``[Pn]`` heading marker,
+    already extracted) wins. Otherwise the level is derived
+    from the signals this layer already computes: a kernel
+    section of the core document is P0 (identity-critical);
+    any other kernel section, and any kernel-marked (§9)
+    section that did not fit, is P1 (a strong behavioral
+    rule); a section classifying into a persona-defining
+    §8 category is P2; preference/project/tool/memory/
+    communication material is P3; quirks, embodiment, the
+    unheaded preamble, and everything else are P4.
+    """
+    if authored is not None:
+        if authored not in _PRIORITY_LEVEL_SCORES:
+            raise PersonaRuntimeError(
+                f"unknown priority level: {authored!r}")
+        return authored
+    if in_kernel:
+        return "P0" if role == "core" else "P1"
+    if heading == "preamble":
+        return "P4"
+    if kernel_source_kind(role, heading) is not None:
+        return "P1"
+    category = classify_section(role, heading)
+    if category in _PRIORITY_MID_CATEGORIES:
+        return "P2"
+    if category in _PRIORITY_P3_CATEGORIES:
+        return "P3"
+    return "P4"
+
 
 def section_priority(role: str, heading: str,
-                     in_kernel: bool = False) -> float:
+                     in_kernel: bool = False,
+                     authored: str | None = None) -> float:
     """The §11 derived priority of a section, in [0, 1].
 
     Pure deterministic function of (role, heading, kernel
-    membership) over signals this layer already computes —
-    never an authored or stored value. Bands: in the kernel
-    0.90; kernel-marked (§9) but not selected 0.80; sections
-    classifying into a persona-defining §8 category 0.60;
-    everything else 0.40.
+    membership) over signals this layer already computes.
+    Bands: in the kernel 0.90; kernel-marked (§9) but not
+    selected 0.80; sections classifying into a
+    persona-defining §8 category 0.60; everything else
+    0.40. An authored §16 level replaces the band with the
+    level's own float (P0 1.00 … P4 0.25).
     """
+    if authored is not None:
+        return priority_level_score(authored)
     if in_kernel:
         return 0.90
     if heading == "preamble":
@@ -1066,10 +1188,15 @@ def _budget_item(raw: Any) -> dict[str, Any]:
                 or not isinstance(value, (int, float)) \
                 or not 0.0 <= float(value) <= 1.0:
             raise PersonaRuntimeError("budget item priority/score invalid")
+    level = raw.get("priority_level")
+    if level is not None and level not in _PRIORITY_LEVEL_SCORES:
+        raise PersonaRuntimeError(
+            f"budget item priority level is invalid: {level!r}")
     return {
         "id": item_id.strip(), "category": category,
         "estimated_tokens": tokens,
         "priority": float(priority), "score": float(score),
+        "priority_level": level,
     }
 
 
@@ -1086,6 +1213,11 @@ def budget_items(items: list[dict[str, Any]],
     reason ``over_budget`` and a later smaller item may
     still fit; no item is ever cut. Categories spend only
     their own allocation. Deterministic for identical input.
+
+    §16 exception: a P0 item in the persona-kernel category
+    is never excluded merely to save tokens — it is included
+    even past the allocation, and the category's remaining
+    count may go negative rather than evict P0 material.
     """
     allocations = budget_allocations(context_class, budgets)
     normalised = [_budget_item(raw) for raw in (items or [])]
@@ -1106,7 +1238,9 @@ def budget_items(items: list[dict[str, Any]],
         kept: list[str] = []
         dropped: list[str] = []
         for row in rows:
-            if row["estimated_tokens"] <= remaining:
+            p0_kernel = category == "persona_kernel" \
+                and row.get("priority_level") == "P0"
+            if row["estimated_tokens"] <= remaining or p0_kernel:
                 remaining -= row["estimated_tokens"]
                 kept.append(row["id"])
                 included.append(row)
@@ -1345,7 +1479,15 @@ class PersonaCompiler:
                     "priority": section_priority(
                         role, section["heading"],
                         in_kernel=(role, section["section_id"])
-                        in kernel_keys),
+                        in kernel_keys,
+                        authored=section.get("authored_priority")),
+                    "priority_level": priority_level(
+                        role, section["heading"],
+                        in_kernel=(role, section["section_id"])
+                        in kernel_keys,
+                        authored=section.get("authored_priority")),
+                    "priority_authored":
+                        section.get("authored_priority") is not None,
                 })
         return {
             "persona_id": config["id"],
@@ -1373,8 +1515,10 @@ class PersonaCompiler:
         sections (``kernel_source_kind``). Whole sections
         only, under the §5 ceiling: a candidate that would
         overflow is skipped so a later small critical
-        boundary can still fit; at least one section is
-        always included, so a single oversized section
+        boundary can still fit — except P0 material (§16),
+        which is never evicted merely to save tokens and is
+        picked even past the ceiling; at least one section
+        is always included, so a single oversized section
         surfaces as an over-band kernel rather than an
         empty one. The kernel records its provenance and
         the §10 pinning spec it is compiled under.
@@ -1397,7 +1541,15 @@ class PersonaCompiler:
         total = 0
         for role, kind, section in candidates:
             tokens = _estimate_tokens(section["text"])
-            if picked and total + tokens > KERNEL_TOKEN_MAX:
+            # §16: P0 material is never evicted from the
+            # kernel merely to save tokens — a P0 candidate
+            # is picked even past the §5 ceiling, and the
+            # kernel then surfaces over-band, honestly.
+            level = priority_level(
+                role, section["heading"], in_kernel=True,
+                authored=section.get("authored_priority"))
+            if picked and total + tokens > KERNEL_TOKEN_MAX \
+                    and level != "P0":
                 continue
             picked.append((role, kind, section))
             total += tokens
@@ -1534,18 +1686,26 @@ class PersonaContextBudgeter:
         if compiled is not None:
             persona_id = compiled["persona_id"]
             kernel = compiled["kernel"]
-            items.append({
-                "id": "persona_kernel",
-                "category": "persona_kernel",
-                "estimated_tokens": kernel["estimated_tokens"],
-                "priority": 0.90, "score": 0.90,
-            })
             by_id = {
                 entry.get(
                     "stable_id",
                     stable_section_id(entry["role"], entry["section_id"])):
                 entry for entry in compiled["index"]
             }
+            # §16: the kernel item carries P0 when any kernel
+            # section is P0, so the budgeter never evicts it
+            # merely to save tokens.
+            kernel_level = "P0" if any(
+                by_id[sid].get("priority_level") == "P0"
+                for sid in kernel["stable_ids"] if sid in by_id
+            ) else "P1"
+            items.append({
+                "id": "persona_kernel",
+                "category": "persona_kernel",
+                "estimated_tokens": kernel["estimated_tokens"],
+                "priority": 0.90, "score": 0.90,
+                "priority_level": kernel_level,
+            })
             rows: list[dict[str, Any]] = []
             if route is not None:
                 rows = list(route.get("sections") or [])
@@ -1565,6 +1725,7 @@ class PersonaContextBudgeter:
                         row.get("priority", entry["priority"])),
                     "score": float(score.get("total", 0.0))
                     if isinstance(score, dict) else 0.0,
+                    "priority_level": entry.get("priority_level"),
                 })
         for raw, category in (
                 (memories, "relevant_memories"),
@@ -1616,7 +1777,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-15): persona "
+            f"Persona runtime (§§3-16): persona "
             f"{compiled['persona_id']} compiled from "
             f"{len(compiled['documents'])} documents / "
             f"{len(compiled['index'])} sections; kernel "
@@ -1647,6 +1808,11 @@ class PersonaRuntimeBridge:
             f"memory, and project items to configurable "
             f"per-category allocations scaled by model context "
             f"class, whole items only in priority order. "
+            f"§16 priority: every section carries a P0-P4 "
+            f"level (authored by a trailing heading marker "
+            f"where present, otherwise derived), and P0 "
+            f"material is never evicted from the kernel or "
+            f"the kernel budget merely to save tokens. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -1707,6 +1873,11 @@ __all__ = [
     "context_classes",
     "suggested_budgets",
     "section_priority",
+    "PRIORITY_LEVELS",
+    "authored_priority_level",
+    "priority_level",
+    "priority_level_score",
+    "priority_levels",
     "section_tags",
     "stable_section_id",
     "task_tags",

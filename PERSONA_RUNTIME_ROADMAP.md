@@ -1122,6 +1122,43 @@ P4 — aesthetic/background detail
 Never evict P0 material from the kernel merely to save a few tokens.
 
 
+> **Completion note — Slice 125 (2026-10-31): §16 stands
+> in `plugins/volmarr-core/persona_runtime.py` (extended
+> in place; the `persona_runtime_enabled` description in
+> `plugin.yaml` now covers §§3–16). The five levels stand
+> with the names above. A level may be authored: a
+> trailing `[P0]`–`[P4]` marker on a section heading is
+> this layer's authored-metadata convention (the roadmap
+> prescribes no syntax) — it is stripped from the
+> semantic heading, so authoring never changes a §12
+> stable id, and an out-of-range `[P9]` is ordinary
+> heading text. Unmarked sections derive their level
+> deterministically, reconciled with the §11 bands:
+> kernel core P0, other kernel sections and
+> kernel-marked-but-unselected rules P1, persona-defining
+> §8 categories P2, preference/project/tool/memory/
+> communication P3, quirks/embodiment/preamble/rest P4;
+> an authored level wins everywhere and replaces the
+> §11 float with its own (P0 1.00 … P4 0.25), while
+> unmarked sections keep the exact §11 bands. Every
+> compiled index entry carries `priority_level` and
+> `priority_authored`. The non-eviction rule stands in
+> both places tokens are saved: kernel generation picks
+> a P0 candidate even past the §5 ceiling (over-band,
+> honestly; a following P1 candidate is still skipped),
+> and the §15 budgeter never excludes a P0
+> persona-kernel item as `over_budget` (the category
+> reports negative remaining rather than evict P0).
+> Targeted 67/67 pass (8 new contracts + the seven
+> earlier persona files); full volmarr/kista run
+> (78 files): 554 passed, 7 failed, 1 skipped — the
+> failures the same name-identical pre-existing
+> environmental set. Honest gaps: character anchors
+> (§17) and negative anchors (§18) are the next
+> sections; no prompt assembly (§53) consumes levels
+> yet.**
+
+
 ---
 
 

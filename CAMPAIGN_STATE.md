@@ -2459,3 +2459,64 @@ portable state: any agent (Muse or Hermes) resumes from here.
   against the §11 derived priority bands and the §15
   budgeter's priority-order trimming when read at slice
   start, implementing only genuine §16 gaps.
+- 2026-10-31 ~14:1x EDT keeper tick: **Slice 125 DONE —
+  Persona Runtime §16 (Priority System) complete, banked
+  and PUSHED under the standing go-ahead.** No live work
+  found (tree clean, HEAD == origin/main at `c0078843e6`;
+  Slice 124's commit minutes earlier was its own completed
+  push, verified, not in-progress work; the Python-write
+  blocker of Slices 115/122 was probed absent at tick
+  start). `plugins/volmarr-core/persona_runtime.py`
+  extended in place — no new file or config key: the five
+  §16 levels stand with the roadmap's own names; a level
+  may be authored by a trailing `[P0]`–`[P4]` heading
+  marker (this layer's convention — the roadmap
+  prescribes no syntax), stripped from the semantic
+  heading so authoring never changes a §12 stable id,
+  with an out-of-range `[P9]` treated as ordinary heading
+  text. Unmarked sections derive their level via the pure
+  `priority_level` function, reconciled with the §11
+  bands (kernel core P0; other kernel sections and
+  kernel-marked-but-unselected rules P1; persona-defining
+  §8 categories P2; preference/project/tool/memory/
+  communication P3; quirks, embodiment, preamble, rest
+  P4); an authored level wins everywhere and replaces
+  the §11 float with its own (P0 1.00 … P4 0.25), while
+  unmarked sections keep the exact §11 bands. Every
+  compiled index entry carries `priority_level` +
+  `priority_authored`. §16's non-eviction rule stands in
+  both places tokens are saved: kernel generation picks
+  a P0 candidate even past the §5 ceiling (over-band,
+  honestly; a following P1 candidate is still skipped),
+  and the §15 budgeter never excludes a P0
+  persona-kernel item as `over_budget` (negative
+  remaining reported rather than evicting P0; invalid
+  levels refused). `PersonaContextBudgeter` marks the
+  kernel item P0 when any kernel section is P0 and
+  passes retrieval items' levels through. Tests:
+  targeted 67/67 pass (8 new priority contracts + the
+  seven earlier persona files 59/59, incl. the
+  router/budgeter packet-label assertions updated
+  in-slice to §§3–16); full volmarr/kista run (78 files):
+  **554 passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set in the
+  same 3 files (5 core-plugin, 1 Verðandi-stimuli socket,
+  1 voice-runner loopback), verified in the run log's own
+  summary line (`~/workspace/.verify-tmp/slice125_full_run.log`);
+  554 is exactly Slice 124's 546 + the 8 new contracts.
+  Smoke: `hermes --version` runs; README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §16 completion note in
+  the Persona Runtime roadmap. Honest gaps: no prompt
+  assembly (§53) consumes levels yet; the authored-marker
+  syntax is this layer's own convention, recorded as
+  such in both bookkeeping spots.
+- **Next resume point: Slice 126 — Persona Runtime §17
+  (Character Anchors)**: explicit character anchors
+  (the §17 YAML example list) that should appear in
+  every Persona Kernel — reconcile against the §9
+  kernel generation and the §16 P0 level when read at
+  slice start (expect anchors to stand as authored
+  persona material carried into the kernel ahead of
+  ordinary sections, not a second kernel builder), then
+  §18 (Negative Identity Anchors).
