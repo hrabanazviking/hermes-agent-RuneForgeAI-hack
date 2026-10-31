@@ -3118,3 +3118,81 @@ portable state: any agent (Muse or Hermes) resumes from here.
   the §§9–10 kernel/pinning surfaces (same kernel hash
   across models), not a live model router this plugin
   does not own.
+- 2026-10-31 ~19:4x EDT keeper tick: **Slice 134 DONE —
+  Persona Runtime §33 (Event-Based Refresh) and §34
+  (Model Switching) complete, banked and PUSHED under
+  the standing go-ahead.** No live work found at tick
+  start (tree clean, HEAD == origin/main at `7b821b2704`;
+  Slice 133's state commit at 19:19 EDT was its own
+  completed push, verified, not in-progress work; the
+  only test processes on the box belonged to other
+  campaigns' trees). `plugins/volmarr-core/
+  persona_runtime.py` extended in place — no new file or
+  config key: §33's pure `event_refresh_triggers` /
+  `event_refresh_contract` / `event_refresh_due` /
+  `event_refresh_plan` extend the §32 refresh shape to
+  the seven events in roadmap order (context
+  compression, model switch, agent handoff, long idle
+  period, persona file modification, major relationship
+  event, memory consolidation) — better than a fixed
+  interval alone, due on occurrence (naming an event is
+  naming its occurrence; no duration invented for the
+  long idle period, the roadmap names none), a due plan
+  carrying exactly the three §32 contents with no
+  interval required. Reconciliation with Slice 133: the
+  §32 surface is NOT widened — `refresh_due` /
+  `refresh_plan` still refuse the §33-only events;
+  model switch is the one shared trigger, due on both
+  surfaces; §33's context compression is the event §32
+  names as context summarization, kept under each
+  section's own words. §34's pure `model_switch_contract`
+  / `model_switch_plan` / `kernel_identity_preserved`
+  stand model switching over the §§9–10 kernel and its
+  hash: every model receives the same canonical Persona
+  Kernel (the model is the engine, the persona system
+  is the identity layer), a switch plan names slugified
+  caller-supplied models that must differ (same-model
+  switch refused, as is a missing/malformed kernel
+  hash) and carries the one kernel hash for both sides,
+  and identity is preserved exactly on kernel-hash
+  equality (malformed hashes refused). Packet label
+  updated to §§3–34 (eleven older persona files' packet
+  assertions updated in-slice). Tests: targeted 25/25
+  pass (10 new event-refresh contracts + local-refresh +
+  watchdog files); targeted persona run (18 files):
+  **147 passed, 0 failed**; full volmarr/kista run
+  (87 files): **626 passed, 7 failed, 1 skipped** — the
+  same name-identical pre-existing environmental set in
+  the same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice134_full_run.log`); 626
+  is exactly Slice 133's 616 + the 10 new contracts.
+  Smoke: `hermes --version` runs (`vgit.7b821b2.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §33 + §34 completion notes in the Persona
+  Runtime roadmap, plugin.yaml description now §§3–34.
+  Honest gaps: no event is watched for, no idleness is
+  measured, no model is routed or switched, no kernel
+  is delivered to a live model, nothing is refreshed or
+  injected by this layer, and no caller consumes an
+  event plan or a switch plan yet; §35's handoff packet
+  stands unclaimed.
+- **Next resume point: Slice 135 — Persona Runtime §35
+  (Persona Handoff Packet) and §36 (Subagent
+  Separation)**: §35 names the handoff packet created
+  when routing to another model (persona_id,
+  persona_version, kernel, current_mode,
+  relationship_state, relevant_sections named by stable
+  id — avoiding passing the whole conversation when
+  unnecessary) — reconcile against Slice 134's §34
+  switch plan when read at slice start, expect a pure
+  packet builder/validator in the roadmap's YAML shape
+  over the banked compile, not a live router; §36 names
+  subagent separation (do not turn every subagent into
+  the primary persona — subagents carry their own
+  identities/roles; the primary persona may delegate
+  while maintaining its own identity) — expect a pure
+  contract/classification surface, not a delegation
+  runtime this plugin does not own.
