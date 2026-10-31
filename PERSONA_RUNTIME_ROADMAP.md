@@ -2067,6 +2067,35 @@ major relationship event
 memory consolidation
 ```
 
+> **Completion note — Slice 134 (2026-10-31): §33 stands
+> in the same module. The pure `event_refresh_triggers`
+> function names the seven events in roadmap order
+> (context compression, model switch, agent handoff,
+> long idle period, persona file modification, major
+> relationship event, memory consolidation); the pure
+> `event_refresh_contract` function stands the refresh
+> itself (better than a fixed interval alone, no fixed
+> interval required, exactly the §32 contents, the slow
+> identity evaporation it prevents, and that this layer
+> watches no session and injects no context). The pure
+> `event_refresh_due` function decides one event
+> deterministically: naming an event is naming its
+> occurrence, so a valid event is due at once; the
+> roadmap names no duration for the long idle period, so
+> none is invented — the caller names the event. The
+> pure `event_refresh_plan` function plans accordingly:
+> an event plan is always a due plan carrying exactly
+> the three §32 contents. Reconciliation with Slice 133:
+> the §32 surface is NOT widened — `refresh_due` /
+> `refresh_plan` still refuse the §33-only events, the
+> one shared trigger is model switch (due on both
+> surfaces), and §33's context compression is the event
+> §32 names as context summarization, kept under each
+> section's own words. Honest gaps: this layer watches
+> for no event, measures no idleness, assembles none of
+> the contents, and injects nothing — performing a
+> refresh belongs to prompt assembly (§53).**
+
 
 ---
 
@@ -2104,6 +2133,31 @@ The model is the engine.
 
 
 The persona system is the identity layer.
+
+> **Completion note — Slice 134 (2026-10-31): §34 stands
+> in the same module. The pure `model_switch_contract`
+> function stands the switch: every model receives the
+> same canonical Persona Kernel, the model is the
+> engine, the persona system is the identity layer,
+> identity survives a switch, and a switch is also a
+> §§32–33 refresh trigger; this layer routes no model.
+> The pure `model_switch_plan` function plans one
+> switch over the §§9–10 kernel: both models are named
+> by slugified caller-supplied names and must differ (a
+> switch to the same model is refused, as is a missing
+> or malformed kernel hash), and the plan carries the
+> one kernel hash for both sides — the receiving model
+> gets the SAME kernel, so the persona (Caducea remains
+> Caducea, in the roadmap's example) is preserved by
+> construction. The pure `kernel_identity_preserved`
+> function decides identity after a switch: preserved
+> exactly when the kernel hash after equals the hash
+> before; a malformed hash on either side is refused,
+> never treated as preserved or as lost. Honest gaps:
+> no model is routed or switched, no kernel is delivered
+> to a live model, and no caller consumes a switch plan
+> yet; the §35 handoff packet a switch routing creates
+> is the next section, not claimed here.**
 
 
 ---

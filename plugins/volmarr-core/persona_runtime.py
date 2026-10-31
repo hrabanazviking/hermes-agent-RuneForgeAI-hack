@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-32).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-34).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -379,8 +379,30 @@ What stands here, and nothing more:
   the relevant Service Bible anchors, preventing slow
   identity evaporation. This layer watches no session,
   counts no messages in a live conversation, assembles
-  none of the contents, and injects nothing; §33's wider
-  event list is a later section.
+  none of the contents, and injects nothing.
+- §33 event-based refresh: better than a fixed interval
+  alone — a refresh is also due after context compression,
+  a model switch, an agent handoff, a long idle period, a
+  persona file modification, a major relationship event,
+  or memory consolidation. The pure
+  ``event_refresh_triggers`` / ``event_refresh_contract`` /
+  ``event_refresh_due`` / ``event_refresh_plan`` functions
+  extend the §32 refresh shape to those events: naming
+  an event is naming its occurrence, a due plan carries
+  exactly the §32 contents, and no fixed interval is
+  required. This layer watches for no event.
+- §34 model switching: Hermes may route between models,
+  and every model receives the same canonical Persona
+  Kernel — the model is the engine, the persona system
+  is the identity layer, so the persona remains itself
+  across a switch. The pure ``model_switch_contract`` /
+  ``model_switch_plan`` / ``kernel_identity_preserved``
+  functions stand that identity surface over the §§9–10
+  kernel and its hash: a switch plan names one kernel
+  hash for both models, and identity is preserved exactly
+  when the kernel hash after a switch equals the hash
+  before it. This layer routes no model and switches
+  nothing.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -3032,7 +3054,12 @@ def repair_plan(scores: Any, violated_anchors: Any = (),
 # and actually performing a refresh belongs to prompt
 # assembly (§53). The §32 message interval is this layer's
 # recorded convention (the roadmap says every N messages
-# and names no N).
+# and names no N). §33 widens the trigger list to named
+# events — better than a fixed interval alone — and §34
+# stands model switching: every model receives the same
+# canonical Persona Kernel, the model is the engine and
+# the persona system is the identity layer. Nothing here
+# watches for an event, routes a model, or switches one.
 
 # The six §31 local-watchdog tasks, in roadmap order.
 LOCAL_WATCHDOG_TASKS = (
@@ -3221,6 +3248,178 @@ def refresh_plan(trigger: Any,
         "messages_since_refresh": messages_since_refresh
         if resolved == "message_interval" else None,
     }
+
+
+# The §33 event-based refresh triggers, in roadmap order.
+# ``model_switch`` also stands in the §32 list; §33's
+# ``context_compression`` is the compression event the
+# §32 list names as context summarization — the two lists
+# name the same refresh under their own section's words,
+# and neither is widened into the other.
+EVENT_REFRESH_TRIGGERS = (
+    "context_compression", "model_switch", "agent_handoff",
+    "long_idle_period", "persona_file_modification",
+    "major_relationship_event", "memory_consolidation",
+)
+
+
+def event_refresh_triggers() -> list[str]:
+    return list(EVENT_REFRESH_TRIGGERS)
+
+
+def event_refresh_contract() -> dict[str, Any]:
+    """The §33 event-based persona refresh contract. Pure.
+
+    Event-based refresh is better than a fixed interval
+    alone: a refresh is due after any of the seven named
+    events, with no interval needing to elapse. A due
+    event refresh carries exactly the §32 contents and
+    prevents the same slow identity evaporation. This
+    layer watches for no event and injects nothing; it
+    names the event/contents shape a refresher must
+    follow.
+    """
+    return {
+        "name": "EventBasedPersonaRefresh",
+        "triggers": list(EVENT_REFRESH_TRIGGERS),
+        "better_than_fixed_interval_alone": True,
+        "fixed_interval_required": False,
+        "contents": list(REFRESH_CONTENTS),
+        "prevents": "slow_identity_evaporation",
+        "watches_session": False,
+        "injects_context": False,
+    }
+
+
+def _validate_event_refresh_trigger(event: Any) -> str:
+    if not isinstance(event, str) \
+            or _slugify(event) not in EVENT_REFRESH_TRIGGERS:
+        raise PersonaRuntimeError("event refresh trigger is invalid")
+    return _slugify(event)
+
+
+def event_refresh_due(event: Any) -> bool:
+    """Whether one §33 event refresh is due. Pure.
+
+    Naming a §33 event is naming its occurrence, so a
+    valid event is due the moment it has occurred — no
+    fixed interval must also elapse. The roadmap names
+    no duration for the long idle period, so none is
+    invented here: the caller names the event, this
+    layer never watches a session or measures idleness.
+    A §32-only trigger (the message interval, context
+    summarization) is not a §33 event and is refused.
+    """
+    _validate_event_refresh_trigger(event)
+    return True
+
+
+def event_refresh_plan(event: Any) -> dict[str, Any]:
+    """One §33 event-based refresh plan for a named event. Pure.
+
+    An event plan is always a due plan: it carries
+    exactly the three §32 contents — the Persona Kernel,
+    the current relationship state, and the relevant
+    Service Bible anchors — and requires no message
+    interval. This layer assembles none of the contents
+    and injects nothing.
+    """
+    resolved = _validate_event_refresh_trigger(event)
+    return {
+        "trigger": resolved,
+        "due": True,
+        "action": "refresh",
+        "basis": "event",
+        "fixed_interval_required": False,
+        "contents": list(REFRESH_CONTENTS),
+        "prevents": "slow_identity_evaporation",
+    }
+
+
+def model_switch_contract() -> dict[str, Any]:
+    """The §34 model switching contract. Pure.
+
+    Hermes may route between models, and every model
+    receives the same canonical Persona Kernel: the
+    model is the engine, the persona system is the
+    identity layer, so the persona remains itself across
+    a switch. A model switch is also a §§32–33 refresh
+    trigger. This layer routes no model and switches
+    nothing; it names the identity shape a switch must
+    preserve.
+    """
+    return {
+        "name": "PersonaModelSwitching",
+        "kernel": "canonical_persona_kernel",
+        "same_kernel_for_all_models": True,
+        "model_role": "engine",
+        "persona_system_role": "identity_layer",
+        "identity_survives_switch": True,
+        "refresh_trigger": "model_switch",
+        "routes_models": False,
+    }
+
+
+def _validate_model_name(model: Any) -> str:
+    if not isinstance(model, str) or not model.strip():
+        raise PersonaRuntimeError("model name is invalid")
+    return _slugify(model)
+
+
+def _validate_kernel_hash(kernel_hash: Any) -> str:
+    if not isinstance(kernel_hash, str) or not kernel_hash.strip():
+        raise PersonaRuntimeError("kernel hash is invalid")
+    return kernel_hash.strip()
+
+
+def model_switch_plan(from_model: Any, to_model: Any,
+                      kernel_hash: Any) -> dict[str, Any]:
+    """One §34 model switch plan over the canonical kernel. Pure.
+
+    Both models are named by slugified caller-supplied
+    names and must differ — a switch to the same model
+    is no switch and is refused, as is a missing or
+    malformed kernel hash (the §§9–10 kernel hash this
+    layer already stands). The plan carries the one
+    kernel hash for both sides: the receiving model gets
+    the SAME canonical Persona Kernel the sending model
+    had, so identity is preserved by construction. This
+    layer performs no switch.
+    """
+    source = _validate_model_name(from_model)
+    target = _validate_model_name(to_model)
+    if source == target:
+        raise PersonaRuntimeError("model switch names one model")
+    digest = _validate_kernel_hash(kernel_hash)
+    return {
+        "from_model": source,
+        "to_model": target,
+        "kernel": "canonical_persona_kernel",
+        "kernel_hash": digest,
+        "from_kernel_hash": digest,
+        "to_kernel_hash": digest,
+        "same_kernel": True,
+        "identity_preserved": True,
+        "model_role": "engine",
+        "persona_system_role": "identity_layer",
+        "refresh_trigger": "model_switch",
+    }
+
+
+def kernel_identity_preserved(kernel_hash_before: Any,
+                              kernel_hash_after: Any) -> bool:
+    """Whether persona identity survives a model switch (§34). Pure.
+
+    Identity is preserved exactly when the canonical
+    Persona Kernel hash a model receives after a switch
+    equals the hash in force before it — the same kernel
+    (§§9–10), therefore the same persona, whatever the
+    engine. A missing or malformed hash on either side
+    is refused, never treated as preserved or as lost.
+    """
+    before = _validate_kernel_hash(kernel_hash_before)
+    after = _validate_kernel_hash(kernel_hash_after)
+    return before == after
 
 
 class PersonaConfigStore:
@@ -3804,7 +4003,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-32): persona "
+            f"Persona runtime (§§3-34): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -3932,7 +4131,20 @@ class PersonaRuntimeBridge:
             f"switch — Persona Kernel plus current "
             f"relationship state plus relevant Service "
             f"Bible anchors, preventing slow identity "
-            f"evaporation. Canonical document "
+            f"evaporation. §33 event refresh: better than "
+            f"a fixed interval alone — a refresh is also "
+            f"due after context compression, a model "
+            f"switch, an agent handoff, a long idle "
+            f"period, a persona file modification, a "
+            f"major relationship event, or memory "
+            f"consolidation, carrying the same §32 "
+            f"contents with no interval required. §34 "
+            f"model switching: every model receives the "
+            f"same canonical Persona Kernel — the model "
+            f"is the engine, the persona system is the "
+            f"identity layer, and identity is preserved "
+            f"exactly when the kernel hash is unchanged "
+            f"across a switch. Canonical document "
             f"text is compiled, not injected by this layer."
         )
         return [ContextItem(
@@ -4064,6 +4276,14 @@ __all__ = [
     "refresh_contract",
     "refresh_due",
     "refresh_plan",
+    "EVENT_REFRESH_TRIGGERS",
+    "event_refresh_triggers",
+    "event_refresh_contract",
+    "event_refresh_due",
+    "event_refresh_plan",
+    "model_switch_contract",
+    "model_switch_plan",
+    "kernel_identity_preserved",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
