@@ -438,3 +438,19 @@ portable state: any agent (Muse or Hermes) resumes from here.
 - **Next resume point: Slice 91 — Emergent Agency Phase 2 (§9,
   Intrinsic Motivation)**: drive store on the Slice 88 `DriveState`
   contract (per the §9 spec when read at slice start).
+- 2026-10-31 ~00:3x EDT (main-session integration commission):
+  **dependency reconciliation DONE** — the concurrent writer Slice 90
+  anticipated was this commission. The `volmarr-ravens` extra +
+  `[tool.uv.sources]` editable path binding (`../ravens/muninn`,
+  `../ravens/huginn`) is restored in `pyproject.toml` to match the
+  `uv.lock` the resolver produced, `pm.extras.ANCHORS` names both
+  modules, and the keeper's COMPONENT_LICENSES rows gained the
+  name-collision / no-GitHub-home record. The two bindings compose
+  exactly as Slice 90 foresaw: the extra installs the packages,
+  `ravens.py` binds them profile-safely. Recorded deviation (also in
+  CUSTOMIZATIONS.md): `hermes pm lock`'s release-age gate refuses to
+  regenerate this lock (unpublished local packages have no index
+  upload dates); the lock on disk is the resolver's own consistent
+  output. Next in this commission: Slice 92 — the flagged write
+  operations on the Slice 90 builders, then the full-line push under
+  the standing go-ahead.

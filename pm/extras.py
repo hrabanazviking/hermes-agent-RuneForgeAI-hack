@@ -25,6 +25,7 @@ ANCHORS: dict[str, str | tuple[str, ...]] = {
     "ddgs": "ddgs",
     "otlp": "opentelemetry.sdk",
     "mistral": "mistralai",
+    "volmarr-ravens": ("muninn", "huginn"),
     "edge-tts": "edge_tts",
     "neutts": "neutts",
     "kittentts": ("kittentts", "soundfile"),

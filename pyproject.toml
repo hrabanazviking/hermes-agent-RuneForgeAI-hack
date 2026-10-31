@@ -397,6 +397,17 @@ documents-pdf = [
   "pypdfium2==5.14.0",
 ]
 trace-upload = ["huggingface-hub==1.33.0"]
+# Volmarr's raven memory packages — the Bifröst write-path backends
+# (Muninn reinforcement/decay/consolidation, Huginn ingestion). They are
+# NOT published on any index: the bare names collide with unrelated PyPI
+# projects (Slice 86 Gate 0 recorded the hazard), so [tool.uv.sources]
+# below binds both names to Volmarr's canonical local ravens tree and the
+# resolver can never fall back to PyPI for them. Opt-in only, deliberately
+# NOT in [all]; provenance in COMPONENT_LICENSES.md.
+volmarr-ravens = [
+  "muninn==1.0.0",
+  "huginn==1.0.0",
+]
 # Cloud memory providers are opt-in PM extras. They stay outside [all]
 # so a quarantined release cannot break fresh installs.
 # Image resize recovery for the vision tools. Pillow is now a CORE dependency
@@ -683,6 +694,16 @@ override-dependencies = [
 # Only packages whose job is CA trust belong in exclude-newer-package.
 exclude-newer = "3 days"
 exclude-newer-package = { certifi = false }
+
+[tool.uv.sources]
+# Local-only sources for Volmarr's unpublished raven packages (see the
+# volmarr-ravens extra above). The paths are relative to this checkout
+# and name the canonical ravens tree on Volmarr's machines
+# (~/workspace/ravens beside this checkout). On a machine without that
+# sibling tree, simply never select the volmarr-ravens extra — nothing
+# else in the lock needs these entries.
+muninn = { path = "../ravens/muninn", editable = true }
+huginn = { path = "../ravens/huginn", editable = true }
 
 [tool.setuptools]
 # Root single-file modules are derived by setup.py at build time from the
