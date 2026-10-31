@@ -1426,3 +1426,65 @@ portable state: any agent (Muse or Hermes) resumes from here.
   verification/reconciliation slice implementing only genuine
   §12 gaps (e.g. an explicit step-trace/cycle-shape record, or
   the ranking-factor mapping), not a second orchestrator.
+- 2026-10-31 ~07:5x EDT keeper tick: **Slice 110 DONE —
+  Self-Aware Agency §12 (The Agency Cycle) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found (tree
+  clean, HEAD == origin/main at `2c1963f3`; Slice 109's commit
+  had landed ~1 minute before this tick's start and was verified
+  complete/pushed, not in-progress work). Reconciliation exactly
+  as the resume note directed — no second orchestrator, and this
+  layer runs no cycle: `plugins/volmarr-core/
+  agency_cycle_detail.py` names the twelve §12 steps in
+  canonical order, and `step_coverage` states the Phase 6
+  coverage honestly (5 covered: observe, policy check, act or
+  request approval, verify, record; 4 partial: orient —
+  discrepancies live in the layered self-model the orchestrator
+  does not call, generate — no self-improvement candidate kind,
+  rank — a single deterministic score, reflect — only when the
+  cycle executed something; 3 deferred: reflect-if-needed,
+  update self-model, emit Verðandi events). §12's seven ranking
+  factors stand as the pure `rank_score` function (positive
+  factors averaged, cost/uncertainty discounted at half weight),
+  supplied for later wiring; the orchestrator's scoring is
+  unchanged. Cycle traces live in the bounded
+  `entity/agency_cycle_traces.jsonl` log (rotation, symlink
+  refusal, strict owner/field validation): cycle id, slug
+  trigger, the twelve step statuses in canonical order, and
+  proposed/executed counts; the hard max-actions bound is
+  enforced at record time (executed over the configured cap,
+  default 3, refused) and a stored `within_bound` flag
+  disagreeing with its counts is refused on read. Recording is
+  explicit only; the Phase 6 journal stays sha256-identical
+  across recording (contract-proven). Disabled by default
+  (`agency_cycle_detail_enabled`); bounded content-bearing
+  packet producer. Tests: targeted 7/7 pass; full volmarr/kista
+  run (63 files): **435 passed, 7 failed, 1 skipped** — the
+  same name-identical pre-existing environmental set in the
+  same 3 files (5 core-plugin, 1 Verðandi-stimuli socket, 1
+  voice-runner loopback), verified in the run log's own summary
+  line (`~/workspace/.verify-tmp/slice110_full_run.log`; note:
+  the run took 611.9s under heavy cross-campaign VM contention
+  and its runner outlived two exec-session reports — the totals
+  here are from the finished runner's own summary, and a
+  duplicate second run started by the same tick was killed so
+  only one runner's verdict stands). Smoke: `hermes --version`
+  runs; README.md sha256 invariant held (`4e022de7…c4910`).
+  Bookkeeping: CUSTOMIZATIONS.md ledger row, §12 completion
+  note in the Self-Aware Agency roadmap. Honest gaps: Verðandi
+  agency events (§14) NOT yet emitted — deferred to a later
+  telemetry slice, recorded in both bookkeeping spots; no
+  caller records traces yet (wiring the orchestrator to emit a
+  trace per cycle would change its contract and is a separate
+  slice); the three deferred §12 steps stand as named above.
+- **Next resume point: Slice 111 — Self-Aware Agency §13
+  (Context Integration)**: reconcile the §13 packet-schema v2
+  SELF STATE section (identity summary, current attention,
+  active self-originated goal, major discrepancy, current
+  confidence/uncertainty, relevant known limitation, current
+  curiosity target — compact, high-value only, never a full
+  self-model dump) against the already-banked context packet /
+  present-state producers (the layered self-model, awareness,
+  intrinsic-goal, and curiosity packet contributions) when read
+  at slice start — expect a verification/reconciliation slice
+  implementing only genuine §13 gaps, not a second packet
+  builder.

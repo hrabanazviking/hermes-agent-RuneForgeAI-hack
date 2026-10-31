@@ -1331,6 +1331,47 @@ The agency loop must have a hard maximum number of actions per cycle.
 
 No unbounded loops.
 
+**§12 completion note (Slice 110, 2026-10-31):** the agency cycle
+is reconciled against the already-banked Emergent Agency Phase 6
+orchestrator (Slice 96) in
+`plugins/volmarr-core/agency_cycle_detail.py` — no second
+orchestrator, and this layer runs no cycle and executes nothing:
+the Phase 6 orchestrator remains the only cycle. Disabled by
+default (`agency_cycle_detail_enabled`). The twelve §12 steps
+stand named in canonical order (observe, orient, reflect if
+needed, generate candidates, rank candidates, check autonomy
+policy, act or request approval, verify outcome, record
+experience, reflect, update self-model, emit Verðandi events),
+and `step_coverage` states honestly how the Phase 6 cycle covers
+each: five covered (observe, check autonomy policy, act or
+request approval, verify outcome, record experience), four
+partial (orient — discrepancy detection lives in the layered
+self-model, which the orchestrator does not call; generate
+candidates — no self-improvement candidate kind, maintenance
+folded into blocked goals; rank candidates — a single
+deterministic score, not the §12 factors; reflect — only when
+the cycle executed something), and three deferred (reflect if
+needed before generation, update self-model — feedback goes to
+drives/curiosity only — and emit Verðandi events). §12's seven
+ranking factors stand as the pure `rank_score` function (value,
+relevance, urgency, expected benefit, and reversibility averaged,
+discounted by cost and uncertainty at half weight each), supplied
+for later wiring; the orchestrator's own scoring is unchanged.
+Cycle traces — one explicit record per cycle in the bounded
+`entity/agency_cycle_traces.jsonl` log (rotation, symlink
+refusal, strict owner/field validation) — carry the cycle id, a
+slug trigger, the twelve step statuses in canonical order, and
+the proposed/executed counts; the §12 hard bound is enforced at
+record time (a trace whose executed count exceeds the configured
+maximum, default 3, is refused, and a stored `within_bound` flag
+that disagrees with its counts is refused on read). Recording is
+explicit only, and the Phase 6 journal stays sha256-identical
+across recording (contract-proven). Honest gaps: Verðandi agency
+events (§14) are NOT yet emitted — deferred to a later telemetry
+slice, as are the deferred steps above; no caller records traces
+yet (wiring the orchestrator to emit a trace per cycle would
+change its contract and is a separate slice).
+
 ---
 
 # 13. Context Integration

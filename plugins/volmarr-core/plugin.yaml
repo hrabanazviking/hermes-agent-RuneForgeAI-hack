@@ -485,6 +485,22 @@ config_schema:
     type: int
     default: 168
     description: "Maximum lifetime in hours of a §11.5 capability grant (clamped to 1-720)."
+  agency_cycle_detail_enabled:
+    type: bool
+    default: false
+    description: "Enable the agency-cycle reconciliation (Self-Aware Agency §12). Disabled by default; names the twelve §12 steps in canonical order with an honest coverage mapping against the Emergent Agency Phase 6 orchestrator (Slice 96), supplies the pure seven-factor §12 ranking function, enforces the hard maximum-actions-per-cycle bound at trace-record time, and records explicit cycle traces in its own bounded log. Recording is explicit only; this layer runs no cycle and executes nothing — the Phase 6 orchestrator remains the only cycle."
+  agency_cycle_detail_log_path:
+    type: str
+    default: entity/agency_cycle_traces.jsonl
+    description: "Agency cycle trace log JSONL path relative to the active Hermes profile; escaping paths fall back to the default."
+  agency_cycle_detail_log_limit:
+    type: int
+    default: 200
+    description: "Maximum agency cycle trace log records retained by rotation (clamped to 10-500)."
+  agency_cycle_detail_max_actions:
+    type: int
+    default: 3
+    description: "Hard maximum executed actions per agency cycle under §12 (clamped to 1-10); a trace exceeding it is refused at record time."
   heartbeat_enabled:
     type: bool
     default: true
