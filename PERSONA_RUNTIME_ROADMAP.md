@@ -1053,6 +1053,54 @@ Small local models may receive much less.
 ---
 
 
+> **Completion note — Slice 124 (2026-10-31): §15
+> stands as a pure budgeting layer in
+> `plugins/volmarr-core/persona_runtime.py`** (extended
+> in place — no new file or config key; the
+> `persona_runtime_enabled` description now covers
+> §§3–15). The four categories stand with this
+> section's suggested ranges (persona kernel 500–1500,
+> dynamic persona retrieval 300–2500, relevant
+> memories 500–3000, project state 500–3000 estimated
+> tokens). Allocations are configurable per category
+> via explicit overrides and scale by model context
+> class: `small_local` receives each category's
+> minimum (much less, as this section directs),
+> `standard` the suggested maximum, and `large` twice
+> the suggested maximum (large-context models receive
+> more). The pure `budget_items` function trims whole
+> items only — a section is never cut mid-text (§7) —
+> in priority order (derived priority, then caller
+> score, then id); an item that does not fit is
+> excluded with reason `over_budget` and a later
+> smaller item may still fit. Categories are
+> independent: one category's overflow never spends
+> another's allocation. `PersonaContextBudgeter`
+> budgets the compiled kernel as the single
+> persona-kernel item, the §14 route's required
+> sections (or an explicit §13 retrieval list) as
+> retrieval items, and caller-supplied memory /
+> project items under their own categories, in one
+> explicit call that writes nothing. Honest gaps:
+> budgeting assembles and injects no prompt — prompt
+> assembly is §53, a later section; caller memory /
+> project items are supplied by their owning surfaces,
+> not fetched by this layer. One in-slice fix: the
+> §14 router contract's packet assertion was updated
+> for the packet's §§3–15 label. Targeted 59/59 pass
+> (8 new budgeter contracts + the five earlier persona
+> files and router re-verified 16/16 with file retries
+> disabled after the packet-label fix); full
+> volmarr/kista run (77 files): 546 passed, 7 failed,
+> 1 skipped — the failures the same name-identical
+> pre-existing environmental set (the full run's own
+> summary recorded 545/8 with the router packet-label
+> failure that the in-slice fix then cleared 16/16).
+
+
+---
+
+
 # 16. PRIORITY SYSTEM
 
 

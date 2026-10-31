@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-14).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-15).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -149,6 +149,23 @@ What stands here, and nothing more:
   plus its explainable §13 score. Routing is an explicit
   call only: it writes nothing, injects nothing, and no
   budgeter (§15) has trimmed its output yet.
+- §15 token budgeter: ``PersonaContextBudgeter`` / the pure
+  ``budget_items`` function allocate estimated tokens across
+  the four §15 categories (persona kernel, dynamic persona
+  retrieval, relevant memories, project state), each with
+  the roadmap's suggested range. Allocations are
+  configurable per category, and scale by model context
+  class: a small local model receives each category's
+  minimum, a standard model its suggested maximum, and a
+  large-context model twice that. Trimming is whole-item
+  only (a section is never cut mid-text, §7), in priority
+  order (derived priority, then caller score, then id) —
+  an item that does not fit is excluded with its reason
+  named, and a later smaller item may still fit. Categories
+  are independent: one category's overflow never spends
+  another's allocation. Budgeting is an explicit call only:
+  it writes nothing, injects nothing, and assembles no
+  prompt (§53 is later).
 - Priority here is *derived*, never authored or stored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -951,6 +968,168 @@ def route_sections(index: list[dict[str, Any]], user_message: str = "",
     return base
 
 
+# --- §15 token budgeter ---------------------------------------------
+#
+# A pure budgeting layer over the §13 retrieval / §14 router
+# outputs plus caller-supplied memory and project-state items.
+# It decides what fits; it assembles and injects nothing.
+
+BUDGET_CATEGORIES = (
+    "persona_kernel", "persona_retrieval", "relevant_memories",
+    "project_state",
+)
+
+# The §15 suggested budgets, as (minimum, maximum) estimated
+# tokens per category.
+SUGGESTED_BUDGETS = {
+    "persona_kernel": (500, 1500),
+    "persona_retrieval": (300, 2500),
+    "relevant_memories": (500, 3000),
+    "project_state": (500, 3000),
+}
+
+# Model context classes: small local models receive much
+# less (each category's minimum), standard models the
+# suggested maximum, large-context models more (twice the
+# suggested maximum).
+CONTEXT_CLASSES = ("small_local", "standard", "large")
+
+
+def budget_categories() -> list[str]:
+    return list(BUDGET_CATEGORIES)
+
+
+def context_classes() -> list[str]:
+    return list(CONTEXT_CLASSES)
+
+
+def suggested_budgets() -> dict[str, dict[str, int]]:
+    return {
+        category: {"min": low, "max": high}
+        for category, (low, high) in SUGGESTED_BUDGETS.items()
+    }
+
+
+def budget_allocations(context_class: str = "standard",
+                       overrides: dict[str, Any] | None = None
+                       ) -> dict[str, int]:
+    """The per-category allocations for a context class (§15).
+
+    Pure function. ``overrides`` replaces individual category
+    allocations (configurability); unknown categories,
+    negative or non-integer allocations, and unknown context
+    classes are refused.
+    """
+    if context_class not in CONTEXT_CLASSES:
+        raise PersonaRuntimeError(
+            f"unknown budget context class: {context_class!r}")
+    allocations: dict[str, int] = {}
+    for category, (low, high) in SUGGESTED_BUDGETS.items():
+        if context_class == "small_local":
+            allocations[category] = low
+        elif context_class == "large":
+            allocations[category] = 2 * high
+        else:
+            allocations[category] = high
+    for category, value in (overrides or {}).items():
+        if category not in SUGGESTED_BUDGETS:
+            raise PersonaRuntimeError(
+                f"unknown budget category: {category!r}")
+        if isinstance(value, bool) or not isinstance(value, int) \
+                or value < 0:
+            raise PersonaRuntimeError(
+                f"budget allocation for {category} is invalid")
+        allocations[category] = value
+    return allocations
+
+
+def _budget_item(raw: Any) -> dict[str, Any]:
+    if not isinstance(raw, dict):
+        raise PersonaRuntimeError("budget item must be a mapping")
+    item_id = raw.get("id")
+    category = raw.get("category")
+    if not isinstance(item_id, str) or not item_id.strip():
+        raise PersonaRuntimeError("budget item id is invalid")
+    if category not in SUGGESTED_BUDGETS:
+        raise PersonaRuntimeError(
+            f"budget item category is invalid: {category!r}")
+    tokens = raw.get("estimated_tokens")
+    if tokens is None and isinstance(raw.get("text"), str):
+        tokens = _estimate_tokens(raw["text"])
+    if isinstance(tokens, bool) or not isinstance(tokens, int) \
+            or tokens < 0:
+        raise PersonaRuntimeError("budget item tokens are invalid")
+    priority = raw.get("priority", 0.40)
+    score = raw.get("score", 0.0)
+    for value in (priority, score):
+        if isinstance(value, bool) \
+                or not isinstance(value, (int, float)) \
+                or not 0.0 <= float(value) <= 1.0:
+            raise PersonaRuntimeError("budget item priority/score invalid")
+    return {
+        "id": item_id.strip(), "category": category,
+        "estimated_tokens": tokens,
+        "priority": float(priority), "score": float(score),
+    }
+
+
+def budget_items(items: list[dict[str, Any]],
+                 context_class: str = "standard",
+                 budgets: dict[str, Any] | None = None
+                 ) -> dict[str, Any]:
+    """Trim candidate items to the §15 budgets. Pure function.
+
+    Items are considered per category in priority order
+    (descending derived priority, then descending score,
+    then id). Whole items only: an item that does not fit
+    the category's remaining allocation is excluded with
+    reason ``over_budget`` and a later smaller item may
+    still fit; no item is ever cut. Categories spend only
+    their own allocation. Deterministic for identical input.
+    """
+    allocations = budget_allocations(context_class, budgets)
+    normalised = [_budget_item(raw) for raw in (items or [])]
+    seen: set[tuple[str, str]] = set()
+    for row in normalised:
+        key = (row["category"], row["id"])
+        if key in seen:
+            raise PersonaRuntimeError(
+                f"duplicate budget item: {row['category']}/{row['id']}")
+        seen.add(key)
+    categories: dict[str, Any] = {}
+    included: list[dict[str, Any]] = []
+    excluded: list[dict[str, Any]] = []
+    for category in BUDGET_CATEGORIES:
+        rows = [r for r in normalised if r["category"] == category]
+        rows.sort(key=lambda r: (-r["priority"], -r["score"], r["id"]))
+        remaining = allocations[category]
+        kept: list[str] = []
+        dropped: list[str] = []
+        for row in rows:
+            if row["estimated_tokens"] <= remaining:
+                remaining -= row["estimated_tokens"]
+                kept.append(row["id"])
+                included.append(row)
+            else:
+                dropped.append(row["id"])
+                excluded.append({**row, "reason": "over_budget"})
+        categories[category] = {
+            "allocation": allocations[category],
+            "used": allocations[category] - remaining,
+            "remaining": remaining,
+            "included": kept, "excluded": dropped,
+        }
+    return {
+        "context_class": context_class,
+        "allocations": allocations,
+        "categories": categories,
+        "included": included,
+        "excluded": excluded,
+        "total_allocation": sum(allocations.values()),
+        "total_used": sum(c["used"] for c in categories.values()),
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -1325,6 +1504,83 @@ class PersonaRouter:
         return result
 
 
+class PersonaContextBudgeter:
+    """Explicit §15 budgeting over a fresh compile.
+
+    One explicit call compiles (deterministically, writing
+    nothing) and budgets: the compiled kernel as the single
+    persona-kernel item, the §14 route's required sections
+    (or an explicit §13 retrieval result list) as persona
+    retrieval items, and caller-supplied memory / project
+    items under their own categories. With no persona config
+    the caller items are still budgeted and ``persona_id``
+    is None. No hook, no per-message call, no injection, no
+    prompt assembly (§53).
+    """
+
+    def __init__(self, ctx) -> None:
+        self._compiler = PersonaCompiler(ctx)
+
+    def budget(self, route: dict[str, Any] | None = None,
+               retrieval: list[dict[str, Any]] | None = None,
+               memories: list[dict[str, Any]] | None = None,
+               project_state: list[dict[str, Any]] | None = None,
+               context_class: str = "standard",
+               budgets: dict[str, Any] | None = None
+               ) -> dict[str, Any]:
+        compiled = self._compiler.compile()
+        items: list[dict[str, Any]] = []
+        persona_id = None
+        if compiled is not None:
+            persona_id = compiled["persona_id"]
+            kernel = compiled["kernel"]
+            items.append({
+                "id": "persona_kernel",
+                "category": "persona_kernel",
+                "estimated_tokens": kernel["estimated_tokens"],
+                "priority": 0.90, "score": 0.90,
+            })
+            by_id = {
+                entry.get(
+                    "stable_id",
+                    stable_section_id(entry["role"], entry["section_id"])):
+                entry for entry in compiled["index"]
+            }
+            rows: list[dict[str, Any]] = []
+            if route is not None:
+                rows = list(route.get("sections") or [])
+            elif retrieval is not None:
+                rows = list(retrieval)
+            for row in rows:
+                stable_id = row.get("stable_id")
+                entry = by_id.get(stable_id or "")
+                if entry is None:
+                    continue
+                score = row.get("score") or {}
+                items.append({
+                    "id": stable_id,
+                    "category": "persona_retrieval",
+                    "estimated_tokens": entry["estimated_tokens"],
+                    "priority": float(
+                        row.get("priority", entry["priority"])),
+                    "score": float(score.get("total", 0.0))
+                    if isinstance(score, dict) else 0.0,
+                })
+        for raw, category in (
+                (memories, "relevant_memories"),
+                (project_state, "project_state")):
+            for entry in (raw or []):
+                if not isinstance(entry, dict):
+                    raise PersonaRuntimeError(
+                        "budget item must be a mapping")
+                items.append({**entry, "category": category,
+                              "id": entry.get("id")})
+        result = budget_items(
+            items, context_class=context_class, budgets=budgets)
+        result["persona_id"] = persona_id
+        return result
+
+
 class PersonaRuntimeBridge:
     """Surface the compiled persona's identity, counts only.
 
@@ -1360,7 +1616,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-14): persona "
+            f"Persona runtime (§§3-15): persona "
             f"{compiled['persona_id']} compiled from "
             f"{len(compiled['documents'])} documents / "
             f"{len(compiled['index'])} sections; kernel "
@@ -1386,6 +1642,11 @@ class PersonaRuntimeBridge:
             f"surface is owned). §14 routing is explicit-only: "
             f"PersonaRouter decides the required sections for a "
             f"task from its five inputs, named by stable id. "
+            f"§15 budgeting is explicit-only: "
+            f"PersonaContextBudgeter trims kernel, retrieval, "
+            f"memory, and project items to configurable "
+            f"per-category allocations scaled by model context "
+            f"class, whole items only in priority order. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -1415,6 +1676,10 @@ __all__ = [
     "PersonaCompiler",
     "PersonaRetriever",
     "PersonaRouter",
+    "PersonaContextBudgeter",
+    "BUDGET_CATEGORIES",
+    "CONTEXT_CLASSES",
+    "SUGGESTED_BUDGETS",
     "PersonaRuntimeBridge",
     "ROUTER_DEFAULT_LIMIT",
     "ROUTER_INPUTS",
@@ -1436,6 +1701,11 @@ __all__ = [
     "route_sections",
     "route_task_label",
     "router_inputs",
+    "budget_allocations",
+    "budget_categories",
+    "budget_items",
+    "context_classes",
+    "suggested_budgets",
     "section_priority",
     "section_tags",
     "stable_section_id",

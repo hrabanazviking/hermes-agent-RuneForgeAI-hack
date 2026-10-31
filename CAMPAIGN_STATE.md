@@ -2404,3 +2404,58 @@ portable state: any agent (Muse or Hermes) resumes from here.
   budgeting layer over the §14 route + §13 retrieval
   outputs (trimming persona context to budget in priority
   order), not a prompt assembler (§53 remains later).
+- 2026-10-31 ~13:5x EDT keeper tick: **Slice 124 DONE —
+  Persona Runtime §15 (Token Budgeter) complete, banked
+  and PUSHED under the standing go-ahead.** No live work
+  found (tree clean, HEAD == origin/main at `137692a310`;
+  the only running Python belonged to the mythic-coder
+  campaign). `plugins/volmarr-core/persona_runtime.py`
+  extended in place — no new file or config key:
+  `PersonaContextBudgeter` / the pure `budget_items`
+  function allocate estimated tokens across the four
+  §15 categories with the roadmap's suggested ranges
+  (persona kernel 500–1500, dynamic persona retrieval
+  300–2500, relevant memories 500–3000, project state
+  500–3000), configurable per category via explicit
+  overrides, scaled by model context class (small_local
+  = each minimum, standard = suggested maximum, large =
+  twice the maximum). Trimming is whole-item only
+  (never cut mid-text, §7) in priority order (derived
+  priority, then caller score, then id); an item that
+  does not fit is excluded with reason `over_budget`
+  and a later smaller item may still fit; categories
+  spend only their own allocation; duplicate/invalid
+  items are refused. The budgeter budgets the compiled
+  kernel as the single persona-kernel item, the §14
+  route's required sections (or an explicit §13
+  retrieval list) as retrieval items, and
+  caller-supplied memory/project items under their own
+  categories; no-config profiles still budget caller
+  items with `persona_id` None. One in-slice fix: the
+  full run caught the §14 router contract asserting the
+  packet's old §§3–14 label — updated to §§3–15 and
+  re-verified 16/16 with file retries disabled. Tests:
+  targeted 59/59 pass (8 new budgeter contracts + the
+  earlier persona files); full volmarr/kista run (77
+  files) recorded **545 passed, 8 failed, 1 skipped**
+  in its own summary
+  (`~/workspace/.verify-tmp/slice124_full_run.log`),
+  the eighth failure being that packet-label assertion,
+  cleared by the in-slice fix above — leaving the same
+  name-identical pre-existing environmental set (5
+  core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback). Smoke: `hermes --version` runs; README.md
+  sha256 invariant held (`4e022de7…c4910`).
+  Bookkeeping: CUSTOMIZATIONS.md ledger row, §15
+  completion note in the Persona Runtime roadmap.
+  Honest gaps: budgeting assembles and injects no
+  prompt (§53 is later); memory/project items are
+  caller-supplied, not fetched by this layer.
+- **Next resume point: Slice 125 — Persona Runtime §16
+  (Priority System)**: authored P0–P4 priority metadata
+  (P0 identity-critical … P4 aesthetic/background) on
+  persona information, with P0 material never evicted
+  from the kernel merely to save tokens — reconcile
+  against the §11 derived priority bands and the §15
+  budgeter's priority-order trimming when read at slice
+  start, implementing only genuine §16 gaps.
