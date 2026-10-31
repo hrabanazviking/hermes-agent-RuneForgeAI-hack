@@ -1857,6 +1857,28 @@ Only significant drift should trigger repair.
 
 Do not waste inference polishing tiny stylistic differences.
 
+> **Completion note — Slice 132 (2026-10-31): §29 stands
+> in `plugins/volmarr-core/persona_runtime.py` (extended
+> in place; the `persona_runtime_enabled` description in
+> `plugin.yaml` now covers §§3–30). The pure
+> `drift_score_artifact` function builds the conceptual
+> artefact in the roadmap's YAML shape — a `drift`
+> mapping with the total and per-dimension values over
+> all ten §28 dimensions, plus the §28 routing fields so
+> the artefact is self-contained — and the pure
+> `validate_drift_score_artifact` function recomputes
+> every derived field and refuses an artefact whose
+> total, significance, significant dimensions, route, or
+> repair flag disagrees with its dimensions (a sparse
+> artefact naming fewer than ten dimensions is refused
+> too). The roadmap's 0.08 total is illustrative: the
+> artefact's total is the deterministic §28 mean (the
+> example's named dimensions artefact at 0.025, routed
+> to output). Only significant drift triggers repair.
+> Honest gaps: this layer builds and validates the
+> artefact only — no live draft is scored from prose
+> (§7), and no caller consumes the artefact yet.**
+
 
 ---
 
@@ -1881,6 +1903,28 @@ deliver
 
 
 Do not regenerate everything unnecessarily.
+
+> **Completion note — Slice 132 (2026-10-31): §30 stands
+> in the same module. The pure `repair_pipeline`
+> function names the five steps in roadmap order
+> (draft, identify violated persona anchors, rewrite
+> minimally, verify, deliver) — only the rewrite step
+> rewrites, scoped to the violated anchors only, and no
+> step generates a whole new draft; the pure
+> `repair_contract` function stands the repair itself
+> (significant drift required, minimal rewrite, verify
+> before deliver, never regenerate everything); and the
+> pure `repair_plan` function plans one repair from a
+> score record plus caller-named violated §§17/18
+> anchors (bounded and verbatim like the config lists,
+> invalid lists refused): a significant score yields the
+> five planned steps with the violated lists carried on
+> the identify step, and an insignificant score yields a
+> deliver-without-repair plan with no steps at all.
+> Honest gaps: this layer identifies no violation in
+> prose and rewrites nothing — the pipeline, contract,
+> and plan are contract surfaces for whoever repairs;
+> no caller consumes a plan yet.**
 
 
 ---

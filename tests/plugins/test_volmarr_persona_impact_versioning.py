@@ -397,7 +397,7 @@ def test_compile_deterministic_packet_and_isolation(tmp_path):
     assert before == after
     assert compiled_b is None
     assert len(items) == 1
-    assert "§§3-28" in items[0].content
+    assert "§§3-30" in items[0].content
     assert "version 1.4.2" in items[0].content
     assert "§21 change impact" in items[0].content
     assert "§22 versioning" in items[0].content

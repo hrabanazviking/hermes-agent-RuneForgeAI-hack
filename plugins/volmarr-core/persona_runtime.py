@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-28).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-30).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -334,6 +334,30 @@ What stands here, and nothing more:
   apply this layer's recorded convention (a 24-hour
   half-life; a state below 0.05 strength is expired).
   A decayed or expired state never becomes a trait.
+- §29 drift score: the conceptual score artefact stands
+  in the roadmap's YAML shape — a ``drift`` mapping with
+  a ``total`` and per-dimension values over the ten §28
+  dimensions — built by the pure
+  ``drift_score_artifact`` function from the §28 score
+  record and checked by the pure
+  ``validate_drift_score_artifact`` function, which
+  recomputes every derived field and refuses an artefact
+  whose total, significance, or route disagrees with its
+  dimensions. Only significant drift triggers repair —
+  tiny stylistic differences are not polished.
+- §30 drift repair: when drift is significant, repair
+  follows the roadmap's pipeline — draft, identify
+  violated persona anchors, rewrite minimally, verify,
+  deliver — and never regenerates everything. The pure
+  ``repair_pipeline`` / ``repair_contract`` /
+  ``repair_plan`` functions stand that pipeline in
+  contract form, reconciled against the §§17/18 anchors
+  (the violated anchors a plan rewrites against are the
+  authored character anchors and anti-anchors, carried
+  verbatim and bounded like the config lists). A plan
+  for insignificant drift is a deliver-without-repair
+  plan with no steps. This layer rewrites no draft: the
+  plan is a contract surface for whoever repairs.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -2736,6 +2760,238 @@ def drift_route(scores: Any) -> str:
     return drift_score(scores)["route"]
 
 
+# --- §29 drift score artefact + §30 drift repair ---------------------
+#
+# Pure contract data and functions, like §§23–28. §29
+# stands the conceptual drift-score artefact in the
+# roadmap's YAML shape over the §28 score record, with a
+# validator that recomputes every derived field (the
+# stored-flag-agreement pattern of Slices 104/107/108).
+# §30 stands the repair pipeline in contract form: a plan
+# names the steps a repairer would walk, reconciled
+# against the §§17/18 anchors — nothing here reads a
+# draft, identifies a violation in prose, rewrites
+# anything, or delivers anything.
+
+# The §29 artefact's fields, in roadmap order (total and
+# dimensions are the roadmap's own; the rest carry the
+# §28 record's routing so the artefact is self-contained).
+DRIFT_SCORE_ARTEFACT_FIELDS = (
+    "total", "dimensions", "significant",
+    "significant_dimensions", "route", "repair_required",
+)
+
+# The §30 repair pipeline steps, in roadmap order.
+REPAIR_PIPELINE = (
+    "draft", "identify_violated_persona_anchors",
+    "rewrite_minimally", "verify", "deliver",
+)
+
+
+def drift_score_artifact(scores: Any) -> dict[str, Any]:
+    """The §29 drift-score artefact for one score record. Pure.
+
+    The artefact is the roadmap's conceptual YAML shape —
+    a ``drift`` mapping carrying the total and the
+    per-dimension values over all ten §28 dimensions —
+    plus the §28 routing fields, so a consumer never has
+    to recompute significance to know whether repair is
+    triggered. Only significant drift triggers repair
+    (§29): tiny stylistic differences are not polished.
+    """
+    record = drift_score(scores)
+    return {
+        "drift": {
+            "total": record["total"],
+            "dimensions": dict(record["dimensions"]),
+            "significant": record["significant"],
+            "significant_dimensions":
+                list(record["significant_dimensions"]),
+            "route": record["route"],
+            "repair_required": record["repair_required"],
+        },
+    }
+
+
+def validate_drift_score_artifact(artifact: Any) -> dict[str, Any]:
+    """Validate one §29 artefact, refusing disagreement. Pure.
+
+    The artefact must carry exactly the ``drift`` mapping
+    with exactly the artefact fields; its dimensions must
+    name all ten §28 dimensions exactly once; and every
+    derived field (total, significance, significant
+    dimensions, route, repair flag) must agree with the
+    recomputed §28 record — a tampered total or route is
+    refused, never trusted. Returns a fresh normalised
+    artefact built from the dimensions alone.
+    """
+    if not isinstance(artifact, dict) \
+            or set(artifact) != {"drift"}:
+        raise PersonaRuntimeError("drift artefact is invalid")
+    drift = artifact["drift"]
+    if not isinstance(drift, dict) \
+            or set(drift) != set(DRIFT_SCORE_ARTEFACT_FIELDS):
+        raise PersonaRuntimeError("drift artefact is invalid")
+    raw_dimensions = drift["dimensions"]
+    if not isinstance(raw_dimensions, dict) \
+            or len(raw_dimensions) != len(DRIFT_DIMENSIONS):
+        raise PersonaRuntimeError("drift artefact is invalid")
+    validated = _validate_drift_scores(raw_dimensions)
+    if set(validated) != set(DRIFT_DIMENSIONS):
+        raise PersonaRuntimeError("drift artefact is invalid")
+    expected = drift_score_artifact(validated)
+    expected_drift = expected["drift"]
+    if not isinstance(drift["total"], (int, float)) \
+            or isinstance(drift["total"], bool) \
+            or not math.isclose(float(drift["total"]),
+                                 expected_drift["total"],
+                                 rel_tol=0.0, abs_tol=1e-9):
+        raise PersonaRuntimeError("drift artefact is invalid")
+    for field in ("significant", "significant_dimensions",
+                  "route", "repair_required"):
+        if drift[field] != expected_drift[field]:
+            raise PersonaRuntimeError(
+                "drift artefact is invalid")
+    return expected
+
+
+def repair_pipeline() -> list[dict[str, Any]]:
+    """The §30 repair pipeline, in roadmap order. Pure.
+
+    Draft in, violated persona anchors identified,
+    a minimal rewrite against those anchors only, a
+    verification, then delivery. Nothing in the pipeline
+    regenerates the whole draft. Fresh copies are
+    returned; mutating a row does not poison the contract.
+    """
+    return [
+        {
+            "step": "draft",
+            "kind": "input",
+            "generates_new_draft": False,
+            "rewrites": False,
+        },
+        {
+            "step": "identify_violated_persona_anchors",
+            "kind": "diagnosis",
+            "generates_new_draft": False,
+            "rewrites": False,
+            "anchor_sources": ["anchors", "anti_anchors"],
+        },
+        {
+            "step": "rewrite_minimally",
+            "kind": "repair",
+            "generates_new_draft": False,
+            "rewrites": True,
+            "scope": "violated_anchors_only",
+            "regenerates_everything": False,
+        },
+        {
+            "step": "verify",
+            "kind": "verification",
+            "generates_new_draft": False,
+            "rewrites": False,
+            "check": "drift_route_is_output",
+        },
+        {
+            "step": "deliver",
+            "kind": "delivery",
+            "generates_new_draft": False,
+            "rewrites": False,
+        },
+    ]
+
+
+def repair_contract() -> dict[str, Any]:
+    """The §30 drift-repair contract. Pure.
+
+    Repair runs only on significant drift, rewrites
+    minimally against the violated §§17/18 anchors, never
+    regenerates everything, and verifies before it
+    delivers. This layer performs no repair — the
+    contract is the shape a repairer must follow.
+    """
+    return {
+        "name": "DriftRepair",
+        "input": "llm_draft",
+        "requires": "significant_drift",
+        "pipeline": list(REPAIR_PIPELINE),
+        "anchor_sources": ["anchors", "anti_anchors"],
+        "minimal_rewrite": True,
+        "regenerates_everything": False,
+        "verify_before_deliver": True,
+        "output": "delivered_draft",
+    }
+
+
+def _validate_violated_anchors(raw: Any, field: str) -> list[str]:
+    if raw is None:
+        return []
+    if not isinstance(raw, (list, tuple)):
+        raise PersonaRuntimeError(f"{field} are invalid")
+    if len(raw) > MAX_ANCHORS:
+        raise PersonaRuntimeError(f"{field} are invalid")
+    anchors: list[str] = []
+    for item in raw:
+        if not isinstance(item, str):
+            raise PersonaRuntimeError(f"{field} are invalid")
+        text = item.strip()
+        if not text or len(text) > MAX_ANCHOR_CHARS:
+            raise PersonaRuntimeError(f"{field} are invalid")
+        if text in anchors:
+            raise PersonaRuntimeError(f"{field} are invalid")
+        anchors.append(text)
+    return anchors
+
+
+def repair_plan(scores: Any, violated_anchors: Any = (),
+                violated_anti_anchors: Any = ()) -> dict[str, Any]:
+    """One §30 repair plan for a drift score record. Pure.
+
+    The plan carries the §29 artefact, the caller-named
+    violated §§17/18 anchors (bounded and verbatim, like
+    the config lists), and — only when the drift is
+    significant — the five pipeline steps as planned
+    steps, the identify step carrying the violated lists
+    and the rewrite step scoped to those anchors only.
+    Insignificant drift plans no repair at all: the
+    action is deliver-without-repair with no steps, so
+    tiny differences are never polished (§29). This
+    layer identifies no violation in prose and rewrites
+    nothing — identification and rewriting are the
+    repairer's work, under this plan's shape.
+    """
+    artifact = drift_score_artifact(scores)
+    drift = artifact["drift"]
+    anchors = _validate_violated_anchors(
+        violated_anchors, "violated anchors")
+    anti_anchors = _validate_violated_anchors(
+        violated_anti_anchors, "violated anti-anchors")
+    required = bool(drift["repair_required"])
+    steps: list[dict[str, Any]] = []
+    if required:
+        for row in repair_pipeline():
+            step = dict(row)
+            step["status"] = "planned"
+            if step["step"] == "identify_violated_persona_anchors":
+                step["violated_anchors"] = list(anchors)
+                step["violated_anti_anchors"] = list(anti_anchors)
+            steps.append(step)
+    return {
+        "repair_required": required,
+        "route": drift["route"],
+        "action": "repair_minimally" if required
+        else "deliver_without_repair",
+        "drift": drift,
+        "violated_anchors": anchors,
+        "violated_anti_anchors": anti_anchors,
+        "steps": steps,
+        "minimal_rewrite": True,
+        "regenerates_everything": False,
+        "verify_before_deliver": True,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -3317,7 +3573,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-28): persona "
+            f"Persona runtime (§§3-30): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -3423,6 +3679,14 @@ class PersonaRuntimeBridge:
             f"truthfulness, deference, technical "
             f"competence, and boundaries; only "
             f"significant drift routes to repair. "
+            f"§29 drift score: the score artefact stands "
+            f"in the roadmap's YAML shape (a drift total "
+            f"plus per-dimension values), validated by "
+            f"recomputation — a tampered total or route "
+            f"is refused. §30 drift repair: on significant "
+            f"drift only — draft, identify violated "
+            f"persona anchors, rewrite minimally, verify, "
+            f"deliver; never regenerate everything. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -3536,6 +3800,13 @@ __all__ = [
     "watchdog_contract",
     "drift_score",
     "drift_route",
+    "DRIFT_SCORE_ARTEFACT_FIELDS",
+    "REPAIR_PIPELINE",
+    "drift_score_artifact",
+    "validate_drift_score_artifact",
+    "repair_pipeline",
+    "repair_contract",
+    "repair_plan",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
