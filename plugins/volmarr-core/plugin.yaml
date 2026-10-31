@@ -257,6 +257,18 @@ config_schema:
     type: int
     default: 3
     description: "Maximum investigation attempts per curiosity question before it defers (clamped to 1-10)."
+  autonomy_enabled:
+    type: bool
+    default: true
+    description: "Create and expose the active entity's autonomy policy gate (Emergent Agency Phase 5). Policy is human-authoritative: the runtime reads it and never alters an existing policy file."
+  autonomy_policy_path:
+    type: str
+    default: entity/autonomy_policy.yaml
+    description: "Autonomy policy YAML path relative to the active Hermes profile; escaping paths fall back to the default."
+  autonomy_state_path:
+    type: str
+    default: entity/autonomy_state.json
+    description: "Autonomy runtime state JSON path relative to the active Hermes profile; escaping paths fall back to the default."
   heartbeat_enabled:
     type: bool
     default: true

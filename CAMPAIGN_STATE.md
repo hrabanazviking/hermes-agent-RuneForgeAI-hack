@@ -611,3 +611,47 @@ portable state: any agent (Muse or Hermes) resumes from here.
   `entity/autonomy_state.json` on the Slice 88 `ActionProposal` /
   `PolicyDecision` contracts (per the §12 spec when read at slice
   start).
+- 2026-10-31 ~01:5x EDT keeper tick: **Slice 95 DONE — Emergent
+  Agency Phase 5 (§12, Autonomy Policy Engine) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found (tree
+  clean, HEAD == origin/main at `2dfcbcc1`).
+  `plugins/volmarr-core/autonomy.py`: human-authoritative
+  `entity/autonomy_policy.yaml` seeded create-once (mode `observe`,
+  §12 example capability registry, action/cost budgets, failure
+  threshold) — after seeding the runtime never writes it (contract
+  proves evaluate/record leave its bytes untouched; changes only by
+  human edit) — plus runtime `entity/autonomy_state.json` (decision/
+  execution counters, cost spent, consecutive failures, last action,
+  breaker state). Decisions are pure deterministic functions of
+  (proposal, policy, state) on the Slice 88 `ActionProposal` /
+  `PolicyDecision` contracts: registry class authoritative (never
+  inferred from names/claims; unknown actions deny as
+  `unknown_capability`), off/observe deny, propose confirms all,
+  local allows classes 0–1 and confirms 2–3, bounded allows 0–1 plus
+  allowlisted 2–3, classes 4–5 never auto-run, expired proposals and
+  exhausted budgets deny. Circuit breaker trips at the policy
+  failure threshold and is never automatically untripped. Two
+  in-slice fixes, both caught by tests: bounded mode briefly allowed
+  non-allowlisted class-2 actions (gate logic corrected), and the
+  packet producer's always-on status item broke the present-state
+  empty-profile contract in the full run — the contribution is now
+  content-bearing only (local/bounded mode or tripped/paused
+  breaker). Config keys `autonomy_enabled`/`autonomy_policy_path`/
+  `autonomy_state_path` in `plugin.yaml`. Tests: targeted 9/9 pass;
+  full volmarr/kista run (48 files): **305 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing environmental
+  set (5 core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback). Smoke: `hermes --version` runs; README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, Phase 5 completion note in the Emergent Agency
+  roadmap §12. Honest gaps: Verðandi autonomy events (§12 metadata)
+  NOT yet emitted — deferred to a later telemetry slice, recorded in
+  both bookkeeping spots; no action execution exists in this module
+  (the gate only decides — execution is Phase 6's orchestrator).
+- **Next resume point: Slice 96 — Emergent Agency Phase 6 (§13,
+  Agency Orchestrator)**: `plugins/volmarr-core/agency.py` — one
+  bounded agency cycle connecting identity/continuity health, the
+  Slice 95 autonomy gate, self-model, drives, curiosity, and goals
+  into candidate intentions decided by the gate, on the Slice 88
+  `AgencyCycleReport` contract (per the §13 spec when read at slice
+  start).

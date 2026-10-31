@@ -1622,6 +1622,47 @@ The system can deterministically answer before every self-initiated action:
 
 > Am I permitted to do this, under which rule, at what risk level, and within what remaining budget?
 
+**Phase 5 completion note (Slice 95, 2026-10-31):** implemented in
+`plugins/volmarr-core/autonomy.py`. The human-authoritative
+`entity/autonomy_policy.yaml` is seeded create-once (mode `observe`,
+the §12 example capability registry, action/cost budgets, failure
+threshold) and after seeding the runtime *never writes it* — no
+method in the module alters an existing policy file, and a contract
+test proves evaluate/record leave its bytes untouched; policy changes
+arrive only by direct human edit. The registry is authoritative:
+risk classes are never inferred from action names or proposal claims
+(a proposal claiming class 0 for a registry class-3 action is decided
+at class 3), and an action with no registry entry is denied as
+`unknown_capability`. `entity/autonomy_state.json` holds the runtime
+counters (proposals/decisions/executed/failed, cost spent,
+consecutive failures, last action) and the circuit-breaker state.
+Decisions are pure deterministic functions of (proposal, policy,
+state) over the Phase 0 `ActionProposal` / `PolicyDecision`
+contracts: modes off/observe deny execution, propose requires
+confirmation for everything, local allows classes 0–1 and requires
+confirmation for 2–3, bounded allows 0–1 plus allowlisted 2–3, and
+classes 4–5 never auto-run in any mode; expired proposals and
+exhausted budgets deny. The circuit breaker trips at the policy's
+consecutive-failure threshold and is never automatically untripped —
+a later success consumes budget but does not clear a trip (it only
+resets the failure streak while untripped). Two bugs were caught and
+fixed in-slice by the slice's own tests: bounded mode briefly allowed
+non-allowlisted class-2 actions (gate logic corrected), and the
+packet producer initially emitted an always-on status item that
+leaked a fresh profile's default status into the present-state
+packet's empty-profile contract — the contribution is now
+content-bearing only (execution-capable modes or a tripped/paused
+breaker). A bounded packet contribution enters CURRENT STATE under
+that rule. `tests/plugins/test_volmarr_autonomy.py` covers
+create-once byte stability + default-observe denial, the full
+mode/risk table, registry authoritativeness + unknown denial,
+expiry + budget exhaustion, breaker trip + no auto-untrip,
+policy-byte purity + counters, wrong-owner / malformed / symlink
+refusal, restart persistence, A→B→A isolation, and packet / disabled
+fail-open. Verðandi autonomy events (§12) are not yet emitted; they
+arrive with a later telemetry slice. Next: Phase 6 (§13) builds the
+agency orchestrator on these gates.
+
 ---
 
 # 13. Phase 6 - Agency Orchestrator
