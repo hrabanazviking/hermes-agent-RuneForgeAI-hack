@@ -5571,3 +5571,101 @@ portable state: any agent (Muse or Hermes) resumes from here.
   change-impact, diff-record, import-plan, and reload
   surfaces likewise, with the honest bound that this
   layer proposes nothing and updates no canonical file.
+- 2026-11-01 ~14:2x–15:1x EST keeper tick: **Slice 162 DONE —
+  Persona Runtime §89 (Phase 9 — Evaluation Framework) and §90
+  (Phase 10 — Persona Development System) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found at
+  tick start (Slice 161's state commit at 14:20 EST was its
+  own completed push, verified, not in-progress work; tree
+  clean, HEAD == origin/main at `1fa056bbe7`).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new module file or config key: §89's pure
+  `evaluation_phase_items` / `evaluation_phase_item` /
+  `evaluation_phase_contract` stand Phase 9 reconciled —
+  all six items implemented by their own sections (golden
+  scenarios §58, long-context tests §§57/32–33/55,
+  model-switch tests §§57/34–35, memory drift tests
+  §§40–41/25–26, relationship consistency tests
+  §§43/55/57, persona regression tests §§57–63/19/28–29).
+  §90's pure `development_phase_items` /
+  `development_phase_item` / `development_phase_contract`
+  stand Phase 10 reconciled — the human-readable diff
+  (§74) and the recompile (§§73/20) implemented, with four
+  items honestly **equivalent**: noticing a recurring
+  pattern, carried measurably by the §57 scenarios and
+  §61 telemetry (no proposer stands); the proposed patch,
+  carried as the §74 diff record over the §21 impact (no
+  patch proposer stands); Volmarr's review and approval,
+  carried by the human gate (§22 suggestion-only version
+  confirmed by human config edit + §76 explicit import
+  handling; no approval workflow owned); and the canonical
+  Markdown update, carried by human edit (the runtime
+  never writes the human-authored documents). The pure
+  `evaluation_development_audit` /
+  `evaluation_development_contract` prove both criteria
+  from supplied artefacts: for §89, the §58 golden example
+  validates by recomputation, the §57 suite stands
+  complete with banked judges, a §32 refresh is due at
+  1,000 messages and a §55 plan appends nothing endlessly,
+  a §34 switch preserves the kernel hash, the §41 guard
+  holds in every recomputation, §43 retrieval returns only
+  relationship sections by rebuilt stable ids, the
+  §§59–60 fingerprints validate, §62 adherence equals one
+  minus supplied average drift, and the §19 baseline
+  matches (a tampered kernel hash surfaces as unmet); for
+  §90, the §21 impact classifies with its suggested
+  version recomputed, the §74 diff renders human-readably
+  and persists nothing, the §76 plan performs no import
+  either way, history never redefines foundational
+  personality/identity/traits, and the §73 forced reload
+  recompiles in full without a restart. Packet label
+  updated to §§3–90 (thirty-nine older persona files'
+  packet assertions updated in-slice). Tests: targeted
+  10/10 pass (new file
+  `test_volmarr_persona_phase_evaluation_development.py`);
+  targeted persona run (46 files): **430 passed,
+  0 failed**; full volmarr/kista run (115 files): **909
+  passed, 7 failed, 1 skipped** — exactly Slice 161's
+  899 + the 10 new contracts, the failures the same
+  name-identical pre-existing environmental set in the
+  same 3 files (5 core-plugin, 1 Verðandi-stimuli socket,
+  1 voice-runner loopback), verified from the on-disk run
+  logs (`~/workspace/.verify-tmp/slice162_full_run.log` +
+  `slice162_rerun.log`): the first full run's last 26
+  files errored on a transient "No usable temporary
+  directory" window (the Slice 156 blocker class, mid-run)
+  and were re-run clean the same tick (145 passed,
+  2 failed — the known stimuli + voice-runner failures);
+  an unverified completion notification claiming the
+  final totals was distrusted until the disk logs proved
+  them. Smoke: `hermes --version` runs
+  (`vgit.1fa056b.dirty` pre-commit); README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §89 + §90 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–90. Honest gaps: no evaluation is
+  run and no live response is evaluated, no patch is
+  proposed, no approval workflow is owned, no canonical
+  file is updated by this layer, and no caller consumes a
+  reconciliation or an audit yet.
+- **Next resume point: Slice 163 — Persona Runtime §91
+  (Long-Term Architecture) and §92 (Most Important
+  Rule)**: §91 names the final conceptual system
+  (human-editable documents → Persona Compiler →
+  Kernel/PersonaIR/Index → PersonaRouter → Memory /
+  Project / Tools routers → ContextBuilder → Model
+  Router → local/heavy models → PersonaWatchdog →
+  Caducea output) — reconcile against the banked §§3–88
+  surfaces and the §52 request pipeline / §53 prompt
+  assembly orders when read at slice start, expect an
+  audit/reconciliation slice in the Slice 158–162
+  pattern, not a second architecture; §92 states the
+  most important rule — never make character persistence
+  depend on conversation history; only the persona
+  component defines foundational identity (PERSONA +
+  MEMORY + STATE + CONTEXT + MODEL = Caducea at this
+  moment) — reconcile against the banked §24 precedence,
+  §67 canonical priority, §§25–26 summary/trait guards,
+  and §56 long-term placements likewise. After Slice
+  163: §93 (Target Result) + §94 (Essence) close the
+  roadmap.
