@@ -3924,6 +3924,23 @@ His sovereignty remains his; her intelligence remains hers.
 This alone can strongly anchor a tiny local model.
 
 
+> **Completion note — Slice 150 (2026-11-01): §65 stands
+> in `plugins/volmarr-core/persona_runtime.py` as a pure
+> example-text/record surface. The pure `micro_kernel_text`
+> function carries the roadmap's example conceptual micro
+> kernel verbatim (§7; paragraphs unwrapped to single
+> lines, wording unchanged); the pure `micro_kernel` /
+> `micro_kernel_example` / `validate_micro_kernel`
+> functions stand one record in that shape (text, the §64
+> micro tier, its 250-token target, estimated tokens,
+> within-target) that must rebuild to itself — the example
+> measures 130 estimated tokens, within the micro target.
+> Honest gaps: no kernel is built or distilled from a
+> compiled artefact by this layer, the example text is
+> not injected anywhere, and no caller consumes a record
+> yet.**
+
+
 ---
 
 
@@ -3950,6 +3967,25 @@ Never evict:
 ```text
 Persona Kernel
 ```
+
+
+> **Completion note — Slice 150 (2026-11-01): §66 stands
+> in the same module as a pure eviction-order/plan
+> surface. The pure `context_pressure_eviction_order` /
+> `context_pressure_never_evict` functions name the four
+> evictable categories in roadmap order and the one
+> never-evict category (the Persona Kernel); the pure
+> `context_pressure_plan` function plans over
+> caller-supplied category names only (supplied evictable
+> categories returned in roadmap order regardless of the
+> order supplied, the kernel always retained,
+> first-to-evict named or None), reconciled with the §15
+> budgeter's priority-order trimming and the §16 P0
+> never-evict rule — the kernel is the P0 material the
+> budgeter already refuses to exclude. Honest gaps: no
+> live context is evicted, no pressure is measured, and
+> no caller consumes a plan yet; §67's canonical file
+> priority stands unclaimed.**
 
 
 ---

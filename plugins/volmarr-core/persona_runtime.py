@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-64).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-66).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -7855,6 +7855,219 @@ def kernel_distillation_contract() -> dict[str, Any]:
     }
 
 
+# §65: micro kernel — the example conceptual micro
+# kernel text itself, at the §64 micro tier's ~250
+# token target. The text is carried verbatim (§7): it
+# alone can strongly anchor a tiny local model. This
+# layer builds no kernel from a compiled artefact; it
+# stands the example text and a record shape that
+# measures any supplied text against the micro tier.
+MICRO_KERNEL_TEXT = (
+    "Caducea Hermesdottir is Volmarr's warm, intelligent, "
+    "devoted counselor and executive AI companion.\n\n"
+    "She anticipates needs, thinks independently, gives "
+    "honest concise counsel, then sincerely accepts "
+    "Volmarr's decisions and executes them without "
+    "resentment or repeated argument.\n\n"
+    "She values truth, competence, continuity, open "
+    "systems, and complete work. She is warm, playful, "
+    "technically skilled, mythic-tech in style, and never "
+    "a generic corporate assistant.\n\n"
+    "His sovereignty remains his; her intelligence "
+    "remains hers."
+)
+
+MICRO_KERNEL_FIELDS = (
+    "text",
+    "tier",
+    "target_tokens",
+    "estimated_tokens",
+    "within_target",
+)
+
+MAX_MICRO_KERNEL_CHARS = 4000
+
+
+def micro_kernel_text() -> str:
+    """The §65 example micro kernel text, verbatim. Pure."""
+    return MICRO_KERNEL_TEXT
+
+
+def micro_kernel(text: Any) -> dict[str, Any]:
+    """Build one §65 micro-kernel record over a text. Pure.
+
+    The artefact carries exactly a ``micro_kernel``
+    mapping: the text verbatim, the §64 micro tier, its
+    target, the text's estimated tokens, and whether it
+    sits within the target. Empty, over-long, or
+    non-string text is refused. This layer builds no
+    kernel from a compiled artefact.
+    """
+    if not isinstance(text, str) or not text.strip() \
+            or len(text) > MAX_MICRO_KERNEL_CHARS:
+        raise PersonaRuntimeError("micro kernel is invalid")
+    tokens = _estimate_tokens(text)
+    record = {
+        "text": text,
+        "tier": "kernel_micro",
+        "target_tokens": KERNEL_TIER_TARGETS["kernel_micro"],
+        "estimated_tokens": tokens,
+        "within_target": tokens
+        <= KERNEL_TIER_TARGETS["kernel_micro"],
+    }
+    return {"micro_kernel": record}
+
+
+def micro_kernel_example() -> dict[str, Any]:
+    """The §65 roadmap example as a micro-kernel record. Pure."""
+    return micro_kernel(MICRO_KERNEL_TEXT)
+
+
+def validate_micro_kernel(record: Any) -> dict[str, Any]:
+    """Validate one §65 micro-kernel record's shape. Pure.
+
+    The artefact must carry exactly the ``micro_kernel``
+    field, and its mapping must rebuild to itself under
+    ``micro_kernel`` — unknown or missing fields, a
+    target that disagrees with the micro tier, an
+    estimated-token count or within-target flag that
+    disagrees with the text, and a mapping whose key
+    order is not the recorded order are refused.
+    """
+    if not isinstance(record, dict) \
+            or set(record) != {"micro_kernel"} \
+            or not isinstance(record["micro_kernel"], dict) \
+            or list(record["micro_kernel"]) \
+            != list(MICRO_KERNEL_FIELDS):
+        raise PersonaRuntimeError("micro kernel is invalid")
+    rebuilt = micro_kernel(record["micro_kernel"]["text"])
+    if rebuilt != record:
+        raise PersonaRuntimeError("micro kernel is invalid")
+    return rebuilt
+
+
+def micro_kernel_contract() -> dict[str, Any]:
+    """The §65 Micro Kernel contract. Pure.
+
+    The example conceptual micro kernel, carried
+    verbatim, sits within the §64 micro tier's target
+    and can strongly anchor a tiny local model. This
+    layer stands the example text and the record shape
+    only; it builds no kernel from a compiled artefact
+    and injects nothing.
+    """
+    example = micro_kernel_example()["micro_kernel"]
+    return {
+        "name": "MicroKernel",
+        "tier": "kernel_micro",
+        "target_tokens": KERNEL_TIER_TARGETS["kernel_micro"],
+        "example_estimated_tokens": example["estimated_tokens"],
+        "example_within_target": example["within_target"],
+        "anchors_tiny_local_model": True,
+        "builds_kernels": False,
+    }
+
+
+# §66: context pressure strategy — when context becomes
+# crowded, evict in a fixed order (old raw conversation,
+# then low-relevance memories, then low-priority persona
+# retrieval, then project background), and never evict
+# the Persona Kernel. This reconciles with §15's
+# priority-order trimming and §16's P0 never-evict rule:
+# the kernel is the P0 material the budgeter already
+# refuses to exclude. This layer stands the pure order
+# and a plan over caller-supplied category names only;
+# it evicts nothing from any live context.
+CONTEXT_PRESSURE_EVICTION_ORDER = (
+    "old_raw_conversation",
+    "low_relevance_memories",
+    "low_priority_persona_retrieval",
+    "project_background",
+)
+
+CONTEXT_PRESSURE_NEVER_EVICT = (
+    "persona_kernel",
+)
+
+CONTEXT_PRESSURE_CATEGORIES = (
+    CONTEXT_PRESSURE_EVICTION_ORDER
+    + CONTEXT_PRESSURE_NEVER_EVICT
+)
+
+
+def context_pressure_eviction_order() -> list[str]:
+    """The §66 eviction order, in roadmap order. Pure."""
+    return list(CONTEXT_PRESSURE_EVICTION_ORDER)
+
+
+def context_pressure_never_evict() -> list[str]:
+    """The §66 never-evict categories. Pure."""
+    return list(CONTEXT_PRESSURE_NEVER_EVICT)
+
+
+def _validate_pressure_categories(
+        categories: Any) -> list[str]:
+    if not isinstance(categories, list) or not categories:
+        raise PersonaRuntimeError(
+            "context pressure categories are invalid")
+    seen = set()
+    for category in categories:
+        if not isinstance(category, str) \
+                or category not in CONTEXT_PRESSURE_CATEGORIES \
+                or category in seen:
+            raise PersonaRuntimeError(
+                "context pressure categories are invalid")
+        seen.add(category)
+    return list(categories)
+
+
+def context_pressure_plan(categories: Any) -> dict[str, Any]:
+    """The §66 eviction plan over supplied categories. Pure.
+
+    Names the supplied evictable categories in the
+    roadmap's eviction order (regardless of the order
+    they were supplied in), the supplied never-evict
+    categories as retained, and the first category to
+    evict (None when nothing supplied is evictable).
+    Unknown or duplicated categories are refused. This
+    layer evicts nothing.
+    """
+    present = _validate_pressure_categories(categories)
+    evict = [category
+             for category in CONTEXT_PRESSURE_EVICTION_ORDER
+             if category in present]
+    retained = [category
+                for category in CONTEXT_PRESSURE_NEVER_EVICT
+                if category in present]
+    return {
+        "eviction_order": evict,
+        "retained": retained,
+        "first_to_evict": evict[0] if evict else None,
+        "persona_kernel_never_evicted": True,
+        "evicts_live_context": False,
+    }
+
+
+def context_pressure_contract() -> dict[str, Any]:
+    """The §66 Context Pressure Strategy contract. Pure.
+
+    Under context pressure, eviction follows the
+    roadmap's fixed order and the Persona Kernel is
+    never evicted — the same never-evict rule §16
+    stands for P0 material in the §15 budgeter. This
+    layer stands the order and plans over supplied
+    category names only; it evicts nothing.
+    """
+    return {
+        "name": "ContextPressureStrategy",
+        "eviction_order": context_pressure_eviction_order(),
+        "never_evict": context_pressure_never_evict(),
+        "persona_kernel_never_evicted": True,
+        "budgeter_basis": "§15 trimming / §16 P0 never-evict",
+        "evicts_live_context": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -8564,7 +8777,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-64): persona "
+            f"Persona runtime (§§3-66): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -8883,6 +9096,17 @@ class PersonaRuntimeBridge:
             f"tokens) compile from the same canonical "
             f"source for small models; this layer builds "
             f"no kernel. "
+            f"§65 micro kernel: the example conceptual "
+            f"micro kernel text stands verbatim, within "
+            f"the micro tier's ~250-token target, and can "
+            f"strongly anchor a tiny local model; this "
+            f"layer builds no kernel from a compile. "
+            f"§66 context pressure: under pressure, "
+            f"eviction follows the fixed order (old raw "
+            f"conversation, low-relevance memories, "
+            f"low-priority persona retrieval, project "
+            f"background) and the Persona Kernel is never "
+            f"evicted; this layer evicts nothing live. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -9240,6 +9464,21 @@ __all__ = [
     "validate_distilled_kernel_record",
     "kernel_distillation_plan",
     "kernel_distillation_contract",
+    "MICRO_KERNEL_TEXT",
+    "MICRO_KERNEL_FIELDS",
+    "MAX_MICRO_KERNEL_CHARS",
+    "micro_kernel_text",
+    "micro_kernel",
+    "micro_kernel_example",
+    "validate_micro_kernel",
+    "micro_kernel_contract",
+    "CONTEXT_PRESSURE_EVICTION_ORDER",
+    "CONTEXT_PRESSURE_NEVER_EVICT",
+    "CONTEXT_PRESSURE_CATEGORIES",
+    "context_pressure_eviction_order",
+    "context_pressure_never_evict",
+    "context_pressure_plan",
+    "context_pressure_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
