@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-34).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-36).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -403,6 +403,25 @@ What stands here, and nothing more:
   when the kernel hash after a switch equals the hash
   before it. This layer routes no model and switches
   nothing.
+- §35 persona handoff packet: when routing to another
+  model, a packet is created in the roadmap's YAML shape
+  (``persona_handoff``: persona id, §22 persona version,
+  kernel named by its hash, current mode, relationship
+  state, relevant sections by §12 stable id), avoiding
+  passing the whole conversation when unnecessary. The
+  pure ``handoff_contract`` / ``handoff_packet`` /
+  ``validate_handoff_packet`` functions stand it: the
+  builder refuses a section the compiled index does not
+  contain. This layer routes nothing and hands nothing
+  off.
+- §36 subagent separation: subagents are not turned into
+  the primary persona — each carries its own identity
+  and role, while the primary persona may delegate and
+  maintains its own identity. The pure
+  ``subagent_examples`` / ``subagent_contract`` /
+  ``subagent_separation`` functions stand the separation
+  over the roadmap's example roster. This layer
+  delegates nothing and spawns nothing.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -3422,6 +3441,272 @@ def kernel_identity_preserved(kernel_hash_before: Any,
     return before == after
 
 
+# --- §35 persona handoff packet + §36 subagent separation ------------
+#
+# Pure contract data and functions, like §§31–34. §35
+# names the handoff packet created when routing to
+# another model: persona id, persona version, kernel,
+# current mode, relationship state, and the relevant
+# sections named by their §12 stable ids — so the whole
+# conversation need not be passed when unnecessary. The
+# packet's ``kernel`` field carries the §§9–10 kernel
+# hash (the §34 identity proof), not kernel text. §36
+# names subagent separation: subagents are not turned
+# into the primary persona — each carries its own
+# identity and role, while the primary persona may
+# delegate and maintains its own identity throughout.
+# Nothing here routes a model, hands anything off,
+# delegates work, or spawns a subagent.
+
+# The §35 handoff packet's fields, in roadmap order.
+HANDOFF_PACKET_FIELDS = (
+    "persona_id", "persona_version", "kernel",
+    "current_mode", "relationship_state", "relevant_sections",
+)
+
+# §35 bounds (this layer's recorded conventions): a
+# handoff names at most 32 relevant sections, and the
+# relationship-state summary at most 1,000 characters.
+MAX_HANDOFF_SECTIONS = 32
+MAX_HANDOFF_STATE_CHARS = 1000
+
+_STABLE_ID_FORM = re.compile(
+    r"^[a-z0-9]+(?:_[a-z0-9]+)*\.[a-z0-9]+(?:_[a-z0-9]+)*$")
+
+
+def handoff_packet_fields() -> list[str]:
+    return list(HANDOFF_PACKET_FIELDS)
+
+
+def handoff_contract() -> dict[str, Any]:
+    """The §35 persona handoff packet contract. Pure.
+
+    When routing to another model, a handoff packet is
+    created carrying exactly the six §35 fields — the
+    persona id, its §22 version, the kernel (named by
+    its §§9–10 hash), the current mode, the relationship
+    state, and the relevant sections by §12 stable id.
+    The whole conversation is not passed when that is
+    unnecessary. This layer creates no live handoff and
+    routes no model; it names the packet shape a router
+    must build.
+    """
+    return {
+        "name": "PersonaHandoffPacket",
+        "created_when": "routing_to_another_model",
+        "fields": list(HANDOFF_PACKET_FIELDS),
+        "kernel_form": "kernel_hash",
+        "sections_named_by": "stable_id",
+        "passes_whole_conversation": False,
+        "routes_models": False,
+    }
+
+
+def _validate_handoff_mode(mode: Any) -> str:
+    if not isinstance(mode, str) or not mode.strip() \
+            or len(mode.strip()) > MAX_NAME_CHARS:
+        raise PersonaRuntimeError("handoff current mode is invalid")
+    return _slugify(mode)
+
+
+def _validate_handoff_state(state: Any) -> str:
+    if not isinstance(state, str) or not state.strip() \
+            or len(state.strip()) > MAX_HANDOFF_STATE_CHARS:
+        raise PersonaRuntimeError(
+            "handoff relationship state is invalid")
+    return state.strip()
+
+
+def _validate_stable_id(value: Any) -> str:
+    if not isinstance(value, str) \
+            or not _STABLE_ID_FORM.match(value.strip()):
+        raise PersonaRuntimeError("handoff section id is invalid")
+    return value.strip()
+
+
+def _validate_handoff_sections(raw: Any) -> list[str]:
+    if not isinstance(raw, (list, tuple)) \
+            or len(raw) > MAX_HANDOFF_SECTIONS:
+        raise PersonaRuntimeError("handoff sections are invalid")
+    sections: list[str] = []
+    for item in raw:
+        section = _validate_stable_id(item)
+        if section in sections:
+            raise PersonaRuntimeError("handoff sections are invalid")
+        sections.append(section)
+    return sections
+
+
+def handoff_packet(compiled: dict[str, Any], current_mode: Any,
+                   relationship_state: Any,
+                   relevant_sections: Any = ()) -> dict[str, Any]:
+    """Build one §35 handoff packet from a compiled persona. Pure.
+
+    The packet stands in the roadmap's YAML shape — a
+    ``persona_handoff`` mapping with exactly the six
+    §35 fields. Persona id and version come from the
+    compiled artefact (the §22 per-persona version), the
+    kernel is named by its §§9–10 hash, and every
+    relevant section must be a §12 stable id that exists
+    in the compiled index — an unknown section is
+    refused, never passed along by guesswork. The whole
+    conversation is never a field. This layer routes
+    nothing and hands nothing off.
+    """
+    record = hash_record(compiled)
+    version = _compiled_version(compiled)
+    index = compiled.get("index")
+    if not isinstance(index, list):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    known = {
+        entry.get("stable_id") for entry in index
+        if isinstance(entry, dict)
+    }
+    sections = _validate_handoff_sections(relevant_sections)
+    for section in sections:
+        if section not in known:
+            raise PersonaRuntimeError("handoff section id is invalid")
+    return {
+        "persona_handoff": {
+            "persona_id": record["persona_id"],
+            "persona_version": version,
+            "kernel": record["kernel_hash"],
+            "current_mode": _validate_handoff_mode(current_mode),
+            "relationship_state": _validate_handoff_state(
+                relationship_state),
+            "relevant_sections": sections,
+        },
+    }
+
+
+def validate_handoff_packet(packet: Any) -> dict[str, Any]:
+    """Validate one §35 handoff packet, refusing disagreement. Pure.
+
+    The packet must carry exactly the ``persona_handoff``
+    mapping with exactly the six §35 fields; the version
+    must be strict §22 semver, the kernel a non-empty
+    hash string, the mode a slugified name, the
+    relationship state a bounded summary, and every
+    relevant section a well-formed §12 stable id, named
+    at most once. Returns a fresh normalised packet.
+    (Existence of the sections in a compile is the
+    builder's check; this validator checks the shape any
+    receiver can check.)
+    """
+    if not isinstance(packet, dict) \
+            or set(packet) != {"persona_handoff"}:
+        raise PersonaRuntimeError("handoff packet is invalid")
+    handoff = packet["persona_handoff"]
+    if not isinstance(handoff, dict) \
+            or set(handoff) != set(HANDOFF_PACKET_FIELDS):
+        raise PersonaRuntimeError("handoff packet is invalid")
+    persona_id = handoff["persona_id"]
+    if not isinstance(persona_id, str) or not persona_id.strip() \
+            or len(persona_id.strip()) > MAX_NAME_CHARS \
+            or _slugify(persona_id) != persona_id.strip():
+        raise PersonaRuntimeError("handoff packet is invalid")
+    parse_persona_version(handoff["persona_version"])
+    kernel = _validate_kernel_hash(handoff["kernel"])
+    return {
+        "persona_handoff": {
+            "persona_id": persona_id.strip(),
+            "persona_version": handoff["persona_version"],
+            "kernel": kernel,
+            "current_mode": _validate_handoff_mode(
+                handoff["current_mode"]),
+            "relationship_state": _validate_handoff_state(
+                handoff["relationship_state"]),
+            "relevant_sections": _validate_handoff_sections(
+                handoff["relevant_sections"]),
+        },
+    }
+
+
+# The §36 example roster, in roadmap order: the primary
+# persona first, then the specialised subagents. The
+# roster is the roadmap's example, not a closed list —
+# any other agent is likewise a subagent (see
+# ``subagent_separation``).
+EXAMPLE_SUBAGENTS = (
+    ("caducea", "orchestrator_companion"),
+    ("volundr", "specialized_builder"),
+    ("saga", "historian"),
+    ("eir", "repair_agent"),
+)
+
+
+def subagent_examples() -> list[dict[str, Any]]:
+    """The §36 example roster, in roadmap order. Pure.
+
+    The primary persona stands first; every other named
+    agent is a subagent carrying its own identity and
+    role, never the primary persona. Fresh copies are
+    returned; mutating a row does not poison the roster.
+    """
+    return [
+        {
+            "agent": name,
+            "role": role,
+            "is_primary_persona": index == 0,
+            "carries_primary_persona": index == 0,
+        }
+        for index, (name, role) in enumerate(EXAMPLE_SUBAGENTS)
+    ]
+
+
+def subagent_contract() -> dict[str, Any]:
+    """The §36 subagent separation contract. Pure.
+
+    Subagents are not accidentally turned into the
+    primary persona: each carries its own identity and
+    role. The primary persona may delegate while
+    maintaining its own primary character identity.
+    This layer delegates nothing and spawns nothing; it
+    names the separation a delegator must keep.
+    """
+    return {
+        "name": "SubagentSeparation",
+        "primary_persona": "caducea",
+        "examples": [name for name, _role in EXAMPLE_SUBAGENTS],
+        "subagents_carry_primary_persona": False,
+        "subagents_have_own_identities": True,
+        "primary_may_delegate": True,
+        "primary_identity_maintained": True,
+        "delegates_work": False,
+    }
+
+
+def subagent_separation(agent: Any,
+                        primary_persona: Any = "caducea") -> dict[str, Any]:
+    """Classify one agent against the primary persona (§36). Pure.
+
+    The agent whose slugified name matches the primary
+    persona is the primary: it carries the persona and
+    may delegate while maintaining its identity. Every
+    other agent is a subagent: it carries its own
+    identity and role and does NOT carry the primary
+    persona — delegation never turns it into the
+    primary. A missing or malformed name on either side
+    is refused, never classified by guesswork.
+    """
+    if not isinstance(agent, str) or not agent.strip():
+        raise PersonaRuntimeError("subagent name is invalid")
+    if not isinstance(primary_persona, str) \
+            or not primary_persona.strip():
+        raise PersonaRuntimeError("primary persona is invalid")
+    resolved = _slugify(agent)
+    primary = _slugify(primary_persona)
+    is_primary = resolved == primary
+    return {
+        "agent": resolved,
+        "is_primary_persona": is_primary,
+        "carries_primary_persona": is_primary,
+        "has_own_identity": True,
+        "may_delegate": is_primary,
+        "primary_identity_maintained": True,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -4003,7 +4288,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-34): persona "
+            f"Persona runtime (§§3-36): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -4144,7 +4429,17 @@ class PersonaRuntimeBridge:
             f"is the engine, the persona system is the "
             f"identity layer, and identity is preserved "
             f"exactly when the kernel hash is unchanged "
-            f"across a switch. Canonical document "
+            f"across a switch. §35 handoff packet: when "
+            f"routing to another model, a packet carries "
+            f"persona id, persona version, kernel hash, "
+            f"current mode, relationship state, and the "
+            f"relevant sections by stable id — the whole "
+            f"conversation is not passed when unnecessary. "
+            f"§36 subagent separation: subagents are not "
+            f"turned into the primary persona — each "
+            f"carries its own identity and role, while the "
+            f"primary persona may delegate and maintains "
+            f"its own identity. Canonical document "
             f"text is compiled, not injected by this layer."
         )
         return [ContextItem(
@@ -4284,6 +4579,17 @@ __all__ = [
     "model_switch_contract",
     "model_switch_plan",
     "kernel_identity_preserved",
+    "HANDOFF_PACKET_FIELDS",
+    "MAX_HANDOFF_SECTIONS",
+    "MAX_HANDOFF_STATE_CHARS",
+    "handoff_packet_fields",
+    "handoff_contract",
+    "handoff_packet",
+    "validate_handoff_packet",
+    "EXAMPLE_SUBAGENTS",
+    "subagent_examples",
+    "subagent_contract",
+    "subagent_separation",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

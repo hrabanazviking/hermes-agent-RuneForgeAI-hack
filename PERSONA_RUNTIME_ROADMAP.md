@@ -2184,6 +2184,29 @@ persona_handoff:
 
 Avoid passing the whole conversation when unnecessary.
 
+> **Completion note — Slice 135 (2026-10-31): §35 stands
+> in `plugins/volmarr-core/persona_runtime.py`. The pure
+> `handoff_contract` function stands the packet: created
+> when routing to another model, exactly the six fields,
+> the kernel named by its §§9–10 hash, sections named by
+> §12 stable id, and the whole conversation never a
+> field. The pure `handoff_packet` function builds one
+> packet in the roadmap's YAML shape from a compiled
+> artefact — persona id and the §22 per-persona version
+> from the compile, the kernel hash as the §34 identity
+> proof, caller-supplied current mode (slugified) and
+> relationship state (bounded at 1,000 chars, this
+> layer's recorded convention), and relevant sections
+> that must exist in the compiled index (unknown,
+> malformed, or duplicated ids refused; at most 32, this
+> layer's recorded convention). The pure
+> `validate_handoff_packet` function recomputes the
+> normalised packet from its fields alone and refuses
+> extra/missing fields, a non-semver version, an empty
+> kernel, and malformed or duplicated sections. Honest
+> gaps: no model is routed, no packet is delivered to a
+> live model, and no caller consumes a packet yet.**
+
 
 ---
 
@@ -2216,6 +2239,26 @@ repair agent
 
 
 Caducea may delegate while maintaining primary character identity.
+
+> **Completion note — Slice 135 (2026-10-31): §36 stands
+> in the same module. The pure `subagent_examples`
+> function returns the roadmap's example roster in order
+> — Caducea (orchestrator/companion, the primary
+> persona), Völundr (specialized builder), Saga
+> (historian), Eir (repair agent) — with only the primary
+> carrying the primary persona. The pure
+> `subagent_contract` function stands the separation:
+> subagents carry their own identities and never the
+> primary persona, and the primary may delegate while
+> its identity is maintained. The pure
+> `subagent_separation` function classifies one agent
+> against a named primary (Caducea by default): the
+> matching agent is the primary, every other agent is a
+> subagent with its own identity that does not carry the
+> primary persona and may not delegate as the primary;
+> malformed names are refused. Honest gaps: nothing is
+> delegated, no subagent is spawned, and no caller
+> consumes the classification yet.**
 
 
 ---
