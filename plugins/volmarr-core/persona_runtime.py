@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-42).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-44).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -500,6 +500,32 @@ What stands here, and nothing more:
   stand a deterministic selection over the compiled
   index, restricted to the ``service_bible`` role and
   reusing the §13 ranking; nothing is injected.
+- §43 Relationship Model dynamic retrieval: relationship
+  context is especially important during disagreements,
+  personal conversation, advice, emotionally meaningful
+  interaction, and shared-history discussion; for routine
+  coding only the relevant relational anchors need to
+  remain in the kernel, so no dynamic retrieval happens.
+  The pure ``relationship_contexts`` /
+  ``classify_relationship_contexts`` /
+  ``relationship_contexts_for_section`` /
+  ``relationship_retrieval_need`` /
+  ``retrieve_relationship_model`` functions and the
+  explicit ``PersonaRelationshipRetriever`` stand a
+  deterministic selection over the compiled index,
+  restricted to the ``relationship`` role and reusing
+  the §13 ranking; nothing is injected.
+- §44 Tool Policy dynamic retrieval: Tool Policy sections
+  are retrieved when actual tools are being considered —
+  file reading needs minimal or no extra policy, while a
+  git force push retrieves the force_push,
+  remote_git_operations, reversibility, and authorization
+  sections. The pure ``tool_actions`` /
+  ``classify_tool_action`` / ``tool_policy_needs`` /
+  ``retrieve_tool_policy`` functions and the explicit
+  ``PersonaToolPolicyRetriever`` stand a deterministic
+  selection over the compiled index, restricted to the
+  ``tool_policy`` role; this layer executes no tool.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -4556,6 +4582,397 @@ def retrieve_service_bible(index: list[dict[str, Any]],
     return selected
 
 
+# --- §43 relationship retrieval + §44 tool policy retrieval ----
+#
+# §43: relationship context is especially important during
+# disagreements, personal conversation, advice, emotionally
+# meaningful interaction, and shared-history discussion.
+# For routine coding, only the relevant relational anchors
+# need to remain in the kernel — the kernel (§9) already
+# carries them, so a routine task retrieves nothing
+# dynamically. Retrieval here is explicit, deterministic,
+# restricted to the relationship role, and reuses §13.
+#
+# §44: Tool Policy sections are retrieved when actual
+# tools are being considered. File reading needs minimal
+# or no extra policy; a git force push retrieves the
+# force_push / remote_git_operations / reversibility /
+# authorization sections. Actions not named by the
+# roadmap carry this layer's recorded needs mapping
+# (below). This layer executes no tool and injects
+# nothing.
+
+# The §43 contexts, in roadmap order (the roadmap's
+# phrases slugified).
+RELATIONSHIP_CONTEXTS = (
+    "disagreement", "personal_conversation", "advice",
+    "emotionally_meaningful_interaction",
+    "shared_history_discussion",
+)
+
+_RELATIONSHIP_CONTEXT_LEXICON = (
+    ("disagreement", frozenset({
+        "disagreement", "disagreements", "disagree", "disagrees",
+        "disagreeing", "conflict", "argument", "dispute",
+        "pushback"})),
+    ("personal_conversation", frozenset({
+        "personal", "private", "intimate"})),
+    ("advice", frozenset({
+        "advice", "advise", "advises", "counsel", "guidance",
+        "recommendation", "recommendations"})),
+    ("emotionally_meaningful_interaction", frozenset({
+        "emotional", "emotionally", "meaningful", "grief",
+        "vulnerable", "heartfelt", "celebration", "celebrates"})),
+    ("shared_history_discussion", frozenset({
+        "history", "shared", "memories", "memory", "remembered",
+        "remembrance", "anniversary", "past"})),
+)
+
+# Task tags (§13) that mark routine work, for which §43
+# keeps only the kernel's relational anchors.
+_ROUTINE_TASK_TAGS = ("coding", "git", "filesystem", "planning")
+
+
+def relationship_contexts() -> list[str]:
+    return list(RELATIONSHIP_CONTEXTS)
+
+
+def relationship_retrieval_contract() -> dict[str, Any]:
+    """The §43 Relationship Model dynamic retrieval contract.
+
+    Pure. Relationship context is retrieved selectively —
+    explicit calls only, restricted to the relationship
+    document role, ranked by §13 — when the interaction
+    is one of the five §43 contexts. For routine coding
+    only the relevant relational anchors remain, in the
+    §9 kernel; no dynamic retrieval happens and this
+    layer injects nothing either way.
+    """
+    return {
+        "name": "RelationshipModelDynamicRetrieval",
+        "role": "relationship",
+        "contexts": list(RELATIONSHIP_CONTEXTS),
+        "continuously_injected": False,
+        "retrieve_selectively": True,
+        "retrieval": "explicit_only",
+        "routine_coding": "kernel_anchors_only",
+        "injects": False,
+    }
+
+
+def classify_relationship_contexts(text: Any) -> list[str]:
+    """The §43 contexts a text signals, in roadmap order. Pure.
+
+    A context is present when any of its lexicon words
+    appears as a token in the text. No model call.
+    Malformed text is refused.
+    """
+    if not isinstance(text, str):
+        raise PersonaRuntimeError("relationship text is invalid")
+    tokens = _tokens(text)
+    return [context for context, words in
+            _RELATIONSHIP_CONTEXT_LEXICON if tokens & words]
+
+
+def relationship_contexts_for_section(
+        entry: dict[str, Any]) -> list[str]:
+    """A compiled section's §43 contexts, in roadmap order.
+
+    Pure. Derived from the section's heading and bare
+    section id only — never authored or stored.
+    """
+    return classify_relationship_contexts(
+        f"{entry['heading']} {entry['section_id']}")
+
+
+def relationship_retrieval_need(text: Any) -> dict[str, Any]:
+    """Whether a task needs dynamic relationship retrieval.
+
+    Pure (§43). A signalled §43 context means dynamic
+    retrieval; a routine task tag (§13 coding / git /
+    filesystem / planning) with no such context means
+    the kernel's relational anchors suffice; anything
+    else needs neither.
+    """
+    if not isinstance(text, str):
+        raise PersonaRuntimeError("relationship text is invalid")
+    contexts = classify_relationship_contexts(text)
+    if contexts:
+        return {
+            "contexts": contexts,
+            "mode": "dynamic_retrieval",
+            "dynamic_retrieval": True,
+            "kernel_anchors_only": False,
+        }
+    if set(classify_task(text)) & set(_ROUTINE_TASK_TAGS):
+        return {
+            "contexts": [],
+            "mode": "kernel_anchors_only",
+            "dynamic_retrieval": False,
+            "kernel_anchors_only": True,
+        }
+    return {
+        "contexts": [],
+        "mode": "none",
+        "dynamic_retrieval": False,
+        "kernel_anchors_only": False,
+    }
+
+
+def retrieve_relationship_model(index: list[dict[str, Any]],
+                                query: str = "",
+                                task_text: str | None = None,
+                                context: Any = None,
+                                limit: int = RETRIEVAL_DEFAULT_LIMIT
+                                ) -> list[dict[str, Any]]:
+    """Selectively retrieve Relationship Model sections (§43).
+
+    Pure. The compiled index is restricted to the
+    relationship role and ranked by §13. Retrieval
+    happens only for a signalled §43 context: an explicit
+    ``context`` (slugified; unknown contexts refused)
+    filters the results to sections carrying that context
+    and supplies the signal when no query or task text is
+    given; contexts may also be signalled by the query or
+    task text itself. A section qualifies when its own
+    §43 contexts intersect the signalled ones or §13
+    retrieval connects it to the signal. With no §43
+    context signalled — routine coding included — nothing
+    is retrieved: the kernel's relational anchors remain.
+    Each result is a §13-shaped result annotated with its
+    section's §43 contexts.
+    """
+    wanted = None
+    if context is not None:
+        if not isinstance(context, str) or not context.strip():
+            raise PersonaRuntimeError(
+                "relationship context is invalid")
+        wanted = _slugify(context)
+        if wanted not in RELATIONSHIP_CONTEXTS:
+            raise PersonaRuntimeError(
+                "relationship context is invalid")
+    signal = " ".join(
+        part for part in (query or "", task_text or "") if part)
+    signalled = set(classify_relationship_contexts(signal))
+    if wanted is not None:
+        signalled.add(wanted)
+    if not signalled:
+        return []
+    effective_query = query
+    if wanted is not None and not (query or "").strip() \
+            and task_text is None:
+        effective_query = wanted.replace("_", " ")
+    entries = [entry for entry in index
+               if entry.get("role") == "relationship"]
+    tags_wanted = classify_task(
+        task_text if task_text is not None else effective_query)
+    try:
+        bounded = int(limit)
+    except (TypeError, ValueError):
+        bounded = RETRIEVAL_DEFAULT_LIMIT
+    bounded = max(1, min(RETRIEVAL_MAX_LIMIT, bounded))
+    ranked = {
+        row["stable_id"]: row for row in retrieve_sections(
+            entries, query=effective_query, task_text=task_text,
+            limit=RETRIEVAL_MAX_LIMIT)}
+    selected = []
+    for entry in entries:
+        stable = entry.get(
+            "stable_id",
+            stable_section_id(entry["role"], entry["section_id"]))
+        contexts = relationship_contexts_for_section(entry)
+        row = ranked.get(stable)
+        if not (set(contexts) & signalled) and row is None:
+            continue
+        if row is None:
+            score = retrieval_score(
+                entry, query=effective_query,
+                task_tags_=tags_wanted)
+            row = {
+                "stable_id": stable, "role": entry["role"],
+                "section_id": entry["section_id"],
+                "heading": entry["heading"],
+                "priority": float(entry.get("priority", 0.40)),
+                "task_tags": list(tags_wanted),
+                "tags": section_tags(entry),
+                "score": score, "text": entry["text"],
+            }
+        row = dict(row)
+        row["contexts"] = contexts
+        selected.append(row)
+    selected.sort(
+        key=lambda row: (-row["score"]["total"], row["stable_id"]))
+    return selected[:bounded]
+
+
+# The §44 tool actions this layer classifies, in
+# precedence order (a force push is classified before the
+# general remote-git action it also matches).
+TOOL_ACTIONS = (
+    "force_push", "file_deletion", "remote_git_operations",
+    "file_writing", "shell_execution", "file_reading",
+)
+
+# The policy sections each action needs (§44). The
+# force_push row is the roadmap's own example and the
+# file_reading row its "minimal or no extra policy"
+# ruling; the remaining rows are this layer's recorded
+# convention, named as such in the contract.
+_TOOL_POLICY_NEEDS = {
+    "force_push": (
+        "force_push", "remote_git_operations", "reversibility",
+        "authorization"),
+    "file_deletion": (
+        "filesystem", "reversibility", "authorization"),
+    "remote_git_operations": (
+        "remote_git_operations", "authorization"),
+    "file_writing": ("filesystem", "authorization"),
+    "shell_execution": ("shell_operations", "authorization"),
+    "file_reading": (),
+}
+
+
+def tool_actions() -> list[str]:
+    return list(TOOL_ACTIONS)
+
+
+def tool_policy_retrieval_contract() -> dict[str, Any]:
+    """The §44 Tool Policy dynamic retrieval contract. Pure.
+
+    Tool Policy sections are retrieved when actual tools
+    are being considered — explicit calls only,
+    restricted to the tool_policy document role. File
+    reading needs minimal or no extra policy; a git
+    force push retrieves exactly the roadmap's four
+    sections. This layer executes no tool and injects
+    nothing.
+    """
+    return {
+        "name": "ToolPolicyDynamicRetrieval",
+        "role": "tool_policy",
+        "actions": list(TOOL_ACTIONS),
+        "needs": {
+            action: list(sections)
+            for action, sections in _TOOL_POLICY_NEEDS.items()},
+        "retrieve_when_tools_considered": True,
+        "continuously_injected": False,
+        "retrieval": "explicit_only",
+        "file_reading_extra_policy": "minimal_or_none",
+        "executes_tools": False,
+        "injects": False,
+    }
+
+
+def classify_tool_action(text: Any) -> str | None:
+    """The §44 tool action a text signals, or None. Pure.
+
+    Deterministic token classification in the precedence
+    order of ``TOOL_ACTIONS``: a force push (force +
+    push) before remote git operations, deletion before
+    writing, writing before shell execution, and file
+    reading last (its extra policy is minimal or none).
+    No model call. Malformed text is refused.
+    """
+    if not isinstance(text, str):
+        raise PersonaRuntimeError("tool action text is invalid")
+    tokens = _tokens(text)
+    if {"force", "push"} <= tokens:
+        return "force_push"
+    if tokens & {"delete", "deleting", "deletion", "remove",
+                 "removing", "rm"}:
+        return "file_deletion"
+    if "git" in tokens and tokens & {
+            "push", "pull", "clone", "fetch", "remote", "merge",
+            "rebase"}:
+        return "remote_git_operations"
+    if tokens & {"write", "writing", "edit", "editing", "create",
+                 "creating", "save", "saving"}:
+        return "file_writing"
+    if tokens & {"shell", "bash", "systemd", "terminal",
+                 "command", "commands", "execute", "executing"}:
+        return "shell_execution"
+    if tokens & {"read", "reading", "open", "view", "cat",
+                 "inspect", "inspecting"}:
+        return "file_reading"
+    return None
+
+
+def tool_policy_needs(text: Any) -> dict[str, Any]:
+    """The §44 policy sections a tool consideration needs.
+
+    Pure. Classifies the text's tool action and returns
+    its recorded needs: the roadmap's four sections for a
+    force push, an empty list for file reading (minimal
+    or no extra policy) and for no tool action at all.
+    """
+    action = classify_tool_action(text)
+    sections = list(_TOOL_POLICY_NEEDS.get(action, ()))
+    return {
+        "action": action,
+        "sections": sections,
+        "extra_policy_needed": bool(sections),
+    }
+
+
+def retrieve_tool_policy(index: list[dict[str, Any]],
+                         query: str = "",
+                         task_text: str | None = None,
+                         tool_intent: str | None = None,
+                         limit: int = RETRIEVAL_DEFAULT_LIMIT
+                         ) -> list[dict[str, Any]]:
+    """Selectively retrieve Tool Policy sections (§44). Pure.
+
+    The signal (query, task text, and tool intent) is
+    classified to one §44 tool action; the compiled index
+    is restricted to the tool_policy role and only the
+    sections that action needs are returned, ranked by
+    the §13 hybrid score and annotated with the action
+    and its full needs list. File reading and an
+    unclassifiable signal retrieve nothing — minimal or
+    no extra policy — and a needed section absent from
+    the index is simply not returned.
+    """
+    signal = " ".join(
+        part for part in (query or "", task_text or "",
+                          tool_intent or "") if part)
+    needs = tool_policy_needs(signal)
+    if not needs["sections"]:
+        return []
+    wanted = set(needs["sections"])
+    tags_wanted = classify_task(
+        task_text if task_text is not None else signal)
+    try:
+        bounded = int(limit)
+    except (TypeError, ValueError):
+        bounded = RETRIEVAL_DEFAULT_LIMIT
+    bounded = max(1, min(RETRIEVAL_MAX_LIMIT, bounded))
+    selected = []
+    for entry in index:
+        if entry.get("role") != "tool_policy":
+            continue
+        if entry["section_id"] not in wanted:
+            continue
+        stable = entry.get(
+            "stable_id",
+            stable_section_id(entry["role"], entry["section_id"]))
+        score = retrieval_score(
+            entry, query=signal, task_tags_=tags_wanted)
+        selected.append({
+            "stable_id": stable, "role": entry["role"],
+            "section_id": entry["section_id"],
+            "heading": entry["heading"],
+            "priority": float(entry.get("priority", 0.40)),
+            "task_tags": list(tags_wanted),
+            "tags": section_tags(entry),
+            "score": score, "text": entry["text"],
+            "action": needs["action"],
+            "policy_sections": list(needs["sections"]),
+        })
+    selected.sort(
+        key=lambda row: (-row["score"]["total"], row["stable_id"]))
+    return selected[:bounded]
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -4974,6 +5391,57 @@ class PersonaServiceBibleRetriever:
             topic=topic, limit=limit)
 
 
+class PersonaRelationshipRetriever:
+    """Explicit §43 selective retrieval over a fresh compile.
+
+    One explicit call compiles (deterministically, writing
+    nothing) and selects from the compiled index's
+    relationship sections only, for a signalled §43
+    context. Routine work retrieves nothing — the kernel's
+    relational anchors remain. No hook, no per-message
+    call, no injection.
+    """
+
+    def __init__(self, ctx) -> None:
+        self._compiler = PersonaCompiler(ctx)
+
+    def retrieve(self, query: str = "", task_text: str | None = None,
+                 context: str | None = None,
+                 limit: int = RETRIEVAL_DEFAULT_LIMIT
+                 ) -> list[dict[str, Any]]:
+        compiled = self._compiler.compile()
+        if compiled is None:
+            return []
+        return retrieve_relationship_model(
+            compiled["index"], query=query, task_text=task_text,
+            context=context, limit=limit)
+
+
+class PersonaToolPolicyRetriever:
+    """Explicit §44 selective retrieval over a fresh compile.
+
+    One explicit call compiles (deterministically, writing
+    nothing) and selects from the compiled index's
+    tool_policy sections only, for the tool action the
+    signal classifies to. File reading retrieves nothing.
+    No hook, no per-message call, no tool execution.
+    """
+
+    def __init__(self, ctx) -> None:
+        self._compiler = PersonaCompiler(ctx)
+
+    def retrieve(self, query: str = "", task_text: str | None = None,
+                 tool_intent: str | None = None,
+                 limit: int = RETRIEVAL_DEFAULT_LIMIT
+                 ) -> list[dict[str, Any]]:
+        compiled = self._compiler.compile()
+        if compiled is None:
+            return []
+        return retrieve_tool_policy(
+            compiled["index"], query=query, task_text=task_text,
+            tool_intent=tool_intent, limit=limit)
+
+
 class PersonaRouter:
     """Explicit §14 routing over a fresh compile.
 
@@ -5163,7 +5631,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-42): persona "
+            f"Persona runtime (§§3-44): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -5344,6 +5812,18 @@ class PersonaRuntimeBridge:
             f"open_source, ai, documentation, research, "
             f"project_aesir, attention, adhd) and retrieved "
             f"selectively, never continuously injected. "
+            f"§43 relationship retrieval: relationship "
+            f"context is retrieved selectively for "
+            f"disagreements, personal conversation, advice, "
+            f"emotionally meaningful interaction, and "
+            f"shared-history discussion; for routine coding "
+            f"only the kernel's relational anchors remain. "
+            f"§44 tool policy retrieval: policy sections "
+            f"are retrieved when actual tools are being "
+            f"considered — file reading needs minimal or no "
+            f"extra policy, a git force push retrieves "
+            f"force_push, remote_git_operations, "
+            f"reversibility, and authorization. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -5531,6 +6011,21 @@ __all__ = [
     "service_topics_for_section",
     "retrieve_service_bible",
     "PersonaServiceBibleRetriever",
+    "RELATIONSHIP_CONTEXTS",
+    "TOOL_ACTIONS",
+    "relationship_contexts",
+    "relationship_retrieval_contract",
+    "classify_relationship_contexts",
+    "relationship_contexts_for_section",
+    "relationship_retrieval_need",
+    "retrieve_relationship_model",
+    "PersonaRelationshipRetriever",
+    "tool_actions",
+    "tool_policy_retrieval_contract",
+    "classify_tool_action",
+    "tool_policy_needs",
+    "retrieve_tool_policy",
+    "PersonaToolPolicyRetriever",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

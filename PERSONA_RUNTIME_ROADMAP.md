@@ -2622,6 +2622,42 @@ For routine coding:
 only the relevant relational anchors need to remain in the kernel.
 
 
+> **Completion note — Slice 139 (2026-10-31): §43 stands
+> in the same module. The pure `relationship_contexts`
+> function names the roadmap's five contexts in order
+> (disagreement, personal_conversation, advice,
+> emotionally_meaningful_interaction,
+> shared_history_discussion — the roadmap's phrases
+> slugified); the pure `relationship_retrieval_contract`
+> function stands the rule (selective, explicit-only,
+> restricted to the relationship role, never
+> continuously injected; routine coding is
+> kernel-anchors-only); the pure
+> `classify_relationship_contexts` function signals
+> contexts from a deterministic lexicon over a text's
+> tokens, the pure `relationship_contexts_for_section`
+> function derives a section's contexts from its heading
+> and bare section id only, and the pure
+> `relationship_retrieval_need` function returns the
+> mode (dynamic_retrieval for a signalled context,
+> kernel_anchors_only for a routine task, none
+> otherwise). The pure `retrieve_relationship_model`
+> function and the explicit `PersonaRelationshipRetriever`
+> perform the selection over the compiled Layer B index:
+> restricted to the `relationship` role (another role's
+> sections are never returned, contract-proven against a
+> core match), ranked by the §13 hybrid score, each
+> result annotated with its section's §43 contexts; an
+> explicit context (slugified, unknown contexts refused)
+> filters the selection and supplies the signal when no
+> query or task text is given, and with no §43 context
+> signalled — routine coding included — nothing is
+> retrieved, so the kernel's relational anchors remain.
+> Honest gaps: nothing is injected and no caller
+> consumes a selection yet; §44's tool-policy retrieval
+> stands below.**
+
+
 ---
 
 
@@ -2654,6 +2690,43 @@ authorization
 
 
 This saves thousands of tokens.
+
+
+> **Completion note — Slice 139 (2026-10-31): §44 stands
+> in the same module. The pure `tool_actions` function
+> names the six classified actions in precedence order
+> (force_push, file_deletion, remote_git_operations,
+> file_writing, shell_execution, file_reading); the pure
+> `tool_policy_retrieval_contract` function stands the
+> rule (retrieved only when actual tools are being
+> considered, explicit-only, restricted to the
+> tool_policy role, this layer executes no tool and
+> injects nothing); the pure `classify_tool_action`
+> function classifies a text deterministically by tokens
+> (a force push — force plus push — before the general
+> remote-git action it also matches), and the pure
+> `tool_policy_needs` function returns the action's
+> recorded needs: the roadmap's own four sections for a
+> force push (force_push, remote_git_operations,
+> reversibility, authorization), an empty list for file
+> reading (the roadmap's minimal-or-no-extra-policy
+> ruling) and for no tool action, and this layer's
+> recorded convention for the remaining actions, named
+> as such in the contract. The pure
+> `retrieve_tool_policy` function and the explicit
+> `PersonaToolPolicyRetriever` perform the selection
+> over the compiled Layer B index: restricted to the
+> `tool_policy` role, only the needed sections returned
+> (the roadmap's force-push example load set exactly,
+> contract-proven; a general git_policy section is not
+> among them), ranked by the §13 hybrid score, each
+> result annotated with the action and its full needs
+> list; file reading and an unclassifiable signal
+> retrieve nothing, and a needed section absent from the
+> index is simply not returned. Honest gaps: no tool is
+> executed, nothing is injected, and no caller consumes
+> a selection yet; §45's memory-policy usage is a later
+> section.**
 
 
 ---
