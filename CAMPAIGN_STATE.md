@@ -4385,3 +4385,81 @@ portable state: any agent (Muse or Hermes) resumes from here.
   (`~/workspace/.verify-tmp/slice149_docstring_fix.log`);
   README invariant still held. Banked and pushed as its
   own commit under the standing go-ahead.
+- 2026-11-01 ~04:1x–05:5x EST keeper tick: **Slice 150 DONE —
+  Persona Runtime §65 (Micro Kernel) and §66 (Context
+  Pressure Strategy) complete, banked and PUSHED under the
+  standing go-ahead.** No live work found at tick start
+  (tree clean, HEAD == origin/main at `09b6d0a8aa`; Slice
+  149's follow-up commit at 04:13 EST was its own completed
+  push, verified, not in-progress work; the Python-write
+  blocker was probed absent at tick start).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §65's pure
+  `micro_kernel_text` / `micro_kernel` /
+  `micro_kernel_example` / `validate_micro_kernel` /
+  `micro_kernel_contract` stand the roadmap's example
+  conceptual micro kernel text verbatim (§7; paragraphs
+  unwrapped to single lines, wording unchanged) as a
+  record measured against the §64 micro tier (text, tier
+  kernel_micro, target 250, estimated tokens,
+  within-target) that must rebuild to itself — the
+  example measures 130 estimated tokens, within target,
+  and can strongly anchor a tiny local model. §66's pure
+  `context_pressure_eviction_order` /
+  `context_pressure_never_evict` /
+  `context_pressure_plan` / `context_pressure_contract`
+  stand the fixed eviction order under context pressure
+  (old raw conversation, low-relevance memories,
+  low-priority persona retrieval, project background)
+  with the Persona Kernel never evicted, as a plan over
+  caller-supplied category names only, reconciled with
+  the §15 budgeter's priority-order trimming and the
+  §16 P0 never-evict rule. Packet label updated to
+  §§3–66 (twenty-seven older persona files' packet
+  assertions updated in-slice). Tests: targeted 9/9 pass
+  (new file; 21/21 with the model-metrics file); targeted
+  persona run (34 files): **307 passed, 0 failed**; full
+  volmarr/kista run (103 files): **786 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice150_full_run2.log`); 786
+  is exactly Slice 149's 777 + the 9 new contracts.
+  **Recorded plainly: the first full-run attempt was
+  contaminated by a transient tempfile/EPERM window (60
+  of 103 files failed at file level while Python writes
+  were failing, the Slice 115/122 blocker class) and was
+  discarded; the re-run, started after a service restart
+  with Python writes verified OK again, supplied the
+  totals above.** Smoke: `hermes --version` runs
+  (`vgit.09b6d0a.dirty` pre-commit); README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §65 + §66 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–66. Push: fast-forward, no force —
+  origin/main moved `09b6d0a8aa` → Slice 150 commit,
+  verified by `git ls-remote` (remote == local HEAD).
+  Honest gaps: no kernel is built or distilled from a
+  compiled artefact, the example text is not injected,
+  no live context is evicted, no pressure is measured,
+  and no caller consumes a record or plan yet.
+- **Next resume point: Slice 151 — Persona Runtime §67
+  (Canonical File Priority) and §68 (Conflict
+  Resolution)**: §67 names the recommended relative
+  authority (PERSONA_CORE > RELATIONSHIP_MODEL >
+  SERVICE_BIBLE, with MEMORY_POLICY / TOOL_POLICY /
+  AVATAR branching under SERVICE_BIBLE) as semantic
+  authority, not file loading order — reconcile against
+  the banked §24 precedence tiers when read at slice
+  start, expect a pure authority-order surface mapping
+  the roadmap's document names to the compiler roles;
+  §68 names conflict resolution between persona
+  documents (explicit config priority > PERSONA_CORE >
+  specialized policy for its domain > SERVICE_BIBLE >
+  derived memory; the roadmap's example: core honesty
+  beats a relationship file's tell-him-what-he-wants —
+  core wins) — expect a pure conflict-winner surface
+  over the §67 authority order, not a live document
+  conflict detector over prose this layer does not
+  interpret (§7).
