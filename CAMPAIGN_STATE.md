@@ -4131,3 +4131,79 @@ portable state: any agent (Muse or Hermes) resumes from here.
   behavior-record builder/validator in that shape,
   reconciled against the §58 golden traits where they
   overlap, not a behavior evaluator of live responses.
+- 2026-11-01 ~02:2x–03:1x EST keeper tick: **Slice 147 DONE —
+  Persona Runtime §59 (Style Fingerprint) and §60 (Behavior
+  Fingerprint) complete, banked and PUSHED under the standing
+  go-ahead.** No live work found at tick start (tree clean,
+  HEAD == origin/main at `8c0eb48918`; Slice 146's state
+  commit at 02:26 EST was its own completed push, verified,
+  not in-progress work — the running test processes on the
+  box belonged to other campaigns' trees; the Python-write
+  blocker was probed absent). `plugins/volmarr-core/
+  persona_runtime.py` extended in place — no new file or
+  config key: §59's pure `style_dimensions` /
+  `style_fingerprint` / `style_example` /
+  `validate_style_fingerprint` / `style_contract` stand a
+  lightweight fingerprint in the roadmap's YAML shape (a
+  `style` mapping over the nine dimensions in roadmap
+  order — warmth, formality, verbosity, playfulness,
+  deference, initiative, technicality, mythic_language,
+  emotional_intensity — unit-interval values, a supplied
+  subset normalised into roadmap order, missing
+  dimensions absent and never invented), with the
+  roadmap's example carried verbatim (seven of the nine;
+  verbosity and emotional_intensity absent there) and the
+  contract recording guidance, not rigid mathematical
+  personality. §60's pure `behavior_names` /
+  `behavior_fingerprint` / `behavior_example` /
+  `behavior_expectation` / `validate_behavior_fingerprint`
+  / `behavior_contract` stand the behavior fingerprint in
+  the roadmap's YAML shape (a `behavior` mapping covering
+  exactly the seven boolean behaviors), with the roadmap's
+  example carried verbatim (relitigate_decisions false:
+  never relitigate) and per-behavior expectations from the
+  example; the contract records that these behaviors can
+  be automatically tested. Both validators compare key
+  order explicitly (dict equality alone would not).
+  Packet label updated to §§3–60 (twenty-four older
+  persona files' packet assertions updated in-slice).
+  Tests: targeted 10/10 pass (new file; 19/19 with the
+  drift-golden file); targeted persona run (31 files):
+  **276 passed, 0 failed**; full volmarr/kista run
+  (100 files): **755 passed, 7 failed, 1 skipped** — the
+  same name-identical pre-existing environmental set in
+  the same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice147_full_run2.log`; the
+  first full-run attempt was cut at ~78% by a service
+  restart and re-run clean); 755 is exactly Slice 146's
+  745 + the 10 new contracts. Smoke: `hermes --version`
+  runs (`vgit.8c0eb48.dirty` pre-commit); README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §59 + §60 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–60. Honest gaps: no dimension is
+  derived from the Persona Core's prose, no live style
+  is scored, no response is evaluated, and no caller
+  consumes a fingerprint yet; §61's character drift
+  telemetry stands unclaimed.
+- **Next resume point: Slice 148 — Persona Runtime §61
+  (Character Drift Telemetry) and §62 (Model Router +
+  Persona Quality)**: §61 names locally recording drift
+  score, kernel version, model used, mode, and retrieved
+  persona sections so models can be compared (the
+  roadmap's example averages: Gemma 4 E2B 0.18, Qwen
+  0.11, remote model 0.06) — reconcile against the banked
+  §28/§29 drift-score surfaces when read at slice start,
+  expect a pure telemetry-record builder/validator plus
+  a deterministic per-model average surface in that
+  shape, not a persisted telemetry store or a live
+  recorder this plugin does not own; §62 names model
+  selection considering persona adherence alongside
+  intelligence (a slightly less intelligent model that
+  holds the personality beautifully may be preferable
+  for everyday companionship) — expect a pure
+  consideration/contract surface over the §61 averages,
+  not a live model router (§63's per-model adherence
+  score is a later section).
