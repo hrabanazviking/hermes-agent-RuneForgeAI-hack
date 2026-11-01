@@ -548,7 +548,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert first[0].content == second[0].content == third[0].content
     assert len(first) == 1
     content = first[0].content
-    assert "§§3-92" in content
+    assert "§§3-94" in content
     assert "§91 long-term architecture" in content
     assert "§92 the most" in content
     assert "architecture_rule_audit proves both" in content

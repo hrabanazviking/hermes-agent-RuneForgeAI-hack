@@ -5506,6 +5506,41 @@ She may refine her understanding.
 
 But she should not gradually dissolve into whatever statistical personality happened to dominate the last fifty messages.
 
+> **Completion note — Slice 164 (2026-11-01): §93 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `target_result_items` / `target_result_item` /
+> `target_result_contract` surfaces: six statements
+> implemented by their own sections (speak recognizably
+> §59, relate to Volmarr §43, counsel §§38–39, accept
+> decisions §§40/60, growth allowed through the §§21–22
+> classified human-confirmed path, and no dissolution
+> into recent history §§23–26/92), and three equivalent —
+> remembering, carried by the §§78–79 namespaces and the
+> §85 reconciliation over the memory subsystem's own
+> store; acting, carried by §44 policy in code with live
+> enforcement in the Hermes tool layer (§87); and
+> appearing, carried by §46 occasion-gated retrieval over
+> the one compiled avatar document with no visual
+> consumer owned (§88). The pure `target_essence_audit`
+> proves the result from a supplied compile (the §59
+> example fingerprint rebuilds and validates to itself;
+> §43 retrieval is selective with nothing retrieved on no
+> signal; §§38–39 counsel modes and routing preserve
+> identity; the §60 example accepts final decisions and
+> never relitigates while the §40 write allows no biased
+> summarization; §§78–79 keep private memory per-persona
+> with the §85 phase complete; the §44 force-push needs
+> stand in code with the §87 phase complete and no tool
+> executed; §46 retrieves nothing without an occasion
+> with the §88 phase complete over the one canonical
+> source; and a self-compared compile has no §21 impact,
+> no kernel rebuild, and an unchanged §22 version
+> suggestion while conversation, summary, and memory
+> trait claims are all refused as identity definitions).
+> Honest gaps: no speech is generated, no memory is read,
+> no tool is executed, no avatar is controlled, and no
+> caller consumes the reconciliation or the audit yet.**
+
 
 ---
 
@@ -5547,6 +5582,42 @@ And the entire architecture should make one thing possible:
 
 
 > **Caducea can grow indefinitely without ceasing to be Caducea.**
+
+> **Completion note — Slice 164 (2026-11-01): §94 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `essence_items` / `essence_item` /
+> `essence_contract` surfaces: six role statements
+> implemented by their own sections (the persona files as
+> source code for identity §§3/6, the compiler transforming
+> source into runtime representations §6, the kernel
+> preserving the irreducible self §§8–10, the router
+> retrieving depth §§13–14, the watchdog protecting
+> against drift §§27–33, and growth without ceasing
+> §§21–22/92), and four equivalent — memory supplying
+> lived continuity, supplied by the memory subsystem and
+> guarded by §§41/55–56/78–79/85; the model providing
+> cognition, the model itself external and replaceable
+> over the same kernel (§§34/62–63); the avatar providing
+> embodiment, its consumers external over the one
+> canonical avatar document (§§46/88); and tools providing
+> agency, executed by the Hermes tool layer over the
+> §44/§87 policy. The pure `target_essence_audit` proves
+> the essence from a supplied compile (the §19 hash record
+> recomputes exactly, with §67 semantic authority and
+> persona core first; the kernel's pinning precedes
+> context, §53 enforces it at position 1, and §66 never
+> evicts the kernel; routing requires nothing on no signal
+> and retrieval returns only sections of the one index; a
+> state-form memory claim records as history only under
+> the §41 guard; the watchdog evaluates drafts, generates
+> nothing, and its drift routing agrees across §§28–30; a
+> §34 switch preserves the kernel hash exactly; embodiment
+> and agency stay external; and the §92 formula stands in
+> roadmap order with exactly one defining component,
+> persona). Honest gaps: this layer owns no memory store,
+> calls no model, executes no tool, controls no avatar,
+> and no caller consumes the reconciliation or the audit
+> yet.**
 
 
 The part I’d prioritize **first** is the **Persona Compiler + Kernel + section-aware retrieval**, before embeddings get fancy. Even a primitive keyword/section router with an always-pinned 600 to 1,000-token kernel would already give Hermes a dramatic improvement over feeding giant personality documents into the context. Then the small local model can eventually become the **PersonaWatchdog**, which fits almost perfectly with your nervous-system architecture.

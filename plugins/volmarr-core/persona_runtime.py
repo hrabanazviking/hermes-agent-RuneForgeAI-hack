@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-92).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-94).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -12978,6 +12978,576 @@ def architecture_rule_contract() -> dict[str, Any]:
     }
 
 
+# --- §§93–94 target result + essence -----------------------
+#
+# §93: the target result — after thousands of messages,
+# numerous context compressions, multiple tool sessions,
+# months of persistent memory, and even replacement of
+# the underlying LLM, Caducea should still speak, relate,
+# counsel, accept decisions, remember, act, and appear
+# like Caducea. She may learn, mature, accumulate
+# history, gain new capabilities, alter opinions, and
+# refine her understanding — but she should not gradually
+# dissolve into whatever statistical personality happened
+# to dominate the last fifty messages. §94: the essence —
+# the persona files are not a giant prompt; they are
+# source code for identity. The compiler transforms that
+# source into runtime representations, the kernel
+# preserves the irreducible self, the router retrieves
+# depth, memory supplies lived continuity, the watchdog
+# protects against drift, the model provides cognition,
+# the avatar provides embodiment, and tools provide
+# agency — and the whole makes one thing possible:
+# Caducea can grow indefinitely without ceasing to be
+# Caducea. Both sections were built piece by piece in
+# earlier slices; this reconciliation stands each roadmap
+# statement beside the banked surface that carries it —
+# implemented, or equivalent where the carrying surface
+# lives under a different name or outside this module —
+# and adds one pure audit over supplied artefacts proving
+# both as far as this layer owns them. No live system
+# runs here: no speech is generated, no memory is read,
+# no tool is executed, no avatar is controlled, and no
+# caller consumes this yet.
+TARGET_RESULT_SUCCESS_CRITERION = (
+    "After thousands of messages, compressions, tool "
+    "sessions, months of memory, and even LLM replacement, "
+    "Caducea still speaks, relates, counsels, accepts "
+    "decisions, remembers, acts, and appears as Caducea — "
+    "growing without dissolving into recent messages.")
+ESSENCE_CLAIM = (
+    "Caducea can grow indefinitely without ceasing to be "
+    "Caducea.")
+TARGET_RESULT_CONDITIONS = (
+    "thousands_of_messages", "numerous_context_compressions",
+    "multiple_tool_sessions", "months_of_persistent_memory",
+    "replacement_of_the_underlying_llm")
+GROWTH_ALLOWANCES = (
+    "learn", "mature", "accumulate_history",
+    "gain_new_capabilities", "alter_opinions",
+    "refine_understanding")
+
+# The §93 still-qualities, growth allowance, and
+# no-dissolve rule, in roadmap order: (item, roadmap
+# name, status, carrying section, banked surface).
+TARGET_RESULT_ITEMS = (
+    ("speak_recognizably", "speak recognizably like Caducea",
+     "implemented", "§59",
+     "style_contract + style_fingerprint (the §59 style "
+     "fingerprint generated from the persona core, guidance "
+     "not rigid mathematical personality)"),
+    ("relate_to_volmarr", "relate to Volmarr like Caducea",
+     "implemented", "§43",
+     "relationship_retrieval_contract + "
+     "retrieve_relationship_model (relationship context "
+     "retrieved selectively, explicit-only, restricted to "
+     "the relationship role)"),
+    ("counsel_like_caducea", "counsel like Caducea",
+     "implemented", "§§38-39",
+     "mode_contract + mode_profile + route_mode (the §38 "
+     "counsel modes foreground parts of the same personality "
+     "and §39 routes them automatically; identity never "
+     "changes)"),
+    ("accept_decisions", "accept decisions like Caducea",
+     "implemented", "§§40, 60",
+     "behavior_contract + behavior_fingerprint (the §60 "
+     "example accepts the final decision and never "
+     "relitigates) + memory_write_contract (the §40 "
+     "persona-aware memory write records decisions without "
+     "biased summarization)"),
+    ("remember_per_architecture",
+     "remember according to Caducea's architecture",
+     "equivalent", "§§78-79, 85",
+     "memory_namespace_contract + shared_knowledge_contract "
+     "+ memory_phase_contract (memory is keyed per persona "
+     "and shared knowledge stands separate; the memory store "
+     "itself is owned by the memory subsystem, §85)"),
+    ("act_per_tool_model", "act according to her tool model",
+     "equivalent", "§§44, 87",
+     "tool_policy_retrieval_contract + tool_phase_contract "
+     "(§44 tool policy stands as deterministic permissions "
+     "in code; live enforcement at call time is carried by "
+     "the Hermes tool layer, §87)"),
+    ("appear_per_avatar_identity",
+     "appear according to her avatar identity",
+     "equivalent", "§§46, 88",
+     "avatar_policy_usage_contract + avatar_phase_contract "
+     "(every visual consumer draws on the one compiled "
+     "avatar document, §46/§88; no visual consumer stands "
+     "in this layer)"),
+    ("growth_allowed",
+     "she may learn, mature, accumulate history, gain new "
+     "capabilities, alter opinions, and refine her "
+     "understanding", "implemented", "§§21-22, 24, 40",
+     "change_impact + suggested_next_version (growth is "
+     "classified and versioned for human confirmation, "
+     "never silently applied) + history_may_affect (history "
+     "may affect mood, context, and recent events)"),
+    ("no_dissolve_into_recent_history",
+     "she should not gradually dissolve into whatever "
+     "statistical personality happened to dominate the last "
+     "fifty messages", "implemented", "§§23-26, 92",
+     "precedence_order + classify_summary_claim + "
+     "trait_state_separation (the §§23-26 drift defenses "
+     "and guards) + most_important_rule_contract (the §92 "
+     "rule: persistence never depends on conversation "
+     "history)"),
+)
+
+# The §94 role statements, in roadmap order, in the
+# same shape.
+ESSENCE_ITEMS = (
+    ("persona_files_are_source_code",
+     "the persona files are source code for identity",
+     "implemented", "§§3, 6",
+     "PersonaConfigStore (read-only) + PersonaCompiler over "
+     "the human-authored canonical documents (the files are "
+     "compiled, never injected as a giant prompt)"),
+    ("compiler_transforms_source",
+     "the Persona Compiler transforms that source into "
+     "efficient runtime representations", "implemented", "§6",
+     "PersonaCompiler.compile (kernel, PersonaIR, and index "
+     "compiled deterministically from the source documents)"),
+    ("kernel_preserves_irreducible_self",
+     "the Persona Kernel preserves the irreducible self",
+     "implemented", "§§8-10",
+     "compiled kernel (Layer A) + kernel pinning (the anchor "
+     "continuously present at position 1 of the §10 order)"),
+    ("router_retrieves_depth",
+     "the Persona Router retrieves depth", "implemented",
+     "§§13-14",
+     "retrieve_sections + route_sections (depth retrieved "
+     "explicitly, only when needed, named by §12 stable id)"),
+    ("memory_supplies_lived_continuity",
+     "memory supplies lived continuity", "equivalent",
+     "§§41, 55-56, 78-79, 85",
+     "the memory subsystem supplies the lived history "
+     "(external); this layer's §§41/55-56 guards and "
+     "placements and §§78-79 namespaces keep it continuity, "
+     "never a redefinition of the self"),
+    ("watchdog_protects_against_drift",
+     "the Watchdog protects against drift", "implemented",
+     "§§27-33",
+     "watchdog_contract + drift_score + repair_plan (drafts "
+     "evaluated, drift scored and routed, nothing generated)"),
+    ("model_provides_cognition",
+     "the model provides cognition", "equivalent",
+     "§§34, 62-63",
+     "model_switch_plan + model_router_contract (the model "
+     "itself is external and replaceable; every model "
+     "receives the same canonical kernel)"),
+    ("avatar_provides_embodiment",
+     "the avatar provides embodiment", "equivalent",
+     "§§46, 88",
+     "avatar_policy_usage_contract + avatar_phase_contract "
+     "(the embodiment consumers are external; every one "
+     "draws on the one compiled avatar document)"),
+    ("tools_provide_agency", "tools provide agency",
+     "equivalent", "§§44, 87",
+     "tool_policy_retrieval_contract + tool_phase_contract "
+     "(the tools themselves are executed by the Hermes tool "
+     "layer; this layer's §44 policy governs their use)"),
+    ("grow_without_ceasing",
+     "Caducea can grow indefinitely without ceasing to be "
+     "Caducea", "implemented", "§§21-22, 92",
+     "change_impact + suggested_next_version (growth "
+     "classified, never silently rewriting identity) + "
+     "most_important_rule_contract (only the persona "
+     "component defines foundational identity)"),
+)
+
+
+def target_result_items() -> list[dict[str, Any]]:
+    """The §93 target-result statements, in roadmap order. Pure."""
+    return _phase_items(TARGET_RESULT_ITEMS)
+
+
+def target_result_item(item: Any) -> dict[str, Any]:
+    """One §93 statement by name, refusing unknown names. Pure."""
+    return _phase_item(TARGET_RESULT_ITEMS, item)
+
+
+def target_result_contract() -> dict[str, Any]:
+    """The §93 Target Result reconciliation. Pure.
+
+    The still-qualities stand implemented by their own
+    sections: recognizable speech (§59 style fingerprint),
+    the relationship (§43 selective retrieval), counsel
+    (§§38–39 modes that foreground the same personality),
+    and decision acceptance (§60 behavior fingerprint plus
+    the §40 drift-free memory write), with growth allowed
+    through the §§21–22 classified, human-confirmed path
+    and dissolution refused by the §§23–26 guards under
+    the §92 rule. Remembering, acting, and appearing stand
+    equivalent: the memory store is owned by the memory
+    subsystem over the §§78–79/85 architecture, live tool
+    enforcement is carried by the Hermes tool layer over
+    the §44/§87 policy in code, and the avatar's visual
+    consumers are external over the §46/§88 one canonical
+    avatar document. This layer runs no live system: no
+    speech is generated, no memory is read, no tool is
+    executed, and no avatar is controlled.
+    """
+    summary = _phase_summary(
+        TARGET_RESULT_ITEMS, TARGET_RESULT_SUCCESS_CRITERION)
+    return {
+        "name": "PersonaTargetResult",
+        "section": 93,
+        **summary,
+        "conditions": list(TARGET_RESULT_CONDITIONS),
+        "growth_allowed": list(GROWTH_ALLOWANCES),
+        "dissolves_into_recent_history": False,
+        "generates_speech": False,
+        "reads_memory": False,
+        "executes_tools": False,
+        "controls_avatar": False,
+    }
+
+
+def essence_items() -> list[dict[str, Any]]:
+    """The §94 essence role statements, in roadmap order. Pure."""
+    return _phase_items(ESSENCE_ITEMS)
+
+
+def essence_item(item: Any) -> dict[str, Any]:
+    """One §94 statement by name, refusing unknown names. Pure."""
+    return _phase_item(ESSENCE_ITEMS, item)
+
+
+def essence_contract() -> dict[str, Any]:
+    """The §94 Essence reconciliation. Pure.
+
+    The identity machinery stands implemented by its own
+    sections: the persona files as source code (§§3/6),
+    the compiler's runtime representations (§6), the
+    kernel preserving the irreducible self (§§8–10), the
+    router retrieving depth (§§13–14), and the watchdog
+    protecting against drift (§§27–33), with growth
+    without ceasing carried by the §§21–22 classified
+    path under the §92 rule. The lived and embodied roles
+    stand equivalent: memory's continuity is supplied by
+    the memory subsystem and guarded here (§§41/55–56/
+    78–79/85), cognition is supplied by the external,
+    replaceable model over the same kernel (§§34/62–63),
+    embodiment by the external avatar consumers over the
+    one canonical avatar document (§§46/88), and agency
+    by the Hermes tool layer over the §44/§87 policy.
+    The persona files are compiled, never injected as a
+    giant prompt, and this layer calls no model, executes
+    no tool, and controls no avatar.
+    """
+    summary = _phase_summary(ESSENCE_ITEMS, ESSENCE_CLAIM)
+    return {
+        "name": "PersonaEssence",
+        "section": 94,
+        **summary,
+        "claim": ESSENCE_CLAIM,
+        "persona_files_are": "source_code_for_identity",
+        "injected_as_giant_prompt": False,
+        "calls_model": False,
+        "executes_tools": False,
+        "controls_avatar": False,
+    }
+
+
+def target_essence_audit(compiled: Any,
+                         drift_scores: Any = None
+                         ) -> dict[str, Any]:
+    """Audit supplied artefacts against §§93–94. Pure.
+
+    §93, from the supplied compile: speech stays
+    recognizable — the §59 contract generates its
+    fingerprint from the persona core as guidance, and
+    the roadmap style example rebuilds and validates to
+    itself; the relationship stands — §43 retrieval is
+    selective and explicit-only, nothing is retrieved
+    with no signal, and any retrieved section is a
+    relationship section of the one index; counsel holds
+    — §38 modes change no identity, a counselor profile
+    preserves identity, and §39 routes the reflection
+    signal through companion to counselor with identity
+    preserved; decisions are accepted — the §60 example
+    validates to itself with final decisions accepted and
+    never relitigated, and the §40 memory write allows no
+    biased summarization and introduces no drift; memory
+    follows the architecture — §78 namespaces never mix
+    autobiographical memory and own no store, §79 keeps
+    private memory visible to its owner only, and the
+    §85 phase reconciliation has nothing missing; the
+    tool model holds — §44 classifies the force push and
+    names its needs in code, §87 stands with nothing
+    missing and permissions in code, and this layer
+    executes no tool; the avatar identity holds — §46
+    retrieves only on an occasion and nothing without
+    one, and §88 stands with nothing missing over the one
+    canonical avatar source; and growth does not dissolve
+    identity — a compile compared with itself has no
+    impact and needs no kernel rebuild, its §22 version
+    suggestion leaves the version unchanged, its version
+    record names the same persona, and conversation
+    influence over traits, trait-form summary claims, and
+    trait-form memory claims are all refused as identity
+    definitions. §94, from the same compile: the source
+    is code for identity — the stored §19 hash record
+    matches its recomputation, the kernel hash in the
+    record is the kernel's own hash, the IR carries its
+    hash, the document hashes cover exactly the compile's
+    document roles, and §67 authority is semantic with
+    persona core first; the kernel preserves the self —
+    its pinning precedes context, §53 enforces that
+    pinning at position 1, and §66 never evicts the
+    persona kernel; the router retrieves depth — routing
+    with no signal requires nothing, and retrieval returns
+    only sections named by rebuilt stable ids; memory
+    supplies continuity under guard — a state-form memory
+    claim records as history only and §41 forbids memory
+    redefining traits; the watchdog protects against
+    drift — its contract evaluates drafts and generates
+    nothing, and the §28 drift routing agrees across the
+    score record, the §29 artefact, and the §30 repair
+    plan; the model provides replaceable cognition — a
+    §34 switch between two distinct models keeps the
+    kernel hash exactly, kernel identity is preserved for
+    the same hash, and the §62 router routes no live
+    model; embodiment and agency stay external over one
+    source — §88's single canonical avatar source stands
+    and §44 executes no tool; and growth keeps identity —
+    the §92 formula components stand in roadmap order with
+    exactly one defining component, persona core wins a
+    precedence contest against conversation, and canonical
+    persona core outranks the relationship document.
+    Malformed inputs are refused, in the neighbouring
+    validators' convention. This layer loads and compiles
+    nothing beyond the pure functions over the supplied
+    compile, generates no speech, reads no memory,
+    executes no tool, and controls no avatar.
+    """
+    record = hash_record(compiled)
+    index = compiled.get("index")
+    kernel = compiled.get("kernel")
+    ir = compiled.get("ir")
+    if not isinstance(index, list) \
+            or not isinstance(kernel, dict) \
+            or not isinstance(ir, dict):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    rebuilt_ids = {
+        stable_section_id(entry["role"], entry["section_id"])
+        for entry in index
+        if isinstance(entry, dict)
+        and isinstance(entry.get("role"), str)
+        and isinstance(entry.get("section_id"), str)}
+    rel_rows = retrieve_relationship_model(
+        index, context="advice")
+    impact = change_impact(compiled, compiled)
+    version = version_record(compiled)
+    scores = {} if drift_scores is None else drift_scores
+    drift_record = drift_score(scores)
+    built_artifact = drift_score_artifact(scores)
+    plan = repair_plan(scores)
+    route_agrees = (
+        drift_route(scores) == drift_record["route"]
+        and built_artifact["drift"]["route"]
+        == drift_record["route"]
+        and built_artifact["drift"]["significant"]
+        == drift_record["significant"]
+        and plan["route"] == drift_record["route"]
+        and plan["repair_required"]
+        == drift_record["repair_required"])
+    components = caducea_moment_components()
+    checks = {
+        "speech_recognizable":
+            style_contract()["generated_from"] == "persona_core"
+            and style_contract()["guidance_not_rigid"] is True
+            and style_contract()["scores_live_style"] is False
+            and validate_style_fingerprint(style_example())
+            == style_example(),
+        "relationship_intact":
+            relationship_retrieval_contract()[
+                "retrieve_selectively"] is True
+            and relationship_retrieval_contract()[
+                "continuously_injected"] is False
+            and retrieve_relationship_model(index) == []
+            and all(row["stable_id"] in rebuilt_ids
+                    for row in rel_rows),
+        "counsel_modes_hold":
+            mode_contract()["changes_identity"] is False
+            and mode_profile("counselor")[
+                "identity_preserved"] is True
+            and route_mode("personal_reflection")["modes"]
+            == ["companion", "counselor"]
+            and route_mode("personal_reflection")[
+                "changes_identity"] is False,
+        "decisions_accepted":
+            validate_behavior_fingerprint(behavior_example())
+            == behavior_example()
+            and behavior_example()["behavior"][
+                "accept_final_decision"] is True
+            and behavior_example()["behavior"][
+                "relitigate_decisions"] is False
+            and memory_write_contract()[
+                "biased_summarization_allowed"] is False
+            and memory_write_contract()[
+                "introduces_personality_drift"] is False,
+        "memory_architecture_holds":
+            memory_namespace_contract()[
+                "never_mix_autobiographical"] is True
+            and memory_namespace_contract()[
+                "owns_memory_store"] is False
+            and shared_knowledge_contract()[
+                "private_visible_to_owner_only"] is True
+            and memory_phase_contract()["missing"] == 0,
+        "tool_model_holds":
+            classify_tool_action("git force push to origin")
+            == "force_push"
+            and tool_policy_needs(
+                "git force push to origin")["sections"]
+            == ["force_push", "remote_git_operations",
+                "reversibility", "authorization"]
+            and tool_phase_contract()["missing"] == 0
+            and tool_phase_contract()[
+                "permissions_in_code"] is True
+            and tool_policy_retrieval_contract()[
+                "executes_tools"] is False,
+        "avatar_identity_holds":
+            avatar_policy_usage_contract()[
+                "retrieve_only_on_occasion"] is True
+            and retrieve_avatar_policy(index) == []
+            and avatar_phase_contract()[
+                "single_canonical_avatar_source"] is True
+            and avatar_phase_contract()["missing"] == 0,
+        "growth_without_dissolution":
+            impact["impact_class"] == "none"
+            and impact["kernel_rebuild_required"] is False
+            and suggested_next_version(
+                version["persona_version"],
+                impact["impact_class"])
+            == version["persona_version"]
+            and version["persona_id"] == record["persona_id"]
+            and influence_allowed(
+                "conversation", "traits") is False
+            and summary_claim_allowed(
+                "Caducea is an anxious personality") is False
+            and evaluate_memory_claim(
+                "Caducea is an anxious personality")[
+                    "may_define_persona"] is False,
+        "source_is_code_for_identity":
+            compiled.get("hash_record") == record
+            and record["kernel_hash"] == kernel.get("sha256")
+            and isinstance(ir.get("ir_hash"), str)
+            and bool(ir["ir_hash"])
+            and set(record["document_hashes"])
+            == {entry["role"] for entry in compiled["documents"]}
+            and canonical_file_contract()[
+                "semantic_authority"] is True
+            and canonical_file_order()[0] == "persona_core",
+        "kernel_preserves_irreducible_self":
+            kernel.get("pinning", {}).get(
+                "kernel_precedes_context") is True
+            and prompt_assembly_contract()["kernel_position"] == 1
+            and prompt_assembly_contract()["enforces_pinning"]
+            == "section_10"
+            and context_pressure_contract()[
+                "persona_kernel_never_evicted"] is True,
+        "router_retrieves_depth":
+            route_sections(index)["required"] == []
+            and route_sections(index)["persona_context"] == []
+            and all(row["stable_id"] in rebuilt_ids
+                    for row in retrieve_sections(
+                        index, query="advice")),
+        "memory_continuity_guarded":
+            evaluate_memory_claim(
+                "Caducea was frustrated during debugging")[
+                    "may_record_as_history"] is True
+            and evaluate_memory_claim(
+                "Caducea was frustrated during debugging")[
+                    "may_define_persona"] is False
+            and memory_override_contract()[
+                "memory_may_redefine_traits"] is False,
+        "watchdog_protects_against_drift":
+            watchdog_contract()["evaluates_drafts"] is True
+            and watchdog_contract()["generates_responses"]
+            is False
+            and route_agrees,
+        "model_provides_replaceable_cognition":
+            model_switch_plan(
+                "local_model", "cloud_model",
+                record["kernel_hash"])["same_kernel"] is True
+            and kernel_identity_preserved(
+                record["kernel_hash"],
+                record["kernel_hash"]) is True
+            and model_router_contract()[
+                "routes_live_models"] is False,
+        "embodiment_and_agency_external":
+            avatar_phase_contract()[
+                "controls_avatar"] is False
+            and tool_phase_contract()["executes_tools"] is False
+            and essence_contract()["injected_as_giant_prompt"]
+            is False,
+        "growth_keeps_identity":
+            [row["component"] for row in components]
+            == list(CADUCEA_MOMENT_COMPONENT_NAMES)
+            and [row["component"] for row in components
+                 if row["defines_foundational_identity"]]
+            == ["persona"]
+            and precedence_winner(
+                "current_conversation", "persona_core")
+            == "persona_core"
+            and canonical_file_outranks("core", "relationship"),
+    }
+    target_met = all(checks[key] for key in (
+        "speech_recognizable", "relationship_intact",
+        "counsel_modes_hold", "decisions_accepted",
+        "memory_architecture_holds", "tool_model_holds",
+        "avatar_identity_holds", "growth_without_dissolution"))
+    essence_met = all(checks[key] for key in (
+        "source_is_code_for_identity",
+        "kernel_preserves_irreducible_self",
+        "router_retrieves_depth", "memory_continuity_guarded",
+        "watchdog_protects_against_drift",
+        "model_provides_replaceable_cognition",
+        "embodiment_and_agency_external",
+        "growth_keeps_identity"))
+    return {
+        "persona_id": record["persona_id"],
+        "checks": checks,
+        "index_sections": len(index),
+        "growth_allowed": list(GROWTH_ALLOWANCES),
+        "claim": ESSENCE_CLAIM,
+        "target_result": {
+            **_phase_summary(
+                TARGET_RESULT_ITEMS,
+                TARGET_RESULT_SUCCESS_CRITERION),
+            "criterion_met": target_met,
+        },
+        "essence": {
+            **_phase_summary(ESSENCE_ITEMS, ESSENCE_CLAIM),
+            "criterion_met": essence_met,
+        },
+        "audits_only": True,
+        "loads_or_compiles": False,
+        "generates_speech": False,
+        "reads_memory": False,
+        "executes_tools": False,
+        "controls_avatar": False,
+    }
+
+
+def target_essence_contract() -> dict[str, Any]:
+    """The §§93–94 target result + essence reconciliation, combined. Pure."""
+    return {
+        "name": "PersonaTargetResultAndEssence",
+        "target_result": target_result_contract(),
+        "essence": essence_contract(),
+        "audit_surface": "target_essence_audit",
+        "claim": ESSENCE_CLAIM,
+        "growth_allowed": list(GROWTH_ALLOWANCES),
+        "dissolves_into_recent_history": False,
+        "defines_foundational_identity": ["persona"],
+        "generates_speech": False,
+        "generates_output": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -13687,7 +14257,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-92): persona "
+            f"Persona runtime (§§3-94): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -14214,6 +14784,25 @@ class PersonaRuntimeBridge:
             f"persona component defines foundational "
             f"identity), and the pure "
             f"architecture_rule_audit proves both from "
+            f"supplied artefacts. "
+            f"§93 target result and §94 essence stand "
+            f"reconciled against the banked surfaces "
+            f"(§59 style fingerprint, §43 relationship "
+            f"retrieval, §§38–39 counsel modes, §§40/60 "
+            f"decision acceptance, §§78–79/85 memory "
+            f"architecture, §§44/87 tool model, and "
+            f"§§46/88 avatar identity — Caducea still "
+            f"speaks, relates, counsels, accepts, "
+            f"remembers, acts, and appears as herself, "
+            f"growing without dissolving into recent "
+            f"messages; the persona files as source code "
+            f"for identity, compiled, kernel-preserved, "
+            f"router-retrieved, memory-continued, "
+            f"watchdog-guarded, model-carried, "
+            f"avatar-embodied, and tool-enabled — she "
+            f"can grow indefinitely without ceasing to "
+            f"be Caducea), and the pure "
+            f"target_essence_audit proves both from "
             f"supplied artefacts. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
@@ -14790,6 +15379,20 @@ __all__ = [
     "caducea_moment_component",
     "architecture_rule_audit",
     "architecture_rule_contract",
+    "TARGET_RESULT_SUCCESS_CRITERION",
+    "TARGET_RESULT_ITEMS",
+    "ESSENCE_ITEMS",
+    "TARGET_RESULT_CONDITIONS",
+    "GROWTH_ALLOWANCES",
+    "ESSENCE_CLAIM",
+    "target_result_items",
+    "target_result_item",
+    "target_result_contract",
+    "essence_items",
+    "essence_item",
+    "essence_contract",
+    "target_essence_audit",
+    "target_essence_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
