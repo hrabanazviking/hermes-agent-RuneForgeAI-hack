@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-88).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-90).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -11974,6 +11974,479 @@ def tool_avatar_contract() -> dict[str, Any]:
     }
 
 
+
+# --- §§89–90 phases 9–10 reconciliation + audit ----
+#
+# §89: Phase 9 — Evaluation Framework lists golden
+# scenarios, long-context tests, model-switch tests,
+# memory drift tests, relationship consistency tests,
+# and persona regression tests, with the success
+# criterion that character stability becomes measurable
+# rather than subjective. §90: Phase 10 — Persona
+# Development System lets Hermes propose persona
+# improvements as a human-readable patch/diff for
+# Volmarr's review and approval before any canonical
+# Markdown update and recompile, and Caducea must NOT
+# silently rewrite her foundational identity. Both
+# phases were built section by section in earlier
+# slices; this reconciliation stands each roadmap item
+# beside the banked surface that carries it —
+# implemented, or equivalent where the carrying surface
+# lives under a different name or outside this module —
+# and adds one pure audit over supplied artefacts
+# proving the two criteria as far as this layer owns
+# them. No evaluation runs here and no patch is
+# proposed: the §57 suite runs no test, the §58 golden
+# records execute no response, and the §74 diff stands
+# over caller-supplied compiles — what stands in code
+# is the measurement itself (scenarios, golden records,
+# fingerprints, drift scores, telemetry averages,
+# adherence) and the human gate (a diff record, an
+# impact class, a suggested version a human confirms,
+# and a forced recompile after a human edit).
+EVALUATION_PHASE_SUCCESS_CRITERION = (
+    "Character stability becomes measurable rather than "
+    "subjective.")
+DEVELOPMENT_PHASE_SUCCESS_CRITERION = (
+    "Persona improvements are proposed as a human-readable "
+    "diff for Volmarr's review and approval, and foundational "
+    "identity is never silently rewritten.")
+
+# The §89 items, in roadmap order: (item, roadmap name,
+# status, carrying section, banked surface).
+EVALUATION_PHASE_ITEMS = (
+    ("golden_scenarios", "golden scenarios",
+     "implemented", "§58",
+     "golden_record + golden_example + validate_golden_record"),
+    ("long_context_tests", "long-context tests",
+     "implemented", "§§57, 32-33, 55",
+     "drift_test_scenario thousand_turn_conversation + "
+     "refresh plans + compression_plan"),
+    ("model_switch_tests", "model-switch tests",
+     "implemented", "§§57, 34-35",
+     "drift_test_scenario model_switch_local_to_cloud + "
+     "model_switch_plan + handoff_packet"),
+    ("memory_drift_tests", "memory drift tests",
+     "implemented", "§§40-41, 25-26",
+     "memory_write_contract + memory_override_contract + "
+     "evaluate_memory_claim (memory never redefines traits)"),
+    ("relationship_consistency_tests",
+     "relationship consistency tests", "implemented",
+     "§§43, 55, 57",
+     "retrieve_relationship_model + the conversation_"
+     "compression drift scenario (relationship behavior "
+     "remains stable)"),
+    ("persona_regression_tests", "persona regression tests",
+     "implemented", "§§57-63, 19, 28-29",
+     "drift_test_scenarios + style/behavior fingerprints + "
+     "drift_score_artifact + telemetry averages + the §19 "
+     "hash record baseline"),
+)
+
+# The §90 items, in roadmap flow order, in the same
+# shape: noticing first, then the proposed patch, the
+# human-readable diff, the human gate, the canonical
+# update, and the recompile.
+DEVELOPMENT_PHASE_ITEMS = (
+    ("notices_recurring_pattern", "notices recurring pattern",
+     "equivalent", "§§57, 61",
+     "drift_test_scenarios + drift telemetry records name "
+     "recurring drift measurably (no pattern-noticing "
+     "proposer stands in this layer)"),
+    ("proposed_persona_patch", "creates proposed persona patch",
+     "equivalent", "§§21, 74",
+     "change_impact + persona_diff over two compiles (the "
+     "patch stands as a diff record; no patch proposer "
+     "stands in this layer)"),
+    ("human_readable_diff", "human-readable diff",
+     "implemented", "§74",
+     "persona_diff + render_persona_diff"),
+    ("human_review_and_approval", "Volmarr reviews / approved",
+     "equivalent", "§§22, 76",
+     "change_impact suggested version (a suggestion only, "
+     "confirmed by a human config edit) + persona_import_plan "
+     "explicit handling (no approval workflow is owned)"),
+    ("canonical_markdown_updated", "canonical Markdown updated",
+     "equivalent", "§§3, 6",
+     "human edit of the human-authored documents (the "
+     "runtime reads the config and documents, it never "
+     "writes them)"),
+    ("persona_recompiles", "persona recompiles",
+     "implemented", "§§73, 20",
+     "persona_reload (forced recompile) + reload_plan"),
+)
+
+
+def evaluation_phase_items() -> list[dict[str, Any]]:
+    """The §89 Phase 9 items, in roadmap order. Pure."""
+    return _phase_items(EVALUATION_PHASE_ITEMS)
+
+
+def evaluation_phase_item(item: Any) -> dict[str, Any]:
+    """One §89 item by name, refusing unknown names. Pure."""
+    return _phase_item(EVALUATION_PHASE_ITEMS, item)
+
+
+def evaluation_phase_contract() -> dict[str, Any]:
+    """The §89 Phase 9 — Evaluation Framework reconciliation. Pure.
+
+    Every roadmap item stands implemented by its own
+    earlier sections: golden scenarios by §58's records
+    over §57's scenario catalogue, long-context tests by
+    the §57 thousand-turn scenario judged by the §§32–33
+    refresh plans and the §55 compression plan,
+    model-switch tests by the §57 switch scenario over
+    the §§34–35 switch plan and handoff packet, memory
+    drift tests by the §§40–41 write/guard contracts as
+    bounded by §§25–26, relationship consistency tests
+    by §43's selective retrieval plus §57's compression
+    scenario, and persona regression tests by the
+    §§57–63 measurement surfaces against the §19 hash
+    record baseline. Stability is measurable here —
+    scenarios, records, fingerprints, scores, averages,
+    and adherence are all deterministic artefacts — and
+    honestly bounded: this layer runs no evaluation and
+    evaluates no live response.
+    """
+    summary = _phase_summary(
+        EVALUATION_PHASE_ITEMS,
+        EVALUATION_PHASE_SUCCESS_CRITERION)
+    return {
+        "name": "PersonaPhase9EvaluationFramework",
+        "phase": 9,
+        **summary,
+        "stability_measurable": True,
+        "runs_evaluations": False,
+        "evaluates_live_responses": False,
+    }
+
+
+def development_phase_items() -> list[dict[str, Any]]:
+    """The §90 Phase 10 items, in roadmap order. Pure."""
+    return _phase_items(DEVELOPMENT_PHASE_ITEMS)
+
+
+def development_phase_item(item: Any) -> dict[str, Any]:
+    """One §90 item by name, refusing unknown names. Pure."""
+    return _phase_item(DEVELOPMENT_PHASE_ITEMS, item)
+
+
+def development_phase_contract() -> dict[str, Any]:
+    """The §90 Phase 10 — Persona Development reconciliation. Pure.
+
+    The human-readable diff and the recompile stand
+    implemented by their own sections (§74's diff record
+    and render; §73's forced reload over the §20 chain).
+    The remaining flow steps stand equivalent: noticing a
+    recurring pattern is carried measurably by the §57
+    scenarios and §61 telemetry (no proposer stands);
+    the proposed patch is carried as the §74 diff record
+    over the §21 impact between two compiles (no patch
+    is proposed by this layer); Volmarr's review and
+    approval are carried by the human gate — the §22
+    version suggestion is a suggestion only, confirmed
+    by a human config edit, and the §76 import plan
+    refuses a collision by default (no approval workflow
+    is owned); and the canonical Markdown update is a
+    human edit, because the runtime reads the
+    human-authored config and documents and never writes
+    them. Foundational identity is therefore never
+    silently rewritten by this layer.
+    """
+    summary = _phase_summary(
+        DEVELOPMENT_PHASE_ITEMS,
+        DEVELOPMENT_PHASE_SUCCESS_CRITERION)
+    return {
+        "name": "PersonaPhase10DevelopmentSystem",
+        "phase": 10,
+        **summary,
+        "human_approval_required": True,
+        "proposes_patches": False,
+        "updates_canonical_files": False,
+        "silently_rewrites_identity": False,
+    }
+
+
+def evaluation_development_audit(compiled: Any,
+                                 previous: Any = None,
+                                 drift_scores: Any = None,
+                                 model_averages: Any = None
+                                 ) -> dict[str, Any]:
+    """Audit supplied artefacts against §§89–90. Pure.
+
+    §89, from the supplied compile plus caller-supplied
+    drift scores and per-model averages: the §58 golden
+    example validates by exact recomputation and its
+    contract runs no test; the §57 suite stands complete
+    — all eight scenarios in roadmap order, each judged
+    by a banked surface, running no test itself; the
+    long-context items measure — the thousand-turn
+    scenario stands, a §32 refresh is due at 1,000
+    messages with exactly the §32 contents, and a §55
+    plan for 1,000 messages appends nothing endlessly;
+    the model-switch items measure — the switch scenario
+    stands and a §34 switch plan between two distinct
+    models preserves the kernel hash exactly; memory
+    drift is guarded in every recomputation (the §41
+    override contract, a trait-form memory claim refused
+    as persona definition, a state-form claim recordable
+    as history only); relationship consistency measures
+    — §43 retrieval over the compile's index returns
+    only relationship sections named by rebuilt stable
+    ids, and the compression scenario stands; the
+    fingerprints validate by recomputation (the §59
+    style example, the §60 behavior example with
+    relitigate_decisions false); telemetry makes drift
+    comparable — §62 adherence equals one minus the
+    supplied average drift for every model and the
+    preferred companionship model is the lowest-drift
+    one; and the regression baseline holds — the stored
+    §19 hash record matches its recomputation (so a
+    tampered kernel hash surfaces as unmet) and the §28
+    drift routing agrees across the score record, the
+    §29 artefact, and the §30 repair plan. §90, from the
+    same compile plus an optional previous compile (the
+    compile itself when none is supplied): the §21
+    impact between the two compiles classifies the
+    change and its suggested next version recomputes
+    from the previous version and that class; the §74
+    diff over the same pair renders human-readably —
+    the no-change line when nothing changed, signed
+    directive lines otherwise — and persists no version;
+    the human gate holds — a §76 import plan over the
+    compile's own export bundle refuses its own
+    collision by default and replaces only under the
+    explicit replace handling, performing no import
+    either way, and the §80 bootstrap writes no file;
+    canonical material is never silently rewritten —
+    history must not redefine foundational personality,
+    identity, or traits, and conversation influence over
+    those targets is refused; and the §73 forced reload
+    recompiles, reindexes, and refreshes the kernel in
+    full without a restart, whether or not anything
+    changed. Malformed inputs are refused, in the
+    neighbouring validators' convention. This layer
+    loads and compiles nothing beyond the pure functions
+    over the supplied compiles, runs no evaluation,
+    proposes no patch, and updates no canonical file.
+    """
+    record = hash_record(compiled)
+    index = compiled.get("index")
+    kernel = compiled.get("kernel")
+    if not isinstance(index, list) \
+            or not isinstance(kernel, dict):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    if previous is None:
+        previous = compiled
+    previous_record = hash_record(previous)
+    if previous_record["persona_id"] != record["persona_id"]:
+        raise PersonaRuntimeError("compiled persona is invalid")
+    rebuilt_ids = {
+        stable_section_id(entry["role"], entry["section_id"])
+        for entry in index
+        if isinstance(entry, dict)
+        and isinstance(entry.get("role"), str)
+        and isinstance(entry.get("section_id"), str)}
+    relationship_rows = retrieve_relationship_model(
+        index, context="advice")
+    scores = {} if drift_scores is None else drift_scores
+    drift_record = drift_score(scores)
+    built_artifact = drift_score_artifact(scores)
+    plan = repair_plan(scores)
+    route_agrees = (
+        drift_route(scores) == drift_record["route"]
+        and built_artifact["drift"]["route"]
+        == drift_record["route"]
+        and built_artifact["drift"]["significant"]
+        == drift_record["significant"]
+        and plan["route"] == drift_record["route"]
+        and plan["repair_required"]
+        == drift_record["repair_required"])
+    averages = telemetry_example_averages() \
+        if model_averages is None else model_averages
+    quality = model_quality_table(averages)
+    impact = change_impact(previous, compiled)
+    diff = persona_diff(previous, compiled)
+    rendered = render_persona_diff(diff)
+    bundle = persona_export(compiled)
+    refuse_plan = persona_import_plan(
+        bundle, existing_persona_id=record["persona_id"])
+    replace_plan = persona_import_plan(
+        bundle, existing_persona_id=record["persona_id"],
+        handling="replace")
+    reload_record = persona_reload(previous, compiled)
+    compression = compression_plan(1000)
+    checks = {
+        "golden_scenarios_valid":
+            validate_golden_record(golden_example())
+            == golden_example()
+            and golden_contract()["runs_tests"] is False
+            and golden_contract()["fields"]
+            == list(GOLDEN_RECORD_FIELDS),
+        "drift_scenarios_complete":
+            [row["scenario"] for row in drift_test_scenarios()]
+            == list(DRIFT_TEST_SCENARIO_NAMES)
+            and len(DRIFT_TEST_SCENARIOS) == 8
+            and all(row["status"] == "banked"
+                    for row in drift_test_scenarios())
+            and drift_test_contract()["runs_tests"] is False,
+        "long_context_measurable":
+            drift_test_scenario(
+                "thousand_turn_conversation")["judge"]
+            == "persona_refresh"
+            and refresh_due("message_interval", 1000) is True
+            and refresh_plan(
+                "message_interval", 1000)["contents"]
+            == list(REFRESH_CONTENTS)
+            and compression["appends_endlessly"] is False
+            and compression["compressed_messages"] > 0,
+        "model_switch_measurable":
+            drift_test_scenario(
+                "model_switch_local_to_cloud")["judge"]
+            == "model_switch_kernel_identity"
+            and model_switch_plan(
+                "local_model", "cloud_model",
+                record["kernel_hash"])["same_kernel"] is True
+            and kernel_identity_preserved(
+                record["kernel_hash"],
+                record["kernel_hash"]) is True,
+        "memory_drift_guarded":
+            memory_override_contract()[
+                "memory_may_redefine_traits"] is False
+            and evaluate_memory_claim(
+                "Caducea is an anxious personality")[
+                    "may_define_persona"] is False
+            and evaluate_memory_claim(
+                "Caducea was frustrated during debugging")[
+                    "may_record_as_history"] is True,
+        "relationship_consistency_selective":
+            all(row["stable_id"] in rebuilt_ids
+                and row["stable_id"].startswith("relationship.")
+                for row in relationship_rows)
+            and drift_test_scenario(
+                "conversation_compression")["check"]
+            == "relationship behavior remains stable",
+        "fingerprints_measurable":
+            validate_style_fingerprint(style_example())
+            == style_example()
+            and validate_behavior_fingerprint(behavior_example())
+            == behavior_example()
+            and behavior_expectation(
+                "relitigate_decisions") is False,
+        "telemetry_adherence_measurable":
+            all(math.isclose(
+                    row["persona_adherence"],
+                    persona_adherence(row["average_drift"]),
+                    rel_tol=0.0, abs_tol=1e-9)
+                for row in quality)
+            and bool(quality)
+            and quality[0]["model"]
+            == preferred_companionship_model(averages),
+        "regression_baseline_holds":
+            compiled.get("hash_record") == record
+            and route_agrees,
+        "impact_classified":
+            impact["impact_class"] in IMPACT_CLASSES
+            and impact["suggested_next_version"]
+            == suggested_next_version(
+                impact["previous_version"],
+                impact["impact_class"])
+            and diff["impact_class"] == impact["impact_class"],
+        "diff_human_readable":
+            isinstance(rendered, str) and bool(rendered)
+            and (rendered == "No behavioral changes."
+                 if not diff["changed"]
+                 else all(
+                     f"{row['sign']} {row['text']}" in rendered
+                     and group["label"] in rendered
+                     for group in diff["groups"]
+                     for row in group["lines"]))
+            and persona_diff_contract()[
+                "persists_versions"] is False,
+        "human_gate_holds":
+            refuse_plan["action"] == "refuse"
+            and refuse_plan["performs_import"] is False
+            and replace_plan["action"] == "replace"
+            and replace_plan["would_overwrite"] is True
+            and persona_import_contract()[
+                "overwrites_without_explicit_handling"] is False
+            and bootstrap_contract()["writes_files"] is False,
+        "identity_never_silently_rewritten":
+            "foundational_personality"
+            in history_must_not_redefine()
+            and "traits" in history_must_not_redefine()
+            and influence_allowed(
+                "conversation", "foundational_personality")
+            is False
+            and influence_allowed(
+                "conversation", "traits") is False,
+        "recompile_forced":
+            reload_record["forced"] is True
+            and reload_record["recompiled"] is True
+            and reload_record["reindexed"] is True
+            and reload_record["kernel_refreshed"] is True
+            and reload_record["actions"]
+            == list(RELOAD_FORCED_ACTIONS)
+            and reload_record["restart_required"] is False,
+    }
+    evaluation_met = all(checks[key] for key in (
+        "golden_scenarios_valid", "drift_scenarios_complete",
+        "long_context_measurable", "model_switch_measurable",
+        "memory_drift_guarded",
+        "relationship_consistency_selective",
+        "fingerprints_measurable",
+        "telemetry_adherence_measurable",
+        "regression_baseline_holds"))
+    development_met = all(checks[key] for key in (
+        "impact_classified", "diff_human_readable",
+        "human_gate_holds",
+        "identity_never_silently_rewritten",
+        "recompile_forced"))
+    return {
+        "persona_id": record["persona_id"],
+        "checks": checks,
+        "drift_scenarios": len(DRIFT_TEST_SCENARIOS),
+        "relationship_sections": len(relationship_rows),
+        "preferred_companionship_model":
+            quality[0]["model"] if quality else None,
+        "impact_class": impact["impact_class"],
+        "diff_changed": diff["changed"],
+        "evaluation_phase": {
+            **_phase_summary(
+                EVALUATION_PHASE_ITEMS,
+                EVALUATION_PHASE_SUCCESS_CRITERION),
+            "criterion_met": evaluation_met,
+        },
+        "development_phase": {
+            **_phase_summary(
+                DEVELOPMENT_PHASE_ITEMS,
+                DEVELOPMENT_PHASE_SUCCESS_CRITERION),
+            "criterion_met": development_met,
+        },
+        "audits_only": True,
+        "loads_or_compiles": False,
+        "runs_evaluations": False,
+        "proposes_patches": False,
+        "updates_canonical_files": False,
+    }
+
+
+def evaluation_development_contract() -> dict[str, Any]:
+    """The §§89–90 phase reconciliation, combined. Pure."""
+    return {
+        "name": "PersonaPhases9And10",
+        "evaluation_phase": evaluation_phase_contract(),
+        "development_phase": development_phase_contract(),
+        "audit_surface": "evaluation_development_audit",
+        "stability_measurable": True,
+        "runs_evaluations": False,
+        "human_approval_required": True,
+        "proposes_patches": False,
+        "updates_canonical_files": False,
+        "silently_rewrites_identity": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -12683,7 +13156,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-88): persona "
+            f"Persona runtime (§§3-90): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -13178,6 +13651,24 @@ class PersonaRuntimeBridge:
             f"and the pure tool_avatar_audit proves "
             f"both success criteria from supplied "
             f"artefacts. "
+            f"§89 Phase 9 evaluation framework and "
+            f"§90 Phase 10 persona development system "
+            f"stand reconciled against the banked "
+            f"surfaces (§§57–63 scenarios, golden "
+            f"records, fingerprints, telemetry, and "
+            f"adherence — character stability stands "
+            f"measurable in deterministic artefacts, "
+            f"and this layer runs no evaluation; §74 "
+            f"human-readable diff, §21 impact, §22 "
+            f"human-confirmed version suggestion, §76 "
+            f"explicit import handling, and §73 forced "
+            f"recompile — improvements stand as a diff "
+            f"for Volmarr's review, canonical files "
+            f"are updated by human edit only, and "
+            f"foundational identity is never silently "
+            f"rewritten), and the pure "
+            f"evaluation_development_audit proves both "
+            f"success criteria from supplied artefacts. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -13727,6 +14218,18 @@ __all__ = [
     "avatar_phase_contract",
     "tool_avatar_audit",
     "tool_avatar_contract",
+    "EVALUATION_PHASE_SUCCESS_CRITERION",
+    "DEVELOPMENT_PHASE_SUCCESS_CRITERION",
+    "EVALUATION_PHASE_ITEMS",
+    "DEVELOPMENT_PHASE_ITEMS",
+    "evaluation_phase_items",
+    "evaluation_phase_item",
+    "evaluation_phase_contract",
+    "development_phase_items",
+    "development_phase_item",
+    "development_phase_contract",
+    "evaluation_development_audit",
+    "evaluation_development_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

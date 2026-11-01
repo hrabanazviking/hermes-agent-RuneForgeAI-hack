@@ -5193,6 +5193,33 @@ Success criterion:
 > Character stability becomes measurable rather than subjective.
 
 
+> **Completion note — Slice 162 (2026-11-01): §89 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `evaluation_phase_items` /
+> `evaluation_phase_item` / `evaluation_phase_contract`
+> surfaces: all six items implemented by their own
+> sections (golden scenarios §58, long-context tests
+> §§57/32–33/55, model-switch tests §§57/34–35, memory
+> drift tests §§40–41/25–26, relationship consistency
+> tests §§43/55/57, persona regression tests
+> §§57–63/19/28–29). The pure
+> `evaluation_development_audit` proves the criterion
+> from a supplied compile (the §58 golden example
+> validates by recomputation; the §57 suite stands
+> complete with every judge banked; a §32 refresh is due
+> at 1,000 messages and a §55 plan appends nothing
+> endlessly; a §34 switch preserves the kernel hash;
+> the §41 memory guard holds in every recomputation;
+> §43 retrieval returns only relationship sections by
+> rebuilt stable ids; the §§59–60 fingerprints validate;
+> §62 adherence equals one minus supplied average drift;
+> and the §19 hash record baseline matches its
+> recomputation, so a tampered kernel hash surfaces as
+> unmet). Honest gaps: this layer runs no evaluation and
+> evaluates no live response, and no caller consumes the
+> reconciliation or the audit yet.**
+
+
 ---
 
 
@@ -5223,6 +5250,37 @@ persona recompiles
 
 
 Caducea should NOT silently rewrite her foundational identity.
+
+
+> **Completion note — Slice 162 (2026-11-01): §90 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `development_phase_items` /
+> `development_phase_item` / `development_phase_contract`
+> surfaces: the human-readable diff (§74) and the
+> recompile (§§73/20) implemented by their own sections,
+> and the remaining flow steps equivalent — noticing a
+> recurring pattern carried measurably by the §57
+> scenarios and §61 telemetry (no proposer stands), the
+> proposed patch carried as the §74 diff record over the
+> §21 impact between two compiles (no patch is proposed
+> by this layer), Volmarr's review and approval carried
+> by the human gate (§22's version suggestion is a
+> suggestion only, confirmed by a human config edit, and
+> §76's import plan refuses a collision by default), and
+> the canonical Markdown update carried by human edit of
+> the human-authored documents the runtime never writes.
+> The pure `evaluation_development_audit` proves the
+> flow as far as this layer owns it (the §21 impact
+> classifies the change and its suggested version
+> recomputes; the §74 diff renders human-readably and
+> persists no version; the §76 plan performs no import
+> either way; history must never redefine foundational
+> personality, identity, or traits; and the §73 forced
+> reload recompiles in full without a restart). Honest
+> gaps: no patch is proposed, no approval workflow is
+> owned, no canonical file is updated by this layer, and
+> no caller consumes the reconciliation or the audit
+> yet.**
 
 
 ---
