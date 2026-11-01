@@ -3586,3 +3586,85 @@ portable state: any agent (Muse or Hermes) resumes from here.
   directly — expect a pure occasion-classification +
   selective-retrieval surface over the `avatar` role,
   not an avatar controller this plugin does not own.
+- 2026-10-31 ~22:5x EDT keeper tick: **Slice 140 DONE —
+  Persona Runtime §45 (Memory Policy Usage) and §46
+  (Avatar Policy Usage) complete, banked and PUSHED
+  under the standing go-ahead.** No live work found at
+  tick start (tree clean, HEAD == origin/main at
+  `50926fac89`; Slice 139's state commit at 22:29 EDT
+  was its own completed push, verified, not in-progress
+  work). `plugins/volmarr-core/persona_runtime.py`
+  extended in place — no new file or config key: §45's
+  pure `memory_policy_occasions` names the four roadmap
+  occasions; `memory_policy_usage_contract` stands the
+  rule (the model normally does not need the entire
+  Memory Policy in context because the memory subsystem
+  itself implements it; policy text retrieved only on
+  an occasion; behavior in code wherever practical);
+  `classify_memory_policy_occasions` /
+  `memory_policy_occasions_for_section` derive occasions
+  deterministically (lexicon over tokens; heading + bare
+  section id for sections); `memory_policy_retrieval_need`
+  returns selective_retrieval / subsystem_only;
+  `retrieve_memory_policy` + `PersonaMemoryPolicyRetriever`
+  select over the compiled index restricted to the
+  `memory_policy` role, ranked by §13, annotated with
+  §45 occasions. §46 mirrors it over the `avatar` role:
+  `avatar_policy_occasions` (generating_images,
+  controlling_avatar, describing_persona,
+  selecting_expressions, vr_interaction),
+  `avatar_policy_usage_contract` (rarely in ordinary
+  text inference; avatar controller consumes structured
+  AvatarIR directly), classification/need/retrieval
+  functions + `PersonaAvatarPolicyRetriever`. Both
+  retrievals share one private `_retrieve_on_occasions`
+  helper. One in-slice fix: the first targeted run
+  showed §13 ranking alone returned merely adjacent
+  sections for an occasion query — qualification was
+  tightened to occasion intersection only (the occasion
+  is the index), recorded in the helper's docstring.
+  Packet label updated to §§3–46 (seventeen older
+  persona files' packet assertions updated in-slice).
+  Tests: targeted 12/12 pass; targeted persona run
+  (24 files): **206 passed, 0 failed**; full
+  volmarr/kista run (93 files): **685 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin,
+  1 Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified by rerunning their 3 files; 685 is exactly
+  Slice 139's 673 + the 12 new contracts. Smoke:
+  `hermes --version` runs (`vgit.50926fa.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §45 + §46 completion notes in the Persona
+  Runtime roadmap, plugin.yaml description now §§3–46.
+  Push: fast-forward, no force — origin/main moved
+  `50926fac89` → `f3edcf9812`, verified by
+  `git ls-remote` (remote == local HEAD). Honest gaps:
+  no caller consumes a selection yet, nothing is
+  injected, and this layer implements no memory
+  subsystem and owns no avatar controller; §47's
+  policy-to-code migration stands unclaimed.
+- **Next resume point: Slice 141 — Persona Runtime
+  §47 (Policy → Code Migration) and §48 (Persona
+  Compilation Cache)**: §47 names moving deterministic
+  rules out of prompts into code (prompt governs
+  personality, judgment, relational behavior, nuanced
+  cognition; code governs expiration, permissions,
+  limits, routing, formatting, deterministic
+  constraints; the roadmap's example: implement
+  `if memory.expired: exclude()` instead of instructing
+  it) — reconcile against the banked pure-function
+  surfaces when read at slice start, expect a pure
+  classification/contract surface naming which domain
+  governs each rule kind, not a migration of live
+  prompts this layer does not own; §48 names the
+  compilation cache (compile once; cache
+  persona_kernel.txt / persona_ir.json /
+  persona_sections.jsonl / persona_embeddings.db /
+  persona_manifest.json as generated artifacts; humans
+  edit only Markdown + YAML configuration) — reconcile
+  against the §19 hash record / §20 reload surfaces
+  when read at slice start, expect a pure
+  cache-manifest/validity surface over the compiled
+  artefact, not a persisted cache this layer writes.
