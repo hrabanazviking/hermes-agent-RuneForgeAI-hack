@@ -4753,3 +4753,146 @@ portable state: any agent (Muse or Hermes) resumes from here.
   diff-record/render surface over two supplied
   compiles, not a live version store (no compile is
   persisted by this layer, §48/§49).
+- 2026-11-01 ~07:0x–08:0x EST keeper tick: **Slice 154 CODE
+  COMPLETE — Persona Runtime §73 (Persona Reload Command)
+  and §74 (Persona Diff) — banked LOCALLY ONLY, UNCOMMITTED,
+  NOT PUSHED; FULL SUITE NOT VERIFIED (environment blocker,
+  below).** No live work found at tick start (tree clean,
+  HEAD == origin/main at `31ff8c9696`; the running test
+  processes on the box belonged to other campaigns' trees;
+  the Python-write blocker was probed absent at tick start
+  and the README.md sha256 invariant held, `4e022de7…c4910`).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §73's pure
+  `persona_reload` / `persona_reload_contract` stand the
+  reload command as a forced-reload record over two
+  supplied compiles (reload, recompile, reindex, refresh
+  kernel forced in full — the §20 chain walked
+  unconditionally, the kernel refreshed whether or not
+  its hash changed, `restart_required` always false; the
+  §20 `PersonaReloader.check` stays hash-driven — §73 is
+  the operator's override of its economy, not a second
+  reloader; the hash comparison is reported honestly, a
+  first compile stands as a forced load, cross-persona
+  pairs and a missing current compile are refused).
+  §74's pure `persona_diff` / `render_persona_diff` /
+  `persona_diff_example` / `persona_diff_contract` stand
+  the behavioral diff since the previous version over
+  two caller-supplied compiles, built on the §21
+  change-impact section diff (added `+`, removed `-`,
+  changed `-` then `+`, grouped by document role under
+  the roadmap's labels — RELATIONSHIP, TOOLS for
+  `tool_policy`; line text verbatim, collapsed, bounded
+  240 chars), carrying the §21 impact class and the §22
+  suggested next version; the roadmap's example stands
+  verbatim as record and render (unnamed version/section
+  fields None, never invented) and an unchanged pair
+  renders "No behavioral changes." Packet label updated
+  to §§3–74 (thirty-one older persona files' packet
+  assertions updated in-slice; module docstring and
+  plugin.yaml description now §§3–74). Tests: targeted
+  10/10 pass (new file `test_volmarr_persona_reload_diff.py`,
+  after one test-side fix — the changed-section assertion
+  first expected the kernel hash to move, but the edited
+  section is not kernel material, so the hash honestly
+  stayed and the contract now asserts the forced refresh
+  over an unmoved kernel hash; the first targeted run,
+  2 files, was 19 passed / 1 failed before that fix).
+  **Blocker: the VM's Python-write(2) EPERM failure
+  recurred mid-tick (the Slice 115/122/150/151 class):
+  the first full volmarr/kista run (107 files) was
+  contaminated — 39 files failed at file level with
+  "No usable temporary directory found" (592 tests
+  counted instead of ~828) — and was discarded
+  (`~/workspace/.verify-tmp/slice154_full_run_contaminated.log`);
+  mkstemp then kept creating files whose write(2)
+  returned EPERM through ~25 minutes of probing, bash
+  writes succeeded throughout, /tmp stood at 2% used,
+  and git could not write its index lock (`Operation
+  not permitted`), so no re-run, no smoke run, and no
+  commit or push were possible.** The working tree
+  holds exactly the Slice 154 set (persona_runtime.py,
+  plugin.yaml, CUSTOMIZATIONS.md, the roadmap, this
+  file modified; the new contract file added; the 31
+  older persona test files' packet labels updated).
+  Bookkeeping: CUSTOMIZATIONS.md ledger row, §73 + §74
+  completion notes in the Persona Runtime roadmap —
+  the CUSTOMIZATIONS row records the unverified state
+  plainly. Honest gaps: no live `hermes persona reload`
+  or `hermes persona diff` command exists, nothing is
+  reloaded, no version is persisted, and no caller
+  consumes a reload record or a diff yet.
+- **Next resume point: FIRST verify the Python-write
+  blocker is gone (a python mkstemp write + a git
+  write), then run Slice 154's full volmarr/kista suite
+  (107 files; expected 828 passed, 7 failed, 1 skipped —
+  Slice 153's 818 + the 10 new contracts, failures the
+  same name-identical pre-existing environmental set)
+  + smoke + README invariant; fix any failures in
+  scope, correct the CUSTOMIZATIONS row's unverified
+  paragraph in place, then commit + push Slice 154
+  under the standing go-ahead (fetch + remote-diff
+  first, ls-remote verify). Only then Slice 155 —
+  Persona Runtime §75 (Persona Export) and §76
+  (Persona Import)**: §75 names a compiled portable
+  bundle (`caducea.persona`: manifest, source Markdown,
+  compiled IR, kernel, version metadata, optional
+  avatar metadata) for sharing personas between Hermes
+  installations; §76 names `hermes persona import
+  caducea.persona` with no overwrite of an existing
+  persona without explicit handling — reconcile against
+  the §48 cache / §49 generated-directory / §50 manifest
+  surfaces when read at slice start, expect pure
+  bundle-shape/validation surfaces, not a bundle writer
+  or importer this layer does not own.
+- 2026-11-01 ~07:51 EST keeper tick: **Slice 154 remains
+  UNCOMMITTED / UNPUSHED — the Python-write blocker is
+  STILL PRESENT, verified first per the resume point.**
+  Probes: python `mkstemp` write and plain `open(...,'w')`
+  writes in both /tmp and the workspace return EPERM
+  (files created 0-byte); `git status` cannot write
+  `.git/index.lock` ("Operation not permitted"); bash
+  writes succeed; /tmp at 2% used (not space). The Slice
+  154 working tree was verified intact read-only
+  (`GIT_OPTIONAL_LOCKS=0`): exactly 36 files changed,
+  497 insertions / 34 deletions, the new
+  `test_volmarr_persona_reload_diff.py` present, HEAD
+  still `31ff8c9696` (Slice 153 state), README.md sha256
+  invariant held (`4e022de7…c4910`). No test run, smoke,
+  commit, or push was attempted — all require Python/git
+  writes. This is the same VM-wide EPERM episode hitting
+  several campaigns this morning, not a Hermes defect.
+  Resume unchanged: when a python mkstemp write + a git
+  write both succeed, run Slice 154's full suite
+  (expected 828/7/1), smoke, invariant, correct the
+  CUSTOMIZATIONS row, commit + push, then Slice 155.
+- 2026-11-01 ~08:0x EST keeper tick: **Blocker GONE — Slice 154
+  verified, banked and PUSHED under the standing go-ahead.**
+  Probes at tick start: python mkstemp + open writes and a
+  scratch git add all succeed again; no live work on this tree
+  (running test processes belonged to other campaigns);
+  README.md sha256 invariant held (`4e022de7…c4910`). Full
+  volmarr/kista run (107 files): **828 passed, 7 failed,
+  1 skipped** — exactly the expected totals (Slice 153's 818 +
+  the 10 new reload/diff contracts), the failures the same
+  name-identical pre-existing environmental set in the same 3
+  files (5 core-plugin, 1 Verðandi-stimuli socket, 1
+  voice-runner loopback), verified in the run log's own summary
+  line (`~/workspace/.verify-tmp/slice154_full_run.log`,
+  1149.0s). Smoke: `hermes --version` runs
+  (`vgit.31ff8c9.dirty` pre-commit). The CUSTOMIZATIONS.md
+  ledger row's unverified paragraph was corrected in place to
+  the verified numbers. Push: fast-forward, no force —
+  verified by `git ls-remote` (remote == local HEAD).
+- **Next resume point: Slice 155 — Persona Runtime §75
+  (Persona Export) and §76 (Persona Import)**: §75 names a
+  compiled portable bundle (`caducea.persona`: manifest,
+  source Markdown, compiled IR, kernel, version metadata,
+  optional avatar metadata) for sharing personas between
+  Hermes installations; §76 names `hermes persona import
+  caducea.persona` with no overwrite of an existing persona
+  without explicit handling — reconcile against the §48
+  cache / §49 generated-directory / §50 manifest surfaces
+  when read at slice start, expect pure bundle-shape /
+  validation surfaces, not a bundle writer or importer
+  this layer does not own.
