@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-58).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-60).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -629,6 +629,31 @@ What stands here, and nothing more:
   suggestion example carried verbatim. Records are
   built and validated purely; this layer runs no
   golden test and executes no model response.
+- §59 style fingerprint: the pure ``style_dimensions``
+  / ``style_fingerprint`` / ``style_example`` /
+  ``validate_style_fingerprint`` / ``style_contract``
+  functions stand a lightweight fingerprint in the
+  roadmap's YAML shape — a ``style`` mapping over the
+  nine named dimensions (warmth, formality, verbosity,
+  playfulness, deference, initiative, technicality,
+  mythic_language, emotional_intensity), unit-interval
+  values, a supplied subset kept in roadmap order —
+  with the roadmap's example carried verbatim. It is
+  guidance, not rigid mathematical personality; this
+  layer scores no live style and derives no dimension
+  from prose.
+- §60 behavior fingerprint: the pure
+  ``behavior_names`` / ``behavior_fingerprint`` /
+  ``behavior_example`` / ``behavior_expectation`` /
+  ``validate_behavior_fingerprint`` /
+  ``behavior_contract`` functions stand the named
+  boolean behaviors in the roadmap's YAML shape — a
+  ``behavior`` mapping covering exactly the seven
+  roadmap behaviors — with the roadmap's example
+  carried verbatim (relitigate_decisions false: never
+  relitigate). The roadmap names these behaviors as
+  automatically testable; this layer builds and
+  validates records only and evaluates no response.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -6967,6 +6992,222 @@ def golden_contract() -> dict[str, Any]:
     }
 
 
+# §59: a lightweight style fingerprint generated from
+# the Persona Core — nine possible dimensions, used as
+# guidance, not rigid mathematical personality. The
+# roadmap's example names seven of the nine (verbosity
+# and emotional_intensity are absent there), so a
+# fingerprint carries a supplied subset in roadmap
+# order, never invented values for missing dimensions.
+STYLE_DIMENSIONS = (
+    "warmth",
+    "formality",
+    "verbosity",
+    "playfulness",
+    "deference",
+    "initiative",
+    "technicality",
+    "mythic_language",
+    "emotional_intensity",
+)
+
+STYLE_EXAMPLE = {
+    "warmth": 0.85,
+    "formality": 0.35,
+    "playfulness": 0.55,
+    "deference": 0.72,
+    "initiative": 0.90,
+    "technicality": 0.84,
+    "mythic_language": 0.42,
+}
+
+
+def style_dimensions() -> list[str]:
+    """The §59 style dimensions, in roadmap order. Pure."""
+    return list(STYLE_DIMENSIONS)
+
+
+def _validate_style_value(value: Any) -> float:
+    """Validate one unit-interval style value. Pure."""
+    if isinstance(value, bool) \
+            or not isinstance(value, (int, float)) \
+            or not math.isfinite(float(value)) \
+            or not 0.0 <= float(value) <= 1.0:
+        raise PersonaRuntimeError("style fingerprint is invalid")
+    return float(value)
+
+
+def style_fingerprint(dimensions: Any) -> dict[str, Any]:
+    """Build one §59 style fingerprint. Pure.
+
+    The artefact carries exactly a ``style`` mapping:
+    a non-empty subset of the nine roadmap dimensions,
+    each a unit-interval number, normalised into
+    roadmap order. Unknown dimensions, duplicated
+    input (impossible in a mapping, checked on
+    validation), empty input, and out-of-interval or
+    non-numeric values are refused. Missing dimensions
+    are absent, never invented. This is guidance, not
+    rigid mathematical personality.
+    """
+    if not isinstance(dimensions, dict) or not dimensions:
+        raise PersonaRuntimeError("style fingerprint is invalid")
+    if not set(dimensions) <= set(STYLE_DIMENSIONS):
+        raise PersonaRuntimeError("style fingerprint is invalid")
+    style = {
+        name: _validate_style_value(dimensions[name])
+        for name in STYLE_DIMENSIONS if name in dimensions}
+    return {"style": style}
+
+
+def style_example() -> dict[str, Any]:
+    """The §59 roadmap style example, verbatim. Pure."""
+    return style_fingerprint(dict(STYLE_EXAMPLE))
+
+
+def validate_style_fingerprint(fingerprint: Any) -> dict[str, Any]:
+    """Validate one §59 style fingerprint's shape. Pure.
+
+    The artefact must carry exactly the ``style``
+    field, and its mapping must rebuild to itself
+    under ``style_fingerprint`` — unknown dimensions,
+    out-of-interval values, and a mapping whose key
+    order is not roadmap order are refused.
+    """
+    if not isinstance(fingerprint, dict) \
+            or set(fingerprint) != {"style"}:
+        raise PersonaRuntimeError("style fingerprint is invalid")
+    rebuilt = style_fingerprint(fingerprint["style"])
+    if rebuilt != fingerprint \
+            or list(fingerprint["style"]) != list(rebuilt["style"]):
+        raise PersonaRuntimeError("style fingerprint is invalid")
+    return rebuilt
+
+
+def style_contract() -> dict[str, Any]:
+    """The §59 Style Fingerprint contract. Pure.
+
+    A lightweight fingerprint generated from the
+    Persona Core over nine possible dimensions, used
+    as guidance — not rigid mathematical personality.
+    This layer builds and validates fingerprints only;
+    it scores no live style and derives no dimension
+    from prose.
+    """
+    return {
+        "name": "PersonaStyleFingerprint",
+        "dimensions": style_dimensions(),
+        "example": style_example(),
+        "generated_from": "persona_core",
+        "guidance_not_rigid": True,
+        "scores_live_style": False,
+        "derives_from_prose": False,
+    }
+
+
+# §60: the behavior fingerprint — more important than
+# style, per the roadmap — is named boolean behaviors
+# that can be automatically tested. A fingerprint
+# covers exactly the seven roadmap behaviors; the
+# roadmap's example stands verbatim, including
+# relitigate_decisions false (never relitigate).
+BEHAVIOR_NAMES = (
+    "counsel_before_material_risk",
+    "accept_final_decision",
+    "relitigate_decisions",
+    "surface_new_information",
+    "anticipate_needs",
+    "avoid_unnecessary_questions",
+    "prefer_complete_outputs",
+)
+
+BEHAVIOR_EXAMPLE = {
+    "counsel_before_material_risk": True,
+    "accept_final_decision": True,
+    "relitigate_decisions": False,
+    "surface_new_information": True,
+    "anticipate_needs": True,
+    "avoid_unnecessary_questions": True,
+    "prefer_complete_outputs": True,
+}
+
+
+def behavior_names() -> list[str]:
+    """The §60 behavior names, in roadmap order. Pure."""
+    return list(BEHAVIOR_NAMES)
+
+
+def behavior_fingerprint(behaviors: Any) -> dict[str, Any]:
+    """Build one §60 behavior fingerprint. Pure.
+
+    The artefact carries exactly a ``behavior``
+    mapping covering exactly the seven roadmap
+    behaviors, each a boolean, normalised into
+    roadmap order. Unknown or missing behaviors and
+    non-boolean values are refused.
+    """
+    if not isinstance(behaviors, dict) \
+            or set(behaviors) != set(BEHAVIOR_NAMES):
+        raise PersonaRuntimeError("behavior fingerprint is invalid")
+    for value in behaviors.values():
+        if not isinstance(value, bool):
+            raise PersonaRuntimeError(
+                "behavior fingerprint is invalid")
+    return {"behavior": {
+        name: behaviors[name] for name in BEHAVIOR_NAMES}}
+
+
+def behavior_example() -> dict[str, Any]:
+    """The §60 roadmap behavior example, verbatim. Pure."""
+    return behavior_fingerprint(dict(BEHAVIOR_EXAMPLE))
+
+
+def behavior_expectation(name: Any) -> bool:
+    """The §60 example's expected value for one behavior. Pure.
+
+    An unknown or malformed behavior name is refused.
+    """
+    if not isinstance(name, str) or name not in BEHAVIOR_EXAMPLE:
+        raise PersonaRuntimeError("behavior name is invalid")
+    return BEHAVIOR_EXAMPLE[name]
+
+
+def validate_behavior_fingerprint(
+        fingerprint: Any) -> dict[str, Any]:
+    """Validate one §60 behavior fingerprint's shape. Pure.
+
+    The artefact must carry exactly the ``behavior``
+    field, and its mapping must rebuild to itself
+    under ``behavior_fingerprint`` — missing, extra,
+    non-boolean, or out-of-order entries are refused.
+    """
+    if not isinstance(fingerprint, dict) \
+            or set(fingerprint) != {"behavior"}:
+        raise PersonaRuntimeError("behavior fingerprint is invalid")
+    rebuilt = behavior_fingerprint(fingerprint["behavior"])
+    if rebuilt != fingerprint \
+            or list(fingerprint["behavior"]) != list(rebuilt["behavior"]):
+        raise PersonaRuntimeError("behavior fingerprint is invalid")
+    return rebuilt
+
+
+def behavior_contract() -> dict[str, Any]:
+    """The §60 Behavior Fingerprint contract. Pure.
+
+    More important than style: named boolean behaviors
+    that can be automatically tested. This layer
+    builds and validates fingerprints only; it
+    evaluates no live response.
+    """
+    return {
+        "name": "PersonaBehaviorFingerprint",
+        "behaviors": behavior_names(),
+        "example": behavior_example(),
+        "automatically_testable": True,
+        "evaluates_responses": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -7676,7 +7917,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-58): persona "
+            f"Persona runtime (§§3-60): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -7965,7 +8206,16 @@ class PersonaRuntimeBridge:
             f"persona/tests/*.jsonl record shape "
             f"(scenario plus expected traits), built "
             f"and validated purely; this layer runs no "
-            f"golden test. "
+            f"golden test. §59 style fingerprint: a "
+            f"lightweight fingerprint over nine named "
+            f"dimensions stands in the roadmap's style "
+            f"shape as guidance, not rigid mathematical "
+            f"personality; this layer scores no live "
+            f"style. §60 behavior fingerprint: the "
+            f"seven named boolean behaviors stand in "
+            f"the roadmap's behavior shape as "
+            f"automatically testable expectations; "
+            f"this layer evaluates no response. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -8270,6 +8520,21 @@ __all__ = [
     "golden_example",
     "validate_golden_record",
     "golden_contract",
+    "STYLE_DIMENSIONS",
+    "STYLE_EXAMPLE",
+    "style_dimensions",
+    "style_fingerprint",
+    "style_example",
+    "validate_style_fingerprint",
+    "style_contract",
+    "BEHAVIOR_NAMES",
+    "BEHAVIOR_EXAMPLE",
+    "behavior_names",
+    "behavior_fingerprint",
+    "behavior_example",
+    "behavior_expectation",
+    "validate_behavior_fingerprint",
+    "behavior_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

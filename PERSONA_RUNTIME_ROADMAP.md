@@ -3600,6 +3600,29 @@ style:
 Use as guidance, not rigid mathematical personality.
 
 
+> **Completion note — Slice 147 (2026-11-01): §59 stands
+> in `plugins/volmarr-core/persona_runtime.py` as a pure
+> fingerprint-shape surface. The pure `style_dimensions`
+> function names the nine dimensions in roadmap order;
+> the pure `style_fingerprint` function builds the
+> artefact in the roadmap's YAML shape — a `style`
+> mapping over a supplied subset of the dimensions,
+> each a unit-interval number, normalised into roadmap
+> order, missing dimensions absent and never invented
+> (the roadmap's own example names seven of the nine);
+> the pure `style_example` function carries that
+> example verbatim, and the pure
+> `validate_style_fingerprint` function refuses an
+> artefact whose fields are not exactly the roadmap's
+> one or whose mapping does not rebuild to itself in
+> roadmap order. The pure `style_contract` function
+> records that the fingerprint is guidance, not rigid
+> mathematical personality. Honest gaps: no dimension
+> is derived from the Persona Core's prose and no live
+> style is scored by this layer; §60's behavior
+> fingerprint stands below.**
+
+
 ---
 
 
@@ -3625,6 +3648,30 @@ behavior:
 
 
 These can be automatically tested.
+
+
+> **Completion note — Slice 147 (2026-11-01): §60 stands
+> in the same module as a pure behavior-record surface,
+> more important than style per the roadmap. The pure
+> `behavior_names` function names the seven behaviors
+> in roadmap order; the pure `behavior_fingerprint`
+> function builds the artefact in the roadmap's YAML
+> shape — a `behavior` mapping covering exactly the
+> seven behaviors, each a boolean, normalised into
+> roadmap order — the pure `behavior_example` function
+> carries the roadmap's example verbatim (including
+> relitigate_decisions false: never relitigate), the
+> pure `behavior_expectation` function returns the
+> example's expected value for one named behavior, and
+> the pure `validate_behavior_fingerprint` function
+> refuses a record whose fields are not exactly the
+> roadmap's one or whose mapping does not rebuild to
+> itself in roadmap order. The pure `behavior_contract`
+> function records that these behaviors can be
+> automatically tested. Honest gaps: this layer
+> evaluates no live response and no caller consumes a
+> fingerprint yet; §61's character drift telemetry
+> stands unclaimed.**
 
 
 ---

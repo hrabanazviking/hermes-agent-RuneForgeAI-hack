@@ -490,7 +490,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert valid_other is False
     assert len(first) == 1
     content = first[0].content
-    assert "§§3-58" in content
+    assert "§§3-60" in content
     assert "§49 generated directory" in content
     assert "persona/source/" in content
     assert "persona/.compiled/" in content
