@@ -4491,6 +4491,33 @@ optional avatar metadata
 This allows sharing personas between Hermes installations.
 
 
+> **Completion note — Slice 155 (2026-11-01): §75 stands
+> in `plugins/volmarr-core/persona_runtime.py` as the
+> pure `persona_export` / `validate_persona_export` /
+> `persona_export_example` / `persona_export_contract`
+> surfaces over a supplied compile, built on the §50
+> manifest and the §22 version record: the bundle
+> record (`<persona_id>.persona`, the roadmap's example
+> `caducea.persona`) names its contents in roadmap
+> order — manifest, source Markdown, compiled IR,
+> kernel, version metadata, and optional avatar
+> metadata — with the source Markdown standing by role
+> with each document's file and hash (the §50 entries),
+> the compiled IR by its §8 hash and category counts,
+> and the kernel by its §19 hash. The validator refuses
+> a tampered or internally inconsistent bundle (a
+> filename, version, kernel hash, source list, IR
+> total, or version-metadata disagreement). Avatar
+> metadata is caller-supplied, bounded, and optional —
+> its absence is recorded as None, never invented.
+> Honest gaps: no bundle file is written or read by
+> this layer, and the bundle embeds no source document
+> text — the compiled artefact retains documents as
+> file + hash (§5 Layer C), so a receiving installation
+> still needs the Markdown itself; no caller consumes
+> a bundle yet.**
+
+
 ---
 
 
@@ -4506,6 +4533,27 @@ hermes persona import caducea.persona
 
 
 Do not overwrite existing persona without explicit handling.
+
+
+> **Completion note — Slice 155 (2026-11-01): §76 stands
+> in `plugins/volmarr-core/persona_runtime.py` as the
+> pure `persona_import_plan` / `persona_import_contract`
+> surfaces over a validated §75 bundle: with no
+> collision (no existing persona, or an existing
+> persona with a different id) the plan is a plain
+> import; on a collision the default handling
+> (`refuse`) refuses, and only the explicit `replace`
+> handling plans an overwrite — an existing persona is
+> never overwritten without explicit handling. A
+> tampered bundle plans nothing (validation runs
+> first). The roadmap's `hermes persona` spelling
+> registers no new core command in either section —
+> this plugin's CLI surface is `hermes volmarr` and
+> plugins never add core commands. Honest gaps: this
+> layer performs no import and installs nothing — the
+> plan names what an importer may do; no live
+> `hermes persona import` command exists, and no
+> caller consumes a plan yet.**
 
 
 ---

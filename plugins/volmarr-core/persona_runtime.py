@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-74).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-76).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -9363,6 +9363,363 @@ def persona_diff_contract() -> dict[str, Any]:
     }
 
 
+# §75: persona export — a compiled persona may be shared
+# between Hermes installations as a portable bundle,
+# ``<persona_id>.persona`` (the roadmap's example is
+# ``caducea.persona``), holding a manifest, the source
+# Markdown, the compiled IR, the kernel, version
+# metadata, and optional avatar metadata. This layer
+# stands the bundle as a pure record over a supplied
+# compile, built on the §50 manifest and the §22
+# version record: the source Markdown stands by role
+# with each document's file and hash (the §50 entries —
+# this layer retains no document text beyond the
+# compiled sections, §5 Layer C, so no text is embedded
+# or faked), the compiled IR stands by its §8 hash and
+# category counts, and the kernel by its §19 hash.
+# No bundle file is written or read here.
+EXPORT_BUNDLE_EXTENSION = ".persona"
+
+# The §75 bundle contents, in roadmap order. Avatar
+# metadata is the optional member: its absence is
+# recorded as None, never invented.
+EXPORT_CONTENTS = (
+    "manifest", "source_markdown", "compiled_ir",
+    "kernel", "version_metadata", "avatar_metadata",
+)
+
+# The §75 bundle record's fields, in stored order.
+EXPORT_BUNDLE_FIELDS = (
+    "filename", "persona_id", "version", "contents",
+    "avatar_present", "manifest", "source_documents",
+    "compiled_ir", "kernel", "version_metadata",
+    "avatar_metadata",
+)
+
+MAX_AVATAR_METADATA_ENTRIES = 16
+MAX_AVATAR_METADATA_KEY_CHARS = 64
+MAX_AVATAR_METADATA_VALUE_CHARS = 240
+
+
+def export_contents() -> list[str]:
+    return list(EXPORT_CONTENTS)
+
+
+def export_filename(persona_id: Any) -> str:
+    """The §75 bundle filename for one persona id. Pure."""
+    if not isinstance(persona_id, str) or not persona_id \
+            or not _SLUG.match(persona_id):
+        raise PersonaRuntimeError("persona id is invalid")
+    return f"{persona_id}{EXPORT_BUNDLE_EXTENSION}"
+
+
+def _validate_avatar_metadata(value: Any) -> dict[str, str] | None:
+    """Normalise optional §75 avatar metadata. Pure.
+
+    None stands (the metadata is optional). A mapping
+    must carry bounded string keys and values only —
+    avatar metadata is descriptive metadata, never a
+    second persona document.
+    """
+    if value is None:
+        return None
+    if not isinstance(value, dict) \
+            or len(value) > MAX_AVATAR_METADATA_ENTRIES:
+        raise PersonaRuntimeError("avatar metadata is invalid")
+    cleaned: dict[str, str] = {}
+    for key, item in value.items():
+        if not isinstance(key, str) or not key \
+                or len(key) > MAX_AVATAR_METADATA_KEY_CHARS \
+                or not isinstance(item, str) or not item \
+                or len(item) > MAX_AVATAR_METADATA_VALUE_CHARS:
+            raise PersonaRuntimeError("avatar metadata is invalid")
+        cleaned[key] = item
+    return cleaned
+
+
+def persona_export(compiled: dict[str, Any],
+                   compiled_at: str | None = None,
+                   avatar_metadata: Any = None) -> dict[str, Any]:
+    """The §75 portable bundle record for one compile. Pure.
+
+    Built on the §50 manifest (persona id, §22 version,
+    per-document file + hash, kernel hash) and the §22
+    version record (the version metadata). The compiled
+    IR stands by its §8 ``ir_hash``, its category counts,
+    and its total section count; the kernel by its hash
+    and estimated tokens. Avatar metadata is caller-
+    supplied and optional. Deterministic for a given
+    artefact and stamp; this layer writes no bundle.
+    """
+    manifest_value = manifest(compiled, compiled_at=compiled_at)
+    version_meta = version_record(
+        compiled, compiled_at=compiled_at)
+    ir = compiled.get("ir") if isinstance(compiled, dict) else None
+    kernel = compiled.get("kernel") \
+        if isinstance(compiled, dict) else None
+    if not isinstance(ir, dict) \
+            or not isinstance(ir.get("ir_hash"), str) \
+            or not isinstance(ir.get("category_counts"), dict) \
+            or not isinstance(ir.get("total_sections"), int) \
+            or not isinstance(kernel, dict) \
+            or not isinstance(kernel.get("estimated_tokens"), int):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    avatar = _validate_avatar_metadata(avatar_metadata)
+    return {
+        "filename": export_filename(manifest_value["persona_id"]),
+        "persona_id": manifest_value["persona_id"],
+        "version": manifest_value["version"],
+        "contents": list(EXPORT_CONTENTS),
+        "avatar_present": avatar is not None,
+        "manifest": manifest_value,
+        "source_documents": [
+            {"role": role, "file": entry["file"],
+             "hash": entry["hash"]}
+            for role, entry in manifest_value["documents"].items()],
+        "compiled_ir": {
+            "ir_hash": ir["ir_hash"],
+            "category_counts": dict(ir["category_counts"]),
+            "total_sections": ir["total_sections"],
+            "generated": True,
+            "human_editable": False,
+        },
+        "kernel": {
+            "sha256": manifest_value["kernel_hash"],
+            "estimated_tokens": kernel["estimated_tokens"],
+        },
+        "version_metadata": version_meta,
+        "avatar_metadata": avatar,
+    }
+
+
+def validate_persona_export(bundle: Any) -> dict[str, Any]:
+    """Validate one §75 bundle record's shape. Pure.
+
+    The record must carry exactly the §75 fields, and
+    every cross-field agreement must hold: the filename
+    names the persona, the §50 manifest validates and
+    its version/kernel hash agree with the record's own
+    version and kernel entries, the source documents are
+    exactly the manifest's documents, the §22 version
+    metadata names the same persona and version with
+    the manifest's stamp, and the IR category counts sum
+    to its total. A tampered or inconsistent bundle is
+    refused; a valid bundle is returned normalised.
+    """
+    if not isinstance(bundle, dict) \
+            or set(bundle) != set(EXPORT_BUNDLE_FIELDS):
+        raise PersonaRuntimeError("persona bundle is invalid")
+    checked_manifest = _validate_manifest(bundle["manifest"])
+    persona_id = bundle["persona_id"]
+    if bundle["filename"] != export_filename(persona_id) \
+            or checked_manifest["persona_id"] != persona_id \
+            or bundle["version"] != checked_manifest["version"] \
+            or bundle["contents"] != list(EXPORT_CONTENTS):
+        raise PersonaRuntimeError("persona bundle is invalid")
+    avatar = _validate_avatar_metadata(bundle["avatar_metadata"])
+    if bundle["avatar_present"] is not (avatar is not None):
+        raise PersonaRuntimeError("persona bundle is invalid")
+    expected_sources = [
+        {"role": role, "file": entry["file"], "hash": entry["hash"]}
+        for role, entry in checked_manifest["documents"].items()]
+    if bundle["source_documents"] != expected_sources:
+        raise PersonaRuntimeError("persona bundle is invalid")
+    kernel = bundle["kernel"]
+    if not isinstance(kernel, dict) \
+            or set(kernel) != {"sha256", "estimated_tokens"} \
+            or kernel["sha256"] != checked_manifest["kernel_hash"] \
+            or not isinstance(kernel["estimated_tokens"], int) \
+            or isinstance(kernel["estimated_tokens"], bool) \
+            or kernel["estimated_tokens"] < 0:
+        raise PersonaRuntimeError("persona bundle is invalid")
+    ir = bundle["compiled_ir"]
+    if not isinstance(ir, dict) \
+            or set(ir) != {"ir_hash", "category_counts",
+                           "total_sections", "generated",
+                           "human_editable"} \
+            or not isinstance(ir["ir_hash"], str) \
+            or not ir["ir_hash"] \
+            or ir["generated"] is not True \
+            or ir["human_editable"] is not False \
+            or not isinstance(ir["category_counts"], dict) \
+            or list(ir["category_counts"]) != list(IR_CATEGORIES) \
+            or not all(
+                isinstance(count, int)
+                and not isinstance(count, bool) and count >= 0
+                for count in ir["category_counts"].values()) \
+            or ir["total_sections"] \
+            != sum(ir["category_counts"].values()):
+        raise PersonaRuntimeError("persona bundle is invalid")
+    version_meta = bundle["version_metadata"]
+    if not isinstance(version_meta, dict) \
+            or set(version_meta) != set(VERSION_RECORD_FIELDS) \
+            or version_meta["persona_id"] != persona_id \
+            or version_meta["persona_version"] != bundle["version"] \
+            or version_meta["compiled_at"] \
+            != checked_manifest["compiled_at"] \
+            or not isinstance(version_meta["source_hash"], str) \
+            or not version_meta["source_hash"]:
+        raise PersonaRuntimeError("persona bundle is invalid")
+    return {
+        "filename": bundle["filename"],
+        "persona_id": persona_id,
+        "version": bundle["version"],
+        "contents": list(EXPORT_CONTENTS),
+        "avatar_present": avatar is not None,
+        "manifest": checked_manifest,
+        "source_documents": expected_sources,
+        "compiled_ir": {
+            "ir_hash": ir["ir_hash"],
+            "category_counts": dict(ir["category_counts"]),
+            "total_sections": ir["total_sections"],
+            "generated": True,
+            "human_editable": False,
+        },
+        "kernel": {
+            "sha256": kernel["sha256"],
+            "estimated_tokens": kernel["estimated_tokens"],
+        },
+        "version_metadata": {
+            "persona_id": version_meta["persona_id"],
+            "persona_version": version_meta["persona_version"],
+            "compiled_at": version_meta["compiled_at"],
+            "source_hash": version_meta["source_hash"],
+        },
+        "avatar_metadata": avatar,
+    }
+
+
+def persona_export_example() -> dict[str, Any]:
+    """The §75 roadmap export example. Pure.
+
+    The roadmap names only the bundle file
+    (``caducea.persona``) and its potential contents, so
+    the example carries exactly those — no version or
+    hash is invented for it.
+    """
+    return {
+        "filename": "caducea.persona",
+        "persona_id": "caducea",
+        "contents": list(EXPORT_CONTENTS),
+        "avatar_metadata_optional": True,
+    }
+
+
+def persona_export_contract() -> dict[str, Any]:
+    """The §75 Persona Export contract. Pure.
+
+    A compiled persona stands as a portable bundle
+    record for sharing between Hermes installations,
+    built on the §50 manifest and the §22 version
+    record. This layer writes and reads no bundle file;
+    the source Markdown stands by file and hash, as the
+    compiled artefact retains it (§5 Layer C).
+    """
+    return {
+        "name": "PersonaExport",
+        "bundle_extension": EXPORT_BUNDLE_EXTENSION,
+        "example": persona_export_example(),
+        "contents": list(EXPORT_CONTENTS),
+        "basis": "§50 manifest + §22 version record",
+        "avatar_metadata_optional": True,
+        "writes_bundle": False,
+        "shares_between_installations": True,
+    }
+
+
+# §76: persona import — ``hermes persona import
+# caducea.persona`` installs a §75 bundle, and an
+# existing persona is never overwritten without
+# explicit handling. This layer stands the import as a
+# pure plan over a validated bundle: with no collision
+# the plan is an import; on a collision the default
+# handling refuses, and only the explicit ``replace``
+# handling plans an overwrite. Nothing is imported,
+# installed, or overwritten here, and the roadmap's
+# ``hermes persona`` spelling registers no new core
+# command (this plugin's CLI surface is ``hermes
+# volmarr``).
+IMPORT_COMMAND = "hermes persona import"
+
+# The §76 import handlings, in roadmap order: the
+# default refusal, then the one explicit handling that
+# may plan an overwrite.
+IMPORT_HANDLINGS = ("refuse", "replace")
+IMPORT_DEFAULT_HANDLING = "refuse"
+
+
+def import_handlings() -> list[str]:
+    return list(IMPORT_HANDLINGS)
+
+
+def persona_import_plan(bundle: Any,
+                        existing_persona_id: Any = None,
+                        handling: Any = IMPORT_DEFAULT_HANDLING
+                        ) -> dict[str, Any]:
+    """The §76 import plan for one §75 bundle. Pure.
+
+    The bundle is validated first (a tampered bundle
+    plans nothing). A collision — an existing persona
+    with the bundle's own id — refuses under the
+    default handling and plans a replacement only
+    under the explicit ``replace`` handling; without a
+    collision the plan is a plain import under either
+    handling. This layer performs no import: the plan
+    names what an importer may do, nothing more.
+    """
+    checked = validate_persona_export(bundle)
+    if handling not in IMPORT_HANDLINGS:
+        raise PersonaRuntimeError("import handling is invalid")
+    if existing_persona_id is not None \
+            and (not isinstance(existing_persona_id, str)
+                 or not _SLUG.match(existing_persona_id)):
+        raise PersonaRuntimeError("existing persona id is invalid")
+    collision = existing_persona_id == checked["persona_id"]
+    if not collision:
+        action = "import"
+    elif handling == "replace":
+        action = "replace"
+    else:
+        action = "refuse"
+    return {
+        "command": IMPORT_COMMAND,
+        "filename": checked["filename"],
+        "persona_id": checked["persona_id"],
+        "version": checked["version"],
+        "existing_persona_id": existing_persona_id,
+        "collision": collision,
+        "handling": handling,
+        "action": action,
+        "would_overwrite": action == "replace",
+        "explicit_handling_required": collision,
+        "performs_import": False,
+    }
+
+
+def persona_import_contract() -> dict[str, Any]:
+    """The §76 Persona Import contract. Pure.
+
+    An import never overwrites an existing persona
+    without explicit handling: the default handling
+    refuses a collision, and only the explicit
+    ``replace`` handling plans an overwrite. This layer
+    performs no import and registers no new core
+    command.
+    """
+    return {
+        "name": "PersonaImport",
+        "command": IMPORT_COMMAND,
+        "plugin_cli_surface": "hermes volmarr",
+        "example_command": "hermes persona import caducea.persona",
+        "handlings": list(IMPORT_HANDLINGS),
+        "default_handling": IMPORT_DEFAULT_HANDLING,
+        "overwrites_without_explicit_handling": False,
+        "new_core_command": False,
+        "performs_import": False,
+        "basis": "§75 persona bundle",
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -10072,7 +10429,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-74): persona "
+            f"Persona runtime (§§3-76): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -10460,6 +10817,23 @@ class PersonaRuntimeBridge:
             f"document, built on the §21 section diff "
             f"over two supplied compiles; no version is "
             f"persisted here. "
+            f"§75 persona export: a compiled persona "
+            f"stands as a portable bundle record "
+            f"(<persona_id>.persona) naming its §50 "
+            f"manifest, source Markdown documents by "
+            f"file and hash, compiled IR hash and "
+            f"counts, kernel hash, §22 version "
+            f"metadata, and optional avatar metadata, "
+            f"for sharing between Hermes installations; "
+            f"this layer writes no bundle file. "
+            f"§76 persona import: an import plan over "
+            f"a validated bundle never overwrites an "
+            f"existing persona without explicit "
+            f"handling — a collision refuses by "
+            f"default and replaces only under the "
+            f"explicit replace handling; this layer "
+            f"imports nothing and registers no new "
+            f"core command. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -10897,6 +11271,24 @@ __all__ = [
     "render_persona_diff",
     "persona_diff_example",
     "persona_diff_contract",
+    "EXPORT_BUNDLE_EXTENSION",
+    "EXPORT_CONTENTS",
+    "EXPORT_BUNDLE_FIELDS",
+    "MAX_AVATAR_METADATA_ENTRIES",
+    "MAX_AVATAR_METADATA_KEY_CHARS",
+    "MAX_AVATAR_METADATA_VALUE_CHARS",
+    "export_contents",
+    "export_filename",
+    "persona_export",
+    "validate_persona_export",
+    "persona_export_example",
+    "persona_export_contract",
+    "IMPORT_COMMAND",
+    "IMPORT_HANDLINGS",
+    "IMPORT_DEFAULT_HANDLING",
+    "import_handlings",
+    "persona_import_plan",
+    "persona_import_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

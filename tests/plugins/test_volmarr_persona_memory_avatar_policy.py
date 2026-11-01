@@ -512,7 +512,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert empty_memory == []
     assert empty_avatar == []
     assert len(items) == 1
-    assert "§§3-74" in items[0].content
+    assert "§§3-76" in items[0].content
     assert "§45 memory policy" in items[0].content
     assert "memory subsystem" in items[0].content
     assert "§46 avatar policy" in items[0].content
