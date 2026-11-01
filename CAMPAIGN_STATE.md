@@ -4207,3 +4207,79 @@ portable state: any agent (Muse or Hermes) resumes from here.
   consideration/contract surface over the §61 averages,
   not a live model router (§63's per-model adherence
   score is a later section).
+- 2026-11-01 ~03:1x–04:0x EST keeper tick: **Slice 148 DONE —
+  Persona Runtime §61 (Character Drift Telemetry) and §62
+  (Model Router + Persona Quality) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found at
+  tick start (tree clean, HEAD == origin/main at `1a038aeaa1`;
+  Slice 147's state commit at 03:10 EST was its own completed
+  push, verified, not in-progress work — the running test
+  processes on the box belonged to other campaigns' trees;
+  the Python-write blocker was probed absent).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §61's pure
+  `telemetry_fields` / `drift_telemetry_record` /
+  `validate_drift_telemetry_record` /
+  `telemetry_example_averages` / `model_drift_averages` /
+  `telemetry_contract` stand one locally comparable record
+  with exactly the five roadmap fields in roadmap order
+  (drift score unit interval, kernel version as the §22
+  strict semver, model slugified, mode a §38 mode,
+  retrieved sections by §12 stable id bounded and
+  deduplicated), the validator refusing records that do
+  not rebuild to themselves in roadmap order, plus the
+  deterministic per-model average drift over validated
+  records in first-appearance order — the roadmap's
+  example averages (Gemma 4 E2B 0.18, Qwen 0.11, remote
+  model 0.06) reproduced from individual records by the
+  contract tests. §62's pure
+  `model_selection_considerations` / `persona_adherence`
+  / `model_quality_table` /
+  `preferred_companionship_model` / `model_router_contract`
+  stand model selection considering persona adherence
+  alongside intelligence — adherence derived purely as
+  1 − average drift — ranking supplied averages by
+  adherence descending (model name tiebreak) and
+  preferring the strongest-adherence model for everyday
+  companionship (the example's remote model at 0.94).
+  Packet label updated to §§3–62 (twenty-five older
+  persona files' packet assertions updated in-slice).
+  Tests: targeted 10/10 pass (new file; 20/20 with the
+  style-behavior file); targeted persona run (32 files):
+  **286 passed, 0 failed**; full volmarr/kista run
+  (101 files): **765 passed, 7 failed, 1 skipped** — the
+  same name-identical pre-existing environmental set in
+  the same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice148_full_run.log`); 765
+  is exactly Slice 147's 755 + the 10 new contracts.
+  Smoke: `hermes --version` runs (`vgit.1a038ae.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §61 + §62 completion notes in the Persona
+  Runtime roadmap, plugin.yaml description now §§3–62.
+  Push: fast-forward, no force — origin/main moved
+  `1a038aeaa1` → `5e26b09e6b`, verified by `git ls-remote`
+  (remote == local HEAD). Honest gaps: no record is
+  persisted, no live telemetry is recorded, no
+  intelligence score is carried (the §63 per-model metric
+  set is the next section), no model is routed, and no
+  caller consumes a record or ranking yet.
+- **Next resume point: Slice 149 — Persona Runtime §63
+  (Persona Adherence Score) and §64 (Distill Persona For
+  Small Models)**: §63 names per-model metrics (reasoning,
+  latency, persona_adherence, tool_use, cost) that a
+  router can choose between by task — reconcile against
+  Slice 148's §62 adherence ranking when read at slice
+  start, expect a pure per-model metrics
+  builder/validator plus a deterministic task-based
+  selection surface, not a live router; §64 names
+  compiling multiple kernels from the same canonical
+  source (kernel_full ~1500 tokens, kernel_medium ~750,
+  kernel_micro ~250) for small models — reconcile against
+  the §5/§9 kernel generation and §15 budget bands when
+  read at slice start, expect a pure kernel-tier/band
+  surface over the compiled kernel, not new kernel
+  builders (the §65 micro-kernel example text is the
+  following section).
