@@ -2896,6 +2896,40 @@ Code should govern:
 * deterministic constraints
 
 
+> **Completion note — Slice 141 (2026-10-31): §47 stands
+> in `plugins/volmarr-core/persona_runtime.py` as a pure
+> contract/classification surface. The pure
+> `policy_governs` function names what prompt
+> instructions primarily govern, in roadmap order
+> (personality, judgment, relational_behavior,
+> nuanced_cognition — the roadmap's phrases slugified),
+> and the pure `code_governs` function names what code
+> governs, in roadmap order (expiration, permissions,
+> limits, routing, formatting,
+> deterministic_constraints); the pure
+> `policy_to_code_contract` function stands the rule
+> (deterministic rules migrate from prompts to code,
+> prompt → code, carrying the roadmap's example
+> verbatim: the prompt instruction "Never include
+> expired memories." becomes the code rule
+> `if memory.expired: exclude()`); the pure
+> `classify_rule_kinds` function signals the kinds a
+> rule text carries from a deterministic lexicon over
+> its tokens (prompt kinds in roadmap order, then code
+> kinds in roadmap order; malformed text refused), the
+> pure `governance_for_kind` function names the domain
+> governing one kind (slugified; unknown kinds
+> refused), and the pure `migration_assessment`
+> function splits a text's kinds by domain and marks
+> it a migration candidate exactly when a
+> code-governed kind is present (governed_by: code,
+> prompt, mixed, or unclassified). Honest gaps: no
+> live prompt is migrated by this layer and it owns
+> no prompts — it classifies and names the migration
+> surface only, and injects nothing; §48's compilation
+> cache stands below.**
+
+
 ---
 
 
@@ -2921,6 +2955,41 @@ These are generated artifacts.
 
 
 Humans edit only Markdown + YAML configuration.
+
+
+> **Completion note — Slice 141 (2026-10-31): §48 stands
+> in the same module as a pure manifest/validity
+> surface over a compiled artefact. The pure
+> `compilation_cache_artifacts` function names the
+> cache artefacts in roadmap order (persona_kernel.txt
+> the kernel, persona_ir.json the IR,
+> persona_sections.jsonl the sections,
+> persona_embeddings.db the embeddings,
+> persona_manifest.json the manifest — each generated,
+> never human-edited); the pure
+> `compilation_cache_contract` function stands the
+> rule (compile once; the artefacts are generated;
+> humans edit only Markdown + YAML configuration);
+> the pure `cache_manifest` function builds the
+> manifest on the §19 hash record (persona id, persona
+> version, and the compiled_at caller stamp under
+> §19's stamp handling — a stamp alone is never a
+> change), with per-artefact hashes: the kernel is the
+> §19 kernel sha256, the IR is the artefact's §8
+> ir_hash, the sections hash is a deterministic sha256
+> digest over the canonical JSON of the compiled
+> index, the manifest hash is the §19 persona_hash,
+> and the embeddings hash is honestly None with its
+> note recorded (this layer owns no embedding surface,
+> §13); the pure `cache_staleness` function recomputes
+> the hashes from a compile and names the changed and
+> missing artefact kinds, and the pure
+> `validate_cache_manifest` function returns False —
+> never raises — on a mismatch, raising only on a
+> malformed manifest or compile. Honest gaps: no
+> cache is persisted or written by this layer — the
+> manifest is returned, not stored, and the §49
+> generated directory is a later section.**
 
 
 ---

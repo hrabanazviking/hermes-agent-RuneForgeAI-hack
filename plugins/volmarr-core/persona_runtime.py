@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-46).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-48).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -545,6 +545,7 @@ the kernel hash, and document/section counts.
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import re
 from datetime import datetime
@@ -5326,6 +5327,424 @@ def retrieve_avatar_policy(index: list[dict[str, Any]],
         occasion=occasion, limit=limit)
 
 
+# --- §47 policy-to-code migration + §48 compilation cache ----
+#
+# §47: over time, move deterministic rules out of prompts
+# into code. Prompt instructions should primarily govern
+# personality, judgment, relational behavior, and nuanced
+# cognition; code should govern expiration, permissions,
+# limits, routing, formatting, and deterministic
+# constraints. The roadmap's example: instead of telling
+# the model "Never include expired memories.", implement
+# ``if memory.expired: exclude()``.
+#
+# §48: compile once, and cache the generated artefacts
+# (persona_kernel.txt, persona_ir.json,
+# persona_sections.jsonl, persona_embeddings.db,
+# persona_manifest.json). These are generated artifacts;
+# humans edit only Markdown + YAML configuration.
+
+# The §47 prompt-governed rule kinds, in roadmap order
+# (the roadmap's phrases slugified).
+PROMPT_GOVERNS = (
+    "personality", "judgment", "relational_behavior",
+    "nuanced_cognition",
+)
+
+_PROMPT_GOVERNS_LEXICON = (
+    ("personality", frozenset({
+        "personality", "persona", "character", "trait",
+        "traits"})),
+    ("judgment", frozenset({
+        "judgment", "judgement", "discern", "discerns",
+        "discernment", "discretion", "discretionary",
+        "wisdom", "wise"})),
+    ("relational_behavior", frozenset({
+        "relational", "relationship", "relationships",
+        "rapport", "trust", "empathy", "empathic",
+        "interpersonal"})),
+    ("nuanced_cognition", frozenset({
+        "nuanced", "nuance", "nuances", "subtle",
+        "subtlety", "ambiguity", "ambiguous"})),
+)
+
+# The §47 code-governed rule kinds, in roadmap order.
+CODE_GOVERNS = (
+    "expiration", "permissions", "limits", "routing",
+    "formatting", "deterministic_constraints",
+)
+
+_CODE_GOVERNS_LEXICON = (
+    ("expiration", frozenset({
+        "expiration", "expire", "expires", "expired",
+        "expiring", "expiry", "ttl"})),
+    ("permissions", frozenset({
+        "permission", "permissions", "permitted", "permit",
+        "permits", "authorization", "authorised",
+        "authorized", "allowed", "disallowed"})),
+    ("limits", frozenset({
+        "limit", "limits", "limited", "limiting", "cap",
+        "caps", "quota", "quotas", "maximum"})),
+    ("routing", frozenset({
+        "routing", "route", "routes", "routed", "router",
+        "dispatch", "dispatches"})),
+    ("formatting", frozenset({
+        "formatting", "format", "formats", "formatted",
+        "layout", "whitespace"})),
+    ("deterministic_constraints", frozenset({
+        "deterministic", "constraint", "constraints",
+        "invariant", "invariants"})),
+)
+
+
+def policy_governs() -> list[str]:
+    return list(PROMPT_GOVERNS)
+
+
+def code_governs() -> list[str]:
+    return list(CODE_GOVERNS)
+
+
+def policy_to_code_contract() -> dict[str, Any]:
+    """The §47 policy-to-code migration contract. Pure.
+
+    Over time, deterministic rules move out of prompts
+    into code: prompt instructions primarily govern
+    personality, judgment, relational behavior, and
+    nuanced cognition, while code governs expiration,
+    permissions, limits, routing, formatting, and
+    deterministic constraints. This layer migrates no
+    live prompt and owns no prompts; it names which
+    domain governs each rule kind.
+    """
+    return {
+        "name": "PolicyToCodeMigration",
+        "prompt_governs": list(PROMPT_GOVERNS),
+        "code_governs": list(CODE_GOVERNS),
+        "migration_direction": "prompt_to_code",
+        "migrates": "deterministic_rules",
+        "example": {
+            "prompt_instruction":
+                "Never include expired memories.",
+            "code_rule": "if memory.expired: exclude()",
+        },
+        "migrates_live_prompts": False,
+        "owns_prompts": False,
+        "injects": False,
+    }
+
+
+def classify_rule_kinds(text: Any) -> list[str]:
+    """The §47 rule kinds a text signals. Pure.
+
+    Prompt-governed kinds come first, in roadmap order,
+    then code-governed kinds, in roadmap order. A kind is
+    present when any of its lexicon words appears as a
+    token in the text. No model call. Malformed text is
+    refused.
+    """
+    if not isinstance(text, str):
+        raise PersonaRuntimeError("rule text is invalid")
+    tokens = _tokens(text)
+    kinds = [kind for kind, words in _PROMPT_GOVERNS_LEXICON
+             if tokens & words]
+    kinds += [kind for kind, words in _CODE_GOVERNS_LEXICON
+              if tokens & words]
+    return kinds
+
+
+def governance_for_kind(kind: Any) -> str:
+    """Which domain governs one §47 rule kind. Pure.
+
+    The kind is slugified, so "Relational Behavior" and
+    "relational_behavior" name the same kind; an unknown
+    kind is refused.
+    """
+    if not isinstance(kind, str) or not kind.strip():
+        raise PersonaRuntimeError("rule kind is invalid")
+    slug = _slugify(kind)
+    if slug in PROMPT_GOVERNS:
+        return "prompt"
+    if slug in CODE_GOVERNS:
+        return "code"
+    raise PersonaRuntimeError("rule kind is invalid")
+
+
+def migration_assessment(text: Any) -> dict[str, Any]:
+    """Assess one rule text under §47. Pure.
+
+    Names the kinds the text signals, split by governing
+    domain; a text is a migration candidate exactly when
+    it signals a code-governed kind — a deterministic
+    rule still standing in prompt form.
+    """
+    kinds = classify_rule_kinds(text)
+    prompt_kinds = [kind for kind in kinds
+                    if kind in PROMPT_GOVERNS]
+    code_kinds = [kind for kind in kinds if kind in CODE_GOVERNS]
+    if prompt_kinds and code_kinds:
+        governed_by = "mixed"
+    elif code_kinds:
+        governed_by = "code"
+    elif prompt_kinds:
+        governed_by = "prompt"
+    else:
+        governed_by = "unclassified"
+    return {
+        "kinds": kinds,
+        "prompt_governed_kinds": prompt_kinds,
+        "code_governed_kinds": code_kinds,
+        "migration_candidate": bool(code_kinds),
+        "governed_by": governed_by,
+    }
+
+
+# The §48 cache artefacts, in roadmap order: the cache
+# file name paired with its artefact kind.
+CACHE_ARTIFACTS = (
+    ("persona_kernel.txt", "kernel"),
+    ("persona_ir.json", "ir"),
+    ("persona_sections.jsonl", "sections"),
+    ("persona_embeddings.db", "embeddings"),
+    ("persona_manifest.json", "manifest"),
+)
+
+# The §48 embeddings honesty note: §13 records the
+# semantic component as unavailable because this plugin
+# owns no embedding surface, so the embeddings artefact
+# carries no hash in a manifest this layer builds.
+EMBEDDINGS_HASH_NOTE = (
+    "embeddings hash is None: this layer owns no "
+    "embedding surface (§13), so no embeddings hash is "
+    "recorded or faked")
+
+# The §48 manifest's fields, in stored order.
+CACHE_MANIFEST_FIELDS = (
+    "persona_id", "persona_version", "compiled_at",
+    "artifacts", "embeddings_note",
+)
+
+_CACHE_ARTIFACT_KINDS = tuple(kind for _, kind in CACHE_ARTIFACTS)
+_CACHE_ARTIFACT_FILES = {
+    kind: file for file, kind in CACHE_ARTIFACTS}
+
+
+def compilation_cache_artifacts() -> list[dict[str, Any]]:
+    """The §48 cache artefacts, in roadmap order. Pure.
+
+    Every artefact is generated (``generated: True``) —
+    none is human-edited; humans edit only the Markdown
+    documents and the YAML configuration they compile
+    from.
+    """
+    return [
+        {"file": file, "kind": kind, "generated": True}
+        for file, kind in CACHE_ARTIFACTS]
+
+
+def compilation_cache_contract() -> dict[str, Any]:
+    """The §48 Persona Compilation Cache contract. Pure.
+
+    Compile once; the cache artefacts are generated, and
+    humans edit only Markdown + YAML configuration. This
+    layer persists and writes no cache; it names the
+    artefact set and the manifest/validity shape over a
+    compiled artefact.
+    """
+    return {
+        "name": "PersonaCompilationCache",
+        "artifacts": compilation_cache_artifacts(),
+        "compile_once": True,
+        "artifacts_are_generated": True,
+        "humans_edit": ["markdown", "yaml_configuration"],
+        "persists_cache": False,
+        "writes_cache": False,
+        "injects": False,
+    }
+
+
+def _sections_digest(index: list[dict[str, Any]]) -> str:
+    """A deterministic sha256 over the compiled index.
+
+    The digest covers the canonical JSON of each entry's
+    stable id, role, section id, heading, and verbatim
+    text, in index order — identical compiles digest
+    identically, and any section change moves it.
+    """
+    payload = json.dumps(
+        [{
+            "stable_id": entry.get("stable_id"),
+            "role": entry.get("role"),
+            "section_id": entry.get("section_id"),
+            "heading": entry.get("heading"),
+            "text": entry.get("text"),
+        } for entry in index],
+        sort_keys=True, separators=(",", ":"),
+        ensure_ascii=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _cache_artifact_hashes(
+        compiled: dict[str, Any]) -> dict[str, Any]:
+    """The §48 per-artefact hashes for one compile. Pure.
+
+    Kernel and manifest hashes come from the §19 hash
+    record (the kernel sha256 and the combined persona
+    hash); the IR hash is the artefact's own §8
+    ``ir_hash``; the sections hash is the deterministic
+    digest over the compiled index. The embeddings hash
+    is None — this layer owns no embedding surface (§13).
+    A malformed compiled artefact is refused.
+    """
+    record = hash_record(compiled)
+    ir = compiled.get("ir")
+    index = compiled.get("index")
+    if not isinstance(ir, dict) \
+            or not isinstance(ir.get("ir_hash"), str) \
+            or not isinstance(index, list) \
+            or not all(isinstance(entry, dict) for entry in index):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    return {
+        "kernel": record["kernel_hash"],
+        "ir": ir["ir_hash"],
+        "sections": _sections_digest(index),
+        "embeddings": None,
+        "manifest": record["persona_hash"],
+    }
+
+
+def cache_manifest(compiled: dict[str, Any],
+                   compiled_at: str | None = None) -> dict[str, Any]:
+    """The §48 cache manifest for one compiled artefact.
+
+    Pure and deterministic for a given artefact: built
+    on the §19 hash record, so ``compiled_at`` stays
+    None unless a caller explicitly stamps a
+    timezone-aware ISO timestamp (the §19 stamp
+    handling), and a stamp alone is never a change.
+    Each artefact is named with its §48 file, kind,
+    generated flag, and hash; the embeddings hash is
+    None, honestly (see ``EMBEDDINGS_HASH_NOTE``). This
+    layer writes no manifest to disk.
+    """
+    record = hash_record(compiled, compiled_at=compiled_at)
+    hashes = _cache_artifact_hashes(compiled)
+    return {
+        "persona_id": record["persona_id"],
+        "persona_version": record["persona_version"],
+        "compiled_at": record["compiled_at"],
+        "artifacts": [
+            {"file": file, "kind": kind, "generated": True,
+             "sha256": hashes[kind]}
+            for file, kind in CACHE_ARTIFACTS],
+        "embeddings_note": EMBEDDINGS_HASH_NOTE,
+    }
+
+
+def _validate_cache_manifest(manifest: Any) -> dict[str, Any]:
+    """Normalise one §48 cache manifest, refusing bad shapes.
+
+    The manifest must carry exactly the §48 fields; each
+    artefact entry must name a §48 file/kind pair, be
+    generated, and carry a hash string — except the
+    embeddings entry, whose hash must be None. A kind
+    may be absent (staleness reports it as missing); a
+    duplicated or unknown kind is malformed. Returns a
+    fresh manifest with entries in roadmap order.
+    """
+    if not isinstance(manifest, dict) \
+            or set(manifest) != set(CACHE_MANIFEST_FIELDS):
+        raise PersonaRuntimeError(
+            "persona cache manifest is invalid")
+    persona_id = manifest["persona_id"]
+    if not isinstance(persona_id, str) or not persona_id \
+            or manifest["persona_version"] != PERSONA_CONFIG_VERSION \
+            or not isinstance(manifest["embeddings_note"], str) \
+            or not manifest["embeddings_note"]:
+        raise PersonaRuntimeError(
+            "persona cache manifest is invalid")
+    if manifest["compiled_at"] is not None:
+        _validate_compiled_at(manifest["compiled_at"])
+    raw = manifest["artifacts"]
+    if not isinstance(raw, list) or len(raw) > len(CACHE_ARTIFACTS):
+        raise PersonaRuntimeError(
+            "persona cache manifest is invalid")
+    entries: dict[str, dict[str, Any]] = {}
+    for entry in raw:
+        if not isinstance(entry, dict) \
+                or set(entry) != {"file", "kind", "generated",
+                                  "sha256"}:
+            raise PersonaRuntimeError(
+                "persona cache manifest is invalid")
+        kind = entry["kind"]
+        if kind not in _CACHE_ARTIFACT_KINDS \
+                or entry["file"] != _CACHE_ARTIFACT_FILES[kind] \
+                or entry["generated"] is not True \
+                or kind in entries:
+            raise PersonaRuntimeError(
+                "persona cache manifest is invalid")
+        digest = entry["sha256"]
+        if kind == "embeddings":
+            if digest is not None:
+                raise PersonaRuntimeError(
+                    "persona cache manifest is invalid")
+        elif not isinstance(digest, str) or not digest:
+            raise PersonaRuntimeError(
+                "persona cache manifest is invalid")
+        entries[kind] = {
+            "file": entry["file"], "kind": kind,
+            "generated": True, "sha256": digest}
+    return {
+        "persona_id": persona_id,
+        "persona_version": manifest["persona_version"],
+        "compiled_at": manifest["compiled_at"],
+        "artifacts": [entries[kind] for _, kind in CACHE_ARTIFACTS
+                      if kind in entries],
+        "embeddings_note": manifest["embeddings_note"],
+    }
+
+
+def cache_staleness(manifest: Any,
+                    compiled: dict[str, Any]) -> dict[str, Any]:
+    """Compare a §48 cache manifest against a compile. Pure.
+
+    Recomputes the per-artefact hashes from the compiled
+    artefact and names exactly which artefact kinds
+    changed and which are missing from the manifest.
+    ``compiled_at`` is a caller stamp, not persona
+    material (§19): a stamp difference alone is never
+    staleness. A malformed manifest or compiled artefact
+    is refused.
+    """
+    manifest = _validate_cache_manifest(manifest)
+    hashes = _cache_artifact_hashes(compiled)
+    present = {entry["kind"]: entry["sha256"]
+               for entry in manifest["artifacts"]}
+    changed = [kind for _, kind in CACHE_ARTIFACTS
+               if kind in present and present[kind] != hashes[kind]]
+    missing = [kind for _, kind in CACHE_ARTIFACTS
+               if kind not in present]
+    return {
+        "valid": not changed and not missing
+        and manifest["persona_id"] == compiled["persona_id"],
+        "changed": changed,
+        "missing": missing,
+    }
+
+
+def validate_cache_manifest(manifest: Any,
+                            compiled: dict[str, Any]) -> bool:
+    """Whether a §48 cache manifest still matches a compile.
+
+    Pure. Returns False — never raises — when an artefact
+    hash disagrees, an artefact is missing, or the
+    manifest names another persona; raises only on a
+    malformed manifest or compiled artefact shape, in
+    the neighbouring validators' convention.
+    """
+    return cache_staleness(manifest, compiled)["valid"]
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -6035,7 +6454,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-46): persona "
+            f"Persona runtime (§§3-48): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -6242,6 +6661,18 @@ class PersonaRuntimeBridge:
             f"expressions, or in VR interaction; the "
             f"avatar controller consumes structured "
             f"AvatarIR directly. "
+            f"§47 policy to code migration: deterministic "
+            f"rules migrate from prompts to code — the "
+            f"prompt governs personality, judgment, "
+            f"relational behavior, and nuanced cognition; "
+            f"code governs expiration, permissions, "
+            f"limits, routing, formatting, and "
+            f"deterministic constraints. §48 compilation "
+            f"cache: compile once and cache the generated "
+            f"artefacts (kernel, IR, sections, embeddings, "
+            f"manifest); humans edit only Markdown and "
+            f"YAML configuration, and this layer persists "
+            f"no cache. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -6460,6 +6891,22 @@ __all__ = [
     "avatar_retrieval_need",
     "retrieve_avatar_policy",
     "PersonaAvatarPolicyRetriever",
+    "PROMPT_GOVERNS",
+    "CODE_GOVERNS",
+    "policy_governs",
+    "code_governs",
+    "policy_to_code_contract",
+    "classify_rule_kinds",
+    "governance_for_kind",
+    "migration_assessment",
+    "CACHE_ARTIFACTS",
+    "CACHE_MANIFEST_FIELDS",
+    "EMBEDDINGS_HASH_NOTE",
+    "compilation_cache_artifacts",
+    "compilation_cache_contract",
+    "cache_manifest",
+    "cache_staleness",
+    "validate_cache_manifest",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
