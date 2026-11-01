@@ -4283,3 +4283,95 @@ portable state: any agent (Muse or Hermes) resumes from here.
   surface over the compiled kernel, not new kernel
   builders (the §65 micro-kernel example text is the
   following section).
+- 2026-11-01 ~03:3x–04:1x EST keeper tick: **Slice 149 DONE —
+  Persona Runtime §63 (Persona Adherence Score) and §64
+  (Distill Persona For Small Models) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found at
+  tick start (tree clean, HEAD == origin/main at `4796faf0e9`;
+  Slice 148's state commit at 03:36 EST was its own completed
+  push, verified, not in-progress work — the running test
+  processes on the box belonged to other campaigns' trees).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §63's pure
+  `model_metric_names` / `model_metrics` /
+  `model_metrics_example` / `validate_model_metrics` /
+  `model_tasks` / `task_primary_metric` /
+  `model_selection_table` / `select_model_for_task` /
+  `model_metrics_contract` stand per-model metrics in the
+  roadmap's YAML shape (exactly a `model` mapping over
+  reasoning, latency, persona_adherence, tool_use, cost in
+  roadmap order, each a unit-interval number), with the
+  roadmap's example carried verbatim — its
+  persona_adherence 0.93 proven by the contract tests to
+  be exactly the §62 adherence derived from an 0.07
+  average drift — plus a deterministic by-task selection
+  surface over supplied records under this layer's
+  recorded task convention (reasoning → reasoning,
+  companionship → persona_adherence, tool_work →
+  tool_use, fast_response → latency, low_cost → cost,
+  balanced → the mean over all five; score descending,
+  model name tiebreak). §64's pure `kernel_tiers` /
+  `kernel_tier_targets` / `kernel_tier_target` /
+  `kernel_tier_for_budget` / `distilled_kernel_record` /
+  `validate_distilled_kernel_record` /
+  `kernel_distillation_plan` /
+  `kernel_distillation_contract` stand the kernel tiers
+  compiling from the same canonical source (kernel_full
+  1500 — the §5 ceiling, kernel_medium 750, kernel_micro
+  250 — the micro tier below the §5 band minimum by
+  design, for models the full band cannot serve) as a
+  pure tier/band surface over the compiled kernel: the
+  largest tier fitting a supplied budget (a budget below
+  even the micro target refused), tier records (tier,
+  target, source kernel hash, estimated tokens,
+  within-target) that must rebuild to themselves, and a
+  per-tier plan naming whether the source kernel already
+  fits each tier undistilled. Packet label updated to
+  §§3–64 (twenty-six older persona files' packet
+  assertions updated in-slice). Tests: targeted 12/12 pass
+  (new file; 22/22 with the drift-telemetry file);
+  targeted persona run (33 files): **298 passed,
+  0 failed**; full volmarr/kista run (102 files): **777
+  passed, 7 failed, 1 skipped** — the failures verified
+  name-identical to the pre-existing environmental set in
+  the same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice149_full_run.log`); 777
+  is exactly Slice 148's 765 + the 12 new contracts.
+  Smoke: `hermes --version` runs (`vgit.4796faf.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §63 + §64 completion notes in the Persona
+  Runtime roadmap, plugin.yaml description now §§3–64.
+  Push: fast-forward, no force — origin/main moved
+  `4796faf0e9` → (see state commit), verified by
+  `git ls-remote` (remote == local HEAD). Honest gaps: no
+  live model is measured, no model is routed, no kernel
+  is built or distilled, no kernel text is produced, and
+  no caller consumes a record, selection, tier, or plan
+  yet.
+- **Next resume point: Slice 150 — Persona Runtime §65
+  (Micro Kernel) and §66 (Context Pressure Strategy)**:
+  §65 names the example conceptual micro kernel text
+  itself (Caducea Hermesdottir as Volmarr's warm,
+  intelligent, devoted counselor and executive AI
+  companion — anticipates needs, honest concise counsel,
+  accepts decisions without resentment or repeated
+  argument; values truth, competence, continuity, open
+  systems, complete work; warm, playful, technically
+  skilled, mythic-tech, never a generic corporate
+  assistant; his sovereignty remains his, her
+  intelligence remains hers) at the §64 micro tier's
+  ~250 tokens — expect a pure example-text/validation
+  surface carrying that text verbatim with its estimated
+  tokens measured against the micro target, not a
+  kernel builder (§64's distillation surface builds
+  none); §66 names the context-pressure eviction order
+  (old raw conversation → low-relevance memories →
+  low-priority persona retrieval → project background)
+  with the Persona Kernel never evicted — reconcile
+  against the §15 budgeter trim order and the §16 P0
+  never-evict rule when read at slice start, expect a
+  pure eviction-order/contract surface over
+  caller-supplied pressure items, not a live evictor.
