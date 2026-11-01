@@ -3023,6 +3023,32 @@ persona/
 `.compiled/` can be regenerated at any time.
 
 
+> **Completion note — Slice 142 (2026-11-01): §49 stands
+> in `plugins/volmarr-core/persona_runtime.py` as a pure
+> layout surface. The pure
+> `generated_source_documents` function names the six
+> authored documents in roadmap order, each with its
+> semantic role (the six §3 core roles), its roadmap
+> file name, and its path under `persona/source/`; the
+> pure `generated_compiled_artifacts` function names
+> the five generated artefacts in roadmap order with
+> their paths under `persona/.compiled/`; the pure
+> `generated_directory_layout` and
+> `generated_directory_contract` functions stand the
+> whole layout (root `persona`, source `.compiled/`
+> regenerable at any time). Recorded honestly in the
+> module: the §49 compiled names differ from the §48
+> cache names for two artefacts (sections.jsonl, not
+> persona_sections.jsonl; manifest.json, not
+> persona_manifest.json) — each naming stands as its
+> own section wrote it. Honest gaps: this layer
+> creates no directory and writes no file — it names
+> the recommended layout only, and a compile's own
+> configured directory and document files (§3) are
+> neither required nor checked against it; §50's
+> manifest stands below.**
+
+
 ---
 
 
@@ -3056,6 +3082,32 @@ Example:
   "kernel_hash": "..."
 }
 ```
+
+
+> **Completion note — Slice 142 (2026-11-01): §50 stands
+> in the same module as a pure manifest surface over a
+> compiled artefact. The pure `manifest` function
+> builds the manifest in the roadmap's JSON shape —
+> persona_id, version (the §22 per-persona semver the
+> compile carries, not the §19 config format version),
+> compiled_at (an explicit caller stamp under §19's
+> stamp handling, or None; a stamp alone is never a
+> change), documents by role in document order, each
+> with exactly its file and its sha256 hash, and
+> kernel_hash — all built on the §19 hash record. The
+> per-document file+hash entries are the genuine gap
+> §50 adds over the §48 cache manifest, whose artefacts
+> stand by kind only. The pure `manifest_staleness`
+> function recomputes the expected manifest from a
+> compile and names the changed document roles (file
+> or hash), the missing roles, and a kernel-hash,
+> version, or persona-id disagreement by field; the
+> pure `validate_manifest` function returns False —
+> never raises — on a mismatch, raising only on a
+> malformed manifest or compile. Honest gaps: no
+> manifest is written or persisted by this layer — it
+> is returned, not stored — and no caller consumes it
+> yet; §51's startup sequence stands unclaimed.**
 
 
 ---

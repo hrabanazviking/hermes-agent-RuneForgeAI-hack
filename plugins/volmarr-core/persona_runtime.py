@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-48).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-50).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -5745,6 +5745,248 @@ def validate_cache_manifest(manifest: Any,
     return cache_staleness(manifest, compiled)["valid"]
 
 
+# --- §49 generated directory + §50 manifest ------------------
+#
+# §49: the recommended generated layout is ``persona/``
+# holding a ``source/`` directory with the six authored
+# Caducea documents and a ``.compiled/`` directory with
+# the generated artefacts (persona_ir.json,
+# persona_kernel.txt, sections.jsonl, embeddings.db,
+# manifest.json); ``.compiled/`` can be regenerated at
+# any time. Note the §49 compiled names differ from the
+# §48 cache names for two artefacts (sections.jsonl, not
+# persona_sections.jsonl; manifest.json, not
+# persona_manifest.json) — both namings are recorded as
+# their own sections stand them.
+#
+# §50: the manifest names the persona id, its version,
+# the compile stamp, the documents by role with each
+# document's file and hash, and the kernel hash. The
+# per-document file+hash entries are the genuine gap
+# §49/§50 add over the §48 cache manifest, whose
+# documents stand only as artefact kinds.
+
+# The §49 source documents, in roadmap order: the
+# semantic role paired with its roadmap file name.
+GENERATED_SOURCE_DOCUMENTS = (
+    ("core", "CADUCEA_PERSONA_CORE.md"),
+    ("service_bible", "CADUCEA_SERVICE_BIBLE.md"),
+    ("memory_policy", "CADUCEA_MEMORY_POLICY.md"),
+    ("tool_policy", "CADUCEA_TOOL_POLICY.md"),
+    ("relationship", "CADUCEA_RELATIONSHIP_MODEL.md"),
+    ("avatar", "CADUCEA_AVATAR.md"),
+)
+
+# The §49 compiled artefacts, in roadmap order: the
+# file name paired with its artefact kind.
+GENERATED_COMPILED_ARTIFACTS = (
+    ("persona_ir.json", "ir"),
+    ("persona_kernel.txt", "kernel"),
+    ("sections.jsonl", "sections"),
+    ("embeddings.db", "embeddings"),
+    ("manifest.json", "manifest"),
+)
+
+GENERATED_ROOT = "persona"
+GENERATED_SOURCE_DIR = "source"
+GENERATED_COMPILED_DIR = ".compiled"
+
+# The §50 manifest's fields, in the roadmap's order.
+MANIFEST_FIELDS = (
+    "persona_id", "version", "compiled_at", "documents",
+    "kernel_hash",
+)
+
+# The §50 per-document entry's fields, in roadmap order.
+MANIFEST_DOCUMENT_FIELDS = ("file", "hash")
+
+
+def generated_source_documents() -> list[dict[str, Any]]:
+    """The §49 source documents, in roadmap order. Pure.
+
+    Each entry names its semantic role, its roadmap file
+    name, and its path under ``persona/source/``. These
+    are the human-authored documents; the runtime cares
+    about roles, not filenames (§3) — the names here are
+    the roadmap's recommended layout, not a requirement
+    this layer enforces on a compile.
+    """
+    return [
+        {"role": role, "file": file,
+         "path": f"{GENERATED_SOURCE_DIR}/{file}"}
+        for role, file in GENERATED_SOURCE_DOCUMENTS]
+
+
+def generated_compiled_artifacts() -> list[dict[str, Any]]:
+    """The §49 compiled artefacts, in roadmap order. Pure.
+
+    Every artefact is generated (``generated: True``) —
+    none is human-edited — and each names its path under
+    ``persona/.compiled/``.
+    """
+    return [
+        {"file": file, "kind": kind,
+         "path": f"{GENERATED_COMPILED_DIR}/{file}",
+         "generated": True}
+        for file, kind in GENERATED_COMPILED_ARTIFACTS]
+
+
+def generated_directory_layout() -> dict[str, Any]:
+    """The §49 recommended generated directory. Pure.
+
+    ``persona/source/`` holds the authored documents and
+    ``persona/.compiled/`` the generated artefacts, and
+    ``.compiled/`` can be regenerated at any time. This
+    layer creates no directory and writes no file; it
+    names the layout only.
+    """
+    return {
+        "root": GENERATED_ROOT,
+        "source_directory": GENERATED_SOURCE_DIR,
+        "compiled_directory": GENERATED_COMPILED_DIR,
+        "source_documents": generated_source_documents(),
+        "compiled_artifacts": generated_compiled_artifacts(),
+        "compiled_regenerable": True,
+    }
+
+
+def generated_directory_contract() -> dict[str, Any]:
+    """The §49 Generated Directory contract. Pure."""
+    return {
+        "name": "PersonaGeneratedDirectory",
+        **generated_directory_layout(),
+        "creates_directory": False,
+        "writes_files": False,
+        "injects": False,
+    }
+
+
+def manifest(compiled: dict[str, Any],
+             compiled_at: str | None = None) -> dict[str, Any]:
+    """The §50 manifest for one compiled artefact. Pure.
+
+    Built on the §19 hash record and the §22 per-persona
+    version: persona id, version, an explicit caller
+    stamp or None (the §19 stamp handling — a stamp
+    alone is never a change), the documents by role in
+    document order, each with its file and its sha256
+    hash, and the kernel hash. Deterministic for a given
+    artefact; this layer writes no manifest to disk.
+    A malformed compiled artefact is refused.
+    """
+    record = hash_record(compiled, compiled_at=compiled_at)
+    documents: dict[str, dict[str, str]] = {}
+    for document in compiled["documents"]:
+        if not isinstance(document, dict) \
+                or not isinstance(document.get("file"), str) \
+                or not document["file"]:
+            raise PersonaRuntimeError("compiled persona is invalid")
+        role = document["role"]
+        documents[role] = {
+            "file": document["file"],
+            "hash": record["document_hashes"][role],
+        }
+    return {
+        "persona_id": record["persona_id"],
+        "version": _compiled_version(compiled),
+        "compiled_at": record["compiled_at"],
+        "documents": documents,
+        "kernel_hash": record["kernel_hash"],
+    }
+
+
+def _validate_manifest(manifest_value: Any) -> dict[str, Any]:
+    """Normalise one §50 manifest, refusing bad shapes.
+
+    The manifest must carry exactly the §50 fields; the
+    version must be strict §22 semver; each document
+    entry must carry exactly a file and a hash, both
+    non-empty strings. Returns a fresh manifest with
+    documents in their stored order.
+    """
+    if not isinstance(manifest_value, dict) \
+            or set(manifest_value) != set(MANIFEST_FIELDS):
+        raise PersonaRuntimeError("persona manifest is invalid")
+    if not isinstance(manifest_value["persona_id"], str) \
+            or not manifest_value["persona_id"] \
+            or not isinstance(manifest_value["kernel_hash"], str) \
+            or not manifest_value["kernel_hash"]:
+        raise PersonaRuntimeError("persona manifest is invalid")
+    parse_persona_version(manifest_value["version"])
+    if manifest_value["compiled_at"] is not None:
+        _validate_compiled_at(manifest_value["compiled_at"])
+    raw = manifest_value["documents"]
+    if not isinstance(raw, dict) or not raw:
+        raise PersonaRuntimeError("persona manifest is invalid")
+    documents: dict[str, dict[str, str]] = {}
+    for role, entry in raw.items():
+        if not isinstance(role, str) or not role \
+                or not isinstance(entry, dict) \
+                or set(entry) != set(MANIFEST_DOCUMENT_FIELDS) \
+                or not isinstance(entry["file"], str) \
+                or not entry["file"] \
+                or not isinstance(entry["hash"], str) \
+                or not entry["hash"]:
+            raise PersonaRuntimeError("persona manifest is invalid")
+        documents[role] = {"file": entry["file"],
+                           "hash": entry["hash"]}
+    return {
+        "persona_id": manifest_value["persona_id"],
+        "version": manifest_value["version"],
+        "compiled_at": manifest_value["compiled_at"],
+        "documents": documents,
+        "kernel_hash": manifest_value["kernel_hash"],
+    }
+
+
+def manifest_staleness(manifest_value: Any,
+                       compiled: dict[str, Any]) -> dict[str, Any]:
+    """Compare a §50 manifest against a compile. Pure.
+
+    Recomputes the expected manifest from the compiled
+    artefact and names exactly which document roles
+    changed (file or hash) and which are missing from
+    the manifest; a kernel-hash, version, or persona-id
+    disagreement is named in ``changed`` as its field.
+    ``compiled_at`` is a caller stamp, not persona
+    material (§19): a stamp difference alone is never
+    staleness. A malformed manifest or compiled artefact
+    is refused.
+    """
+    checked = _validate_manifest(manifest_value)
+    expected = manifest(compiled)
+    present = checked["documents"]
+    wanted = expected["documents"]
+    changed = [role for role in wanted
+               if role in present and present[role] != wanted[role]]
+    if checked["kernel_hash"] != expected["kernel_hash"]:
+        changed.append("kernel_hash")
+    if checked["version"] != expected["version"]:
+        changed.append("version")
+    if checked["persona_id"] != expected["persona_id"]:
+        changed.append("persona_id")
+    missing = [role for role in wanted if role not in present]
+    return {
+        "valid": not changed and not missing,
+        "changed": changed,
+        "missing": missing,
+    }
+
+
+def validate_manifest(manifest_value: Any,
+                      compiled: dict[str, Any]) -> bool:
+    """Whether a §50 manifest still matches a compile.
+
+    Pure. Returns False — never raises — when a document
+    file or hash disagrees, a document is missing, or
+    the kernel hash, version, or persona id disagrees;
+    raises only on a malformed manifest or compiled
+    artefact shape, in the neighbouring validators'
+    convention.
+    """
+    return manifest_staleness(manifest_value, compiled)["valid"]
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -6454,7 +6696,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-48): persona "
+            f"Persona runtime (§§3-50): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -6672,7 +6914,17 @@ class PersonaRuntimeBridge:
             f"artefacts (kernel, IR, sections, embeddings, "
             f"manifest); humans edit only Markdown and "
             f"YAML configuration, and this layer persists "
-            f"no cache. "
+            f"no cache. §49 generated directory: the "
+            f"recommended layout is persona/source/ "
+            f"holding the six authored documents and "
+            f"persona/.compiled/ holding the generated "
+            f"IR, kernel, sections, embeddings, and "
+            f"manifest, regenerable at any time; this "
+            f"layer creates no directory. §50 manifest: "
+            f"the manifest names persona id, version, "
+            f"compiled_at, the documents by role with "
+            f"file and hash, and kernel_hash; this layer "
+            f"writes no manifest. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -6907,6 +7159,20 @@ __all__ = [
     "cache_manifest",
     "cache_staleness",
     "validate_cache_manifest",
+    "GENERATED_SOURCE_DOCUMENTS",
+    "GENERATED_COMPILED_ARTIFACTS",
+    "GENERATED_ROOT",
+    "GENERATED_SOURCE_DIR",
+    "GENERATED_COMPILED_DIR",
+    "MANIFEST_FIELDS",
+    "MANIFEST_DOCUMENT_FIELDS",
+    "generated_source_documents",
+    "generated_compiled_artifacts",
+    "generated_directory_layout",
+    "generated_directory_contract",
+    "manifest",
+    "manifest_staleness",
+    "validate_manifest",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

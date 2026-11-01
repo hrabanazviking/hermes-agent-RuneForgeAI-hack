@@ -348,7 +348,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert before == after
     assert compiled_b is None
     assert len(items) == 1
-    assert "§§3-48" in items[0].content
+    assert "§§3-50" in items[0].content
     assert "§35 handoff packet" in items[0].content
     assert "whole" in items[0].content
     assert "§36 subagent separation" in items[0].content
