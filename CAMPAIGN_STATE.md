@@ -5121,3 +5121,89 @@ portable state: any agent (Muse or Hermes) resumes from here.
   generated-directory surfaces when read at slice start,
   expect a pure bootstrap-plan/file-list surface, not a
   persona creator this layer does not own.
+- 2026-11-01 ~11:3x EST keeper tick: **Slice 157 DONE —
+  Persona Runtime §79 (Shared Knowledge vs Personal
+  Memory) and §80 (Persona Bootstrap) complete, banked
+  and PUSHED under the standing go-ahead.** No live work
+  found at tick start (tree clean, HEAD == origin/main
+  at `700089049b`; the Python-write blocker was probed
+  absent — tempfile writes succeed). `plugins/volmarr-core/
+  persona_runtime.py` extended in place — no new module
+  file or config key: §79's pure `knowledge_kinds` /
+  `classify_knowledge_key` / `knowledge_record` /
+  `validate_knowledge_record` / `knowledge_visible_to` /
+  `knowledge_owner_matches` / `partition_knowledge` /
+  `knowledge_example` / `shared_knowledge_contract`
+  stand the shared/personal split as a pure
+  classification over Slice 156's §78 namespace kinds —
+  a `shared:` key is shared world knowledge visible to
+  every persona, a `persona:<id>:...` key is that
+  persona's private memory visible to its owner alone;
+  the classification comes from the key alone, never
+  the title, and the record validator refuses a kind,
+  owner, or persona id that disagrees with its own key,
+  so one persona's private item is never classified as
+  another's or as shared. The roadmap example stands
+  verbatim as classified records (Project Aesir
+  architecture shared; Caducea's reflections on
+  designing it with Volmarr Caducea-private; Runa's own
+  interaction history Runa-private) — the split that
+  allows genuine agent individuality. §80's pure
+  `bootstrap_files` / `bootstrap_document_role` /
+  `bootstrap_file_for_role` / `bootstrap_plan` /
+  `validate_bootstrap_plan` / `bootstrap_example` /
+  `bootstrap_contract` stand persona bootstrap as a
+  pure plan/file-list surface reconciled against the
+  §3 config / §49 generated-directory surfaces: the
+  plan names `persona.yaml` plus the six documents in
+  roadmap order (PERSONA_CORE, SERVICE_BIBLE,
+  MEMORY_POLICY, TOOL_POLICY, RELATIONSHIP_MODEL,
+  AVATAR), each mapped to its §3 core role (the §49
+  source documents in generic form), with the names
+  recorded as defaults freely changeable in
+  configuration; the roadmap's `hermes persona create`
+  spelling registers no new core command (this
+  plugin's CLI surface is `hermes volmarr`). Packet
+  label updated to §§3–80 (thirty-four older persona
+  files' packet assertions updated in-slice). Tests:
+  targeted 31/31 pass (new file
+  `test_volmarr_persona_shared_bootstrap.py` 12/12;
+  31/31 with the §77–78 and §75–76 files); targeted
+  persona run (41 files): **380 passed, 0 failed**;
+  full volmarr/kista run (110 files): **859 passed,
+  7 failed, 1 skipped** — exactly Slice 156's 847 +
+  the 12 new contracts, the failures the same
+  name-identical pre-existing environmental set in the
+  same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the
+  run logs' own summary lines
+  (`~/workspace/.verify-tmp/slice157_targeted.log`,
+  `~/workspace/.verify-tmp/slice157_persona_run.log`,
+  `~/workspace/.verify-tmp/slice157_full_run.log`,
+  1069.5s). Smoke: `hermes --version` runs
+  (`vgit.7000890.dirty` pre-commit); README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §79 + §80 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–80. Push: fast-forward, no
+  force — verified by `git ls-remote` (remote == local
+  HEAD). Honest gaps: no memory store is owned or
+  touched, no persona is created, no bootstrap file is
+  written, and no caller consumes a classification or
+  a plan yet.
+- **Next resume point: Slice 158 — Persona Runtime §81
+  (Phase 1 — Foundation) and §82 (Phase 2 — Compiler)**:
+  §81 lists persona.yaml, PersonaLoader, document role
+  mapping, file validation, hot reload, and source
+  hashing, with success criterion "Hermes can load
+  arbitrarily named persona documents from
+  configuration" — reconcile against the banked
+  §§3/6/19/20 surfaces when read at slice start, expect
+  an audit/reconciliation slice, not a new loader this
+  layer does not own; §82 lists Markdown section
+  parser, PersonaIR, section identifiers, priority
+  metadata, compiled manifest, and Persona Kernel
+  generation, with success criterion "Six large
+  Markdown files become one compact runtime identity
+  plus indexed detail" — reconcile against the banked
+  §§5/6/8/9/11/12/16/50 surfaces likewise.

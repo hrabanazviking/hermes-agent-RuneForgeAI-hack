@@ -4686,6 +4686,28 @@ Her own interaction history
 This allows genuine agent individuality.
 
 
+> **Completion note — Slice 157 (2026-11-01): §79 stands
+> in `plugins/volmarr-core/persona_runtime.py` as the
+> pure `knowledge_kinds` / `classify_knowledge_key` /
+> `knowledge_record` / `validate_knowledge_record` /
+> `knowledge_visible_to` / `knowledge_owner_matches` /
+> `partition_knowledge` / `knowledge_example` /
+> `shared_knowledge_contract` classification surfaces
+> over the §78 namespace kinds: a `shared:` key is
+> shared world knowledge visible to every persona, a
+> `persona:<id>:...` key is that persona's private
+> memory visible to its owner alone (the classification
+> comes from the key alone, never the title, so a
+> private item is never classified as another's or as
+> shared), and the roadmap example stands verbatim as
+> classified records (Project Aesir architecture
+> shared; Caducea's reflections on designing it with
+> Volmarr Caducea-private; Runa's own interaction
+> history Runa-private). Honest gaps: this layer owns
+> no memory store, reads and writes no memory, and no
+> caller classifies a key or a record yet.**
+
+
 ---
 
 
@@ -4715,6 +4737,27 @@ AVATAR.md
 
 
 Names can then be freely changed in configuration.
+
+
+> **Completion note — Slice 157 (2026-11-01): §80 stands
+> in `plugins/volmarr-core/persona_runtime.py` as the
+> pure `bootstrap_files` / `bootstrap_document_role` /
+> `bootstrap_file_for_role` / `bootstrap_plan` /
+> `validate_bootstrap_plan` / `bootstrap_example` /
+> `bootstrap_contract` surfaces: the plan names
+> `persona.yaml` plus the six documents in roadmap
+> order, each mapped to its §3 core role (the §49
+> generated-directory source documents in generic
+> form), and records that the names are defaults freely
+> changeable in configuration; the validator refuses a
+> plan that does not rebuild to itself (renamed file,
+> dropped document, changed role, or a plan claiming
+> to create or write). Honest gaps: this layer creates
+> no persona and writes no file, the roadmap's
+> `hermes persona` spelling registers no new core
+> command (this plugin's CLI surface is
+> `hermes volmarr`), and no caller consumes a plan
+> yet.**
 
 
 ---

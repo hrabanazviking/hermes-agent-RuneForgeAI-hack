@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-78).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-80).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -10036,6 +10036,397 @@ def memory_namespace_contract() -> dict[str, Any]:
     }
 
 
+# §79: shared knowledge vs personal memory — the split
+# is a classification over the §78 namespace kinds, not
+# a memory store. A ``shared:`` key is shared world
+# knowledge, visible to every persona; a
+# ``persona:<id>:...`` key is that persona's private
+# memory, visible to that persona alone — one
+# persona's private item is never classified as
+# another's, and never as shared. The roadmap example
+# stands verbatim: Project Aesir architecture is
+# shared; Caducea's reflections on designing it with
+# Volmarr are Caducea-private; Runa's own
+# interaction history is Runa-private. That split is
+# what allows genuine agent individuality: personas
+# share a world without sharing a self.
+KNOWLEDGE_KINDS = ("shared", "persona_private")
+
+# The §79 knowledge record's fields, in stored order.
+KNOWLEDGE_RECORD_FIELDS = (
+    "key", "title", "kind", "owner", "persona_id", "segments",
+)
+
+# This layer's recorded bounds on a classified record:
+# a bounded caller-supplied title, and a bounded list
+# for partition (the roadmap names no numbers).
+MAX_KNOWLEDGE_TITLE_CHARS = 240
+MAX_KNOWLEDGE_ITEMS = 64
+
+
+def knowledge_kinds() -> list[str]:
+    return list(KNOWLEDGE_KINDS)
+
+
+def _validate_knowledge_title(title: Any) -> str:
+    if not isinstance(title, str) or not title.strip() \
+            or len(title.strip()) > MAX_KNOWLEDGE_TITLE_CHARS:
+        raise PersonaRuntimeError("knowledge title is invalid")
+    return title.strip()
+
+
+def classify_knowledge_key(key: Any) -> dict[str, Any]:
+    """The §79 classification of one §78 namespace key. Pure.
+
+    The key's own kind decides, never its title or
+    segments: a shared key classifies ``shared`` with
+    owner ``shared`` and no persona; a persona key
+    classifies ``persona_private`` with owner exactly
+    its owning persona. A malformed key is refused by
+    the §78 parser, never guessed at — so a private
+    item can never arrive classified as another's or
+    as shared.
+    """
+    parsed = parse_memory_namespace(key)
+    if parsed["kind"] == SHARED_MEMORY_KIND:
+        return {
+            "key": key,
+            "kind": "shared",
+            "owner": SHARED_MEMORY_KIND,
+            "persona_id": None,
+            "segments": list(parsed["segments"]),
+        }
+    return {
+        "key": key,
+        "kind": "persona_private",
+        "owner": parsed["persona_id"],
+        "persona_id": parsed["persona_id"],
+        "segments": list(parsed["segments"]),
+    }
+
+
+def knowledge_record(key: Any, title: Any) -> dict[str, Any]:
+    """One §79 knowledge record: key + title + classification.
+
+    Pure. The classification comes from the key alone
+    (``classify_knowledge_key``); the title is caller-
+    supplied, bounded, and never consulted for the
+    kind — a private reflection cannot be retitled
+    into shared knowledge, nor shared architecture
+    into a private memory.
+    """
+    classified = classify_knowledge_key(key)
+    return {
+        "key": key,
+        "title": _validate_knowledge_title(title),
+        "kind": classified["kind"],
+        "owner": classified["owner"],
+        "persona_id": classified["persona_id"],
+        "segments": classified["segments"],
+    }
+
+
+def validate_knowledge_record(record: Any) -> dict[str, Any]:
+    """Validate one §79 knowledge record, refusing tampering.
+
+    Pure. The record must carry exactly the §79 fields
+    and rebuild to itself from its key and title alone:
+    a kind, owner, or persona id that disagrees with
+    its own key is refused — the cross-persona and
+    shared-leak checks, in record form.
+    """
+    if not isinstance(record, dict) \
+            or set(record) != set(KNOWLEDGE_RECORD_FIELDS):
+        raise PersonaRuntimeError("knowledge record is invalid")
+    rebuilt = knowledge_record(record["key"], record["title"])
+    if rebuilt != record:
+        raise PersonaRuntimeError("knowledge record is invalid")
+    return rebuilt
+
+
+def knowledge_visible_to(key: Any, persona_id: Any) -> bool:
+    """Whether one §79 item is visible to one persona. Pure.
+
+    Shared world knowledge is visible to every persona;
+    a persona-private item is visible only to its
+    owning persona. An unknown or malformed persona id
+    sees nothing private — and a malformed key is
+    refused by the §78 parser, never treated as
+    visible.
+    """
+    classified = classify_knowledge_key(key)
+    if classified["kind"] == "shared":
+        return True
+    if not isinstance(persona_id, str) \
+            or not _SLUG.match(persona_id):
+        raise PersonaRuntimeError("persona id is invalid")
+    return classified["persona_id"] == persona_id
+
+
+def knowledge_owner_matches(key: Any, persona_id: Any) -> bool:
+    """Whether one key's owner is exactly one persona. Pure.
+
+    Shared knowledge has no persona owner, so it
+    matches no persona — a shared item is never
+    claimed as a persona's private item, and a
+    persona-private item matches its owner only.
+    """
+    classified = classify_knowledge_key(key)
+    if classified["kind"] == "shared":
+        return False
+    if not isinstance(persona_id, str) \
+            or not _SLUG.match(persona_id):
+        raise PersonaRuntimeError("persona id is invalid")
+    return classified["persona_id"] == persona_id
+
+
+def partition_knowledge(keys: Any) -> dict[str, Any]:
+    """Partition §78 keys into shared and per-persona sets.
+
+    Pure. Shared keys gather under ``shared``; each
+    persona-private key gathers under its owning
+    persona's id, in input order, duplicates kept out
+    by identity of key. A list that mixes personas
+    partitions cleanly — partitioning is not mixing:
+    each private item stays under its own owner.
+    """
+    if not isinstance(keys, (list, tuple)) \
+            or len(keys) > MAX_KNOWLEDGE_ITEMS:
+        raise PersonaRuntimeError("knowledge keys are invalid")
+    shared: list[str] = []
+    private: dict[str, list[str]] = {}
+    for key in keys:
+        classified = classify_knowledge_key(key)
+        if classified["kind"] == "shared":
+            if key not in shared:
+                shared.append(key)
+        else:
+            owner = str(classified["persona_id"])
+            bucket = private.setdefault(owner, [])
+            if key not in bucket:
+                bucket.append(key)
+    return {"shared": shared, "persona_private": private}
+
+
+def knowledge_example() -> list[dict[str, Any]]:
+    """The §79 roadmap example, as classified records. Pure.
+
+    The roadmap's three lines, verbatim in substance:
+    Project Aesir architecture is shared; Caducea's
+    reflections on designing it with Volmarr are
+    Caducea-private; Runa's own interaction history
+    is Runa-private.
+    """
+    return [
+        knowledge_record(
+            shared_memory_namespace("project_aesir", "architecture"),
+            "Project Aesir architecture"),
+        knowledge_record(
+            memory_namespace(
+                "caducea", "reflections", "project_aesir"),
+            "Her reflections on designing it with Volmarr"),
+        knowledge_record(
+            memory_namespace("runa", "interaction_history"),
+            "Her own interaction history"),
+    ]
+
+
+def shared_knowledge_contract() -> dict[str, Any]:
+    """The §79 Shared Knowledge vs Personal Memory contract.
+
+    Shared world knowledge stands separately from
+    every persona's private memory, classified over
+    the §78 namespace kinds; the split allows genuine
+    agent individuality. This layer classifies keys
+    and records only — it owns no memory store and
+    moves no memory.
+    """
+    return {
+        "name": "SharedKnowledgeVsPersonalMemory",
+        "kinds": list(KNOWLEDGE_KINDS),
+        "shared_kind": SHARED_MEMORY_KIND,
+        "private_kind": "persona_private",
+        "basis": "§78 memory namespace",
+        "example": knowledge_example(),
+        "allows_genuine_individuality": True,
+        "private_visible_to_owner_only": True,
+        "shared_visible_to_all": True,
+        "owns_memory_store": False,
+    }
+
+
+# §80: persona bootstrap — ``hermes persona create``
+# generates a new persona's starting files: the §3
+# config file ``persona.yaml`` plus the six documents
+# the §3 core roles name, in roadmap order. The six
+# documents are the §49 generated-directory source
+# documents in generic form (the §49 names carry a
+# Caducea prefix because they are Caducea's instances;
+# the §80 names are the persona-generic defaults).
+# Names are defaults only: they can then be freely
+# changed in configuration — the §3 runtime cares
+# about roles, not filenames, so a renamed document
+# is the same document under a new name. This layer
+# stands the file list and the bootstrap plan as pure
+# records: it creates no persona, writes no file, and
+# the roadmap's ``hermes persona`` spelling registers
+# no new core command (this plugin's CLI surface is
+# ``hermes volmarr``).
+BOOTSTRAP_COMMAND = "hermes persona create"
+BOOTSTRAP_CONFIG_FILE = "persona.yaml"
+
+# The §80 generated files, in roadmap order: the §3
+# config file first, then the six documents each with
+# its §3 semantic role.
+BOOTSTRAP_DOCUMENTS = (
+    ("core", "PERSONA_CORE.md"),
+    ("service_bible", "SERVICE_BIBLE.md"),
+    ("memory_policy", "MEMORY_POLICY.md"),
+    ("tool_policy", "TOOL_POLICY.md"),
+    ("relationship", "RELATIONSHIP_MODEL.md"),
+    ("avatar", "AVATAR.md"),
+)
+
+# The §80 bootstrap plan's fields, in stored order.
+BOOTSTRAP_PLAN_FIELDS = (
+    "command", "persona_id", "config_file", "files",
+    "file_count", "document_count",
+    "names_changeable_in_configuration",
+    "new_core_command", "plugin_cli_surface",
+    "creates_persona", "writes_files",
+)
+
+
+def bootstrap_files() -> list[dict[str, Any]]:
+    """The §80 generated files, in roadmap order. Pure.
+
+    The config file first, then the six documents,
+    each document carrying its §3 semantic role; the
+    config entry carries no role, because it names
+    roles rather than being one.
+    """
+    files = [{"file": BOOTSTRAP_CONFIG_FILE, "kind": "config",
+              "role": None}]
+    files += [{"file": file, "kind": "document", "role": role}
+              for role, file in BOOTSTRAP_DOCUMENTS]
+    return files
+
+
+def bootstrap_document_role(file_name: Any) -> str | None:
+    """The §3 role of one §80 document file, or None. Pure.
+
+    The config file maps to no role; a document file
+    maps to its role; any other name is refused —
+    a bootstrap file list with an unknown name is
+    never guessed at.
+    """
+    if file_name == BOOTSTRAP_CONFIG_FILE:
+        return None
+    for role, file in BOOTSTRAP_DOCUMENTS:
+        if file_name == file:
+            return role
+    raise PersonaRuntimeError("bootstrap file is invalid")
+
+
+def bootstrap_file_for_role(role: Any) -> str:
+    """The §80 default file for one §3 document role. Pure.
+
+    The inverse of ``bootstrap_document_role`` over
+    the six document roles; the config file has no
+    role and an unknown role is refused.
+    """
+    for candidate, file in BOOTSTRAP_DOCUMENTS:
+        if role == candidate:
+            return file
+    raise PersonaRuntimeError("bootstrap role is invalid")
+
+
+def bootstrap_plan(persona_id: Any = None) -> dict[str, Any]:
+    """The §80 bootstrap plan for a new persona. Pure.
+
+    A persona id, when supplied, must be a valid slug
+    (an unnamed plan carries None, never an invented
+    name). The plan names the seven generated files
+    in roadmap order and records that their names are
+    freely changeable in configuration. This layer
+    creates no persona and writes no file: the plan
+    names what a creator may generate, nothing more.
+    """
+    if persona_id is not None:
+        persona_directory(persona_id)
+    return {
+        "command": BOOTSTRAP_COMMAND,
+        "persona_id": persona_id,
+        "config_file": BOOTSTRAP_CONFIG_FILE,
+        "files": bootstrap_files(),
+        "file_count": 1 + len(BOOTSTRAP_DOCUMENTS),
+        "document_count": len(BOOTSTRAP_DOCUMENTS),
+        "names_changeable_in_configuration": True,
+        "new_core_command": False,
+        "plugin_cli_surface": "hermes volmarr",
+        "creates_persona": False,
+        "writes_files": False,
+    }
+
+
+def validate_bootstrap_plan(plan: Any) -> dict[str, Any]:
+    """Validate one §80 bootstrap plan, refusing tampering.
+
+    Pure. The plan must carry exactly the §80 fields
+    and rebuild to itself from its persona id alone:
+    a renamed file, a dropped document, a changed
+    role, or a plan claiming to create or write is
+    refused.
+    """
+    if not isinstance(plan, dict) \
+            or set(plan) != set(BOOTSTRAP_PLAN_FIELDS):
+        raise PersonaRuntimeError("bootstrap plan is invalid")
+    rebuilt = bootstrap_plan(plan["persona_id"])
+    if rebuilt != plan:
+        raise PersonaRuntimeError("bootstrap plan is invalid")
+    return rebuilt
+
+
+def bootstrap_example() -> dict[str, Any]:
+    """The §80 roadmap bootstrap example. Pure.
+
+    The roadmap names only the command and the seven
+    generated files, so the example carries exactly
+    those — no persona id is invented for it.
+    """
+    return {
+        "command": BOOTSTRAP_COMMAND,
+        "files": [entry["file"] for entry in bootstrap_files()],
+        "names_changeable_in_configuration": True,
+    }
+
+
+def bootstrap_contract() -> dict[str, Any]:
+    """The §80 Persona Bootstrap contract. Pure.
+
+    A new persona starts from the §3 config file plus
+    the six §3-role documents, in roadmap order, with
+    every name freely changeable in configuration
+    because the runtime cares about roles, not
+    filenames. This layer plans only — it creates no
+    persona, writes no file, and registers no new
+    core command.
+    """
+    return {
+        "name": "PersonaBootstrap",
+        "command": BOOTSTRAP_COMMAND,
+        "plugin_cli_surface": "hermes volmarr",
+        "example": bootstrap_example(),
+        "files": bootstrap_files(),
+        "config_file": BOOTSTRAP_CONFIG_FILE,
+        "names_changeable_in_configuration": True,
+        "new_core_command": False,
+        "creates_persona": False,
+        "writes_files": False,
+        "basis": "§3 persona config + §49 generated directory",
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -10745,7 +11136,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-78): persona "
+            f"Persona runtime (§§3-80): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -11164,6 +11555,23 @@ class PersonaRuntimeBridge:
             f"world knowledge keyed separately; this "
             f"layer builds and parses keys only and "
             f"owns no memory store. "
+            f"§79 shared knowledge vs personal memory: "
+            f"shared keys are shared world knowledge "
+            f"visible to every persona, and persona "
+            f"keys are that persona's private memory "
+            f"visible to its owner alone — Project "
+            f"Aesir architecture is shared, Caducea's "
+            f"reflections are Caducea-private, Runa's "
+            f"interaction history is Runa-private; "
+            f"this layer classifies keys and records "
+            f"only and owns no memory store. "
+            f"§80 persona bootstrap: a new persona's "
+            f"plan names persona.yaml plus the six "
+            f"§3-role documents in roadmap order, "
+            f"their names freely changeable in "
+            f"configuration; this layer creates no "
+            f"persona, writes no file, and registers "
+            f"no new core command. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -11641,6 +12049,30 @@ __all__ = [
     "memory_namespaces_mixed",
     "memory_namespace_examples",
     "memory_namespace_contract",
+    "KNOWLEDGE_KINDS",
+    "KNOWLEDGE_RECORD_FIELDS",
+    "MAX_KNOWLEDGE_TITLE_CHARS",
+    "MAX_KNOWLEDGE_ITEMS",
+    "knowledge_kinds",
+    "classify_knowledge_key",
+    "knowledge_record",
+    "validate_knowledge_record",
+    "knowledge_visible_to",
+    "knowledge_owner_matches",
+    "partition_knowledge",
+    "knowledge_example",
+    "shared_knowledge_contract",
+    "BOOTSTRAP_COMMAND",
+    "BOOTSTRAP_CONFIG_FILE",
+    "BOOTSTRAP_DOCUMENTS",
+    "BOOTSTRAP_PLAN_FIELDS",
+    "bootstrap_files",
+    "bootstrap_document_role",
+    "bootstrap_file_for_role",
+    "bootstrap_plan",
+    "validate_bootstrap_plan",
+    "bootstrap_example",
+    "bootstrap_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

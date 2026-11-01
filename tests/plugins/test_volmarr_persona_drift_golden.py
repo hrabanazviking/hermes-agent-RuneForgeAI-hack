@@ -352,7 +352,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert first[0].content == second[0].content == third[0].content
     assert len(first) == 1
     content = first[0].content
-    assert "§§3-78" in content
+    assert "§§3-80" in content
     assert "§57 drift test suite" in content
     assert "eight automated" in content
     assert "§58 golden persona tests" in content
