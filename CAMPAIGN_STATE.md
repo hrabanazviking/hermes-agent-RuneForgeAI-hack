@@ -3196,3 +3196,73 @@ portable state: any agent (Muse or Hermes) resumes from here.
   while maintaining its own identity) — expect a pure
   contract/classification surface, not a delegation
   runtime this plugin does not own.
+- 2026-10-31 ~20:0x EDT keeper tick: **Slice 135 DONE —
+  Persona Runtime §35 (Persona Handoff Packet) and §36
+  (Subagent Separation) complete, banked and PUSHED under
+  the standing go-ahead.** No live work found at tick
+  start (tree clean, HEAD == origin/main at `59db7997eb`;
+  Slice 134's state commit at 19:47 EDT was its own
+  completed push, verified, not in-progress work).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §35's pure
+  `handoff_contract` / `handoff_packet` /
+  `validate_handoff_packet` stand the handoff packet in
+  the roadmap's YAML shape (a `persona_handoff` mapping
+  with exactly persona_id, the §22 persona_version,
+  kernel named by its §§9–10 hash, current_mode,
+  relationship_state, and relevant_sections by §12
+  stable id) — the builder takes id/version/kernel from
+  a compiled artefact and refuses a relevant section the
+  compiled index does not contain (unknown, malformed,
+  or duplicated ids refused; bounds recorded as this
+  layer's conventions: ≤32 sections, relationship state
+  ≤1,000 chars), the validator recomputes the normalised
+  packet from its fields alone, and the whole
+  conversation is never a field. §36's pure
+  `subagent_examples` / `subagent_contract` /
+  `subagent_separation` stand subagent separation over
+  the roadmap's example roster (Caducea
+  orchestrator/companion primary; Völundr specialized
+  builder, Saga historian, Eir repair agent — none of
+  them carrying the primary persona), classifying any
+  agent against a named primary: only the primary
+  carries the persona and may delegate, while its
+  identity is maintained. Packet label updated to
+  §§3–36 (twelve older persona files' packet assertions
+  updated in-slice). Tests: targeted 26/26 pass (8 new
+  handoff contracts + event-refresh + local-refresh
+  files); targeted persona run (19 files): **155 passed,
+  0 failed**; full volmarr/kista run (88 files): **634
+  passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set in the
+  same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice135_full_run.log`); 634
+  is exactly Slice 134's 626 + the 8 new contracts.
+  Smoke: `hermes --version` runs (`vgit.59db799.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §35 + §36 completion notes in the Persona
+  Runtime roadmap, plugin.yaml description now §§3–36.
+  Honest gaps: no model is routed, no packet is
+  delivered to a live model, nothing is delegated or
+  spawned, and no caller consumes a packet or a
+  separation classification yet; §37's dynamic persona
+  state object stands unclaimed.
+- **Next resume point: Slice 136 — Persona Runtime §37
+  (Persona State) and §38 (Modes)**: §37 names the
+  dynamic runtime object in the roadmap's YAML shape
+  (persona_state: id, version, active_mode,
+  emotional_state warmth/playfulness/focus,
+  relationship_state trust, active_project,
+  current_task) — dynamic, and it must never replace
+  canonical PersonaIR — expect a pure state-object
+  builder/validator in that shape over the banked
+  compile, not a live state store this plugin does not
+  own; §38 names modes (COUNSELOR, EXECUTOR, ARCHITECT,
+  SKALD, COMPANION, RESEARCHER, FORGE_WORKER) that modify
+  emphasis without changing identity — a mode foregrounds
+  parts of the same personality — expect a pure
+  mode/emphasis surface reconciled against §35's
+  current_mode, not a live mode switcher.
