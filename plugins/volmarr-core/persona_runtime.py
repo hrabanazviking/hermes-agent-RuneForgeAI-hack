@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-38).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-40).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -444,6 +444,37 @@ What stands here, and nothing more:
   against §35's ``current_mode`` (a state's active mode
   must be one of the seven). This layer switches no
   mode live; mode routing is §39, a later section.
+- §39 mode routing: modes are routed automatically —
+  the user does not need to manually select them. The
+  pure ``mode_routing_examples`` / ``mode_routing_contract``
+  / ``route_mode`` functions stand the roadmap's four
+  examples (coding architect → forge_worker, personal
+  reflection companion → counselor, research researcher,
+  creative article skald) and route a caller-supplied
+  signal — an example name, or task text classified by
+  the §13 lexicon plus the reflection / creative-article
+  tokens the lexicon does not carry — to that example's
+  mode sequence. Every routed mode is a §38 mode and
+  routing changes no identity. This layer switches no
+  mode live; it names the route a switcher would take.
+- §40 persona-aware memory write: when memory extraction
+  occurs, memories are interpreted through the persona
+  system, and a memory must not introduce personality
+  drift through biased summarization. The pure
+  ``memory_write_contract`` / ``persona_memory`` /
+  ``validate_persona_memory`` / ``classify_memory_write``
+  functions stand it: a record carries the decider, the
+  decision, any recommendation considered (with its
+  recommender), and any persona response, and its text
+  is built by one neutral template — the roadmap's
+  correct example exactly (``Volmarr selected
+  architecture B after considering Caducea's
+  recommendation of A. Caducea accepted decision and
+  implemented B.``) — while biased phrasing in the
+  roadmap's incorrect form (``ignored good advice`` and
+  its recorded marker kin) is refused at build time and
+  flagged by classification. This layer writes no
+  memory; it shapes the record an extractor would write.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -3939,6 +3970,292 @@ def mode_profile(mode: Any) -> dict[str, Any]:
     }
 
 
+# --- §39 mode routing + §40 persona-aware memory write ----
+#
+# §39: modes route automatically from the task signal —
+# the user does not need to manually select modes. The
+# four roadmap examples stand as data; routing a signal
+# names the example's mode sequence, in order. Every
+# routed mode is a §38 mode; routing changes no identity
+# and switches nothing live.
+#
+# §40: when memory extraction occurs, memories are
+# interpreted through the persona system. A memory write
+# must not introduce personality drift through biased
+# summarization: the record states who decided, what was
+# decided, what recommendation was considered and by
+# whom, and how the persona responded — in one neutral
+# template — and biased phrasing is refused.
+
+# The §39 routing examples, in roadmap order: signal ->
+# mode sequence (§38 slugs).
+MODE_ROUTING_EXAMPLES = (
+    ("coding", ("architect", "forge_worker")),
+    ("personal_reflection", ("companion", "counselor")),
+    ("research", ("researcher",)),
+    ("creative_article", ("skald",)),
+)
+
+# §40 record fields, in template order.
+PERSONA_MEMORY_FIELDS = (
+    "subject", "decision", "considered", "recommended_by",
+    "response_by", "response", "memory_text",
+)
+
+# §40 bound: every free-text phrase in a memory record.
+MAX_MEMORY_PHRASE_CHARS = 240
+
+# §40 biased-summarization markers (slug form). The first
+# is the roadmap's incorrect example verbatim; the rest
+# are its recorded kin — evaluative or dismissive
+# framings of a decision that must never enter a memory.
+MEMORY_BIAS_MARKERS = (
+    "ignored_good_advice", "ignored_advice",
+    "ignored_the_recommendation", "good_advice",
+    "bad_advice", "refused_to_listen", "stubbornly_refused",
+)
+
+
+def mode_routing_examples() -> list[dict[str, Any]]:
+    return [{"signal": signal, "modes": list(modes)}
+            for signal, modes in MODE_ROUTING_EXAMPLES]
+
+
+def mode_routing_contract() -> dict[str, Any]:
+    """The §39 mode routing contract. Pure.
+
+    Modes are routed automatically from the task signal;
+    the user does not need to manually select a mode.
+    A route names a sequence of §38 modes in order —
+    the work may move through them (architect, then
+    forge_worker, for coding) — and routing modifies
+    emphasis only: identity never changes. This layer
+    switches no mode live; it names the route.
+    """
+    return {
+        "name": "PersonaModeRouting",
+        "examples": mode_routing_examples(),
+        "automatic": True,
+        "manual_selection_required": False,
+        "changes_identity": False,
+        "switches_modes": False,
+    }
+
+
+def route_mode(signal: Any) -> dict[str, Any]:
+    """Route one task signal to its §39 mode sequence. Pure.
+
+    The signal is either a §39 example name (slugified)
+    or task text: text is classified by the §13 lexicon
+    (coding / research tags) plus the reflection and
+    creative-article tokens that lexicon does not carry.
+    An empty or unrecognised signal is refused, never
+    routed by guesswork. The first mode is where the
+    work starts; the last is where it ends.
+    """
+    if not isinstance(signal, str) or not signal.strip():
+        raise PersonaRuntimeError("mode routing signal is invalid")
+    slug = _slugify(signal)
+    resolved = dict(MODE_ROUTING_EXAMPLES).get(slug)
+    if resolved is None:
+        tags = classify_task(signal)
+        tokens = _tokens(signal)
+        if "coding" in tags:
+            resolved = dict(MODE_ROUTING_EXAMPLES)["coding"]
+            slug = "coding"
+        elif tokens & {"personal", "reflection", "reflect",
+                       "reflecting"}:
+            resolved = dict(MODE_ROUTING_EXAMPLES)[
+                "personal_reflection"]
+            slug = "personal_reflection"
+        elif "research" in tags:
+            resolved = dict(MODE_ROUTING_EXAMPLES)["research"]
+            slug = "research"
+        elif tokens & {"creative", "article", "skald"}:
+            resolved = dict(MODE_ROUTING_EXAMPLES)[
+                "creative_article"]
+            slug = "creative_article"
+    if resolved is None:
+        raise PersonaRuntimeError("mode routing signal is invalid")
+    modes = list(resolved)
+    for mode in modes:
+        if mode not in PERSONA_MODES:
+            raise PersonaRuntimeError("mode routing mode is invalid")
+    return {
+        "signal": slug,
+        "modes": modes,
+        "initial_mode": modes[0],
+        "final_mode": modes[-1],
+        "manual_selection_required": False,
+        "changes_identity": False,
+        "identity_preserved": True,
+    }
+
+
+def memory_write_contract() -> dict[str, Any]:
+    """The §40 persona-aware memory write contract. Pure.
+
+    When memory extraction occurs, memories are
+    interpreted through the persona system: a record
+    states the decision as its maker's own, any
+    recommendation as considered (not as a verdict the
+    maker ignored), and the persona's response plainly.
+    Biased summarization is refused, so a memory cannot
+    introduce personality drift. This layer writes no
+    memory; it shapes the record an extractor writes.
+    """
+    return {
+        "name": "PersonaAwareMemoryWrite",
+        "fields": list(PERSONA_MEMORY_FIELDS),
+        "interprets_through_persona": True,
+        "biased_summarization_allowed": False,
+        "introduces_personality_drift": False,
+        "writes_memory": False,
+        "bias_markers": list(MEMORY_BIAS_MARKERS),
+    }
+
+
+def _validate_memory_name(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip() \
+            or len(value.strip()) > MAX_NAME_CHARS:
+        raise PersonaRuntimeError("persona memory value is invalid")
+    return _slugify(value)
+
+
+def _validate_memory_phrase(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip() \
+            or len(value.strip()) > MAX_MEMORY_PHRASE_CHARS:
+        raise PersonaRuntimeError("persona memory value is invalid")
+    phrase = " ".join(value.strip().split()).rstrip(".")
+    if not phrase:
+        raise PersonaRuntimeError("persona memory value is invalid")
+    if _slugify(phrase) in MEMORY_BIAS_MARKERS \
+            or any(marker in _slugify(phrase)
+                   for marker in MEMORY_BIAS_MARKERS):
+        raise PersonaRuntimeError(
+            "persona memory phrasing is biased")
+    return phrase
+
+
+def _display_name(slug: str) -> str:
+    return slug.replace("_", " ").capitalize()
+
+
+def _memory_text(subject: str, decision: str,
+                 considered: str | None,
+                 recommended_by: str | None,
+                 response_by: str | None,
+                 response: str | None) -> str:
+    first = f"{_display_name(subject)} selected {decision}"
+    if considered is not None:
+        first += (f" after considering "
+                  f"{_display_name(recommended_by or '')}'s "
+                  f"recommendation of {considered}")
+    text = first + "."
+    if response is not None:
+        text += (f" {_display_name(response_by or '')} "
+                 f"{response}.")
+    return text
+
+
+def persona_memory(subject: Any, decision: Any,
+                     considered: Any = None,
+                     recommended_by: Any = None,
+                     response_by: Any = None,
+                     response: Any = None) -> dict[str, Any]:
+    """Build one §40 persona-aware memory record. Pure.
+
+    The record stands with exactly the §40 fields: the
+    decider and decision always; a considered
+    recommendation only together with its recommender;
+    a persona response only together with who responded.
+    ``memory_text`` is the one neutral template over
+    those fields — the decision is the maker's own, the
+    recommendation was considered, the response is
+    plain — and biased phrasing in any field is refused.
+    """
+    subject_slug = _validate_memory_name(subject)
+    decision_text = _validate_memory_phrase(decision)
+    considered_text = None
+    recommender_slug = None
+    if considered is not None:
+        considered_text = _validate_memory_phrase(considered)
+        recommender_slug = _validate_memory_name(recommended_by)
+    elif recommended_by is not None:
+        raise PersonaRuntimeError("persona memory value is invalid")
+    responder_slug = None
+    response_text = None
+    if response is not None:
+        response_text = _validate_memory_phrase(response)
+        responder_slug = _validate_memory_name(response_by)
+    elif response_by is not None:
+        raise PersonaRuntimeError("persona memory value is invalid")
+    return {
+        "persona_memory": {
+            "subject": subject_slug,
+            "decision": decision_text,
+            "considered": considered_text,
+            "recommended_by": recommender_slug,
+            "response_by": responder_slug,
+            "response": response_text,
+            "memory_text": _memory_text(
+                subject_slug, decision_text, considered_text,
+                recommender_slug, responder_slug, response_text),
+        },
+    }
+
+
+def validate_persona_memory(record: Any) -> dict[str, Any]:
+    """Validate one §40 memory record, refusing disagreement. Pure.
+
+    The record must carry exactly the ``persona_memory``
+    mapping with exactly the §40 fields, and its
+    ``memory_text`` must recompute exactly from its
+    fields under the neutral template — a tampered or
+    biased text is refused. Returns a fresh record.
+    """
+    if not isinstance(record, dict) \
+            or set(record) != {"persona_memory"}:
+        raise PersonaRuntimeError("persona memory is invalid")
+    body = record["persona_memory"]
+    if not isinstance(body, dict) \
+            or set(body) != set(PERSONA_MEMORY_FIELDS):
+        raise PersonaRuntimeError("persona memory is invalid")
+    rebuilt = persona_memory(
+        body["subject"], body["decision"],
+        considered=body["considered"],
+        recommended_by=body["recommended_by"],
+        response_by=body["response_by"],
+        response=body["response"])
+    if rebuilt["persona_memory"]["memory_text"] \
+            != body["memory_text"]:
+        raise PersonaRuntimeError("persona memory is invalid")
+    return rebuilt
+
+
+def classify_memory_write(text: Any) -> dict[str, Any]:
+    """Classify one candidate memory text under §40. Pure.
+
+    A text carrying any §40 bias marker (slug form) is
+    biased summarization: it is refused as a memory
+    write because it would introduce personality drift.
+    Any other non-empty text classifies as neutral in
+    form — classification judges phrasing only, never
+    truth. Empty or non-text input is refused.
+    """
+    if not isinstance(text, str) or not text.strip():
+        raise PersonaRuntimeError("persona memory text is invalid")
+    slug = _slugify(text)
+    markers = [marker for marker in MEMORY_BIAS_MARKERS
+               if marker in slug]
+    return {
+        "biased": bool(markers),
+        "bias_markers": markers,
+        "allowed_as_memory": not markers,
+        "introduces_personality_drift": bool(markers),
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -4520,7 +4837,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-38): persona "
+            f"Persona runtime (§§3-40): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -4681,6 +4998,17 @@ class PersonaRuntimeBridge:
             f"researcher, and forge_worker modify emphasis "
             f"without changing identity — a mode "
             f"foregrounds parts of the same personality. "
+            f"§39 mode routing: modes route automatically "
+            f"from the task signal — coding architect then "
+            f"forge_worker, personal reflection companion "
+            f"then counselor, research researcher, creative "
+            f"article skald — and the user does not need to "
+            f"manually select a mode. §40 persona-aware "
+            f"memory: a memory write is interpreted through "
+            f"the persona system in one neutral template "
+            f"(decision, recommendation considered, persona "
+            f"response) and biased summarization that would "
+            f"introduce personality drift is refused. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -4843,6 +5171,17 @@ __all__ = [
     "validate_persona_state",
     "mode_contract",
     "mode_profile",
+    "MODE_ROUTING_EXAMPLES",
+    "PERSONA_MEMORY_FIELDS",
+    "MAX_MEMORY_PHRASE_CHARS",
+    "MEMORY_BIAS_MARKERS",
+    "mode_routing_examples",
+    "mode_routing_contract",
+    "route_mode",
+    "memory_write_contract",
+    "persona_memory",
+    "validate_persona_memory",
+    "classify_memory_write",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

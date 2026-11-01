@@ -2408,6 +2408,24 @@ SKALD
 
 The user does not need to manually select modes.
 
+> **Completion note — Slice 137 (2026-10-31): §39 stands
+> in `plugins/volmarr-core/persona_runtime.py`. The pure
+> `mode_routing_examples` function names the four roadmap
+> examples in order (coding, personal reflection,
+> research, creative article, each with its mode
+> sequence), the pure `mode_routing_contract` function
+> stands the rule (routing is automatic, manual
+> selection is not required, identity never changes,
+> and this layer switches no mode live), and the pure
+> `route_mode` function routes one caller-supplied
+> signal — an example name, or task text classified by
+> the §13 lexicon plus the reflection / creative-article
+> tokens that lexicon does not carry — to that example's
+> sequence, returning its initial and final modes; an
+> empty or unrecognised signal is refused. Every routed
+> mode is a §38 mode. Honest gaps: no mode is switched
+> live and no caller consumes a route yet.**
+
 
 ---
 
@@ -2442,6 +2460,33 @@ Volmarr ignored good advice.
 
 
 Memory must not introduce personality drift through biased summarization.
+
+> **Completion note — Slice 137 (2026-10-31): §40 stands
+> in the same module. The pure `memory_write_contract`
+> function stands the rule (a memory write is
+> interpreted through the persona system, biased
+> summarization is not allowed, no personality drift is
+> introduced, and this layer writes no memory); the pure
+> `persona_memory` builder stands a record with exactly
+> the §40 fields (subject, decision, considered,
+> recommended_by, response_by, response, memory_text)
+> under one neutral template — a considered
+> recommendation stands only with its recommender, a
+> response only with who responded — reproducing the
+> roadmap's correct example exactly (Volmarr selected
+> architecture B after considering Caducea's
+> recommendation of A; Caducea accepted decision and
+> implemented B); the pure `validate_persona_memory`
+> function recomputes the text from its fields and
+> refuses tampering; and the pure
+> `classify_memory_write` function flags biased
+> summarization by the recorded bias markers, the first
+> being the roadmap's incorrect example verbatim
+> (`ignored good advice`), which is likewise refused at
+> build time in any field. Honest gaps: no memory is
+> extracted or written by this layer, and no caller
+> consumes a record yet; §41's memory-must-not-override
+> rule stands unclaimed.**
 
 
 ---
