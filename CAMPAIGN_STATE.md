@@ -3501,3 +3501,88 @@ portable state: any agent (Muse or Hermes) resumes from here.
   over the `tool_policy` role, expect a pure
   tool-consideration classification + selective
   retrieval surface, not a tool executor.
+- 2026-10-31 ~22:2x EDT keeper tick: **Slice 139 DONE —
+  Persona Runtime §43 (Relationship Model Dynamic
+  Retrieval) and §44 (Tool Policy Dynamic Retrieval)
+  complete, banked and PUSHED under the standing
+  go-ahead.** No live work found at tick start (tree
+  clean, HEAD == origin/main at `e454faa96e`; Slice
+  138's state commit at 21:50 EDT was its own completed
+  push, verified, not in-progress work; the
+  Python-write blocker was probed absent).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §43's pure
+  `relationship_contexts` names the five roadmap
+  contexts; `classify_relationship_contexts` signals
+  them from a deterministic token lexicon;
+  `relationship_contexts_for_section` derives a
+  section's contexts from heading + bare section id;
+  `relationship_retrieval_need` returns the mode
+  (dynamic_retrieval / kernel_anchors_only for routine
+  §13 tasks / none); `retrieve_relationship_model` +
+  `PersonaRelationshipRetriever` select over the
+  compiled index restricted to the `relationship` role,
+  ranked by §13, annotated with §43 contexts — an
+  explicit context (slugified, unknown refused) filters
+  and can supply the signal, and with no context
+  signalled (routine coding included) nothing is
+  retrieved, so the kernel's relational anchors remain.
+  §44's pure `tool_actions` / `classify_tool_action`
+  classify a tool consideration deterministically in
+  precedence order (force + push before general remote
+  git); `tool_policy_needs` returns the roadmap's own
+  four sections for a force push, an empty list for
+  file reading (minimal or no extra policy) and for no
+  action, and this layer's recorded convention for the
+  other actions, named as such in the contract;
+  `retrieve_tool_policy` + `PersonaToolPolicyRetriever`
+  return only the needed `tool_policy` sections, ranked
+  by §13, annotated with action + full needs list (the
+  force-push example load set exactly; a general
+  git_policy section is not among them). Packet label
+  updated to §§3–44 (sixteen older persona files'
+  packet assertions updated in-slice). Tests: targeted
+  12/12 pass; targeted persona run (23 files): **194
+  passed, 0 failed**; full volmarr/kista run (92
+  files): **673 passed, 7 failed, 1 skipped** — the
+  same name-identical pre-existing environmental set
+  in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice139_full_run2.log`;
+  the first full-run attempt was killed by a runtime
+  restart at ~30% and re-run clean); 673 is exactly
+  Slice 138's 661 + the 12 new contracts. Smoke:
+  `hermes --version` runs (`vgit.e454faa.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §43 + §44 completion notes in the Persona
+  Runtime roadmap, plugin.yaml description now §§3–44.
+  Push: fast-forward, no force — origin/main moved
+  `e454faa96e` → Slice 139 commit, verified by
+  `git ls-remote` (remote == local HEAD). Honest gaps:
+  no caller consumes a selection yet, nothing is
+  injected, and no tool is executed by this layer;
+  §45's memory-policy usage stands unclaimed.
+- **Next resume point: Slice 140 — Persona Runtime
+  §45 (Memory Policy Usage) and §46 (Avatar Policy
+  Usage)**: §45 names that the model normally does not
+  need the entire Memory Policy in context — the
+  memory subsystem itself implements it; policy text
+  is retrieved only when resolving memory conflicts,
+  deciding promotion, performing reflection, or
+  explaining memory decisions, and behavior should
+  move into code wherever practical — reconcile
+  against the banked memory surfaces (§§40–41) when
+  read at slice start, expect a pure
+  occasion-classification + selective-retrieval
+  surface over the `memory_policy` role in the §42–44
+  pattern, not continuous injection; §46 names that
+  the Avatar file rarely belongs in ordinary text
+  inference — retrieve only when generating images,
+  controlling the avatar, describing the persona,
+  selecting expressions, or in VR interaction, with
+  the avatar controller consuming structured AvatarIR
+  directly — expect a pure occasion-classification +
+  selective-retrieval surface over the `avatar` role,
+  not an avatar controller this plugin does not own.
