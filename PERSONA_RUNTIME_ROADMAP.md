@@ -5334,6 +5334,42 @@ Final conceptual system:
 ```
 
 
+> **Completion note — Slice 163 (2026-11-01): §91 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `architecture_items` / `architecture_item` /
+> `architecture_contract` surfaces: the spine implemented
+> by its own sections (human-editable documents §§3/6,
+> Persona Compiler §6, Kernel/PersonaIR/Index §§8–12,
+> PersonaRouter §14, Model Router §§62–63,
+> PersonaWatchdog §§27–33), and the fan-out and ends
+> equivalent — the Memory Router carried by the §52
+> pipeline's memory stage owned by the memory subsystem
+> over the §85 surfaces, Project Context by the §56
+> placement owned externally, Tools State by §44
+> retrieval plus the §52 final stage owned by the caller,
+> the ContextBuilder by the §15 budgeter plus the §53
+> pure assembly order (no live builder assembles a
+> prompt), the local and heavy models by the §34 switch
+> plan's two sides over the same kernel (the models
+> themselves external), and the Caducea output by the
+> §52 final stage owned by the caller and the model.
+> The pure `architecture_rule_audit` proves the flow
+> from a supplied compile (the compiler outputs stand
+> together under the §19 hash record; the §52 pipeline
+> stands in order with the router ahead of the watchdog
+> and the watchdog ahead of the output stage; routing
+> returns only sections of the one index and nothing
+> with no signal; the §53 order stands with the kernel
+> at position 1 and evaluates anchored under §54; a §34
+> switch preserves the kernel hash and §62 adherence
+> equals one minus average drift; and the watchdog
+> contract evaluates drafts, generates nothing, and its
+> drift routing agrees across §§28–30). Honest gaps:
+> no pipeline stage runs, no prompt is assembled, no
+> model is called, no output is generated, and no
+> caller consumes the reconciliation or the audit yet.**
+
+
 ---
 
 
@@ -5392,6 +5428,41 @@ CADUCEA AT THIS MOMENT
 
 
 But only the first component defines her foundational identity.
+
+
+> **Completion note — Slice 163 (2026-11-01): §92 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `most_important_rule_items` /
+> `most_important_rule_item` /
+> `most_important_rule_contract` surfaces, with the
+> formula's five components standing in
+> `caducea_moment_components`: six statements implemented
+> by their own sections (persistence independent of
+> history §§24/56, canonical documents as the anchor
+> §§3/6/67, the kernel keeping the anchor present
+> §§10/53/66, retrieval as depth only when needed
+> §§13–14, the watchdog detecting drift §§27–33, and
+> only the persona component defining foundational
+> identity §§24/67/25–26), and memory supplying lived
+> history equivalent — the history itself supplied by
+> the memory subsystem, guarded and placed by
+> §§41/55–56. The pure `architecture_rule_audit` proves
+> the rule from a supplied compile (the §56 design needs
+> no entire history, with identity placed in persona and
+> history in memory; persona core stands first in both
+> the §67 order and the §24 precedence and the compile's
+> document hashes cover exactly its roles; the kernel's
+> pinning precedes context, §53 enforces it at position
+> 1, and §66 never evicts the kernel; a trait-form
+> memory claim may not define persona while a state-form
+> claim records as history only; a trait-form summary
+> claim is refused and conversation influence over
+> traits and foundational personality is refused; and
+> the formula stands in roadmap order with exactly one
+> defining component, persona). Honest gaps: this layer
+> owns no memory store for the history itself, runs no
+> live system, and no caller consumes the reconciliation
+> or the audit yet.**
 
 
 ---

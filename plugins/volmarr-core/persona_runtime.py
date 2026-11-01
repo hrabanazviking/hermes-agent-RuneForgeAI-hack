@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-90).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-92).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -12447,6 +12447,537 @@ def evaluation_development_contract() -> dict[str, Any]:
     }
 
 
+# --- §§91–92 long-term architecture + most important rule ----
+#
+# §91: the final conceptual system — human-editable
+# persona documents feed the Persona Compiler, which
+# produces the Kernel, PersonaIR, and Index; the
+# PersonaRouter fans out to the Memory Router, Project
+# Context, and Tools State; the ContextBuilder feeds
+# the Model Router (local or heavy model); the
+# PersonaWatchdog guards the Caducea output. §92: the
+# most important rule — never make character persistence
+# depend on conversation history. History is temporary,
+# models are replaceable, context windows fill,
+# summaries mutate, providers change; the canonical
+# persona documents are the anchor, the compiled kernel
+# keeps that anchor continuously present, retrieval
+# provides depth only when needed, memory supplies
+# lived history, and the watchdog detects drift.
+# Together PERSONA + MEMORY + STATE + CONTEXT + MODEL
+# = CADUCEA AT THIS MOMENT — but only the first
+# component defines her foundational identity. Both
+# sections were built piece by piece in earlier slices;
+# this reconciliation stands each roadmap element
+# beside the banked surface that carries it —
+# implemented, or equivalent where the carrying surface
+# lives under a different name or outside this module —
+# and adds one pure audit over supplied artefacts
+# proving both as far as this layer owns them. No live
+# system runs here: the pipeline and assembly surfaces
+# are pure orders, the models and the output belong to
+# the caller, and no caller consumes this yet.
+ARCHITECTURE_SUCCESS_CRITERION = (
+    "The final conceptual system stands as one flow from "
+    "human-editable documents through compiler, router, "
+    "context, and model to watchdog-guarded output.")
+MOST_IMPORTANT_RULE = (
+    "Never make character persistence depend on "
+    "conversation history.")
+RULE_FORMULA = (
+    "PERSONA + MEMORY + STATE + CONTEXT + MODEL = "
+    "CADUCEA AT THIS MOMENT")
+
+# The §91 elements, in diagram order: (item, roadmap
+# name, status, carrying section, banked surface).
+ARCHITECTURE_ITEMS = (
+    ("human_editable_persona_documents",
+     "human-editable persona documents", "implemented",
+     "§§3, 6",
+     "PersonaConfigStore (read-only) + PersonaCompiler "
+     "over the human-authored documents"),
+    ("persona_compiler", "Persona Compiler",
+     "implemented", "§6", "PersonaCompiler.compile"),
+    ("kernel_persona_ir_index", "Kernel / PersonaIR / Index",
+     "implemented", "§§8-12",
+     "compiled kernel (Layer A) + build_persona_ir + "
+     "compiled section index with §12 stable ids"),
+    ("persona_router", "PersonaRouter", "implemented",
+     "§14", "PersonaRouter + route_sections"),
+    ("memory_router", "Memory Router", "equivalent",
+     "§§52, 85",
+     "the §52 pipeline's memory_retrieval stage, owned "
+     "by the memory subsystem, over the §85 memory "
+     "integration surfaces (no separate Memory Router "
+     "stands in this layer)"),
+    ("project_context", "Project Context", "equivalent",
+     "§§52, 56",
+     "the §56 placement — task state lives in project "
+     "context, owned externally (no Project Router "
+     "stands in this layer)"),
+    ("tools_state", "Tools State", "equivalent",
+     "§§44, 52",
+     "§44 tool-policy retrieval + the §52 pipeline's "
+     "tools_or_response stage, owned by the caller (no "
+     "Tools State router stands in this layer)"),
+    ("context_builder", "ContextBuilder", "equivalent",
+     "§§15, 53",
+     "PersonaContextBudgeter + prompt_assembly_order "
+     "(the builder stands as the budgeter plus the pure "
+     "assembly order; no live ContextBuilder assembles "
+     "a prompt)"),
+    ("model_router", "Model Router", "implemented",
+     "§§62-63",
+     "model_router_contract + model metrics selection "
+     "(the PersonaAwareModelRouter surfaces)"),
+    ("local_model", "local model", "equivalent",
+     "§§34-35, 62",
+     "the §34 model-switch plan's local side (the model "
+     "itself is external; every model receives the same "
+     "canonical kernel)"),
+    ("heavy_model", "heavy model", "equivalent",
+     "§§34-35, 62",
+     "the §34 model-switch plan's heavy side (the model "
+     "itself is external; every model receives the same "
+     "canonical kernel)"),
+    ("persona_watchdog", "PersonaWatchdog", "implemented",
+     "§§27-33",
+     "watchdog_contract + drift_score + the local "
+     "watchdog and refresh surfaces"),
+    ("caducea_output", "Caducea output", "equivalent",
+     "§52",
+     "the §52 pipeline's final tools_or_response stage, "
+     "owned by the caller and the model (the watchdog "
+     "evaluates drafts only; this layer generates no "
+     "output)"),
+)
+
+# The §92 rule statements, in roadmap order, in the
+# same shape.
+MOST_IMPORTANT_RULE_ITEMS = (
+    ("persistence_not_history_dependent",
+     "character persistence never depends on conversation "
+     "history", "implemented", "§§24, 56",
+     "precedence_order (conversation is tier 5 of 6) + "
+     "long_term_design_contract (identity lives in "
+     "persona; the model never needs the entire history "
+     "to remain itself)"),
+    ("canonical_documents_are_the_anchor",
+     "canonical persona documents are the anchor",
+     "implemented", "§§3, 6, 67",
+     "the compiler compiles canonical documents only + "
+     "canonical_file_priority (semantic authority order)"),
+    ("kernel_keeps_anchor_present",
+     "compiled kernel keeps the anchor continuously "
+     "present", "implemented", "§§10, 53, 66",
+     "kernel pinning + prompt_assembly_contract (kernel "
+     "at position 1) + context_pressure_contract "
+     "(persona kernel never evicted)"),
+    ("retrieval_depth_only_when_needed",
+     "retrieval provides depth only when needed",
+     "implemented", "§§13-14",
+     "retrieve_sections + route_sections (explicit-only; "
+     "no signal routes nothing)"),
+    ("memory_supplies_lived_history",
+     "memory supplies lived history", "equivalent",
+     "§§41, 55-56",
+     "the memory subsystem supplies the history (external); "
+     "this layer's §§41/55-56 guard and place it — memory "
+     "records history and never redefines traits"),
+    ("watchdog_detects_drift", "watchdog detects drift",
+     "implemented", "§§27-33",
+     "watchdog_contract + drift_score + repair_plan"),
+    ("only_persona_defines_foundational_identity",
+     "only the persona component defines foundational "
+     "identity", "implemented", "§§24, 67, 25-26",
+     "precedence + canonical priority (only a canonical "
+     "document tier may touch the foundations) + the "
+     "§§25-26 summary and trait guards"),
+)
+
+# The §92 formula components, in roadmap order: the
+# component, what it contributes at this moment, and
+# whether it defines foundational identity — only the
+# first does.
+CADUCEA_MOMENT_COMPONENTS = (
+    ("persona", "canonical persona documents, compiled",
+     True),
+    ("memory", "lived history", False),
+    ("state", "current persona state", False),
+    ("context", "current context", False),
+    ("model", "replaceable cognition", False),
+)
+
+CADUCEA_MOMENT_COMPONENT_NAMES = tuple(
+    name for name, _contributes, _defines
+    in CADUCEA_MOMENT_COMPONENTS)
+
+
+def architecture_items() -> list[dict[str, Any]]:
+    """The §91 architecture elements, in diagram order. Pure."""
+    return _phase_items(ARCHITECTURE_ITEMS)
+
+
+def architecture_item(item: Any) -> dict[str, Any]:
+    """One §91 element by name, refusing unknown names. Pure."""
+    return _phase_item(ARCHITECTURE_ITEMS, item)
+
+
+def architecture_contract() -> dict[str, Any]:
+    """The §91 Long-Term Architecture reconciliation. Pure.
+
+    The spine stands implemented by its own sections:
+    the human-editable documents and compiler (§§3/6),
+    the Kernel/PersonaIR/Index outputs (§§8–12), the
+    PersonaRouter (§14), the Model Router (§§62–63),
+    and the PersonaWatchdog (§§27–33). The fan-out and
+    the ends stand equivalent: the Memory Router is the
+    §52 pipeline's memory stage owned by the memory
+    subsystem over the §85 surfaces, Project Context and
+    Tools State are the §56 placement and the §44/§52
+    surfaces owned externally, the ContextBuilder stands
+    as the §15 budgeter plus the §53 pure assembly
+    order, the local and heavy models are external (the
+    §34 switch plan moves between them over the same
+    kernel), and the Caducea output is the caller's
+    final pipeline stage. This layer runs no live
+    system: no pipeline stage executes, no prompt is
+    assembled, no model is called, and no output is
+    generated.
+    """
+    summary = _phase_summary(
+        ARCHITECTURE_ITEMS, ARCHITECTURE_SUCCESS_CRITERION)
+    return {
+        "name": "PersonaLongTermArchitecture",
+        "section": 91,
+        **summary,
+        "flow": "documents_to_watchdog_guarded_output",
+        "runs_pipeline": False,
+        "assembles_prompt": False,
+        "calls_model": False,
+        "generates_output": False,
+    }
+
+
+def most_important_rule_items() -> list[dict[str, Any]]:
+    """The §92 rule statements, in roadmap order. Pure."""
+    return _phase_items(MOST_IMPORTANT_RULE_ITEMS)
+
+
+def most_important_rule_item(item: Any) -> dict[str, Any]:
+    """One §92 statement by name, refusing unknown names. Pure."""
+    return _phase_item(MOST_IMPORTANT_RULE_ITEMS, item)
+
+
+def caducea_moment_components() -> list[dict[str, Any]]:
+    """The §92 formula components, in roadmap order. Pure.
+
+    Each entry names the component, what it contributes
+    at this moment, and whether it defines foundational
+    identity — only ``persona`` does.
+    """
+    return [
+        {"component": name, "contributes": contributes,
+         "defines_foundational_identity": defines}
+        for name, contributes, defines
+        in CADUCEA_MOMENT_COMPONENTS]
+
+
+def caducea_moment_component(component: Any) -> dict[str, Any]:
+    """One §92 formula component by name. Pure.
+
+    An unknown or malformed component is refused.
+    """
+    for row in caducea_moment_components():
+        if row["component"] == component:
+            return row
+    raise PersonaRuntimeError("Caducea component is invalid")
+
+
+def most_important_rule_contract() -> dict[str, Any]:
+    """The §92 Most Important Rule reconciliation. Pure.
+
+    The rule stands implemented by its own sections:
+    persistence independent of history (§24 precedence
+    plus the §56 placements), the canonical documents
+    as anchor (§§3/6 plus §67 priority), the kernel
+    keeping the anchor present (§§10/53/66), retrieval
+    as depth only when needed (§§13–14), the watchdog
+    detecting drift (§§27–33), and only the persona
+    component defining foundational identity (§24/§67
+    plus the §§25–26 guards). Memory supplying lived
+    history stands equivalent: the history itself is
+    supplied by the memory subsystem, while this layer
+    guards and places it (§§41/55–56). The formula's
+    five components stand in roadmap order, and only
+    ``persona`` defines foundational identity.
+    """
+    summary = _phase_summary(
+        MOST_IMPORTANT_RULE_ITEMS, MOST_IMPORTANT_RULE)
+    return {
+        "name": "PersonaMostImportantRule",
+        "section": 92,
+        **summary,
+        "rule": MOST_IMPORTANT_RULE,
+        "formula": RULE_FORMULA,
+        "components": caducea_moment_components(),
+        "defines_foundational_identity": ["persona"],
+        "persistence_depends_on_history": False,
+        "models_replaceable": True,
+        "summaries_may_redefine_identity": False,
+    }
+
+
+def architecture_rule_audit(compiled: Any,
+                            drift_scores: Any = None
+                            ) -> dict[str, Any]:
+    """Audit supplied artefacts against §§91–92. Pure.
+
+    §91, from the supplied compile: the compiler outputs
+    stand together — the stored §19 hash record matches
+    its recomputation, the kernel hash in the record is
+    the kernel's own hash, the IR carries its hash, and
+    every index entry's stable id rebuilds from its role
+    and section id; the §52 pipeline stands in roadmap
+    order with the persona router ahead of the watchdog
+    and the watchdog ahead of the final output stage;
+    routing is depth from the one index — retrieval
+    returns only sections named by rebuilt stable ids,
+    and routing with no signal requires nothing; the
+    context builder's order stands — the §53 plan is the
+    full canonical order, the kernel sits at position 1,
+    character precedes transient context, and the same
+    order evaluates anchored under §54; the model router
+    preserves identity — a §34 switch between two
+    distinct models keeps the kernel hash exactly, and
+    §62 adherence equals one minus the supplied average
+    drift for every model in the example table; and the
+    watchdog stands guard — its contract evaluates
+    drafts and generates nothing, and the §28 drift
+    routing agrees across the score record, the §29
+    artefact, and the §30 repair plan. §92, from the
+    same compile: persistence does not depend on history
+    — the §56 design needs no entire history, identity
+    is placed in persona, and history is placed in
+    memory; the canonical documents anchor — §67
+    authority is semantic, persona core stands first in
+    both the §67 order and the §24 precedence, and the
+    compile's document hashes cover exactly its document
+    roles; the kernel keeps the anchor present — its
+    pinning precedes context, the §53 contract enforces
+    that pinning at position 1, and §66 never evicts the
+    persona kernel; memory supplies history only — a
+    trait-form memory claim may not define persona, a
+    state-form claim records as history only, and §41
+    forbids memory redefining traits; summaries and
+    conversation cannot rewrite identity — a trait-form
+    summary claim is refused and may never define
+    persona, conversation influence over traits and
+    foundational personality is refused, and history's
+    must-not-redefine list stands complete; and only
+    persona defines foundational identity — the formula
+    components stand in roadmap order with exactly one
+    defining component, persona core wins a precedence
+    contest against conversation, and canonical persona
+    core outranks every other canonical document.
+    Malformed inputs are refused, in the neighbouring
+    validators' convention. This layer loads and compiles
+    nothing beyond the pure functions over the supplied
+    compile, runs no pipeline, assembles no prompt, calls
+    no model, and generates no output.
+    """
+    record = hash_record(compiled)
+    index = compiled.get("index")
+    kernel = compiled.get("kernel")
+    ir = compiled.get("ir")
+    if not isinstance(index, list) \
+            or not isinstance(kernel, dict) \
+            or not isinstance(ir, dict):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    rebuilt_ids = {
+        stable_section_id(entry["role"], entry["section_id"])
+        for entry in index
+        if isinstance(entry, dict)
+        and isinstance(entry.get("role"), str)
+        and isinstance(entry.get("section_id"), str)}
+    stages = request_pipeline_stages()
+    stage_names = [row["stage"] for row in stages]
+    retrieved = retrieve_sections(index, query="advice")
+    unrouted = route_sections(index)
+    assembly = prompt_assembly_plan()
+    evaluated = evaluate_prompt_order(
+        list(PROMPT_ASSEMBLY_SLOTS))
+    quality = model_quality_table(telemetry_example_averages())
+    scores = {} if drift_scores is None else drift_scores
+    drift_record = drift_score(scores)
+    built_artifact = drift_score_artifact(scores)
+    plan = repair_plan(scores)
+    route_agrees = (
+        drift_route(scores) == drift_record["route"]
+        and built_artifact["drift"]["route"]
+        == drift_record["route"]
+        and built_artifact["drift"]["significant"]
+        == drift_record["significant"]
+        and plan["route"] == drift_record["route"]
+        and plan["repair_required"]
+        == drift_record["repair_required"])
+    components = caducea_moment_components()
+    checks = {
+        "compiler_outputs_stand_together":
+            compiled.get("hash_record") == record
+            and record["kernel_hash"] == kernel.get("sha256")
+            and isinstance(ir.get("ir_hash"), str)
+            and bool(ir["ir_hash"])
+            and bool(index)
+            and all(entry.get("stable_id") in rebuilt_ids
+                    for entry in index
+                    if isinstance(entry, dict)),
+        "pipeline_flow_in_order":
+            stage_names == list(REQUEST_PIPELINE_STAGES)
+            and stage_names.index("persona_router")
+            < stage_names.index("persona_watchdog")
+            < stage_names.index("tools_or_response")
+            and stage_names.index("context_budgeter")
+            < stage_names.index("prompt_assembler"),
+        "routing_depth_from_one_index":
+            all(row["stable_id"] in rebuilt_ids
+                for row in retrieved)
+            and unrouted["required"] == []
+            and unrouted["persona_context"] == [],
+        "context_builder_order_stands":
+            assembly["slot_names"] == list(PROMPT_ASSEMBLY_SLOTS)
+            and assembly["kernel_position"] == 1
+            and assembly["character_before_transient_context"]
+            is True
+            and evaluated["anchored"] is True
+            and evaluated["risks"] == [],
+        "model_router_preserves_identity":
+            model_switch_plan(
+                "local_model", "cloud_model",
+                record["kernel_hash"])["same_kernel"] is True
+            and model_router_contract()[
+                "routes_live_models"] is False
+            and all(math.isclose(
+                    row["persona_adherence"],
+                    persona_adherence(row["average_drift"]),
+                    rel_tol=0.0, abs_tol=1e-9)
+                for row in quality)
+            and bool(quality),
+        "watchdog_guards_output":
+            watchdog_contract()["evaluates_drafts"] is True
+            and watchdog_contract()["generates_responses"]
+            is False
+            and route_agrees,
+        "persistence_not_history_dependent":
+            long_term_design_contract()[
+                "needs_entire_history_to_remain_itself"] is False
+            and placement_for("identity")["lives_in"] == "persona"
+            and placement_for("history")["lives_in"] == "memory",
+        "canonical_documents_anchor":
+            canonical_file_contract()["semantic_authority"] is True
+            and canonical_file_order()[0] == "persona_core"
+            and precedence_order()[0]["tier"] == "persona_core"
+            and set(record["document_hashes"])
+            == {entry["role"] for entry in compiled["documents"]},
+        "kernel_keeps_anchor_present":
+            kernel.get("pinning", {}).get(
+                "kernel_precedes_context") is True
+            and prompt_assembly_contract()["kernel_position"] == 1
+            and prompt_assembly_contract()["enforces_pinning"]
+            == "section_10"
+            and context_pressure_contract()[
+                "persona_kernel_never_evicted"] is True
+            and context_pressure_plan(
+                ["persona_kernel"])["retained"]
+            == ["persona_kernel"],
+        "memory_supplies_history_only":
+            evaluate_memory_claim(
+                "Caducea is an anxious personality")[
+                    "may_define_persona"] is False
+            and evaluate_memory_claim(
+                "Caducea was frustrated during debugging")[
+                    "may_record_as_history"] is True
+            and memory_override_contract()[
+                "memory_may_redefine_traits"] is False,
+        "history_cannot_rewrite_identity":
+            summary_claim_allowed(
+                "Caducea is an anxious personality") is False
+            and classify_summary_claim(
+                "Caducea is an anxious personality")[
+                    "may_define_persona"] is False
+            and influence_allowed(
+                "conversation", "traits") is False
+            and influence_allowed(
+                "conversation", "foundational_personality")
+            is False
+            and history_must_not_redefine() == [
+                "foundational_personality", "identity", "traits"],
+        "only_persona_defines_foundations":
+            [row["component"] for row in components]
+            == list(CADUCEA_MOMENT_COMPONENT_NAMES)
+            and [row["component"] for row in components
+                 if row["defines_foundational_identity"]]
+            == ["persona"]
+            and precedence_winner(
+                "current_conversation", "persona_core")
+            == "persona_core"
+            and canonical_file_outranks("core", "relationship")
+            and canonical_file_outranks("core", "service_bible"),
+    }
+    architecture_met = all(checks[key] for key in (
+        "compiler_outputs_stand_together",
+        "pipeline_flow_in_order",
+        "routing_depth_from_one_index",
+        "context_builder_order_stands",
+        "model_router_preserves_identity",
+        "watchdog_guards_output"))
+    rule_met = all(checks[key] for key in (
+        "persistence_not_history_dependent",
+        "canonical_documents_anchor",
+        "kernel_keeps_anchor_present",
+        "memory_supplies_history_only",
+        "history_cannot_rewrite_identity",
+        "only_persona_defines_foundations"))
+    return {
+        "persona_id": record["persona_id"],
+        "checks": checks,
+        "pipeline_stages": len(stage_names),
+        "index_sections": len(index),
+        "components": [row["component"] for row in components],
+        "architecture": {
+            **_phase_summary(
+                ARCHITECTURE_ITEMS,
+                ARCHITECTURE_SUCCESS_CRITERION),
+            "criterion_met": architecture_met,
+        },
+        "most_important_rule": {
+            **_phase_summary(
+                MOST_IMPORTANT_RULE_ITEMS, MOST_IMPORTANT_RULE),
+            "criterion_met": rule_met,
+        },
+        "audits_only": True,
+        "loads_or_compiles": False,
+        "runs_pipeline": False,
+        "calls_model": False,
+        "generates_output": False,
+    }
+
+
+def architecture_rule_contract() -> dict[str, Any]:
+    """The §§91–92 architecture + rule reconciliation, combined. Pure."""
+    return {
+        "name": "PersonaArchitectureAndMostImportantRule",
+        "architecture": architecture_contract(),
+        "most_important_rule": most_important_rule_contract(),
+        "audit_surface": "architecture_rule_audit",
+        "formula": RULE_FORMULA,
+        "persistence_depends_on_history": False,
+        "defines_foundational_identity": ["persona"],
+        "runs_pipeline": False,
+        "generates_output": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -13156,7 +13687,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-90): persona "
+            f"Persona runtime (§§3-92): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -13669,6 +14200,21 @@ class PersonaRuntimeBridge:
             f"rewritten), and the pure "
             f"evaluation_development_audit proves both "
             f"success criteria from supplied artefacts. "
+            f"§91 long-term architecture and §92 the most "
+            f"important rule stand reconciled against the "
+            f"banked surfaces (the §52 pipeline flow from "
+            f"documents through compiler, router, context, "
+            f"and model to the watchdog — the models and "
+            f"the output external, and this layer runs no "
+            f"pipeline; §24 precedence, §56 placements, "
+            f"§67 canonical priority, and the §§25–26 "
+            f"guards — persistence never depends on "
+            f"conversation history, and of PERSONA + "
+            f"MEMORY + STATE + CONTEXT + MODEL only the "
+            f"persona component defines foundational "
+            f"identity), and the pure "
+            f"architecture_rule_audit proves both from "
+            f"supplied artefacts. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -14230,6 +14776,20 @@ __all__ = [
     "development_phase_contract",
     "evaluation_development_audit",
     "evaluation_development_contract",
+    "ARCHITECTURE_ITEMS",
+    "MOST_IMPORTANT_RULE_ITEMS",
+    "CADUCEA_MOMENT_COMPONENTS",
+    "CADUCEA_MOMENT_COMPONENT_NAMES",
+    "architecture_items",
+    "architecture_item",
+    "architecture_contract",
+    "most_important_rule_items",
+    "most_important_rule_item",
+    "most_important_rule_contract",
+    "caducea_moment_components",
+    "caducea_moment_component",
+    "architecture_rule_audit",
+    "architecture_rule_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

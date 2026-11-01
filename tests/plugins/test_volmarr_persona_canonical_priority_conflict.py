@@ -474,7 +474,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert first[0].content == second[0].content == third[0].content
     assert len(first) == 1
     content = first[0].content
-    assert "§§3-90" in content
+    assert "§§3-92" in content
     assert "§67 canonical file priority" in content
     assert "semantic authority" in content
     assert "§68 conflict resolution" in content
