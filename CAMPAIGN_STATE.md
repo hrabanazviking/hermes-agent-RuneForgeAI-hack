@@ -5278,3 +5278,98 @@ portable state: any agent (Muse or Hermes) resumes from here.
   very long conversations" — reconcile against the banked
   §§17/18 anchors and §§27–33 watchdog/drift/repair/refresh
   surfaces likewise.
+- 2026-11-01 ~12:2x–12:5x EST keeper tick: **Slice 159 DONE —
+  Persona Runtime §83 (Phase 3 — Retrieval) and §84
+  (Phase 4 — Drift Control) complete, banked and PUSHED under the
+  standing go-ahead.** No live work found at tick start (tree
+  clean, HEAD == origin/main at `e6432a1623`; the Python-write
+  blocker was probed absent — tempfile writes succeed).
+  `plugins/volmarr-core/persona_runtime.py` extended in place —
+  no new module file or config key: §83's pure
+  `retrieval_phase_items` / `retrieval_phase_item` /
+  `retrieval_phase_contract` stand Phase 3 reconciled against
+  the banked surfaces (the persona section store implemented
+  by the §6 compiler's Layer B index read through the §13
+  PersonaRetriever; keyword search and task classification
+  by §13's `retrieve_sections` / `classify_task`;
+  PersonaRouter by §14; ContextBudgeter by §15's
+  PersonaContextBudgeter + `budget_items`), and semantic
+  embeddings are honestly **unavailable** — §13's
+  `hybrid_components` records the semantic component
+  unavailable, no embedding surface is owned, and every §13
+  score carries `semantic: None`, never a faked similarity
+  value. §84's pure `drift_phase_items` / `drift_phase_item`
+  / `drift_phase_contract` stand Phase 4 reconciled — all
+  six items implemented by their own sections (Character
+  Anchors §17, Anti-Anchors §18, PersonaWatchdog §§27/31,
+  drift score §§28–29, response repair §30, refresh
+  triggers §§32–33). The pure `retrieval_drift_audit` /
+  `retrieval_drift_contract` prove both criteria from
+  supplied artefacts: for §83, from a supplied compile plus
+  a query/task, retrieved and routed results all carry
+  keyword/heading/task contact, name stable ids the
+  compiled index rebuilds to, and record semantic as None,
+  and §15 budgeted inclusion may name only retrieved or
+  routed ids (an irrelevant query retrieves nothing and
+  surfaces as unmet); for §84, from the same compile plus
+  caller-supplied drift scores, the authored
+  anchors/anti-anchors stand present and counted in the
+  compile and the kernel and verbatim at the kernel head
+  (the §§17/18 anchor block), the §28 routing agrees
+  across its recomputations (score record, §29 artefact,
+  route function, §30 repair plan) and with a
+  caller-supplied §29 artefact when one is given — so a
+  tampered artefact surfaces as unmet, never invented —
+  significant drift requires repair with the §30 plan's
+  steps planned, insignificant drift routes to output
+  with no repair, and every due §§32–33 refresh plan
+  carries exactly the §32 contents. Malformed inputs are
+  refused with `PersonaRuntimeError` in the neighbouring
+  convention; the audit loads and compiles nothing beyond
+  the pure functions over the supplied compile's index.
+  Packet label updated to §§3–84 (thirty-six older persona
+  files' packet assertions updated in-slice). Tests:
+  targeted 11/11 pass (new file
+  `test_volmarr_persona_phase_retrieval_drift.py`); targeted
+  persona run (43 files): **400 passed, 0 failed**; full
+  volmarr/kista run (112 files): **879 passed, 7 failed,
+  1 skipped** — exactly Slice 158's 868 + the 11 new
+  contracts, the failures the same name-identical
+  pre-existing environmental set in the same 3 files
+  (5 core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback), verified name-identical against the Slice 158
+  run log and in the run logs' own summary lines
+  (`~/workspace/.verify-tmp/slice159_targeted.log`,
+  `~/workspace/.verify-tmp/slice159_persona_run.log`,
+  `~/workspace/.verify-tmp/slice159_full_run.log`, 1003.8s).
+  Smoke: `hermes --version` runs (`vgit.e6432a1.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §83 + §84 completion notes in the Persona Runtime
+  roadmap, plugin.yaml description now §§3–84. Honest
+  gaps: semantic embeddings remain unavailable (no
+  embedding surface is owned), no second retrieval stack
+  or new watchdog stands, nothing is injected into a
+  prompt, no live drift is evaluated, no response is
+  repaired, and no caller consumes a reconciliation or an
+  audit yet.
+- **Next resume point: Slice 160 — Persona Runtime §85
+  (Phase 5 — Memory Integration) and §86 (Phase 6 — Model
+  Router Integration)**: §85 lists PersonaIR, Muninn /
+  SQLite memory, Service Bible promotion, relationship
+  memory, trait/state separation, and persona-aware
+  consolidation, with success criterion "Caducea learns
+  without rewriting her core personality" — reconcile
+  against the banked §8 PersonaIR, §26 trait/state
+  separation, §§40–41 persona-aware memory-write / memory
+  guard, §42 Service Bible retrieval, §43 relationship
+  retrieval, and the consolidation surfaces when read at
+  slice start, expect an audit/reconciliation slice in
+  the Slice 158/159 pattern, not a new memory store;
+  §86 lists micro/medium/full kernels, persona handoff
+  packets, per-model adherence scores, and model-specific
+  context budgets, with success criterion "Switching
+  models does not feel like switching characters" —
+  reconcile against the banked §§64/65 kernel tiers, §35
+  handoff packet, §§61–63 drift telemetry / adherence /
+  model metrics, and §15 context budgets likewise.

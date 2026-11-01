@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-82).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-84).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -10709,6 +10709,441 @@ def phases_contract() -> dict[str, Any]:
     }
 
 
+# §83: Phase 3 — Retrieval lists the persona section
+# store, semantic embeddings, keyword search, task
+# classification, PersonaRouter, and ContextBudgeter,
+# with the success criterion that only relevant persona
+# material enters each prompt. §84: Phase 4 — Drift
+# Control lists Character Anchors, Anti-Anchors,
+# PersonaWatchdog, drift score, response repair, and
+# refresh triggers, with the criterion that Caducea
+# remains recognizably herself across very long
+# conversations. Both phases were built section by
+# section in earlier slices; this reconciliation stands
+# each roadmap item beside the banked surface that
+# carries it — implemented, or unavailable where no
+# surface is owned — and adds one pure audit over
+# supplied artefacts proving the two criteria. No second
+# retrieval stack and no new watchdog stands here, and
+# semantic embeddings are honestly unavailable: §13's
+# hybrid_components records the semantic component
+# unavailable, this plugin owns no embedding surface,
+# and every §13 score carries semantic: None.
+RETRIEVAL_PHASE_SUCCESS_CRITERION = (
+    "Only relevant persona material enters each prompt.")
+DRIFT_PHASE_SUCCESS_CRITERION = (
+    "Caducea remains recognizably herself across very "
+    "long conversations.")
+
+# The §83 items, in roadmap order: (item, roadmap name,
+# status, carrying section, banked surface).
+RETRIEVAL_PHASE_ITEMS = (
+    ("persona_section_store", "persona section store",
+     "implemented", "§§6, 13",
+     "PersonaCompiler Layer B index + PersonaRetriever"),
+    ("semantic_embeddings", "semantic embeddings",
+     "unavailable", "§13",
+     "hybrid_components (semantic unavailable)"),
+    ("keyword_search", "keyword search", "implemented",
+     "§13", "retrieve_sections"),
+    ("task_classification", "task classification",
+     "implemented", "§13", "classify_task"),
+    ("persona_router", "PersonaRouter", "implemented",
+     "§14", "PersonaRouter + route_sections"),
+    ("context_budgeter", "ContextBudgeter", "implemented",
+     "§15", "PersonaContextBudgeter + budget_items"),
+)
+
+# The §84 items, in roadmap order, in the same shape.
+DRIFT_PHASE_ITEMS = (
+    ("character_anchors", "Character Anchors",
+     "implemented", "§17",
+     "anchor_block + PersonaCompiler kernel anchors"),
+    ("anti_anchors", "Anti-Anchors", "implemented", "§18",
+     "anchor_block + PersonaCompiler kernel anti-anchors"),
+    ("persona_watchdog", "PersonaWatchdog", "implemented",
+     "§§27, 31",
+     "watchdog_contract + drift_score + "
+     "local_watchdog_contract"),
+    ("drift_score", "drift score", "implemented",
+     "§§28-29", "drift_score + drift_score_artifact"),
+    ("response_repair", "response repair", "implemented",
+     "§30", "repair_plan"),
+    ("refresh_triggers", "refresh triggers", "implemented",
+     "§§32-33",
+     "refresh_triggers + event_refresh_triggers"),
+)
+
+
+def _phase_summary_ext(table, criterion: str) -> dict[str, Any]:
+    """A phase summary that counts unavailable honestly.
+
+    Like ``_phase_summary``, except an item whose status
+    is ``unavailable`` is counted as unavailable — a
+    surface this plugin honestly does not own — and not
+    as missing, which names an item no surface carries
+    at all.
+    """
+    items = _phase_items(table)
+    return {
+        "items": items,
+        "item_count": len(items),
+        "implemented": sum(
+            1 for row in items if row["status"] == "implemented"),
+        "equivalent": sum(
+            1 for row in items if row["status"] == "equivalent"),
+        "unavailable": sum(
+            1 for row in items if row["status"] == "unavailable"),
+        "missing": sum(
+            1 for row in items
+            if row["status"] not in _PHASE_STATUSES
+            and row["status"] != "unavailable"),
+        "success_criterion": criterion,
+    }
+
+
+def retrieval_phase_items() -> list[dict[str, Any]]:
+    """The §83 Phase 3 items, in roadmap order. Pure."""
+    return _phase_items(RETRIEVAL_PHASE_ITEMS)
+
+
+def retrieval_phase_item(item: Any) -> dict[str, Any]:
+    """One §83 item by name, refusing unknown names. Pure."""
+    return _phase_item(RETRIEVAL_PHASE_ITEMS, item)
+
+
+def retrieval_phase_contract() -> dict[str, Any]:
+    """The §83 Phase 3 — Retrieval reconciliation. Pure.
+
+    Five roadmap items stand implemented by their own
+    earlier sections: the section store is the §6
+    compiler's Layer B index read through the §13
+    PersonaRetriever, keyword search and task
+    classification are §13's, the router is §14's, and
+    the budgeter is §15's. The sixth, semantic
+    embeddings, is honestly unavailable — §13's
+    hybrid_components records its semantic component
+    unavailable, no embedding surface is owned, and
+    every score carries semantic: None rather than a
+    faked similarity value. No second retrieval stack
+    stands here and nothing is injected into a prompt.
+    """
+    summary = _phase_summary_ext(
+        RETRIEVAL_PHASE_ITEMS, RETRIEVAL_PHASE_SUCCESS_CRITERION)
+    return {
+        "name": "PersonaPhase3Retrieval",
+        "phase": 3,
+        **summary,
+        "semantic_embeddings_available": False,
+        "semantic_status": "unavailable",
+        "new_retrieval_stack_created": False,
+        "injects_into_prompt": False,
+    }
+
+
+def drift_phase_items() -> list[dict[str, Any]]:
+    """The §84 Phase 4 items, in roadmap order. Pure."""
+    return _phase_items(DRIFT_PHASE_ITEMS)
+
+
+def drift_phase_item(item: Any) -> dict[str, Any]:
+    """One §84 item by name, refusing unknown names. Pure."""
+    return _phase_item(DRIFT_PHASE_ITEMS, item)
+
+
+def drift_phase_contract() -> dict[str, Any]:
+    """The §84 Phase 4 — Drift Control reconciliation. Pure.
+
+    Every roadmap item stands implemented by its own
+    earlier section: Character Anchors by §17 and
+    Anti-Anchors by §18 (both carried verbatim at the
+    head of every kernel), the PersonaWatchdog by §27
+    with its §31 fast local form, the drift score by
+    §§28–29, response repair by §30, and refresh
+    triggers by §§32–33. No new watchdog stands here
+    and no live draft is evaluated.
+    """
+    summary = _phase_summary_ext(
+        DRIFT_PHASE_ITEMS, DRIFT_PHASE_SUCCESS_CRITERION)
+    return {
+        "name": "PersonaPhase4DriftControl",
+        "phase": 4,
+        **summary,
+        "new_watchdog_created": False,
+        "live_drift_evaluation_claimed": False,
+    }
+
+
+def _score_has_contact(score: Any) -> bool:
+    """Whether one §13 score carries any contact. Pure."""
+    if not isinstance(score, dict):
+        return False
+    for key in ("keyword", "heading", "task"):
+        value = score.get(key)
+        if isinstance(value, (int, float)) \
+                and not isinstance(value, bool) and value > 0:
+            return True
+    return False
+
+
+def _supplied_drift_artifact_agrees(supplied: Any,
+                                    built: dict[str, Any]) -> bool:
+    """Whether a supplied §29 artefact agrees with its rebuild.
+
+    A malformed artefact is refused, in the neighbouring
+    validators' convention; a well-formed artefact whose
+    values disagree with the recomputation from its own
+    dimensions is a tamper, reported as disagreement —
+    unmet, never invented.
+    """
+    if supplied is None:
+        return True
+    if not isinstance(supplied, dict) or set(supplied) != {"drift"}:
+        raise PersonaRuntimeError("drift artefact is invalid")
+    drift = supplied["drift"]
+    if not isinstance(drift, dict) \
+            or set(drift) != set(DRIFT_SCORE_ARTEFACT_FIELDS):
+        raise PersonaRuntimeError("drift artefact is invalid")
+    raw_dimensions = drift["dimensions"]
+    if not isinstance(raw_dimensions, dict) \
+            or len(raw_dimensions) != len(DRIFT_DIMENSIONS):
+        raise PersonaRuntimeError("drift artefact is invalid")
+    validated = _validate_drift_scores(raw_dimensions)
+    if set(validated) != set(DRIFT_DIMENSIONS):
+        raise PersonaRuntimeError("drift artefact is invalid")
+    expected = built["drift"]
+    if not isinstance(drift["total"], (int, float)) \
+            or isinstance(drift["total"], bool) \
+            or not math.isclose(float(drift["total"]),
+                                 expected["total"],
+                                 rel_tol=0.0, abs_tol=1e-9):
+        return False
+    for dimension, value in expected["dimensions"].items():
+        supplied_value = validated[dimension]
+        if not math.isclose(supplied_value, value,
+                             rel_tol=0.0, abs_tol=1e-9):
+            return False
+    return all(
+        drift[field] == expected[field]
+        for field in ("significant", "significant_dimensions",
+                      "route", "repair_required"))
+
+
+def retrieval_drift_audit(compiled: Any, query: Any = "",
+                          task_text: Any = None,
+                          drift_scores: Any = None,
+                          drift_artifact: Any = None
+                          ) -> dict[str, Any]:
+    """Audit supplied artefacts against §§83–84. Pure.
+
+    §83, from the supplied compile plus a query/task: the
+    pure §13 retrieval and §14 routing run over the
+    compile's own Layer B index, and every retrieved or
+    routed result must carry contact (a keyword, heading,
+    or task score above zero), must name a stable id the
+    index actually rebuilds to, and must record semantic
+    as None while §13's hybrid_components records the
+    semantic component unavailable; the §15 budgeter's
+    included items may name only retrieved or routed ids.
+    An irrelevant query retrieves nothing and the
+    criterion surfaces as unmet, never invented. §84,
+    from the same compile plus caller-supplied drift
+    scores: the authored anchors and anti-anchors stand
+    present in the compile and the kernel, counted, and
+    verbatim at the kernel head (the §17/§18 anchor
+    block); the §28 drift routing agrees across its
+    recomputations — the score record, the §29 artefact,
+    the route function, and the §30 repair plan, plus a
+    caller-supplied §29 artefact when one is given, so a
+    tampered artefact surfaces as unmet — significant
+    drift requires repair with the §30 plan's steps
+    planned, insignificant drift routes to output with
+    no repair; and every due §§32–33 refresh plan
+    carries exactly the §32 contents. Malformed inputs
+    are refused, in the neighbouring validators'
+    convention. This layer loads and compiles nothing —
+    the caller supplies the artefact, the query, and
+    the scores — and evaluates no live response.
+    """
+    if not isinstance(query, str) \
+            or (task_text is not None
+                and not isinstance(task_text, str)):
+        raise PersonaRuntimeError("retrieval query is invalid")
+    record = hash_record(compiled)
+    index = compiled.get("index")
+    kernel = compiled.get("kernel")
+    anchors = compiled.get("anchors")
+    anti_anchors = compiled.get("anti_anchors")
+    if not isinstance(index, list) \
+            or not isinstance(kernel, dict) \
+            or not isinstance(anchors, list) \
+            or not all(isinstance(item, str) for item in anchors) \
+            or not isinstance(anti_anchors, list) \
+            or not all(isinstance(item, str)
+                       for item in anti_anchors):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    rebuilt_ids: set[str] = set()
+    entries_by_id: dict[str, dict[str, Any]] = {}
+    for entry in index:
+        if isinstance(entry, dict) \
+                and isinstance(entry.get("role"), str) \
+                and isinstance(entry.get("section_id"), str):
+            stable = stable_section_id(
+                entry["role"], entry["section_id"])
+            rebuilt_ids.add(stable)
+            entries_by_id[stable] = entry
+    retrieved = retrieve_sections(
+        index, query=query, task_text=task_text)
+    routed = route_sections(
+        index, user_message=query,
+        current_task=task_text or "")["sections"]
+    retrieved_ids = [row["stable_id"] for row in retrieved]
+    routed_ids = [row["stable_id"] for row in routed]
+    semantic_component = next(
+        row for row in hybrid_components()
+        if row["name"] == "semantic_similarity")
+    semantic_unavailable = (
+        semantic_component["available"] is False
+        and all(row["score"].get("semantic") is None
+                for row in (*retrieved, *routed)))
+    budget_rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for row in (*retrieved, *routed):
+        stable = row["stable_id"]
+        if stable in seen or stable not in entries_by_id:
+            continue
+        seen.add(stable)
+        entry = entries_by_id[stable]
+        budget_rows.append({
+            "id": stable,
+            "category": "persona_retrieval",
+            "estimated_tokens": entry["estimated_tokens"],
+            "priority": float(row.get(
+                "priority", entry.get("priority", 0.40))),
+            "score": float(row["score"]["total"]),
+        })
+    budgeted = budget_items(budget_rows) if budget_rows else {
+        "included": []}
+    budgeted_ids = [row["id"] for row in budgeted["included"]]
+    scores = {} if drift_scores is None else drift_scores
+    drift_record = drift_score(scores)
+    built_artifact = drift_score_artifact(scores)
+    plan = repair_plan(scores)
+    supplied_agrees = _supplied_drift_artifact_agrees(
+        drift_artifact, built_artifact)
+    built_drift = built_artifact["drift"]
+    route_agrees = (
+        supplied_agrees
+        and drift_route(scores) == drift_record["route"]
+        and built_drift["route"] == drift_record["route"]
+        and built_drift["significant"] == drift_record["significant"]
+        and built_drift["repair_required"]
+        == drift_record["repair_required"]
+        and math.isclose(built_drift["total"],
+                         drift_record["total"],
+                         rel_tol=0.0, abs_tol=1e-9)
+        and plan["route"] == drift_record["route"]
+        and plan["repair_required"]
+        == drift_record["repair_required"])
+    if drift_record["significant"]:
+        repair_matches = (
+            plan["repair_required"] is True
+            and plan["action"] == "repair_minimally"
+            and [step["step"] for step in plan["steps"]]
+            == [row["step"] for row in repair_pipeline()])
+    else:
+        repair_matches = (
+            drift_record["route"] == "output"
+            and plan["repair_required"] is False
+            and plan["action"] == "deliver_without_repair"
+            and plan["steps"] == [])
+    head = anchor_block(anchors, anti_anchors)
+    kernel_text = kernel.get("text")
+    due_plans = [
+        refresh_plan(trigger)
+        for trigger in ("context_summarization", "model_switch")
+    ]
+    due_plans.append(refresh_plan(
+        "message_interval", REFRESH_MESSAGE_INTERVAL))
+    due_plans.extend(
+        event_refresh_plan(event)
+        for event in event_refresh_triggers())
+    checks = {
+        "retrieval_present": bool(retrieved),
+        "retrieval_relevant": bool(retrieved) and all(
+            _score_has_contact(row["score"]) for row in retrieved),
+        "retrieval_ids_in_index": all(
+            stable in rebuilt_ids for stable in retrieved_ids),
+        "semantic_unavailable": semantic_unavailable,
+        "routing_relevant": bool(routed) and all(
+            _score_has_contact(row["score"]) for row in routed),
+        "routed_ids_in_index": all(
+            stable in rebuilt_ids for stable in routed_ids),
+        "budgeted_inclusion_subset": set(budgeted_ids) <= (
+            set(retrieved_ids) | set(routed_ids)),
+        "anchors_present": bool(anchors) and bool(anti_anchors)
+        and kernel.get("anchors") == anchors
+        and kernel.get("anti_anchors") == anti_anchors
+        and kernel.get("anchor_count") == len(anchors)
+        and kernel.get("anti_anchor_count") == len(anti_anchors),
+        "anchors_at_kernel_head": bool(head)
+        and isinstance(kernel_text, str)
+        and kernel_text.startswith(head),
+        "drift_route_agrees": route_agrees,
+        "repair_plan_matches_drift": repair_matches,
+        "refresh_contents_exact": all(
+            due_plan["due"]
+            and due_plan["contents"] == list(REFRESH_CONTENTS)
+            for due_plan in due_plans),
+    }
+    retrieval_met = all(checks[key] for key in (
+        "retrieval_present", "retrieval_relevant",
+        "retrieval_ids_in_index", "semantic_unavailable",
+        "routing_relevant", "routed_ids_in_index",
+        "budgeted_inclusion_subset"))
+    drift_met = all(checks[key] for key in (
+        "anchors_present", "anchors_at_kernel_head",
+        "drift_route_agrees", "repair_plan_matches_drift",
+        "refresh_contents_exact"))
+    return {
+        "persona_id": record["persona_id"],
+        "checks": checks,
+        "retrieved_sections": len(retrieved),
+        "routed_sections": len(routed),
+        "budgeted_included": len(budgeted_ids),
+        "drift_total": drift_record["total"],
+        "drift_significant": drift_record["significant"],
+        "drift_route": drift_record["route"],
+        "repair_required": drift_record["repair_required"],
+        "retrieval_phase": {
+            **_phase_summary_ext(
+                RETRIEVAL_PHASE_ITEMS,
+                RETRIEVAL_PHASE_SUCCESS_CRITERION),
+            "criterion_met": retrieval_met,
+        },
+        "drift_phase": {
+            **_phase_summary_ext(
+                DRIFT_PHASE_ITEMS, DRIFT_PHASE_SUCCESS_CRITERION),
+            "criterion_met": drift_met,
+        },
+        "audits_only": True,
+        "loads_or_compiles": False,
+    }
+
+
+def retrieval_drift_contract() -> dict[str, Any]:
+    """The §§83–84 phase reconciliation, combined. Pure."""
+    return {
+        "name": "PersonaPhases3And4",
+        "retrieval_phase": retrieval_phase_contract(),
+        "drift_phase": drift_phase_contract(),
+        "audit_surface": "retrieval_drift_audit",
+        "new_retrieval_stack_created": False,
+        "new_watchdog_created": False,
+        "semantic_embeddings_available": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -11418,7 +11853,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-82): persona "
+            f"Persona runtime (§§3-84): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -11865,6 +12300,20 @@ class PersonaRuntimeBridge:
             f"compile; no new loader or compiler "
             f"stands and no live startup wiring is "
             f"claimed. "
+            f"§83 Phase 3 retrieval and §84 Phase 4 "
+            f"drift control stand reconciled against "
+            f"the banked surfaces (§13 hybrid "
+            f"retrieval — semantic embeddings "
+            f"honestly unavailable — §14 router, and "
+            f"§15 budgeter; §§17/18 anchors, the "
+            f"§§27–33 watchdog, drift score, repair, "
+            f"and refresh surfaces), and the pure "
+            f"retrieval_drift_audit proves both "
+            f"success criteria from supplied "
+            f"artefacts; no second retrieval stack "
+            f"or watchdog stands, nothing is "
+            f"injected into a prompt, and no live "
+            f"drift is evaluated. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -12378,6 +12827,18 @@ __all__ = [
     "compiler_phase_contract",
     "phase_audit",
     "phases_contract",
+    "RETRIEVAL_PHASE_SUCCESS_CRITERION",
+    "DRIFT_PHASE_SUCCESS_CRITERION",
+    "RETRIEVAL_PHASE_ITEMS",
+    "DRIFT_PHASE_ITEMS",
+    "retrieval_phase_items",
+    "retrieval_phase_item",
+    "retrieval_phase_contract",
+    "drift_phase_items",
+    "drift_phase_item",
+    "drift_phase_contract",
+    "retrieval_drift_audit",
+    "retrieval_drift_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

@@ -4874,6 +4874,31 @@ Success criterion:
 > Only relevant persona material enters each prompt.
 
 
+> **Completion note — Slice 159 (2026-11-01): §83 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `retrieval_phase_items` /
+> `retrieval_phase_item` / `retrieval_phase_contract`
+> surfaces: five items implemented by their own sections
+> (the persona section store by the §6 compiler's Layer B
+> index read through the §13 PersonaRetriever, keyword
+> search and task classification by §13, PersonaRouter
+> by §14, ContextBudgeter by §15's
+> PersonaContextBudgeter) and one honestly unavailable —
+> semantic embeddings, because §13's hybrid_components
+> records the semantic component unavailable, no
+> embedding surface is owned, and every §13 score
+> carries semantic: None. The pure
+> `retrieval_drift_audit` proves the criterion from a
+> supplied compile plus a query/task (retrieved and
+> routed results all carry keyword/heading/task contact,
+> name stable ids the compiled index rebuilds to, record
+> semantic as None, and budgeted inclusion names only
+> retrieved or routed ids). Honest gaps: no second
+> retrieval stack stands, nothing is injected into a
+> prompt, and no caller consumes the reconciliation or
+> the audit yet.**
+
+
 ---
 
 
@@ -4897,6 +4922,28 @@ Success criterion:
 
 
 > Caducea remains recognizably herself across very long conversations.
+
+
+> **Completion note — Slice 159 (2026-11-01): §84 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `drift_phase_items` / `drift_phase_item` /
+> `drift_phase_contract` surfaces: all six items
+> implemented by their own sections (Character Anchors
+> §17, Anti-Anchors §18, PersonaWatchdog §§27/31, drift
+> score §§28–29, response repair §30, refresh triggers
+> §§32–33). The pure `retrieval_drift_audit` proves the
+> criterion from a supplied compile plus caller-supplied
+> drift scores (anchors and anti-anchors present,
+> counted, and verbatim at the kernel head; drift
+> routing agreeing across its recomputations and with a
+> supplied §29 artefact, so a tampered artefact surfaces
+> as unmet; significant drift requiring repair with the
+> §30 plan's steps planned and insignificant drift
+> routing to output with no repair; every due §§32–33
+> refresh plan carrying exactly the §32 contents).
+> Honest gaps: no new watchdog stands, no live drift is
+> evaluated, no response is repaired, and no caller
+> consumes the reconciliation or the audit yet.**
 
 
 ---
