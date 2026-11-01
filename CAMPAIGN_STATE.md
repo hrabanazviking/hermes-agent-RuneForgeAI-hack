@@ -4375,3 +4375,13 @@ portable state: any agent (Muse or Hermes) resumes from here.
   never-evict rule when read at slice start, expect a
   pure eviction-order/contract surface over
   caller-supplied pressure items, not a live evictor.
+- Slice 149 follow-up (same tick, minutes later): the
+  module docstring at the head of `persona_runtime.py`
+  still read §§3-62 — a late grep caught that this slice
+  had updated the packet label and the plugin.yaml
+  description but not the docstring earlier slices kept
+  in step. Fixed to §§3-64; targeted re-run of the new
+  contract file 12/12 pass
+  (`~/workspace/.verify-tmp/slice149_docstring_fix.log`);
+  README invariant still held. Banked and pushed as its
+  own commit under the standing go-ahead.
