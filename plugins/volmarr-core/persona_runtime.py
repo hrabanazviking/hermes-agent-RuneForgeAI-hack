@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-44).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-46).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -4973,6 +4973,359 @@ def retrieve_tool_policy(index: list[dict[str, Any]],
     return selected[:bounded]
 
 
+# --- §45 memory policy usage + §46 avatar policy usage ----
+#
+# §45: the model normally does not need the entire Memory
+# Policy in context — the memory subsystem itself
+# implements it. Policy text is retrieved only when
+# resolving memory conflicts, deciding promotion,
+# performing reflection, or explaining memory decisions,
+# and behavior should move into code wherever practical.
+#
+# §46: the Avatar file rarely belongs in ordinary text
+# inference. It is retrieved only when generating images,
+# controlling the avatar, describing the persona,
+# selecting expressions, or in VR interaction; the avatar
+# controller can consume structured AvatarIR directly.
+
+# The §45 occasions, in roadmap order (the roadmap's
+# phrases slugified).
+MEMORY_POLICY_OCCASIONS = (
+    "resolving_memory_conflicts", "deciding_promotion",
+    "performing_reflection", "explaining_memory_decisions",
+)
+
+_MEMORY_POLICY_OCCASION_LEXICON = (
+    ("resolving_memory_conflicts", frozenset({
+        "conflict", "conflicts", "conflicting", "resolve",
+        "resolves", "resolving", "resolution", "contradiction",
+        "contradictions", "contradictory"})),
+    ("deciding_promotion", frozenset({
+        "promotion", "promote", "promotes", "promoted",
+        "promoting"})),
+    ("performing_reflection", frozenset({
+        "reflection", "reflections", "reflect", "reflects",
+        "reflecting"})),
+    ("explaining_memory_decisions", frozenset({
+        "explain", "explains", "explaining", "explanation",
+        "explanations", "justify", "justifying"})),
+)
+
+# The §46 occasions, in roadmap order (the roadmap's
+# phrases slugified; "describing Caducea" is the persona
+# description occasion).
+AVATAR_POLICY_OCCASIONS = (
+    "generating_images", "controlling_avatar",
+    "describing_persona", "selecting_expressions",
+    "vr_interaction",
+)
+
+_AVATAR_OCCASION_LEXICON = (
+    ("generating_images", frozenset({
+        "image", "images", "picture", "pictures", "portrait",
+        "portraits", "generate", "generates", "generating",
+        "render", "renders", "rendering", "illustration",
+        "illustrations"})),
+    ("controlling_avatar", frozenset({
+        "control", "controls", "controlling", "controlled",
+        "move", "moves", "moving", "pose", "poses"})),
+    ("describing_persona", frozenset({
+        "describe", "describes", "describing", "description",
+        "appearance", "look", "looks"})),
+    ("selecting_expressions", frozenset({
+        "expression", "expressions", "facial", "select",
+        "selects", "selecting", "selection"})),
+    ("vr_interaction", frozenset({
+        "vr", "virtual", "reality", "headset", "immersive"})),
+)
+
+
+def memory_policy_occasions() -> list[str]:
+    return list(MEMORY_POLICY_OCCASIONS)
+
+
+def memory_policy_usage_contract() -> dict[str, Any]:
+    """The §45 Memory Policy usage contract. Pure.
+
+    The model normally does not need the entire Memory
+    Policy in context: the memory subsystem itself
+    implements it. Policy text is retrieved selectively —
+    explicit calls only, restricted to the memory_policy
+    document role — only on one of the four §45 occasions,
+    and behavior should move into code wherever practical.
+    This layer injects nothing and implements no memory
+    subsystem; it names and performs the selection.
+    """
+    return {
+        "name": "MemoryPolicyUsage",
+        "role": "memory_policy",
+        "occasions": list(MEMORY_POLICY_OCCASIONS),
+        "normally_needed_in_context": False,
+        "implemented_by": "memory_subsystem",
+        "retrieve_only_on_occasion": True,
+        "behavior_in_code_where_practical": True,
+        "continuously_injected": False,
+        "retrieval": "explicit_only",
+        "injects": False,
+    }
+
+
+def classify_memory_policy_occasions(text: Any) -> list[str]:
+    """The §45 occasions a text signals, in roadmap order.
+
+    Pure. An occasion is present when any of its lexicon
+    words appears as a token in the text. No model call.
+    Malformed text is refused.
+    """
+    if not isinstance(text, str):
+        raise PersonaRuntimeError(
+            "memory policy text is invalid")
+    tokens = _tokens(text)
+    return [occasion for occasion, words in
+            _MEMORY_POLICY_OCCASION_LEXICON if tokens & words]
+
+
+def memory_policy_occasions_for_section(
+        entry: dict[str, Any]) -> list[str]:
+    """A compiled section's §45 occasions, in roadmap order.
+
+    Pure. Derived from the section's heading and bare
+    section id only — never authored or stored.
+    """
+    return classify_memory_policy_occasions(
+        f"{entry['heading']} {entry['section_id']}")
+
+
+def memory_policy_retrieval_need(text: Any) -> dict[str, Any]:
+    """Whether a task needs Memory Policy text (§45). Pure.
+
+    A signalled §45 occasion means selective retrieval;
+    anything else means the memory subsystem implements
+    the policy on its own and no policy text is needed.
+    """
+    if not isinstance(text, str):
+        raise PersonaRuntimeError(
+            "memory policy text is invalid")
+    occasions = classify_memory_policy_occasions(text)
+    if occasions:
+        return {
+            "occasions": occasions,
+            "mode": "selective_retrieval",
+            "dynamic_retrieval": True,
+            "subsystem_only": False,
+        }
+    return {
+        "occasions": [],
+        "mode": "subsystem_only",
+        "dynamic_retrieval": False,
+        "subsystem_only": True,
+    }
+
+
+def _retrieve_on_occasions(index: list[dict[str, Any]],
+                           role: str,
+                           occasions_for_section,
+                           classify_occasions,
+                           valid_occasions: tuple[str, ...],
+                           error_label: str,
+                           query: str = "",
+                           task_text: str | None = None,
+                           occasion: Any = None,
+                           limit: int = RETRIEVAL_DEFAULT_LIMIT
+                           ) -> list[dict[str, Any]]:
+    """Shared selective retrieval for §§45–46. Pure.
+
+    Restricted to ``role`` and ranked by §13. Retrieval
+    happens only for a signalled occasion: an explicit
+    ``occasion`` (slugified; unknown occasions refused)
+    filters the results to sections carrying it and
+    supplies the signal when no query or task text is
+    given; occasions may also be signalled by the query
+    or task text itself. A section qualifies only when
+    its own occasions intersect the signalled ones — the
+    occasion is the index, so a merely §13-adjacent
+    section is not retrieved. With no occasion signalled,
+    nothing is retrieved. Each result is a §13-shaped
+    result annotated with its section's occasions.
+    """
+    wanted = None
+    if occasion is not None:
+        if not isinstance(occasion, str) or not occasion.strip():
+            raise PersonaRuntimeError(f"{error_label} is invalid")
+        wanted = _slugify(occasion)
+        if wanted not in valid_occasions:
+            raise PersonaRuntimeError(f"{error_label} is invalid")
+    signal = " ".join(
+        part for part in (query or "", task_text or "") if part)
+    signalled = set(classify_occasions(signal))
+    if wanted is not None:
+        signalled.add(wanted)
+    if not signalled:
+        return []
+    effective_query = query
+    if wanted is not None and not (query or "").strip() \
+            and task_text is None:
+        effective_query = wanted.replace("_", " ")
+    entries = [entry for entry in index
+               if entry.get("role") == role]
+    tags_wanted = classify_task(
+        task_text if task_text is not None else effective_query)
+    try:
+        bounded = int(limit)
+    except (TypeError, ValueError):
+        bounded = RETRIEVAL_DEFAULT_LIMIT
+    bounded = max(1, min(RETRIEVAL_MAX_LIMIT, bounded))
+    ranked = {
+        row["stable_id"]: row for row in retrieve_sections(
+            entries, query=effective_query, task_text=task_text,
+            limit=RETRIEVAL_MAX_LIMIT)}
+    selected = []
+    for entry in entries:
+        stable = entry.get(
+            "stable_id",
+            stable_section_id(entry["role"], entry["section_id"]))
+        occasions = occasions_for_section(entry)
+        row = ranked.get(stable)
+        if not (set(occasions) & signalled):
+            continue
+        if row is None:
+            score = retrieval_score(
+                entry, query=effective_query,
+                task_tags_=tags_wanted)
+            row = {
+                "stable_id": stable, "role": entry["role"],
+                "section_id": entry["section_id"],
+                "heading": entry["heading"],
+                "priority": float(entry.get("priority", 0.40)),
+                "task_tags": list(tags_wanted),
+                "tags": section_tags(entry),
+                "score": score, "text": entry["text"],
+            }
+        row = dict(row)
+        row["occasions"] = occasions
+        selected.append(row)
+    selected.sort(
+        key=lambda row: (-row["score"]["total"], row["stable_id"]))
+    return selected[:bounded]
+
+
+def retrieve_memory_policy(index: list[dict[str, Any]],
+                           query: str = "",
+                           task_text: str | None = None,
+                           occasion: Any = None,
+                           limit: int = RETRIEVAL_DEFAULT_LIMIT
+                           ) -> list[dict[str, Any]]:
+    """Selectively retrieve Memory Policy sections (§45).
+
+    Pure. Restricted to the memory_policy role; with no
+    §45 occasion signalled, nothing is retrieved — the
+    memory subsystem implements the policy on its own.
+    """
+    return _retrieve_on_occasions(
+        index, "memory_policy", memory_policy_occasions_for_section,
+        classify_memory_policy_occasions, MEMORY_POLICY_OCCASIONS,
+        "memory policy occasion", query=query,
+        task_text=task_text, occasion=occasion, limit=limit)
+
+
+def avatar_policy_occasions() -> list[str]:
+    return list(AVATAR_POLICY_OCCASIONS)
+
+
+def avatar_policy_usage_contract() -> dict[str, Any]:
+    """The §46 Avatar Policy usage contract. Pure.
+
+    The Avatar file rarely belongs in ordinary text
+    inference: it is retrieved selectively — explicit
+    calls only, restricted to the avatar document role —
+    only on one of the five §46 occasions. The avatar
+    controller can consume structured AvatarIR directly;
+    this layer owns no avatar controller and injects
+    nothing.
+    """
+    return {
+        "name": "AvatarPolicyUsage",
+        "role": "avatar",
+        "occasions": list(AVATAR_POLICY_OCCASIONS),
+        "rarely_in_ordinary_text_inference": True,
+        "retrieve_only_on_occasion": True,
+        "avatar_controller_consumes": "AvatarIR",
+        "avatar_controller_direct_ir": True,
+        "continuously_injected": False,
+        "retrieval": "explicit_only",
+        "injects": False,
+    }
+
+
+def classify_avatar_occasions(text: Any) -> list[str]:
+    """The §46 occasions a text signals, in roadmap order.
+
+    Pure. An occasion is present when any of its lexicon
+    words appears as a token in the text. No model call.
+    Malformed text is refused.
+    """
+    if not isinstance(text, str):
+        raise PersonaRuntimeError("avatar text is invalid")
+    tokens = _tokens(text)
+    return [occasion for occasion, words in
+            _AVATAR_OCCASION_LEXICON if tokens & words]
+
+
+def avatar_occasions_for_section(
+        entry: dict[str, Any]) -> list[str]:
+    """A compiled section's §46 occasions, in roadmap order.
+
+    Pure. Derived from the section's heading and bare
+    section id only — never authored or stored.
+    """
+    return classify_avatar_occasions(
+        f"{entry['heading']} {entry['section_id']}")
+
+
+def avatar_retrieval_need(text: Any) -> dict[str, Any]:
+    """Whether a task needs Avatar sections (§46). Pure.
+
+    A signalled §46 occasion means selective retrieval;
+    anything else is ordinary text inference, where the
+    Avatar file rarely belongs.
+    """
+    if not isinstance(text, str):
+        raise PersonaRuntimeError("avatar text is invalid")
+    occasions = classify_avatar_occasions(text)
+    if occasions:
+        return {
+            "occasions": occasions,
+            "mode": "selective_retrieval",
+            "dynamic_retrieval": True,
+            "ordinary_text_inference": False,
+        }
+    return {
+        "occasions": [],
+        "mode": "not_in_ordinary_inference",
+        "dynamic_retrieval": False,
+        "ordinary_text_inference": True,
+    }
+
+
+def retrieve_avatar_policy(index: list[dict[str, Any]],
+                           query: str = "",
+                           task_text: str | None = None,
+                           occasion: Any = None,
+                           limit: int = RETRIEVAL_DEFAULT_LIMIT
+                           ) -> list[dict[str, Any]]:
+    """Selectively retrieve Avatar sections (§46). Pure.
+
+    Restricted to the avatar role; with no §46 occasion
+    signalled, nothing is retrieved — the Avatar file
+    stays out of ordinary text inference.
+    """
+    return _retrieve_on_occasions(
+        index, "avatar", avatar_occasions_for_section,
+        classify_avatar_occasions, AVATAR_POLICY_OCCASIONS,
+        "avatar occasion", query=query, task_text=task_text,
+        occasion=occasion, limit=limit)
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -5442,6 +5795,57 @@ class PersonaToolPolicyRetriever:
             tool_intent=tool_intent, limit=limit)
 
 
+class PersonaMemoryPolicyRetriever:
+    """Explicit §45 selective retrieval over a fresh compile.
+
+    One explicit call compiles (deterministically, writing
+    nothing) and selects from the compiled index's
+    memory_policy sections only, for a signalled §45
+    occasion. Ordinarily nothing is retrieved — the memory
+    subsystem implements the policy itself. No hook, no
+    per-message call, no injection.
+    """
+
+    def __init__(self, ctx) -> None:
+        self._compiler = PersonaCompiler(ctx)
+
+    def retrieve(self, query: str = "", task_text: str | None = None,
+                 occasion: str | None = None,
+                 limit: int = RETRIEVAL_DEFAULT_LIMIT
+                 ) -> list[dict[str, Any]]:
+        compiled = self._compiler.compile()
+        if compiled is None:
+            return []
+        return retrieve_memory_policy(
+            compiled["index"], query=query, task_text=task_text,
+            occasion=occasion, limit=limit)
+
+
+class PersonaAvatarPolicyRetriever:
+    """Explicit §46 selective retrieval over a fresh compile.
+
+    One explicit call compiles (deterministically, writing
+    nothing) and selects from the compiled index's avatar
+    sections only, for a signalled §46 occasion. Ordinary
+    text inference retrieves nothing. No hook, no
+    per-message call, no avatar control.
+    """
+
+    def __init__(self, ctx) -> None:
+        self._compiler = PersonaCompiler(ctx)
+
+    def retrieve(self, query: str = "", task_text: str | None = None,
+                 occasion: str | None = None,
+                 limit: int = RETRIEVAL_DEFAULT_LIMIT
+                 ) -> list[dict[str, Any]]:
+        compiled = self._compiler.compile()
+        if compiled is None:
+            return []
+        return retrieve_avatar_policy(
+            compiled["index"], query=query, task_text=task_text,
+            occasion=occasion, limit=limit)
+
+
 class PersonaRouter:
     """Explicit §14 routing over a fresh compile.
 
@@ -5631,7 +6035,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-44): persona "
+            f"Persona runtime (§§3-46): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -5824,6 +6228,20 @@ class PersonaRuntimeBridge:
             f"extra policy, a git force push retrieves "
             f"force_push, remote_git_operations, "
             f"reversibility, and authorization. "
+            f"§45 memory policy usage: the Memory Policy "
+            f"is implemented by the memory subsystem "
+            f"itself and retrieved only when resolving "
+            f"memory conflicts, deciding promotion, "
+            f"performing reflection, or explaining memory "
+            f"decisions — behavior moves into code "
+            f"wherever practical. §46 avatar policy "
+            f"usage: the Avatar file rarely belongs in "
+            f"ordinary text inference — retrieved only "
+            f"when generating images, controlling the "
+            f"avatar, describing the persona, selecting "
+            f"expressions, or in VR interaction; the "
+            f"avatar controller consumes structured "
+            f"AvatarIR directly. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -6026,6 +6444,22 @@ __all__ = [
     "tool_policy_needs",
     "retrieve_tool_policy",
     "PersonaToolPolicyRetriever",
+    "MEMORY_POLICY_OCCASIONS",
+    "AVATAR_POLICY_OCCASIONS",
+    "memory_policy_occasions",
+    "memory_policy_usage_contract",
+    "classify_memory_policy_occasions",
+    "memory_policy_occasions_for_section",
+    "memory_policy_retrieval_need",
+    "retrieve_memory_policy",
+    "PersonaMemoryPolicyRetriever",
+    "avatar_policy_occasions",
+    "avatar_policy_usage_contract",
+    "classify_avatar_occasions",
+    "avatar_occasions_for_section",
+    "avatar_retrieval_need",
+    "retrieve_avatar_policy",
+    "PersonaAvatarPolicyRetriever",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

@@ -2753,6 +2753,42 @@ Only retrieve policy text when:
 Behavior should move into code wherever practical.
 
 
+> **Completion note — Slice 140 (2026-10-31): §45 stands
+> in the same module. The pure `memory_policy_occasions`
+> function names the roadmap's four occasions in order
+> (resolving_memory_conflicts, deciding_promotion,
+> performing_reflection, explaining_memory_decisions —
+> the roadmap's phrases slugified); the pure
+> `memory_policy_usage_contract` function stands the rule
+> (the model normally does not need the entire Memory
+> Policy in context because the memory subsystem itself
+> implements it; policy text is retrieved only on an
+> occasion; behavior should move into code wherever
+> practical); the pure
+> `classify_memory_policy_occasions` function signals
+> occasions from a deterministic lexicon over a text's
+> tokens, the pure `memory_policy_occasions_for_section`
+> function derives a section's occasions from its heading
+> and bare section id only, and the pure
+> `memory_policy_retrieval_need` function returns the
+> mode (selective_retrieval for a signalled occasion,
+> subsystem_only otherwise). The pure
+> `retrieve_memory_policy` function and the explicit
+> `PersonaMemoryPolicyRetriever` perform the selection
+> over the compiled Layer B index: restricted to the
+> `memory_policy` role, ranked by the §13 hybrid score,
+> each result annotated with its section's §45 occasions;
+> an explicit occasion (slugified, unknown occasions
+> refused) filters the selection and supplies the signal
+> when no query or task text is given, a section
+> qualifies only when its own occasions intersect the
+> signalled ones, and with no occasion signalled nothing
+> is retrieved. Honest gaps: this layer implements no
+> memory subsystem, injects nothing, and no caller
+> consumes a selection yet; §46's avatar-policy usage
+> stands below.**
+
+
 ---
 
 
@@ -2773,6 +2809,42 @@ Retrieve when:
 
 
 The avatar controller can consume structured AvatarIR directly.
+
+
+> **Completion note — Slice 140 (2026-10-31): §46 stands
+> in the same module. The pure `avatar_policy_occasions`
+> function names the roadmap's five occasions in order
+> (generating_images, controlling_avatar,
+> describing_persona, selecting_expressions,
+> vr_interaction — the roadmap's phrases slugified, with
+> "describing Caducea" standing as the persona
+> description occasion); the pure
+> `avatar_policy_usage_contract` function stands the rule
+> (the Avatar file rarely belongs in ordinary text
+> inference; retrieved only on an occasion; the avatar
+> controller can consume structured AvatarIR directly);
+> the pure `classify_avatar_occasions` function signals
+> occasions from a deterministic lexicon over a text's
+> tokens, the pure `avatar_occasions_for_section`
+> function derives a section's occasions from its heading
+> and bare section id only, and the pure
+> `avatar_retrieval_need` function returns the mode
+> (selective_retrieval for a signalled occasion,
+> not_in_ordinary_inference otherwise). The pure
+> `retrieve_avatar_policy` function and the explicit
+> `PersonaAvatarPolicyRetriever` perform the selection
+> over the compiled Layer B index: restricted to the
+> `avatar` role, ranked by the §13 hybrid score, each
+> result annotated with its section's §46 occasions; an
+> explicit occasion (slugified, unknown occasions
+> refused) filters the selection and supplies the signal
+> when no query or task text is given, a section
+> qualifies only when its own occasions intersect the
+> signalled ones, and with no occasion signalled nothing
+> is retrieved. Honest gaps: this layer owns no avatar
+> controller, controls no avatar, injects nothing, and
+> no caller consumes a selection yet; §47's policy-to-code
+> migration is a later section.**
 
 
 ---

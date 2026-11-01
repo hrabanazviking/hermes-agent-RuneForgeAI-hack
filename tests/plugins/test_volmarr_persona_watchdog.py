@@ -304,7 +304,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert before == after
     assert compiled_b is None
     assert len(items) == 1
-    assert "§§3-44" in items[0].content
+    assert "§§3-46" in items[0].content
     assert "§27 watchdog" in items[0].content
     assert "evaluates drafts, it does not generate" in items[0].content
     assert "§28 drift dimensions" in items[0].content
