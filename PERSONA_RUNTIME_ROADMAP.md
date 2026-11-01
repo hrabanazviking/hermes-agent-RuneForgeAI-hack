@@ -4015,6 +4015,35 @@ SERVICE_BIBLE
 This is semantic authority, not file loading order.
 
 
+> **Completion note — Slice 151 (2026-11-01): §67 stands
+> in `plugins/volmarr-core/persona_runtime.py` as a pure
+> authority-order surface. The pure `canonical_file_order`
+> / `canonical_file_branches` / `canonical_file_priority`
+> functions name the six documents in roadmap traversal
+> order with their ranks, canonical names, parents, and
+> compiler roles: PERSONA_CORE (`core`) above
+> RELATIONSHIP_MODEL (`relationship`) above SERVICE_BIBLE
+> (`service_bible`), with MEMORY_POLICY (`memory_policy`),
+> TOOL_POLICY (`tool_policy`), and AVATAR (`avatar`)
+> branching under SERVICE_BIBLE as siblings sharing one
+> rank below it. The pure `canonical_file_document` /
+> `canonical_file_role` / `canonical_file_authority` /
+> `canonical_file_outranks` functions resolve a document
+> by roadmap name or compiler role (a bare `memory` names
+> no document here — the memory policy document and
+> derived memory are never conflated) and compare
+> authority (no branch document outranks another). The
+> chain reconciles with the §24 precedence tiers: its
+> three documents are exactly the §24 document tiers, in
+> the same order, with the same roles; the branch
+> documents are the remaining §3 compiler roles §24
+> refused as tiers. Honest gaps: this is semantic
+> authority only — no file is loaded by this order, no
+> document prose is interpreted, and no caller consumes
+> the order yet; §69's configurable priorities stand
+> unclaimed.**
+
+
 ---
 
 
@@ -4057,6 +4086,35 @@ Tell Volmarr whatever he wants to hear.
 
 
 Core wins.
+
+
+> **Completion note — Slice 151 (2026-11-01): §68 stands
+> in the same module as a pure conflict-winner surface
+> over the §67 authority order. The pure
+> `conflict_resolution_order` function names the roadmap
+> order (explicit config priority, PERSONA_CORE,
+> specialized policy, SERVICE_BIBLE, derived memory);
+> the pure `specialized_policies` /
+> `specialized_policy_for_domain` functions name the
+> specialized policy for each domain (memory →
+> `memory_policy`, tool → `tool_policy`, avatar →
+> `avatar` — the §67 branch documents); and the pure
+> `conflict_winner` / `conflict_outranks` functions
+> resolve two named sources: explicit config priority
+> above every document, the core above every other
+> document, a specialized policy elevated above the
+> service bible for its own domain only (outside its
+> domain it keeps its §67 branch rank below the service
+> bible), every other document conflict by the §67
+> order, and derived memory below every document. The
+> pure `conflict_example` function carries the roadmap's
+> example verbatim — core "Caducea is honest." against
+> the relationship file's "Tell Volmarr whatever he
+> wants to hear." — and resolves it to the core.
+> Honest gaps: no live conflict between documents is
+> detected, no document prose is interpreted, and no
+> caller consumes a winner yet; §69's configurable
+> priorities stand unclaimed.**
 
 
 ---

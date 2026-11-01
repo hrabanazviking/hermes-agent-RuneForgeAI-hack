@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-66).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-68).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -8068,6 +8068,400 @@ def context_pressure_contract() -> dict[str, Any]:
     }
 
 
+# §67: canonical file priority — the recommended
+# relative authority of the persona documents:
+# PERSONA_CORE above RELATIONSHIP_MODEL above
+# SERVICE_BIBLE, with MEMORY_POLICY, TOOL_POLICY, and
+# AVATAR branching under SERVICE_BIBLE. This is
+# semantic authority, not file loading order. It
+# reconciles with the §24 precedence tiers: the three
+# chain documents are exactly the §24 document tiers
+# (persona_core, relationship_model, service_bible, in
+# the same order, mapped to the same compiler roles),
+# and the three branch documents are the remaining §3
+# compiler roles (§24 refused them as precedence tiers
+# because they are not §24 tiers). The branches are
+# siblings under the service bible: they share one
+# rank below it, in roadmap order. This layer stands
+# the pure authority order only; it loads no file by
+# this order and interprets no document prose.
+CANONICAL_FILE_ORDER = (
+    "persona_core",
+    "relationship_model",
+    "service_bible",
+    "memory_policy",
+    "tool_policy",
+    "avatar",
+)
+
+CANONICAL_FILE_BRANCHES = (
+    "memory_policy",
+    "tool_policy",
+    "avatar",
+)
+
+_CANONICAL_FILE_ROWS = (
+    ("persona_core", "PERSONA_CORE", "core", 0, None),
+    ("relationship_model", "RELATIONSHIP_MODEL",
+     "relationship", 1, None),
+    ("service_bible", "SERVICE_BIBLE", "service_bible",
+     2, None),
+    ("memory_policy", "MEMORY_POLICY", "memory_policy",
+     3, "service_bible"),
+    ("tool_policy", "TOOL_POLICY", "tool_policy",
+     3, "service_bible"),
+    ("avatar", "AVATAR", "avatar", 3, "service_bible"),
+)
+
+_CANONICAL_FILE_RANK = {
+    document: rank
+    for document, _name, _role, rank, _parent
+    in _CANONICAL_FILE_ROWS}
+
+_CANONICAL_FILE_ROLES = {
+    document: role
+    for document, _name, role, _rank, _parent
+    in _CANONICAL_FILE_ROWS}
+
+# Canonical-document aliases, keyed by slugified input:
+# the roadmap's document names and the compiler's
+# semantic roles both name the same document. A bare
+# ``memory`` names no document here — the memory policy
+# document and derived memory (§68) are different
+# sources and are never conflated.
+_CANONICAL_FILE_ALIASES = {
+    "persona_core": "persona_core",
+    "core": "persona_core",
+    "relationship_model": "relationship_model",
+    "relationship": "relationship_model",
+    "service_bible": "service_bible",
+    "service": "service_bible",
+    "memory_policy": "memory_policy",
+    "tool_policy": "tool_policy",
+    "avatar": "avatar",
+}
+
+
+def _canonical_file_document(source: Any) -> str:
+    if not isinstance(source, str) or not source.strip():
+        raise PersonaRuntimeError(
+            "canonical file document is invalid")
+    document = _CANONICAL_FILE_ALIASES.get(_slugify(source))
+    if document is None:
+        raise PersonaRuntimeError(
+            f"unknown canonical file document: {source!r}")
+    return document
+
+
+def canonical_file_order() -> list[str]:
+    """The §67 documents in authority traversal order. Pure.
+
+    The chain in roadmap order (persona core,
+    relationship model, service bible), then the three
+    branch documents in roadmap order (memory policy,
+    tool policy, avatar).
+    """
+    return list(CANONICAL_FILE_ORDER)
+
+
+def canonical_file_branches() -> list[str]:
+    """The §67 documents branching under SERVICE_BIBLE. Pure."""
+    return list(CANONICAL_FILE_BRANCHES)
+
+
+def canonical_file_priority() -> list[dict[str, Any]]:
+    """The §67 canonical file priority rows. Pure.
+
+    Each row names its document (a stable slug), its
+    rank (0 is highest; the three branch documents
+    share rank 3 as siblings), the roadmap's canonical
+    name, the compiler's semantic document role, its
+    parent document (``service_bible`` for the branch
+    documents, None for the chain), and whether it is
+    a branch document. This is semantic authority, not
+    file loading order.
+    """
+    return [{
+        "document": document,
+        "rank": rank,
+        "name": name,
+        "document_role": role,
+        "parent": parent,
+        "branch": parent is not None,
+    } for document, name, role, rank, parent
+        in _CANONICAL_FILE_ROWS]
+
+
+def canonical_file_document(source: Any) -> str:
+    """The §67 document slug for a name or role. Pure.
+
+    Names are slugified, so the roadmap's own spellings
+    (``PERSONA_CORE``, ``Memory Policy``) and the
+    compiler roles (``core``, ``relationship``) resolve
+    too. Unknown or malformed sources are refused.
+    """
+    return _canonical_file_document(source)
+
+
+def canonical_file_role(source: Any) -> str:
+    """The compiler role of one §67 document. Pure."""
+    return _CANONICAL_FILE_ROLES[_canonical_file_document(source)]
+
+
+def canonical_file_authority(source: Any) -> dict[str, Any]:
+    """The §67 priority row for one document. Pure."""
+    document = _canonical_file_document(source)
+    for row in canonical_file_priority():
+        if row["document"] == document:
+            return row
+    raise PersonaRuntimeError(
+        "canonical file document is invalid")
+
+
+def canonical_file_outranks(first: Any, second: Any) -> bool:
+    """Whether ``first`` strictly outranks ``second`` (§67).
+
+    Pure. The chain outranks in roadmap order and every
+    chain document outranks the branch documents; the
+    branch documents are siblings and none outranks
+    another. Unknown or malformed sources are refused.
+    """
+    return _CANONICAL_FILE_RANK[_canonical_file_document(first)] \
+        < _CANONICAL_FILE_RANK[_canonical_file_document(second)]
+
+
+def canonical_file_contract() -> dict[str, Any]:
+    """The §67 Canonical File Priority contract. Pure.
+
+    The recommended relative authority stands as a
+    semantic authority order mapping the roadmap's
+    document names to the compiler roles, reconciled
+    with the §24 precedence tiers for the three chain
+    documents. This layer loads no file by this order.
+    """
+    return {
+        "name": "CanonicalFilePriority",
+        "order": canonical_file_order(),
+        "roles": {
+            document: _CANONICAL_FILE_ROLES[document]
+            for document in CANONICAL_FILE_ORDER},
+        "branches": canonical_file_branches(),
+        "branch_parent": "service_bible",
+        "semantic_authority": True,
+        "file_loading_order": False,
+        "precedence_basis": "§24 precedence tiers",
+    }
+
+
+# §68: conflict resolution — if persona documents
+# conflict: explicit config priority above PERSONA_CORE
+# above a specialized policy for its domain above
+# SERVICE_BIBLE above derived memory. The specialized
+# policies are the §67 branch documents, each for its
+# own domain (memory policy for memory, tool policy
+# for tools, avatar for avatar/embodiment): a branch
+# document is elevated above the service bible only
+# for its own domain; outside its domain it keeps its
+# §67 branch rank, below the service bible. Every
+# other document conflict resolves by the §67
+# authority order, explicit config priority stands
+# above every document, and derived memory stands
+# below every document. The roadmap's example: core
+# honesty beats a relationship file's
+# tell-him-what-he-wants — core wins. This layer
+# stands the pure conflict-winner surface over the
+# §67 order only; it detects no live conflict and
+# interprets no document prose.
+CONFLICT_RESOLUTION_ORDER = (
+    "explicit_config_priority",
+    "persona_core",
+    "specialized_policy",
+    "service_bible",
+    "derived_memory",
+)
+
+CONFLICT_DOMAINS = (
+    "memory",
+    "tool",
+    "avatar",
+)
+
+CONFLICT_SPECIALIZED_POLICIES = {
+    "memory": "memory_policy",
+    "tool": "tool_policy",
+    "avatar": "avatar",
+}
+
+_CONFLICT_DOMAIN_ALIASES = {
+    "memory": "memory",
+    "memory_policy": "memory",
+    "tool": "tool",
+    "tools": "tool",
+    "tool_policy": "tool",
+    "avatar": "avatar",
+    "avatar_policy": "avatar",
+    "embodiment": "avatar",
+}
+
+_CONFLICT_SOURCE_ALIASES = {
+    "explicit_config_priority": "explicit_config_priority",
+    "explicit_config": "explicit_config_priority",
+    "explicit_priority": "explicit_config_priority",
+    "config_priority": "explicit_config_priority",
+    "config": "explicit_config_priority",
+    "specialized_policy": "specialized_policy",
+    "derived_memory": "derived_memory",
+    "derived": "derived_memory",
+}
+
+
+def _conflict_domain(domain: Any) -> str:
+    if not isinstance(domain, str) or not domain.strip():
+        raise PersonaRuntimeError("conflict domain is invalid")
+    resolved = _CONFLICT_DOMAIN_ALIASES.get(_slugify(domain))
+    if resolved is None:
+        raise PersonaRuntimeError(
+            f"unknown conflict domain: {domain!r}")
+    return resolved
+
+
+def _conflict_source(source: Any) -> str:
+    if not isinstance(source, str) or not source.strip():
+        raise PersonaRuntimeError("conflict source is invalid")
+    slug = _slugify(source)
+    resolved = _CONFLICT_SOURCE_ALIASES.get(slug)
+    if resolved is not None:
+        return resolved
+    document = _CANONICAL_FILE_ALIASES.get(slug)
+    if document is None:
+        raise PersonaRuntimeError(
+            f"unknown conflict source: {source!r}")
+    return document
+
+
+def _conflict_rank(source: str,
+                   domain: str | None) -> int:
+    if source == "explicit_config_priority":
+        return 0
+    if source == "persona_core":
+        return 10
+    if source == "specialized_policy":
+        return 20
+    if source == "derived_memory":
+        return 100
+    if domain is not None \
+            and CONFLICT_SPECIALIZED_POLICIES[domain] == source:
+        return 20
+    return 30 + 10 * _CANONICAL_FILE_RANK[source]
+
+
+def conflict_resolution_order() -> list[str]:
+    """The §68 conflict resolution order, highest first. Pure."""
+    return list(CONFLICT_RESOLUTION_ORDER)
+
+
+def conflict_domains() -> list[str]:
+    """The §68 specialized-policy domains. Pure."""
+    return list(CONFLICT_DOMAINS)
+
+
+def specialized_policies() -> dict[str, str]:
+    """The §68 specialized policy for each domain. Pure."""
+    return dict(CONFLICT_SPECIALIZED_POLICIES)
+
+
+def specialized_policy_for_domain(domain: Any) -> str:
+    """The §68 specialized policy document for a domain. Pure.
+
+    Domain names are slugified (``memory`` /
+    ``memory_policy``, ``tool`` / ``tools`` /
+    ``tool_policy``, ``avatar`` / ``embodiment``).
+    Unknown or malformed domains are refused.
+    """
+    return CONFLICT_SPECIALIZED_POLICIES[_conflict_domain(domain)]
+
+
+def conflict_winner(first: Any, second: Any,
+                    domain: Any = None) -> str:
+    """The winning §68 source of two conflicting sources. Pure.
+
+    Sources are the explicit config priority, any §67
+    document (by roadmap name or compiler role), the
+    generic specialized-policy tier, or derived memory;
+    names are slugified. An optional domain names the
+    specialized policy's own domain, elevating that
+    branch document for this conflict only. Returns the
+    winning source's stable slug; on a tie the first
+    source wins (a source never loses to itself, and
+    sibling branch documents tie). Unknown sources or
+    domains are refused. This layer detects no live
+    conflict and interprets no prose.
+    """
+    resolved_domain = None if domain is None \
+        else _conflict_domain(domain)
+    first_source = _conflict_source(first)
+    second_source = _conflict_source(second)
+    if _conflict_rank(first_source, resolved_domain) \
+            <= _conflict_rank(second_source, resolved_domain):
+        return first_source
+    return second_source
+
+
+def conflict_outranks(first: Any, second: Any,
+                      domain: Any = None) -> bool:
+    """Whether ``first`` strictly outranks ``second`` (§68).
+
+    Pure. Explicit config priority outranks every
+    document, the persona core outranks the service
+    bible and derived memory, a specialized policy
+    outranks the service bible for its own domain only,
+    and derived memory outranks nothing. Unknown
+    sources or domains are refused.
+    """
+    resolved_domain = None if domain is None \
+        else _conflict_domain(domain)
+    return _conflict_rank(_conflict_source(first), resolved_domain) \
+        < _conflict_rank(_conflict_source(second), resolved_domain)
+
+
+def conflict_example() -> dict[str, Any]:
+    """The §68 roadmap conflict example, verbatim. Pure.
+
+    The core says Caducea is honest; the relationship
+    file accidentally says to tell Volmarr whatever he
+    wants to hear; the core wins.
+    """
+    return {
+        "core_directive": "Caducea is honest.",
+        "conflicting_source": "relationship_model",
+        "conflicting_directive":
+            "Tell Volmarr whatever he wants to hear.",
+        "winner": conflict_winner(
+            "persona_core", "relationship_model"),
+        "winning_directive": "Caducea is honest.",
+    }
+
+
+def conflict_contract() -> dict[str, Any]:
+    """The §68 Conflict Resolution contract. Pure.
+
+    Conflicts between persona documents resolve by the
+    roadmap's order over the §67 authority surface,
+    and the roadmap's example resolves to the core.
+    This layer detects no live conflict between
+    documents and interprets no prose.
+    """
+    return {
+        "name": "ConflictResolution",
+        "order": conflict_resolution_order(),
+        "specialized_policies": specialized_policies(),
+        "example_winner": conflict_example()["winner"],
+        "core_wins_over_relationship": True,
+        "detects_live_conflicts": False,
+        "interprets_prose": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -8777,7 +9171,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-66): persona "
+            f"Persona runtime (§§3-68): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -9107,6 +9501,18 @@ class PersonaRuntimeBridge:
             f"low-priority persona retrieval, project "
             f"background) and the Persona Kernel is never "
             f"evicted; this layer evicts nothing live. "
+            f"§67 canonical file priority: persona core > "
+            f"relationship model > service bible, with "
+            f"memory policy, tool policy, and avatar "
+            f"branching under the service bible as "
+            f"semantic authority, not file loading order; "
+            f"this layer loads no file by that order. "
+            f"§68 conflict resolution: explicit config "
+            f"priority > persona core > specialized policy "
+            f"for its domain > service bible > derived "
+            f"memory — core honesty beats a relationship "
+            f"file's tell-him-what-he-wants, core wins; "
+            f"this layer detects no live conflict. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -9479,6 +9885,27 @@ __all__ = [
     "context_pressure_never_evict",
     "context_pressure_plan",
     "context_pressure_contract",
+    "CANONICAL_FILE_ORDER",
+    "CANONICAL_FILE_BRANCHES",
+    "canonical_file_order",
+    "canonical_file_branches",
+    "canonical_file_priority",
+    "canonical_file_document",
+    "canonical_file_role",
+    "canonical_file_authority",
+    "canonical_file_outranks",
+    "canonical_file_contract",
+    "CONFLICT_RESOLUTION_ORDER",
+    "CONFLICT_DOMAINS",
+    "CONFLICT_SPECIALIZED_POLICIES",
+    "conflict_resolution_order",
+    "conflict_domains",
+    "specialized_policies",
+    "specialized_policy_for_domain",
+    "conflict_winner",
+    "conflict_outranks",
+    "conflict_example",
+    "conflict_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
