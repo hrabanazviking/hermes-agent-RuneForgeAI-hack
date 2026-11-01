@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-80).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-82).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -10427,6 +10427,288 @@ def bootstrap_contract() -> dict[str, Any]:
     }
 
 
+# §81: Phase 1 — Foundation lists persona.yaml,
+# PersonaLoader, document role mapping, file validation,
+# hot reload, and source hashing, with the success
+# criterion that Hermes can load arbitrarily named
+# persona documents from configuration. §82: Phase 2 —
+# Compiler lists the Markdown section parser, PersonaIR,
+# section identifiers, priority metadata, the compiled
+# manifest, and Persona Kernel generation, with the
+# criterion that six large Markdown files become one
+# compact runtime identity plus indexed detail. Both
+# phases were built section by section in earlier slices;
+# this reconciliation stands each roadmap item beside the
+# banked surface that carries it — implemented, or
+# equivalent where the banked surface carries the item
+# under a different name — and adds one pure audit over a
+# supplied compile proving the two criteria from the
+# artefact itself. No new loader or compiler stands here,
+# and no live startup wiring is claimed (§51 startup is a
+# plan surface).
+FOUNDATION_SUCCESS_CRITERION = (
+    "Hermes can load arbitrarily named persona documents "
+    "from configuration.")
+COMPILER_PHASE_SUCCESS_CRITERION = (
+    "Six large Markdown files become one compact runtime "
+    "identity plus indexed detail.")
+
+# The §81 items, in roadmap order: (item, roadmap name,
+# status, carrying section, banked surface).
+FOUNDATION_ITEMS = (
+    ("persona_yaml", "persona.yaml", "implemented", "§3",
+     "PersonaConfigStore"),
+    ("persona_loader", "PersonaLoader", "equivalent",
+     "§§3, 6", "PersonaConfigStore + PersonaCompiler.compile"),
+    ("document_role_mapping", "document role mapping",
+     "implemented", "§3", "PersonaConfigStore documents map"),
+    ("file_validation", "file validation", "implemented",
+     "§§3, 6", "PersonaConfigStore + PersonaCompiler.compile"),
+    ("hot_reload", "hot reload", "implemented", "§20",
+     "PersonaReloader.check"),
+    ("source_hashing", "source hashing", "implemented",
+     "§19", "hash_record"),
+)
+
+# The §82 items, in roadmap order, in the same shape.
+COMPILER_PHASE_ITEMS = (
+    ("markdown_section_parser", "Markdown section parser",
+     "implemented", "§11", "parse_sections"),
+    ("persona_ir", "PersonaIR", "implemented", "§8",
+     "build_persona_ir"),
+    ("section_identifiers", "section identifiers",
+     "implemented", "§12", "stable_section_id"),
+    ("priority_metadata", "priority metadata", "implemented",
+     "§§11, 16", "section_priority + priority_level"),
+    ("compiled_manifest", "compiled manifest", "implemented",
+     "§50", "manifest"),
+    ("persona_kernel_generation", "Persona Kernel generation",
+     "implemented", "§9", "PersonaCompiler kernel"),
+)
+
+_PHASE_STATUSES = ("implemented", "equivalent")
+
+
+def _phase_items(table) -> list[dict[str, Any]]:
+    return [
+        {"item": item, "roadmap_name": name, "status": status,
+         "section": section, "surface": surface}
+        for item, name, status, section, surface in table
+    ]
+
+
+def _phase_item(table, item: Any) -> dict[str, Any]:
+    for row in _phase_items(table):
+        if row["item"] == item:
+            return row
+    raise PersonaRuntimeError("persona phase item is invalid")
+
+
+def _phase_summary(table, criterion: str) -> dict[str, Any]:
+    items = _phase_items(table)
+    return {
+        "items": items,
+        "item_count": len(items),
+        "implemented": sum(
+            1 for row in items if row["status"] == "implemented"),
+        "equivalent": sum(
+            1 for row in items if row["status"] == "equivalent"),
+        "missing": sum(
+            1 for row in items
+            if row["status"] not in _PHASE_STATUSES),
+        "success_criterion": criterion,
+    }
+
+
+def foundation_items() -> list[dict[str, Any]]:
+    """The §81 Phase 1 items, in roadmap order. Pure."""
+    return _phase_items(FOUNDATION_ITEMS)
+
+
+def foundation_item(item: Any) -> dict[str, Any]:
+    """One §81 item by name, refusing unknown names. Pure."""
+    return _phase_item(FOUNDATION_ITEMS, item)
+
+
+def foundation_contract() -> dict[str, Any]:
+    """The §81 Phase 1 — Foundation reconciliation. Pure.
+
+    Every roadmap item stands carried by a banked surface:
+    the loader is the one equivalent, carried by the §3
+    config store plus the §6 compiler's explicit compile
+    (no class is named PersonaLoader, and none is added —
+    a shim name would carry nothing the compile does not).
+    The criterion is met at the compiler layer: a compile
+    loads documents under whatever filenames the config
+    names, by role. No live boot/startup wiring is claimed.
+    """
+    summary = _phase_summary(
+        FOUNDATION_ITEMS, FOUNDATION_SUCCESS_CRITERION)
+    return {
+        "name": "PersonaPhase1Foundation",
+        "phase": 1,
+        **summary,
+        "criterion_met_at": "compiler layer (explicit compile)",
+        "new_loader_created": False,
+        "live_startup_wiring_claimed": False,
+    }
+
+
+def compiler_phase_items() -> list[dict[str, Any]]:
+    """The §82 Phase 2 items, in roadmap order. Pure."""
+    return _phase_items(COMPILER_PHASE_ITEMS)
+
+
+def compiler_phase_item(item: Any) -> dict[str, Any]:
+    """One §82 item by name, refusing unknown names. Pure."""
+    return _phase_item(COMPILER_PHASE_ITEMS, item)
+
+
+def compiler_phase_contract() -> dict[str, Any]:
+    """The §82 Phase 2 — Compiler reconciliation. Pure.
+
+    Every roadmap item stands implemented by its own
+    earlier section's surface; the compact runtime
+    identity is the §9 kernel and the indexed detail is
+    the Layer B index over §12 stable ids. No second
+    compiler stands here.
+    """
+    summary = _phase_summary(
+        COMPILER_PHASE_ITEMS, COMPILER_PHASE_SUCCESS_CRITERION)
+    return {
+        "name": "PersonaPhase2Compiler",
+        "phase": 2,
+        **summary,
+        "compact_identity": "§9 Persona Kernel",
+        "indexed_detail": "Layer B section index (§12 stable ids)",
+        "new_compiler_created": False,
+    }
+
+
+def _manifest_consistent(manifest_value: dict[str, Any],
+                         record: dict[str, Any]) -> bool:
+    """Whether a §50 manifest agrees with a §19 record. Pure."""
+    return (
+        manifest_value.get("persona_id") == record["persona_id"]
+        and manifest_value.get("kernel_hash")
+        == record["kernel_hash"]
+        and {
+            role: entry.get("hash")
+            for role, entry in manifest_value.get(
+                "documents", {}).items()
+        } == record["document_hashes"]
+    )
+
+
+def phase_audit(compiled: Any) -> dict[str, Any]:
+    """Audit one compiled artefact against §§81–82. Pure.
+
+    The checks are derived from the artefact itself: the
+    §19 hash record is recomputed and must agree with
+    the record the compile stored on the artefact (so a
+    post-compile tamper of a document hash, the kernel
+    hash, or the persona hash surfaces), and the §50
+    manifest built from the artefact must agree with
+    that record. The rest: documents loaded by role with
+    a file and a sha256 each, distinct roles, a kernel
+    with its hash, an index whose every entry carries
+    the §12 stable id its role and section rebuild to
+    and the §§11/16 priority metadata, and a PersonaIR
+    hash. A malformed artefact is refused, in the
+    neighbouring validators' convention. This layer
+    loads and compiles nothing — the caller supplies
+    the artefact.
+    """
+    record = hash_record(compiled)
+    documents = compiled["documents"]
+    index = compiled.get("index")
+    kernel = compiled.get("kernel")
+    ir = compiled.get("ir")
+    if not isinstance(index, list) \
+            or not isinstance(kernel, dict) \
+            or not isinstance(ir, dict):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    hexdigits = set("0123456789abcdef")
+    documents_loaded = bool(documents) and all(
+        isinstance(doc, dict)
+        and isinstance(doc.get("role"), str) and doc["role"]
+        and isinstance(doc.get("file"), str) and doc["file"]
+        and isinstance(doc.get("sha256"), str)
+        for doc in documents)
+    source_hashes = documents_loaded and all(
+        len(doc["sha256"]) == 64
+        and set(doc["sha256"]) <= hexdigits
+        for doc in documents)
+    roles = [doc["role"] for doc in documents] \
+        if documents_loaded else []
+    checks = {
+        "documents_loaded": documents_loaded,
+        "role_mapping_present": bool(roles)
+        and len(set(roles)) == len(roles),
+        "source_hashes_present": source_hashes,
+        "kernel_present": isinstance(kernel.get("sha256"), str)
+        and len(kernel["sha256"]) == 64
+        and set(kernel["sha256"]) <= hexdigits,
+        "index_present": bool(index),
+        "stable_ids_present": bool(index) and all(
+            isinstance(entry, dict)
+            and entry.get("stable_id") == stable_section_id(
+                entry.get("role"), entry.get("section_id"))
+            for entry in index),
+        "priority_metadata_present": bool(index) and all(
+            isinstance(entry, dict)
+            and isinstance(entry.get("priority"), (int, float))
+            and not isinstance(entry.get("priority"), bool)
+            and entry.get("priority_level") in dict(PRIORITY_LEVELS)
+            and isinstance(entry.get("priority_authored"), bool)
+            for entry in index),
+        "ir_present": isinstance(ir.get("ir_hash"), str)
+        and bool(ir["ir_hash"]),
+        "manifest_consistent": _manifest_consistent(
+            manifest(compiled), record),
+        "hash_record_matches": compiled.get("hash_record")
+        == record,
+    }
+    foundation_met = all(checks[key] for key in (
+        "documents_loaded", "role_mapping_present",
+        "source_hashes_present"))
+    compiler_met = all(checks[key] for key in (
+        "kernel_present", "index_present", "stable_ids_present",
+        "priority_metadata_present", "ir_present",
+        "manifest_consistent"))
+    return {
+        "persona_id": record["persona_id"],
+        "checks": checks,
+        "document_count": len(documents),
+        "indexed_sections": len(index),
+        "foundation": {
+            **_phase_summary(
+                FOUNDATION_ITEMS, FOUNDATION_SUCCESS_CRITERION),
+            "criterion_met": foundation_met,
+        },
+        "compiler_phase": {
+            **_phase_summary(
+                COMPILER_PHASE_ITEMS,
+                COMPILER_PHASE_SUCCESS_CRITERION),
+            "criterion_met": compiler_met,
+        },
+        "audits_only": True,
+        "loads_or_compiles": False,
+    }
+
+
+def phases_contract() -> dict[str, Any]:
+    """The §§81–82 phase reconciliation, combined. Pure."""
+    return {
+        "name": "PersonaPhases1And2",
+        "foundation": foundation_contract(),
+        "compiler_phase": compiler_phase_contract(),
+        "audit_surface": "phase_audit",
+        "new_loader_created": False,
+        "new_compiler_created": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -11136,7 +11418,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-80): persona "
+            f"Persona runtime (§§3-82): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -11572,6 +11854,17 @@ class PersonaRuntimeBridge:
             f"configuration; this layer creates no "
             f"persona, writes no file, and registers "
             f"no new core command. "
+            f"§81 Phase 1 foundation and §82 Phase 2 "
+            f"compiler stand reconciled against the "
+            f"banked surfaces (the loader the one "
+            f"equivalent, carried by the §3 config "
+            f"store plus the §6 compile; every §82 "
+            f"item implemented by its own section), "
+            f"and the pure phase_audit proves both "
+            f"success criteria from a supplied "
+            f"compile; no new loader or compiler "
+            f"stands and no live startup wiring is "
+            f"claimed. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -12073,6 +12366,18 @@ __all__ = [
     "validate_bootstrap_plan",
     "bootstrap_example",
     "bootstrap_contract",
+    "FOUNDATION_SUCCESS_CRITERION",
+    "COMPILER_PHASE_SUCCESS_CRITERION",
+    "FOUNDATION_ITEMS",
+    "COMPILER_PHASE_ITEMS",
+    "foundation_items",
+    "foundation_item",
+    "foundation_contract",
+    "compiler_phase_items",
+    "compiler_phase_item",
+    "compiler_phase_contract",
+    "phase_audit",
+    "phases_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

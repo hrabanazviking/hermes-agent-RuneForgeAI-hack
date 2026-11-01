@@ -5207,3 +5207,74 @@ portable state: any agent (Muse or Hermes) resumes from here.
   Markdown files become one compact runtime identity
   plus indexed detail" — reconcile against the banked
   §§5/6/8/9/11/12/16/50 surfaces likewise.
+- 2026-11-01 ~11:4x–12:5x EST keeper tick: **Slice 158 DONE —
+  Persona Runtime §81 (Phase 1 — Foundation) and §82
+  (Phase 2 — Compiler) complete, banked and PUSHED under the
+  standing go-ahead.** No live work found at tick start (tree
+  clean, HEAD == origin/main at `3a925cb32c`; Slice 157's state
+  commit at 11:34 EST was its own completed push, verified, not
+  in-progress work; the Python-write blocker was probed absent —
+  tempfile writes succeed). `plugins/volmarr-core/
+  persona_runtime.py` extended in place — no new module file or
+  config key: §81's pure `foundation_items` / `foundation_item`
+  / `foundation_contract` stand Phase 1 reconciled against the
+  banked surfaces (persona.yaml, document role mapping, and
+  file validation implemented by §§3/6; hot reload by §20;
+  source hashing by §19; the PersonaLoader the one equivalent,
+  carried by the §3 config store plus the §6 compiler's
+  explicit compile — no shim class added), its success
+  criterion met at the compiler layer, no live boot/startup
+  wiring claimed (§51 startup is a plan surface). §82's pure
+  `compiler_phase_items` / `compiler_phase_item` /
+  `compiler_phase_contract` stand Phase 2 reconciled — all six
+  items implemented by their own sections (§11 parser, §8
+  PersonaIR, §12 identifiers, §§11/16 priority metadata, §50
+  manifest, §9 kernel generation). The pure `phase_audit` /
+  `phases_contract` prove both criteria from a supplied
+  compile (documents by role under the config's own filenames
+  with distinct roles and sha256 hashes; kernel hash; every
+  index entry carrying its rebuilt §12 stable id and §§11/16
+  priority metadata; PersonaIR hash; §50 manifest consistent
+  with the §19 record; the stored §19 hash record matching
+  its recomputation, so post-compile tampering surfaces as
+  unmet). Two in-slice fixes, both caught by the slice's own
+  contracts: the audit's first hash-record check was
+  tautological (recomputation compared with itself) — it now
+  compares against the record the compile stored, and the
+  manifest check became a cross-surface consistency check;
+  one test-side tuple-indexing bug was also corrected.
+  Packet label updated to §§3–82 (thirty-five older persona
+  files' packet assertions updated in-slice). Tests: targeted
+  29/29 pass (new file 9/9, after the fixes); targeted persona
+  run (42 files): **389 passed, 0 failed**; full volmarr/kista
+  run (111 files): **868 passed, 7 failed, 1 skipped** — exactly
+  Slice 157's 859 + the 9 new contracts, the failures the same
+  name-identical pre-existing environmental set in the same 3
+  files (5 core-plugin, 1 Verðandi-stimuli socket, 1
+  voice-runner loopback), verified in the run log's own summary
+  line (`~/workspace/.verify-tmp/slice158_full_run.log`,
+  973.6s). Smoke: `hermes --version` runs
+  (`vgit.3a925cb.dirty` pre-commit); README.md sha256 invariant
+  held (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §81 + §82 completion notes in the Persona Runtime
+  roadmap, plugin.yaml description now §§3–82. Honest gaps: no
+  new loader or compiler stands, no live startup wiring is
+  claimed, the audit loads and compiles nothing, and no caller
+  consumes a reconciliation or an audit yet.
+- **Next resume point: Slice 159 — Persona Runtime §83
+  (Phase 3 — Retrieval) and §84 (Phase 4 — Drift Control)**:
+  §83 lists persona section store, semantic embeddings,
+  keyword search, task classification, PersonaRouter, and
+  ContextBudgeter, with success criterion "Only relevant
+  persona material enters each prompt" — reconcile against
+  the banked §13 hybrid retrieval (whose semantic component
+  is honestly unavailable — no embedding surface is owned),
+  §14 router, and §15 budgeter when read at slice start,
+  expect an audit/reconciliation slice in the Slice 158
+  pattern, not a second retrieval stack; §84 lists
+  Character Anchors, Anti-Anchors, PersonaWatchdog, drift
+  score, response repair, and refresh triggers, with
+  criterion "Caducea remains recognizably herself across
+  very long conversations" — reconcile against the banked
+  §§17/18 anchors and §§27–33 watchdog/drift/repair/refresh
+  surfaces likewise.

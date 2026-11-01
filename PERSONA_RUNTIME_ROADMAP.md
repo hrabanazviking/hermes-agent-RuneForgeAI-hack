@@ -4785,6 +4785,24 @@ Success criterion:
 > Hermes can load arbitrarily named persona documents from configuration.
 
 
+> **Completion note — Slice 158 (2026-11-01): §81 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `foundation_items` / `foundation_item` /
+> `foundation_contract` surfaces: five items implemented
+> by their own sections (persona.yaml and the document
+> role mapping and file validation by §3/§6, hot reload
+> by §20, source hashing by §19) and one equivalent —
+> the PersonaLoader, carried by the §3 config store plus
+> the §6 compiler's explicit compile, with no shim class
+> added. The success criterion is met at the compiler
+> layer, and the pure `phase_audit` proves it from a
+> supplied compile (documents loaded by role under the
+> config's own filenames, distinct roles, sha256 hashes
+> present). Honest gaps: no live boot/startup wiring is
+> claimed (§51 startup is a plan surface) and no caller
+> consumes the reconciliation or the audit yet.**
+
+
 ---
 
 
@@ -4808,6 +4826,27 @@ Success criterion:
 
 
 > Six large Markdown files become one compact runtime identity plus indexed detail.
+
+
+> **Completion note — Slice 158 (2026-11-01): §82 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `compiler_phase_items` /
+> `compiler_phase_item` / `compiler_phase_contract`
+> surfaces: all six items implemented by their own
+> sections (Markdown section parser §11, PersonaIR §8,
+> section identifiers §12, priority metadata §§11/16,
+> compiled manifest §50, Persona Kernel generation
+> §9), the compact runtime identity being the §9 kernel
+> and the indexed detail the Layer B index. The pure
+> `phase_audit` proves the criterion from a supplied
+> compile (kernel hash present, every index entry
+> carrying its rebuilt §12 stable id and §§11/16
+> priority metadata, PersonaIR hash present, §50
+> manifest consistent with the §19 record, and the
+> stored §19 hash record matching its recomputation).
+> Honest gaps: no second compiler stands, no compile is
+> performed by the audit, and no caller consumes the
+> reconciliation or the audit yet.**
 
 
 ---
