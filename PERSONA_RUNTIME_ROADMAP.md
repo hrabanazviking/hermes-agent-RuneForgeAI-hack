@@ -2507,6 +2507,36 @@ Traits remain canonical.
 Memory provides history.
 
 
+> **Completion note — Slice 138 (2026-10-31): §41 stands
+> in `plugins/volmarr-core/persona_runtime.py` (extended
+> in place — no new file or config key) as the §24
+> precedence rule applied to the memory tier, reconciled
+> against §25 and §26. The pure
+> `memory_override_contract` function stands the rule
+> (traits remain canonical, memory's role is history at
+> the long_term_memory tier, memory may never override
+> the persona or redefine traits, and repeated evidence
+> never changes its authority); the pure
+> `memory_influence_allowed` function delegates to §24
+> (memory may affect current mood, immediate context,
+> and recent events only); the pure
+> `evaluate_memory_claim` function classifies a
+> memory-derived claim by the §25 grammatical forms — a
+> state-form claim ("was frustrated during debugging")
+> may be recorded as history, while a trait-form claim
+> ("is an anxious personality", "is a frustrated
+> personality" — the roadmap's own danger) is refused as
+> history and may never define persona, redefine
+> traits, or override the persona; and the pure
+> `memory_claim_authority` function proves repetition
+> never promotes memory (any non-negative evidence
+> count returns the same long_term_memory tier at §24
+> rank 3, never canonical). Honest gaps: no memory is
+> read or retrieved by this layer, and no caller
+> consumes the guard yet; §42's Service Bible retrieval
+> stands below.**
+
+
 ---
 
 
@@ -2537,6 +2567,37 @@ ADHD
 
 
 Retrieve selectively.
+
+
+> **Completion note — Slice 138 (2026-10-31): §42 stands
+> in the same module. The pure `service_bible_topics`
+> function names the roadmap's ten topics in order
+> (communication, coding, linux, open_source, ai,
+> documentation, research, project_aesir, attention,
+> adhd — the roadmap's spellings slugified); the pure
+> `service_bible_retrieval_contract` function stands
+> the rule (indexed by topic, retrieved selectively,
+> never continuously injected, explicit-only, this
+> layer injects nothing); the pure
+> `classify_service_topics` function signals topics from
+> a deterministic lexicon over a text's tokens, and the
+> pure `service_topics_for_section` function derives a
+> section's topics from its heading and bare section id
+> only. The pure `retrieve_service_bible` function and
+> the explicit `PersonaServiceBibleRetriever` perform
+> the selection over the compiled Layer B index:
+> restricted to the `service_bible` role (another role's
+> sections are never returned, contract-proven against
+> a core match), ranked by the §13 hybrid score, each
+> result a §13 result annotated with its section's §42
+> topics; an optional topic filter (slugified, unknown
+> topics refused) narrows the selection and supplies
+> the signal when no query or task text is given, and
+> with no signal at all nothing is retrieved — the
+> Bible is never dumped wholesale. Honest gaps: nothing
+> is injected and no caller consumes a selection yet;
+> §43's relationship-model retrieval is a later
+> section.**
 
 
 ---

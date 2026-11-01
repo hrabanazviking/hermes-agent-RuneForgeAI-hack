@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-40).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-42).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -475,6 +475,31 @@ What stands here, and nothing more:
   its recorded marker kin) is refused at build time and
   flagged by classification. This layer writes no
   memory; it shapes the record an extractor would write.
+- §41 memory must not override persona: memory retrieval
+  must not gradually transform the persona — traits
+  remain canonical and memory provides history. The pure
+  ``memory_override_contract`` / ``memory_influence_allowed``
+  / ``evaluate_memory_claim`` / ``memory_claim_authority``
+  functions stand the §24 precedence rule applied to the
+  memory tier: memory may affect current mood, immediate
+  context, and recent events only, however many memories
+  agree (repetition never promotes a memory's tier), and
+  a memory claim may be recorded as history only in
+  state form (§25) — a trait-form claim from memory is
+  refused, never a persona definition. This layer reads
+  and retrieves no memory.
+- §42 Service Bible dynamic retrieval: the Service Bible
+  may become huge, so it is never continuously injected;
+  its sections are indexed by the roadmap's topic list
+  (communication, coding, linux, open_source, ai,
+  documentation, research, project_aesir, attention,
+  adhd) and retrieved selectively. The pure
+  ``service_bible_topics`` / ``classify_service_topics`` /
+  ``service_topics_for_section`` / ``retrieve_service_bible``
+  functions and the explicit ``PersonaServiceBibleRetriever``
+  stand a deterministic selection over the compiled
+  index, restricted to the ``service_bible`` role and
+  reusing the §13 ranking; nothing is injected.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -4256,6 +4281,281 @@ def classify_memory_write(text: Any) -> dict[str, Any]:
     }
 
 
+# --- §41 memory must not override persona + §42 service bible ----
+#
+# §41: memory retrieval must not gradually transform the
+# persona. Traits remain canonical; memory provides
+# history. This is the §24 precedence rule applied to the
+# memory tier specifically, reconciled with §25 (a memory
+# claim, like a summary claim, may record state, never a
+# trait) and §26 (a non-canonical source is at most a
+# state). Repetition changes nothing: however many
+# conversations involved frustration, their memories do
+# not add up to an anxious personality. No memory is read
+# or retrieved by this layer.
+#
+# §42: the Service Bible may become huge, so it is never
+# continuously injected. Its sections are indexed by the
+# roadmap's topic list and retrieved selectively — an
+# explicit, deterministic selection over the compiled
+# Layer B index, restricted to the service_bible role and
+# reusing the §13 ranking. Nothing is injected here.
+
+# What memory provides (§41), as stable slugs. History is
+# the roadmap's own word; the other two are the §24
+# effects a non-canonical source may touch.
+MEMORY_PROVIDES = ("history", "recent_events", "immediate_context")
+
+# The §42 topic index, in roadmap order (the roadmap's
+# spellings slugified: AI -> ai, ADHD -> adhd).
+SERVICE_BIBLE_TOPICS = (
+    "communication", "coding", "linux", "open_source", "ai",
+    "documentation", "research", "project_aesir", "attention",
+    "adhd",
+)
+
+# Topic lexicon (§42): the words that signal each topic in
+# a query, a task, or a section heading/id. Deterministic,
+# like the §13 task lexicon; no model call.
+_SERVICE_TOPIC_LEXICON = (
+    ("communication", frozenset({
+        "communication", "message", "messages", "tone", "voice",
+        "speak", "speaking", "writing", "explain", "explaining"})),
+    ("coding", frozenset({
+        "coding", "code", "python", "function", "functions",
+        "debug", "debugging", "refactor", "tests", "testing",
+        "implement", "implementation"})),
+    ("linux", frozenset({
+        "linux", "shell", "systemd", "bash", "terminal",
+        "command", "commands", "unix", "permissions"})),
+    ("open_source", frozenset({
+        "open", "source", "github", "license", "licence",
+        "upstream", "repository", "repositories"})),
+    ("ai", frozenset({
+        "ai", "model", "models", "llm", "inference", "agent",
+        "agents", "artificial", "intelligence"})),
+    ("documentation", frozenset({
+        "documentation", "docs", "document", "documents",
+        "readme", "manual"})),
+    ("research", frozenset({
+        "research", "search", "investigate", "investigation",
+        "explore", "compare", "comparison"})),
+    ("project_aesir", frozenset({"aesir"})),
+    ("attention", frozenset({
+        "attention", "focus", "focused", "distraction",
+        "distractions"})),
+    ("adhd", frozenset({"adhd"})),
+)
+
+
+def memory_provides() -> list[str]:
+    return list(MEMORY_PROVIDES)
+
+
+def memory_must_not_override() -> list[str]:
+    return list(HISTORY_MUST_NOT_REDEFINE)
+
+
+def memory_override_contract() -> dict[str, Any]:
+    """The §41 memory-must-not-override contract. Pure.
+
+    Traits remain canonical — authored only in canonical
+    persona documents (§24 tiers persona_core,
+    relationship_model, service_bible). Memory, at the
+    long_term_memory tier, provides history: it may affect
+    current mood, immediate context, and recent events,
+    and it must never override the persona, redefine
+    foundational personality, identity, or traits, however
+    many memories point the same way. This layer reads and
+    retrieves no memory; it names the guard a retriever
+    must honour.
+    """
+    return {
+        "name": "MemoryMustNotOverridePersona",
+        "traits_remain_canonical": True,
+        "memory_role": "history",
+        "memory_tier": "long_term_memory",
+        "memory_may_override_persona": False,
+        "memory_may_redefine_traits": False,
+        "repeated_evidence_changes_authority": False,
+        "memory_provides": list(MEMORY_PROVIDES),
+        "memory_must_not_override": list(HISTORY_MUST_NOT_REDEFINE),
+        "retrieves_memory": False,
+    }
+
+
+def memory_influence_allowed(target: Any) -> bool:
+    """Whether memory may affect ``target`` (§41 via §24). Pure.
+
+    Targets are the §24 effects and foundations (see
+    ``influence_allowed``): memory may affect current
+    mood, immediate context, and recent events; it may
+    never touch foundational personality, identity, or
+    traits. Unknown targets are refused.
+    """
+    return influence_allowed("long_term_memory", target)
+
+
+def evaluate_memory_claim(text: Any) -> dict[str, Any]:
+    """Evaluate one memory-derived claim under §41. Pure.
+
+    The claim's form is the §25 grammatical classification
+    (trait-form markers win, then temporal/state markers,
+    otherwise unclassified). A state-form claim ("was
+    frustrated during debugging") may be recorded as
+    history. A trait-form claim ("is an anxious
+    personality") is a persona definition attempted from
+    memory: it is refused as history, and it may never
+    define persona, redefine traits, or override the
+    persona — memory is at most a state (§26), however it
+    is phrased. An unclassified claim is refused
+    fail-closed, like §25.
+    """
+    verdict = classify_summary_claim(text)
+    form = verdict["form"]
+    return {
+        "form": form,
+        "kind": "state",
+        "trait_claim_allowed": False,
+        "may_record_as_history": form == "state",
+        "may_define_persona": False,
+        "may_redefine_traits": False,
+        "may_override_persona": False,
+        "reason_code": verdict["reason_code"],
+    }
+
+
+def memory_claim_authority(evidence_count: Any) -> dict[str, Any]:
+    """The authority of a memory claim, however repeated (§41).
+
+    Pure. ``evidence_count`` is how many memories support
+    the claim; it must be a non-negative integer (booleans
+    refused). Repetition never promotes memory: the tier
+    is always long_term_memory at its §24 rank, never
+    canonical, and the claim may never redefine traits —
+    many conversations involving frustration do not add
+    up to a trait.
+    """
+    if isinstance(evidence_count, bool) \
+            or not isinstance(evidence_count, int) \
+            or evidence_count < 0:
+        raise PersonaRuntimeError("memory evidence count is invalid")
+    return {
+        "evidence_count": evidence_count,
+        "tier": "long_term_memory",
+        "rank": _PRECEDENCE_RANK["long_term_memory"],
+        "canonical": False,
+        "may_redefine_traits": False,
+        "may_override_persona": False,
+    }
+
+
+def service_bible_topics() -> list[str]:
+    return list(SERVICE_BIBLE_TOPICS)
+
+
+def service_bible_retrieval_contract() -> dict[str, Any]:
+    """The §42 Service Bible dynamic retrieval contract. Pure.
+
+    The Service Bible may become huge: it is not
+    continuously injected. Its sections are indexed by
+    the roadmap's topic list and retrieved selectively —
+    explicit calls only, restricted to the service_bible
+    document role, ranked by the §13 hybrid score. This
+    layer injects nothing; it names and performs the
+    selection a caller may use.
+    """
+    return {
+        "name": "ServiceBibleDynamicRetrieval",
+        "role": "service_bible",
+        "topics": list(SERVICE_BIBLE_TOPICS),
+        "continuously_injected": False,
+        "retrieve_selectively": True,
+        "retrieval": "explicit_only",
+        "injects": False,
+    }
+
+
+def classify_service_topics(text: Any) -> list[str]:
+    """The §42 topics a text signals, in roadmap order. Pure.
+
+    A topic is present when any of its lexicon words
+    appears as a token in the text. No model call.
+    Malformed text is refused.
+    """
+    if not isinstance(text, str):
+        raise PersonaRuntimeError("service bible text is invalid")
+    tokens = _tokens(text)
+    return [topic for topic, words in _SERVICE_TOPIC_LEXICON
+            if tokens & words]
+
+
+def service_topics_for_section(entry: dict[str, Any]) -> list[str]:
+    """A compiled section's §42 topics, in roadmap order. Pure.
+
+    Derived from the section's heading and bare section id
+    only — the signals that name what a section is about —
+    never authored or stored.
+    """
+    return classify_service_topics(
+        f"{entry['heading']} {entry['section_id']}")
+
+
+def retrieve_service_bible(index: list[dict[str, Any]],
+                           query: str = "",
+                           task_text: str | None = None,
+                           topic: Any = None,
+                           limit: int = RETRIEVAL_DEFAULT_LIMIT
+                           ) -> list[dict[str, Any]]:
+    """Selectively retrieve Service Bible sections (§42). Pure.
+
+    The compiled index is restricted to the service_bible
+    role — no other document's sections are ever returned
+    — and ranked by the §13 hybrid retrieval. ``topic``
+    optionally names one §42 topic (slugified; unknown
+    topics refused): it filters the results to sections
+    carrying that topic and, when no query or task text is
+    given, supplies the retrieval signal itself. Each
+    result is a §13 result (stable id, verbatim text, full
+    score breakdown) annotated with its section's §42
+    topics. With no signal at all, nothing is retrieved —
+    the Bible is never dumped wholesale.
+    """
+    wanted = None
+    if topic is not None:
+        if not isinstance(topic, str) or not topic.strip():
+            raise PersonaRuntimeError("service bible topic is invalid")
+        wanted = _slugify(topic)
+        if wanted not in SERVICE_BIBLE_TOPICS:
+            raise PersonaRuntimeError("service bible topic is invalid")
+    entries = [entry for entry in index
+               if entry.get("role") == "service_bible"]
+    by_id = {}
+    for entry in entries:
+        stable = entry.get(
+            "stable_id",
+            stable_section_id(entry["role"], entry["section_id"]))
+        by_id[stable] = entry
+    effective_query = query
+    if wanted is not None and not (query or "").strip() \
+            and task_text is None:
+        effective_query = wanted.replace("_", " ")
+    results = retrieve_sections(
+        entries, query=effective_query, task_text=task_text,
+        limit=limit)
+    selected = []
+    for result in results:
+        entry = by_id.get(result["stable_id"])
+        topics = service_topics_for_section(entry) \
+            if entry is not None else []
+        if wanted is not None and wanted not in topics:
+            continue
+        result = dict(result)
+        result["topics"] = topics
+        selected.append(result)
+    return selected
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -4648,6 +4948,32 @@ class PersonaRetriever:
             limit=limit)
 
 
+class PersonaServiceBibleRetriever:
+    """Explicit §42 selective retrieval over a fresh compile.
+
+    One explicit call compiles (deterministically, writing
+    nothing) and selects from the compiled index's
+    service_bible sections only, indexed by the §42 topics
+    and ranked by §13. The Bible is never continuously
+    injected and never dumped wholesale: with no signal,
+    nothing is retrieved. No hook, no per-message call.
+    """
+
+    def __init__(self, ctx) -> None:
+        self._compiler = PersonaCompiler(ctx)
+
+    def retrieve(self, query: str = "", task_text: str | None = None,
+                 topic: str | None = None,
+                 limit: int = RETRIEVAL_DEFAULT_LIMIT
+                 ) -> list[dict[str, Any]]:
+        compiled = self._compiler.compile()
+        if compiled is None:
+            return []
+        return retrieve_service_bible(
+            compiled["index"], query=query, task_text=task_text,
+            topic=topic, limit=limit)
+
+
 class PersonaRouter:
     """Explicit §14 routing over a fresh compile.
 
@@ -4837,7 +5163,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-40): persona "
+            f"Persona runtime (§§3-42): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -5009,6 +5335,15 @@ class PersonaRuntimeBridge:
             f"(decision, recommendation considered, persona "
             f"response) and biased summarization that would "
             f"introduce personality drift is refused. "
+            f"§41 memory guard: memory must not override "
+            f"persona — traits remain canonical, memory "
+            f"provides history only, and repetition never "
+            f"promotes a memory's authority. §42 service "
+            f"bible retrieval: the Service Bible is indexed "
+            f"by topic (communication, coding, linux, "
+            f"open_source, ai, documentation, research, "
+            f"project_aesir, attention, adhd) and retrieved "
+            f"selectively, never continuously injected. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -5182,6 +5517,20 @@ __all__ = [
     "persona_memory",
     "validate_persona_memory",
     "classify_memory_write",
+    "MEMORY_PROVIDES",
+    "SERVICE_BIBLE_TOPICS",
+    "memory_provides",
+    "memory_must_not_override",
+    "memory_override_contract",
+    "memory_influence_allowed",
+    "evaluate_memory_claim",
+    "memory_claim_authority",
+    "service_bible_topics",
+    "service_bible_retrieval_contract",
+    "classify_service_topics",
+    "service_topics_for_section",
+    "retrieve_service_bible",
+    "PersonaServiceBibleRetriever",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
