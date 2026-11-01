@@ -3266,3 +3266,69 @@ portable state: any agent (Muse or Hermes) resumes from here.
   parts of the same personality — expect a pure
   mode/emphasis surface reconciled against §35's
   current_mode, not a live mode switcher.
+- 2026-10-31 ~20:1x EDT keeper tick: **Slice 136 DONE —
+  Persona Runtime §37 (Persona State) and §38 (Modes)
+  complete, banked and PUSHED under the standing
+  go-ahead.** No live work found at tick start (tree
+  clean, HEAD == origin/main at `f2d677f39d`; Slice 135's
+  state commit at 20:14 EDT was its own completed push,
+  verified, not in-progress work; the Python-write
+  blocker was probed absent). `plugins/volmarr-core/
+  persona_runtime.py` extended in place — no new file or
+  config key: §37's pure `persona_state` builder stands
+  the dynamic object in the roadmap's YAML shape (a
+  `persona_state` mapping with exactly id, the §22
+  version, active_mode, emotional_state
+  warmth/playfulness/focus, relationship_state trust,
+  active_project, current_task), taking id/version from
+  a compiled artefact and validating every dynamic
+  field (active mode must be a §38 mode; scored fields
+  unit-interval; project/task slugified), and the pure
+  `validate_persona_state` recomputes the normalised
+  object and refuses tampering; the roadmap's own
+  example (caducea 1.4.2, architect, 0.88/0.44/0.91,
+  trust 0.95, hermes/persona_runtime) is contract-proven,
+  and building a state changes no compile, kernel hash,
+  or PersonaIR. §38's pure `persona_modes` /
+  `mode_contract` / `mode_profile` stand the seven modes
+  in roadmap order (counselor, executor, architect,
+  skald, companion, researcher, forge_worker): a mode
+  modifies emphasis without changing identity,
+  foregrounding parts of the same personality; unknown
+  modes refused. Packet label updated to §§3–38
+  (thirteen older persona files' packet assertions
+  updated in-slice). Tests: targeted 16/16 pass (8 new
+  state/mode contracts + handoff file); targeted persona
+  run (20 files): **163 passed, 0 failed**; full
+  volmarr/kista run (89 files): **642 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice136_full_run.log`); 642
+  is exactly Slice 135's 634 + the 8 new contracts.
+  Smoke: `hermes --version` runs (`vgit.f2d677f.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §37 + §38 completion notes in the Persona
+  Runtime roadmap, plugin.yaml description now §§3–38.
+  Honest gaps: no state is stored, no live session is
+  tracked, no mode is switched live, and no caller
+  consumes a state object or a mode profile yet; §39's
+  mode routing stands unclaimed.
+- **Next resume point: Slice 137 — Persona Runtime §39
+  (Mode Routing) and §40 (Persona-Aware Memory Write)**:
+  §39 names automatic mode routing (the user does not
+  manually select modes; the roadmap's examples: coding
+  ARCHITECT → FORGE_WORKER, personal reflection
+  COMPANION → COUNSELOR, research RESEARCHER, creative
+  article SKALD) — reconcile against Slice 136's §38
+  mode list/profile and the §13/§14 task classification
+  when read at slice start, expect a pure routing
+  surface over task signals, not a live mode switcher;
+  §40 names persona-aware memory write (memories
+  interpreted through the persona system when memory
+  extraction occurs) — expect a pure
+  contract/classification surface reconciled against
+  the banked memory surfaces, not a memory writer this
+  plugin does not own in that form.

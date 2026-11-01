@@ -2301,6 +2301,28 @@ This object is dynamic.
 
 It must never replace canonical PersonaIR.
 
+> **Completion note — Slice 136 (2026-10-31): §37 stands
+> in `plugins/volmarr-core/persona_runtime.py`. The pure
+> `persona_state` builder stands the object in the
+> roadmap's YAML shape (a `persona_state` mapping with
+> exactly id, version, active_mode, emotional_state,
+> relationship_state, active_project, current_task),
+> taking id and the §22 version from a compiled artefact
+> and validating every dynamic field (the active mode
+> must be one of the §38 modes; warmth / playfulness /
+> focus and relationship trust are unit-interval
+> numbers; project and task are slugified names), and
+> the pure `validate_persona_state` function recomputes
+> the normalised object and refuses tampering. The
+> roadmap's own example (caducea 1.4.2, architect,
+> 0.88 / 0.44 / 0.91, trust 0.95, hermes /
+> persona_runtime) is contract-proven. Building or
+> validating a state changes no compile, kernel hash,
+> or PersonaIR — the object is dynamic and never
+> replaces the IR. Honest gaps: no state is stored, no
+> live session is tracked, and no caller consumes a
+> state object yet.**
+
 
 ---
 
@@ -2326,6 +2348,21 @@ FORGE_WORKER
 
 
 A mode changes what parts of the same personality become foregrounded.
+
+> **Completion note — Slice 136 (2026-10-31): §38 stands
+> in the same module. The pure `persona_modes` function
+> names the seven modes in roadmap order (counselor,
+> executor, architect, skald, companion, researcher,
+> forge_worker, in slug form), the pure `mode_contract`
+> function stands the rule (a mode modifies emphasis,
+> never identity, foregrounding parts of the same
+> personality), and the pure `mode_profile` function
+> classifies one named mode — an unknown or malformed
+> mode is refused — reconciled against §35's
+> `current_mode` and §37's `active_mode`, which must be
+> one of the seven. Honest gaps: no mode is switched
+> live and no caller consumes a mode profile yet; mode
+> routing is §39, a later section.**
 
 
 ---

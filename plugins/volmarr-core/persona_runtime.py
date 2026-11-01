@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-36).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-38).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -422,6 +422,28 @@ What stands here, and nothing more:
   ``subagent_separation`` functions stand the separation
   over the roadmap's example roster. This layer
   delegates nothing and spawns nothing.
+- §37 persona state: the dynamic runtime object stands
+  in the roadmap's YAML shape (``persona_state``: id,
+  the §22 version, active mode, emotional state —
+  warmth / playfulness / focus, relationship state —
+  trust, active project, current task). The pure
+  ``persona_state`` builder takes id and version from a
+  compiled artefact and validates every dynamic field;
+  the pure ``validate_persona_state`` function
+  recomputes the normalised object and refuses
+  tampering. The object is dynamic and must never
+  replace canonical PersonaIR: building or validating
+  one changes no compile, no kernel hash, and no IR.
+  This layer stores no state and tracks nothing live.
+- §38 modes: the seven modes (counselor, executor,
+  architect, skald, companion, researcher, forge_worker)
+  modify emphasis without changing identity — a mode
+  foregrounds parts of the same personality. The pure
+  ``persona_modes`` / ``mode_contract`` / ``mode_profile``
+  functions stand the list and that rule, reconciled
+  against §35's ``current_mode`` (a state's active mode
+  must be one of the seven). This layer switches no
+  mode live; mode routing is §39, a later section.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -3707,6 +3729,216 @@ def subagent_separation(agent: Any,
     }
 
 
+# --- §37 persona state + §38 modes -----------------------------------
+#
+# Pure contract data and functions, like §§35–36. §37
+# names the dynamic persona-state object (id, version,
+# active mode, emotional state, relationship state,
+# active project, current task) — dynamic, and it must
+# never replace canonical PersonaIR. §38 names the
+# modes: a mode modifies emphasis without changing
+# identity, foregrounding parts of the same personality.
+# Nothing here stores state, tracks a live session, or
+# switches a mode.
+
+# The §37 persona-state fields, in roadmap order.
+PERSONA_STATE_FIELDS = (
+    "id", "version", "active_mode", "emotional_state",
+    "relationship_state", "active_project", "current_task",
+)
+
+# The §37 emotional-state fields, in roadmap order.
+EMOTIONAL_STATE_FIELDS = ("warmth", "playfulness", "focus")
+
+# The §37 relationship-state fields, in roadmap order.
+RELATIONSHIP_STATE_FIELDS = ("trust",)
+
+# The §38 modes, in roadmap order (slug form; the
+# roadmap names them COUNSELOR, EXECUTOR, ARCHITECT,
+# SKALD, COMPANION, RESEARCHER, FORGE_WORKER).
+PERSONA_MODES = (
+    "counselor", "executor", "architect", "skald",
+    "companion", "researcher", "forge_worker",
+)
+
+
+def persona_state_fields() -> list[str]:
+    return list(PERSONA_STATE_FIELDS)
+
+
+def persona_modes() -> list[str]:
+    return list(PERSONA_MODES)
+
+
+def _validate_unit_interval(value: Any) -> float:
+    if isinstance(value, bool) \
+            or not isinstance(value, (int, float)):
+        raise PersonaRuntimeError("persona state value is invalid")
+    number = float(value)
+    if not 0.0 <= number <= 1.0:
+        raise PersonaRuntimeError("persona state value is invalid")
+    return number
+
+
+def _validate_scored_state(raw: Any,
+                           fields: tuple[str, ...]) -> dict[str, float]:
+    if not isinstance(raw, dict) or set(raw) != set(fields):
+        raise PersonaRuntimeError("persona state value is invalid")
+    return {field: _validate_unit_interval(raw[field])
+            for field in fields}
+
+
+def _validate_state_name(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip() \
+            or len(value.strip()) > MAX_NAME_CHARS:
+        raise PersonaRuntimeError("persona state value is invalid")
+    return _slugify(value)
+
+
+def _validate_active_mode(mode: Any) -> str:
+    resolved = _validate_state_name(mode)
+    if resolved not in PERSONA_MODES:
+        raise PersonaRuntimeError("persona state mode is invalid")
+    return resolved
+
+
+def persona_state_contract() -> dict[str, Any]:
+    """The §37 persona state contract. Pure.
+
+    The persona state is a dynamic runtime object in the
+    roadmap's YAML shape. It carries current mode,
+    emotional and relationship state, and the active
+    project and task — and it must never replace
+    canonical PersonaIR, which remains the identity
+    artefact. This layer stores no state and tracks
+    nothing live; it names the object a runtime carries.
+    """
+    return {
+        "name": "PersonaState",
+        "fields": list(PERSONA_STATE_FIELDS),
+        "emotional_state_fields": list(EMOTIONAL_STATE_FIELDS),
+        "relationship_state_fields": list(RELATIONSHIP_STATE_FIELDS),
+        "dynamic": True,
+        "replaces_persona_ir": False,
+        "canonical_source": "persona_ir",
+        "stores_state": False,
+    }
+
+
+def persona_state(compiled: dict[str, Any], active_mode: Any,
+                  emotional_state: Any, relationship_state: Any,
+                  active_project: Any,
+                  current_task: Any) -> dict[str, Any]:
+    """Build one §37 persona state from a compiled persona. Pure.
+
+    The object stands in the roadmap's YAML shape — a
+    ``persona_state`` mapping with exactly the seven
+    §37 fields. Id and the §22 version come from the
+    compiled artefact; the active mode must be one of
+    the §38 modes; emotional state (warmth, playfulness,
+    focus) and relationship trust are unit-interval
+    numbers; project and task are slugified names. The
+    object is dynamic only: building it changes no
+    compile, no kernel hash, and no PersonaIR, and it
+    never replaces the IR.
+    """
+    record = hash_record(compiled)
+    version = _compiled_version(compiled)
+    return {
+        "persona_state": {
+            "id": record["persona_id"],
+            "version": version,
+            "active_mode": _validate_active_mode(active_mode),
+            "emotional_state": _validate_scored_state(
+                emotional_state, EMOTIONAL_STATE_FIELDS),
+            "relationship_state": _validate_scored_state(
+                relationship_state, RELATIONSHIP_STATE_FIELDS),
+            "active_project": _validate_state_name(active_project),
+            "current_task": _validate_state_name(current_task),
+        },
+    }
+
+
+def validate_persona_state(state: Any) -> dict[str, Any]:
+    """Validate one §37 persona state, refusing disagreement. Pure.
+
+    The object must carry exactly the ``persona_state``
+    mapping with exactly the seven §37 fields; the id
+    must be a slug, the version strict §22 semver, the
+    active mode one of the §38 modes, and every scored
+    field a unit-interval number. Returns a fresh
+    normalised object.
+    """
+    if not isinstance(state, dict) \
+            or set(state) != {"persona_state"}:
+        raise PersonaRuntimeError("persona state is invalid")
+    body = state["persona_state"]
+    if not isinstance(body, dict) \
+            or set(body) != set(PERSONA_STATE_FIELDS):
+        raise PersonaRuntimeError("persona state is invalid")
+    persona_id = body["id"]
+    if not isinstance(persona_id, str) or not persona_id.strip() \
+            or len(persona_id.strip()) > MAX_NAME_CHARS \
+            or _slugify(persona_id) != persona_id.strip():
+        raise PersonaRuntimeError("persona state is invalid")
+    parse_persona_version(body["version"])
+    return {
+        "persona_state": {
+            "id": persona_id.strip(),
+            "version": body["version"],
+            "active_mode": _validate_active_mode(body["active_mode"]),
+            "emotional_state": _validate_scored_state(
+                body["emotional_state"], EMOTIONAL_STATE_FIELDS),
+            "relationship_state": _validate_scored_state(
+                body["relationship_state"],
+                RELATIONSHIP_STATE_FIELDS),
+            "active_project": _validate_state_name(
+                body["active_project"]),
+            "current_task": _validate_state_name(body["current_task"]),
+        },
+    }
+
+
+def mode_contract() -> dict[str, Any]:
+    """The §38 modes contract. Pure.
+
+    Modes modify emphasis without changing identity: a
+    mode changes what parts of the same personality
+    become foregrounded. This layer switches no mode
+    live; it names the modes and the rule a mode
+    switcher (§39 routing, later) must keep.
+    """
+    return {
+        "name": "PersonaModes",
+        "modes": list(PERSONA_MODES),
+        "modifies_emphasis": True,
+        "changes_identity": False,
+        "foregrounds_same_personality": True,
+        "switches_modes": False,
+    }
+
+
+def mode_profile(mode: Any) -> dict[str, Any]:
+    """Classify one §38 mode. Pure.
+
+    A named mode from the §38 list foregrounds itself —
+    its own part of the same personality — while the
+    persona's identity is unchanged and preserved. An
+    unknown or malformed mode is refused, never
+    classified by guesswork. The result's mode is also
+    a valid §35/§37 ``current_mode`` / ``active_mode``
+    value.
+    """
+    resolved = _validate_active_mode(mode)
+    return {
+        "mode": resolved,
+        "modifies_emphasis": True,
+        "changes_identity": False,
+        "foreground": resolved,
+        "identity_preserved": True,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -4288,7 +4520,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-36): persona "
+            f"Persona runtime (§§3-38): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -4439,7 +4671,17 @@ class PersonaRuntimeBridge:
             f"turned into the primary persona — each "
             f"carries its own identity and role, while the "
             f"primary persona may delegate and maintains "
-            f"its own identity. Canonical document "
+            f"its own identity. §37 persona state: the "
+            f"dynamic state object (id, version, active "
+            f"mode, emotional state, relationship trust, "
+            f"active project, current task) stands in the "
+            f"roadmap's YAML shape and never replaces "
+            f"canonical PersonaIR. §38 modes: counselor, "
+            f"executor, architect, skald, companion, "
+            f"researcher, and forge_worker modify emphasis "
+            f"without changing identity — a mode "
+            f"foregrounds parts of the same personality. "
+            f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
         return [ContextItem(
@@ -4590,6 +4832,17 @@ __all__ = [
     "subagent_examples",
     "subagent_contract",
     "subagent_separation",
+    "PERSONA_STATE_FIELDS",
+    "EMOTIONAL_STATE_FIELDS",
+    "RELATIONSHIP_STATE_FIELDS",
+    "PERSONA_MODES",
+    "persona_state_fields",
+    "persona_modes",
+    "persona_state_contract",
+    "persona_state",
+    "validate_persona_state",
+    "mode_contract",
+    "mode_profile",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
