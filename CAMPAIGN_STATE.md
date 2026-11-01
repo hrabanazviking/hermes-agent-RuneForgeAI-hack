@@ -4650,3 +4650,106 @@ portable state: any agent (Muse or Hermes) resumes from here.
   caller-supplied section ids, not a live explanation
   of any real response (this layer generates no
   responses to explain).
+- 2026-11-01 ~06:2x–07:1x EST keeper tick: **Slice 153 DONE —
+  Persona Runtime §71 (Persona Inspect Command) and §72
+  (Persona Explain Command) complete, banked and PUSHED
+  under the standing go-ahead.** No live work found at
+  tick start (tree clean, HEAD == origin/main at
+  `9f7d3dd75b`; Slice 152's state commit was its own
+  completed push, verified, not in-progress work).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §71's pure
+  `persona_inspect` / `render_persona_inspect` /
+  `persona_inspect_example` / `persona_inspect_contract`
+  stand the inspect display as a record and render over
+  a supplied compile — exactly the roadmap's fields
+  (persona display name, human-authored version,
+  document count, kernel estimated tokens,
+  indexed-section count, source hash = the compile's
+  combined persona hash, the same hash the §22 version
+  record carries, and status VALID) — where VALID is
+  honest only via the §70 catalogue: a compile exists
+  only because the §6 compiler's compile-time
+  detections (missing required files, extreme document
+  size, unresolvable paths) passed or failed the
+  compile closed, and a malformed compile is refused
+  rather than partially displayed; the roadmap example
+  stands as a record (Caducea Hermesdottir, 1.4.2, 6
+  documents, 934 kernel tokens, 271 indexed sections,
+  the elided source hash carried as a zero hash of the
+  §19 shape). §72's pure `persona_explain` /
+  `render_persona_explain` / `persona_explain_example`
+  / `persona_explain_contract` stand the explain
+  display as a record and render over caller-supplied
+  §12 stable ids (form-checked against the §35
+  stable-id form, bounded at 32, duplicates refused,
+  supplied order preserved): when a compile is also
+  supplied each id must name a section that compile
+  actually indexed (existence verified, unindexed
+  refused, `sections_verified` true, the compile's
+  persona id carried); without a compile ids are
+  form-checked only and `sections_verified` stays
+  false, never upgraded. The roadmap's `hermes
+  persona` spelling registers no new core command in
+  either section — this plugin's CLI surface is
+  `hermes volmarr` and plugins never add core
+  commands. Two in-slice test fixes, caught by the
+  first targeted run: the new test file mutated the
+  tuple constants `INSPECT_FIELDS` /
+  `EXPLAIN_EXAMPLE_SECTIONS` as if they were
+  list-returning surfaces (2 failures) — the tests now
+  mutate the contracts' returned lists instead.
+  Packet label updated to §§3–72 (thirty older persona
+  files' packet assertions updated in-slice; the
+  module docstring and the plugin.yaml description
+  updated in the same slice). Tests: targeted 10/10
+  pass (new file; 21/21 with the configurable-validator
+  file after the fix); targeted persona run (37
+  files): **339 passed, 0 failed** (per-file totals
+  summed from the full run log, which covers every
+  persona file); full volmarr/kista run (106 files):
+  **818 passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set in the
+  same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the
+  run log's own summary line
+  (`~/workspace/.verify-tmp/slice153_full_run2.log`);
+  818 is exactly Slice 152's 808 + the 10 new
+  contracts. **Recorded plainly: the first full-run
+  attempt's session was interrupted at ~21% by a
+  runtime poll fault and its partial log
+  (`slice153_full_run.log`) was discarded; the
+  detached re-run supplied the totals above.** Smoke:
+  `hermes --version` runs (`vgit.9f7d3dd.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §71 + §72 completion notes in the
+  Persona Runtime roadmap, plugin.yaml description
+  now §§3–72. Push: fast-forward, no force —
+  origin/main moved `9f7d3dd75b` → Slice 153 commit
+  `f8266b6ac4`, verified by `git ls-remote` (remote ==
+  local HEAD). Honest gaps: no live `hermes persona
+  inspect`/`explain` command exists, nothing is
+  compiled by the inspect surface, no live response
+  is explained, and no caller consumes a record or a
+  render yet.
+- **Next resume point: Slice 154 — Persona Runtime §73
+  (Persona Reload Command) and §74 (Persona Diff)**:
+  §73 names a `hermes persona reload` forcing reload,
+  recompile, reindex, and kernel refresh without
+  restarting Hermes — reconcile the roadmap's
+  `hermes persona` spelling against this plugin's
+  established `hermes volmarr` CLI surface and the
+  banked §20 hot-reload chain (explicit PersonaReloader
+  check, hash-driven, never a watcher) when read at
+  slice start, expect a pure reload-record/plan surface
+  over the §20 chain, not a new core CLI command and
+  not a second reloader; §74 names `hermes persona
+  diff` showing behavioral changes since the previous
+  version (the roadmap's example: +/- directive lines
+  grouped by document — RELATIONSHIP, TOOLS) —
+  reconcile against the banked §21 change-impact
+  section diff when read at slice start, expect a pure
+  diff-record/render surface over two supplied
+  compiles, not a live version store (no compile is
+  persisted by this layer, §48/§49).
