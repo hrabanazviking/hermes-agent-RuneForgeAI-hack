@@ -3668,3 +3668,66 @@ portable state: any agent (Muse or Hermes) resumes from here.
   when read at slice start, expect a pure
   cache-manifest/validity surface over the compiled
   artefact, not a persisted cache this layer writes.
+- 2026-10-31 ~23:5x–2026-11-01 ~00:2x EDT keeper ticks:
+  **Slice 141 DONE — Persona Runtime §47 (Policy → Code
+  Migration) and §48 (Persona Compilation Cache) complete,
+  banked and PUSHED under the standing go-ahead.** The
+  slice's code was written by the 23:0x tick (tree clean at
+  tick start, HEAD == origin/main at `198666d310`): the
+  pure §47 governance surface (`policy_governs` /
+  `code_governs` in roadmap order, `policy_to_code_contract`
+  carrying the roadmap's expired-memories example verbatim,
+  `classify_rule_kinds` / `governance_for_kind` /
+  `migration_assessment`) and the pure §48 cache surface
+  (`compilation_cache_artifacts`, `compilation_cache_contract`,
+  `cache_manifest` on the §19 hash record with the
+  embeddings hash honestly None, `cache_staleness`,
+  `validate_cache_manifest`) in
+  `plugins/volmarr-core/persona_runtime.py`, extended in
+  place — no new file or config key; packet label §§3–48.
+  Targeted runs completed that tick: new file 12/12 and the
+  targeted persona run (25 files) **218 passed, 0 failed**
+  (`~/workspace/.verify-tmp/slice141_persona_run.log`).
+  Its four full-run attempts then stalled incomplete under
+  cross-campaign contention (logs frozen at 57–78% with no
+  summary, still writing at 00:01 EDT); the completing tick
+  (00:0x EDT, 2026-11-01) found no live work on this tree
+  (no hermes/run_tests process, no tree writes after
+  00:01, state resume point still Slice 141, remote
+  unmoved), re-ran the full suite once to completion,
+  added the missing CUSTOMIZATIONS.md ledger row, and
+  banked the slice. Full volmarr/kista run (94 files):
+  **697 passed, 7 failed, 1 skipped** — the same
+  name-identical pre-existing environmental set in the
+  same 3 files (5 core-plugin, 1 Verðandi-stimuli socket,
+  1 voice-runner loopback), verified in the run log's own
+  summary line
+  (`~/workspace/.verify-tmp/slice141_full_final.log`,
+  680.7s); 697 is exactly Slice 140's 685 + the 12 new
+  contracts. Smoke: `hermes --version` runs
+  (`vgit.198666d.dirty` pre-commit); README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §47 + §48 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–48. Push: fast-forward, no force —
+  origin/main moved `198666d310` → `70e21ecf0f`, verified
+  by `git ls-remote` (remote == local HEAD). Honest gaps:
+  no live prompt is migrated and no cache is persisted
+  by this layer; no caller consumes the classification
+  or the manifest yet; §49's generated directory stands
+  unclaimed.
+- **Next resume point: Slice 142 — Persona Runtime §49
+  (Generated Directory) and §50 (Manifest)**: §49 names
+  the recommended generated layout (`persona/source/` +
+  `persona/.compiled/` carrying persona_ir.json /
+  persona_kernel.txt / sections.jsonl / embeddings.db /
+  manifest.json, regenerable at any time) and §50 names
+  the manifest shape (persona_id, version, compiled_at,
+  documents by role with file + hash, kernel_hash) —
+  reconcile against the §48 cache manifest and the §19
+  hash / §22 version records when read at slice start,
+  expect a pure directory-layout + manifest-shape
+  surface implementing only genuine gaps (e.g. the §50
+  per-document file+hash entries the §48 manifest does
+  not carry), not a directory or file writer this layer
+  does not own.
