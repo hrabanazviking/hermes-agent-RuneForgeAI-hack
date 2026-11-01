@@ -3359,6 +3359,33 @@ plus persistent state.
 This makes conversations effectively unlimited.
 
 
+> **Completion note — Slice 145 (2026-11-01): §55 stands
+> in `plugins/volmarr-core/persona_runtime.py` as a pure
+> compression-shape surface. The pure
+> `compression_components` and `compression_contract`
+> functions name the four components in roadmap order —
+> recent verbatim window (external: the conversation),
+> structured conversation state (banked: the §26
+> trait/state separation governs its shape), episodic
+> summaries (banked: the §25 summary-claim guard governs
+> what a summary may claim), retrieved older memories
+> (external: the memory subsystem) — with the roadmap's
+> example window band (the last 8–20 messages) recorded
+> as `RECENT_WINDOW_MIN` / `RECENT_WINDOW_MAX`. The pure
+> `compression_plan` function is arithmetic over
+> caller-supplied counts only: the most recent messages
+> up to a window capacity inside the band (default the
+> band maximum, this layer's recorded convention) stay
+> verbatim and every older message is carried by the
+> other three components; capacities outside the band
+> and malformed or negative counts are refused. The
+> compressed window is what the §53 prompt order carries
+> as its recent-conversation slot. Honest gaps: this
+> layer compresses no live history, summarises nothing,
+> retrieves no memory, and no caller consumes a plan
+> yet.**
+
+
 ---
 
 
@@ -3377,6 +3404,28 @@ history lives in memory
 task state lives in project/context
 conversation window handles immediacy
 ```
+
+
+> **Completion note — Slice 145 (2026-11-01): §56 stands
+> in the same module as a pure placement surface. The
+> pure `long_term_design` and
+> `long_term_design_contract` functions name the four
+> placements in roadmap order, each with its owner and
+> that owner's status — identity lives in persona
+> (banked: the persona documents this plugin compiles),
+> history lives in memory (external: the memory
+> subsystem), task state lives in project/context
+> (external), and immediacy lives in the conversation
+> window (external: §55's recent verbatim window) — and
+> the pure `placement_for` function returns one named
+> concern's placement, refusing unknown or malformed
+> concerns. The contract records the section's core
+> claim: the model never needs the entire conversation
+> history to remain itself. Honest gaps: this layer
+> stores no identity, history, task state, or
+> conversation, injects nothing, and no caller consumes
+> a placement yet; §57's drift test suite stands
+> unclaimed.**
 
 
 ---

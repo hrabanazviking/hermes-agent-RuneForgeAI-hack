@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-54).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-56).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -583,6 +583,31 @@ What stands here, and nothing more:
   transient context, whether the order is anchored, and
   the named risks when it is not. This layer evaluates
   an order only; it reorders nothing live.
+- §55 conversation history compression: the pure
+  ``compression_components`` / ``compression_contract`` /
+  ``compression_plan`` functions stand the compression
+  shape in roadmap order — a recent verbatim window
+  (the roadmap's example band: the last 8–20 messages)
+  plus structured conversation state plus episodic
+  summaries plus retrieved older memories — instead of
+  endlessly appending messages. A plan is pure
+  arithmetic over caller-supplied counts: how many of
+  the most recent messages stay verbatim under a window
+  capacity inside the band, and how many older messages
+  the other three components carry. The §25 summary
+  guard and §26 trait/state separation govern what the
+  summary and state components may claim. This layer
+  compresses no live history, summarises nothing, and
+  retrieves no memory.
+- §56 long-term conversation design: the pure
+  ``long_term_design`` / ``long_term_design_contract`` /
+  ``placement_for`` functions stand the placement in
+  roadmap order — identity lives in persona, history
+  lives in memory, task state lives in project/context,
+  and the conversation window handles immediacy — so
+  the model never needs the entire conversation history
+  to remain itself. This layer places nothing live; it
+  names where each concern belongs and who owns it.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -6538,6 +6563,184 @@ def evaluate_prompt_order(slots: Any) -> dict[str, Any]:
     }
 
 
+# --- §55 history compression + §56 long-term design ----------------
+
+# §55: the compression components, in roadmap order:
+# the component paired with its owner surface and that
+# owner's status — "banked" (a guard surface in this
+# plugin governs the component's shape) or "external"
+# (the conversation or the memory subsystem owns it).
+# Nothing here compresses a live history.
+COMPRESSION_COMPONENTS = (
+    ("recent_verbatim_window", "conversation_context", "external"),
+    ("structured_conversation_state", "trait_state_separation",
+     "banked"),
+    ("episodic_summaries", "summary_claim_classification", "banked"),
+    ("retrieved_older_memories", "memory_subsystem", "external"),
+)
+
+COMPRESSION_COMPONENT_NAMES = tuple(
+    component for component, _owner, _status in COMPRESSION_COMPONENTS)
+
+# §55's example verbatim window: the last 8–20 messages.
+RECENT_WINDOW_MIN = 8
+RECENT_WINDOW_MAX = 20
+
+
+def compression_components() -> list[dict[str, Any]]:
+    """The §55 compression components, in roadmap order. Pure.
+
+    Each entry names its component, the surface or party
+    that owns it, and the owner's status (banked in this
+    plugin, or external).
+    """
+    return [
+        {"component": component, "owner": owner, "status": status}
+        for component, owner, status in COMPRESSION_COMPONENTS]
+
+
+def compression_contract() -> dict[str, Any]:
+    """The §55 Conversation History Compression contract. Pure.
+
+    Do not endlessly append messages: a conversation is
+    carried as a recent verbatim window plus structured
+    conversation state plus episodic summaries plus
+    retrieved older memories, plus persistent state —
+    which makes conversations effectively unlimited.
+    The §25 summary guard governs what an episodic
+    summary may claim and the §26 separation governs
+    the structured state. This layer stands the shape
+    only: it compresses no live history, summarises
+    nothing, and retrieves no memory.
+    """
+    return {
+        "name": "PersonaHistoryCompression",
+        "components": compression_components(),
+        "recent_window_min": RECENT_WINDOW_MIN,
+        "recent_window_max": RECENT_WINDOW_MAX,
+        "endless_appending": False,
+        "effectively_unlimited": True,
+        "summary_guard": "section_25",
+        "state_separation": "section_26",
+        "feeds_prompt_slot": "recent_conversation_context",
+        "compresses_live_history": False,
+        "summarizes": False,
+        "retrieves_memories": False,
+    }
+
+
+def _validate_message_count(value: Any) -> int:
+    """Validate a caller-supplied message count. Pure."""
+    if isinstance(value, bool) or not isinstance(value, int) \
+            or value < 0:
+        raise PersonaRuntimeError("message count is invalid")
+    return value
+
+
+def _validate_window_capacity(value: Any) -> int:
+    """Validate a §55 window capacity inside the 8–20 band. Pure."""
+    if isinstance(value, bool) or not isinstance(value, int) \
+            or not RECENT_WINDOW_MIN <= value <= RECENT_WINDOW_MAX:
+        raise PersonaRuntimeError("window capacity is invalid")
+    return value
+
+
+def compression_plan(total_messages: Any,
+                     window_capacity: Any = None) -> dict[str, Any]:
+    """The §55 compression plan for a conversation size. Pure.
+
+    Pure arithmetic over caller-supplied counts: the
+    most recent ``window_capacity`` messages (default
+    the band maximum, this layer's recorded convention)
+    stay verbatim; every older message is carried by the
+    other three components, never appended endlessly.
+    A window capacity outside the roadmap's 8–20 example
+    band, and a malformed or negative count, are
+    refused. This layer compresses nothing.
+    """
+    total = _validate_message_count(total_messages)
+    capacity = RECENT_WINDOW_MAX if window_capacity is None \
+        else _validate_window_capacity(window_capacity)
+    verbatim = min(total, capacity)
+    return {
+        "total_messages": total,
+        "window_capacity": capacity,
+        "verbatim_messages": verbatim,
+        "compressed_messages": total - verbatim,
+        "components": compression_components(),
+        "appends_endlessly": False,
+        "compresses": False,
+    }
+
+
+# §56: the long-term placements, in roadmap order: the
+# concern paired with where it lives, its owner surface,
+# and that owner's status — "banked" (this plugin owns
+# the persona side) or "external" (the memory subsystem,
+# project context, or the conversation owns it).
+LONG_TERM_PLACEMENTS = (
+    ("identity", "persona", "persona_documents", "banked"),
+    ("history", "memory", "memory_subsystem", "external"),
+    ("task_state", "project_context", "project_context", "external"),
+    ("immediacy", "conversation_window", "conversation_context",
+     "external"),
+)
+
+LONG_TERM_CONCERNS = tuple(
+    concern for concern, _lives, _owner, _status in LONG_TERM_PLACEMENTS)
+
+
+def long_term_design() -> list[dict[str, Any]]:
+    """The §56 long-term placements, in roadmap order. Pure.
+
+    Each entry names its concern, where that concern
+    lives, the surface or party that owns it, and the
+    owner's status (banked in this plugin, or external).
+    """
+    return [
+        {"concern": concern, "lives_in": lives_in, "owner": owner,
+         "status": status}
+        for concern, lives_in, owner, status in LONG_TERM_PLACEMENTS]
+
+
+def long_term_design_contract() -> dict[str, Any]:
+    """The §56 Long-Term Conversation Design contract. Pure.
+
+    The model should never need the entire conversation
+    history to remain itself — that is the entire
+    purpose of the persona architecture. Identity lives
+    in persona, history lives in memory, task state
+    lives in project/context, and the conversation
+    window handles immediacy (§55's window). This layer
+    names the placements only; it stores no identity,
+    history, task state, or conversation.
+    """
+    return {
+        "name": "PersonaLongTermConversationDesign",
+        "placements": long_term_design(),
+        "needs_entire_history_to_remain_itself": False,
+        "compression": "section_55",
+        "stores_identity": False,
+        "stores_history": False,
+        "stores_task_state": False,
+        "injects": False,
+    }
+
+
+def placement_for(concern: Any) -> dict[str, Any]:
+    """The §56 placement for one named concern. Pure.
+
+    An unknown or malformed concern is refused.
+    """
+    if not isinstance(concern, str) \
+            or concern not in LONG_TERM_CONCERNS:
+        raise PersonaRuntimeError("long-term concern is invalid")
+    for row in long_term_design():
+        if row["concern"] == concern:
+            return row
+    raise PersonaRuntimeError("long-term concern is invalid")
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -7247,7 +7450,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-54): persona "
+            f"Persona runtime (§§3-56): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -7510,6 +7713,19 @@ class PersonaRuntimeBridge:
             f"— a supplied order is evaluated against "
             f"those risks only, and nothing is reordered "
             f"live. "
+            f"§55 history compression: a conversation is "
+            f"carried as a recent verbatim window (last "
+            f"8–20 messages) plus structured conversation "
+            f"state plus episodic summaries plus "
+            f"retrieved older memories, never endlessly "
+            f"appended; this layer compresses no live "
+            f"history and summarises nothing. §56 "
+            f"long-term design: identity lives in "
+            f"persona, history lives in memory, task "
+            f"state lives in project/context, and the "
+            f"conversation window handles immediacy — "
+            f"the model never needs the entire "
+            f"conversation history to remain itself. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -7785,6 +8001,18 @@ __all__ = [
     "order_matters_reasons",
     "order_matters_contract",
     "evaluate_prompt_order",
+    "COMPRESSION_COMPONENTS",
+    "COMPRESSION_COMPONENT_NAMES",
+    "RECENT_WINDOW_MIN",
+    "RECENT_WINDOW_MAX",
+    "compression_components",
+    "compression_contract",
+    "compression_plan",
+    "LONG_TERM_PLACEMENTS",
+    "LONG_TERM_CONCERNS",
+    "long_term_design",
+    "long_term_design_contract",
+    "placement_for",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
