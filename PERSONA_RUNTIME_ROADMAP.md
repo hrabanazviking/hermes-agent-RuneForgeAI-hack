@@ -3143,6 +3143,27 @@ Caducea awakens
 ```
 
 
+> **Completion note — Slice 143 (2026-11-01): §51 stands
+> in `plugins/volmarr-core/persona_runtime.py` as a pure
+> startup-plan surface. The pure `startup_steps` and
+> `startup_contract` functions name the nine steps in
+> roadmap order (load persona.yaml, resolve the persona
+> directory, validate required documents, compare
+> source hashes, the load-or-compile branch, load the
+> Persona Kernel, initialize the retrieval index,
+> initialize Persona State, awaken), and the pure
+> `startup_plan` function decides the branch from the
+> §19 hash records of two compiled artefacts via
+> `detect_changes`: unchanged hashes take the
+> load-compiled branch, changed hashes or a first
+> compile take the compile branch, a removed persona
+> awakens nothing, and a comparison across personas is
+> refused. Honest gaps: this layer owns no boot hook,
+> starts no Hermes, and awakens no persona — it plans
+> the sequence only, and no caller consumes a plan yet;
+> §52's request pipeline stands below.**
+
+
 ---
 
 
@@ -3187,6 +3208,29 @@ PERSONA WATCHDOG
      ▼
 TOOLS / RESPONSE
 ```
+
+
+> **Completion note — Slice 143 (2026-11-01): §52 stands
+> in the same module as a pure pipeline surface. The
+> pure `request_pipeline_stages` and
+> `request_pipeline_contract` functions name the ten
+> stages in roadmap order, each with its owner and that
+> owner's status: banked surfaces in this plugin (§13
+> `classify_task`, §14 `PersonaRouter`, §13
+> `PersonaRetriever`, §15 `PersonaContextBudgeter`,
+> §27 watchdog contract), external owners (the caller
+> for the user message and for tools / response, the
+> memory subsystem for memory retrieval, the model),
+> and prompt assembly honestly marked a later section
+> (§53). The pure `request_pipeline_plan` function
+> carries one validated task classification — the
+> classifier's four outputs (task type, entities,
+> project, tool intent), slugified and shape-checked
+> only, unknown fields and malformed values refused.
+> Honest gaps: no stage is executed by this layer, no
+> live message is classified, no prompt is assembled,
+> and no caller consumes a plan yet; §53's prompt
+> assembly order stands unclaimed.**
 
 
 ---

@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-50).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-52).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -526,6 +526,33 @@ What stands here, and nothing more:
   ``PersonaToolPolicyRetriever`` stand a deterministic
   selection over the compiled index, restricted to the
   ``tool_policy`` role; this layer executes no tool.
+- §51 startup sequence: the pure ``startup_steps`` /
+  ``startup_contract`` / ``startup_plan`` functions stand
+  the Hermes startup order (load persona.yaml, resolve
+  the persona directory, validate required documents,
+  compare source hashes, then load the compiled persona
+  if the hashes are unchanged or compile it if they
+  changed or none was compiled, load the Persona Kernel,
+  initialize the retrieval index, initialize Persona
+  State, and the persona awakens) as a pure plan over two
+  compiled artefacts' §19 hash records. This layer owns
+  no boot hook and starts nothing.
+- §52 request pipeline: the pure
+  ``request_pipeline_stages`` / ``request_pipeline_contract``
+  / ``request_pipeline_plan`` functions name the ten
+  per-request stages in roadmap order (user message, task
+  classifier, persona router, persona retrieval, memory
+  retrieval, context budgeter, prompt assembler, model,
+  persona watchdog, tools / response), each with its
+  banked owner surface where one stands in this plugin
+  (§13 task classification, §14 router, §13 retrieval,
+  §15 budgeter, §27 watchdog), an external owner where
+  the stage belongs elsewhere (the caller, the memory
+  subsystem, the model), and prompt assembly honestly
+  marked a later section (§53). The task classifier's
+  four outputs (task type, entities, project, tool
+  intent) are validated in shape only. This layer runs
+  no per-message pipeline.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -5987,6 +6014,280 @@ def validate_manifest(manifest_value: Any,
     return manifest_staleness(manifest_value, compiled)["valid"]
 
 
+# --- §51 startup sequence + §52 request pipeline -------------
+#
+# §51: Hermes startup walks a fixed order — load
+# persona.yaml, resolve the persona directory, validate
+# the required documents, compare source hashes, then
+# load the compiled persona when the hashes are
+# unchanged or compile the persona when they changed (or
+# none was compiled before), load the Persona Kernel,
+# initialize the retrieval index, initialize Persona
+# State, and the persona awakens. The branch is a pure
+# function of the §19 hash records of the previously
+# compiled artefact and the current one; this layer owns
+# no boot hook, starts nothing, and requires no restart.
+#
+# §52: each interaction walks ten stages — user message,
+# task classifier (naming task type, entities, project,
+# and tool intent), persona router, persona retrieval,
+# memory retrieval, context budgeter, prompt assembler,
+# model, persona watchdog, tools / response. Most stages
+# have a banked owner surface in this plugin; memory
+# retrieval belongs to the memory subsystem, the model
+# stage to the model, and prompt assembly is §53, a
+# later section — named here, not claimed.
+
+# The §51 startup steps before the branch, in roadmap
+# order.
+STARTUP_PREFIX_STEPS = (
+    "load_persona_config", "resolve_persona_directory",
+    "validate_required_documents", "compare_source_hashes",
+)
+
+# The §51 branch steps: exactly one stands in a plan.
+STARTUP_BRANCH_STEPS = (
+    "load_compiled_persona", "compile_persona",
+)
+
+# The §51 startup steps after the branch, in roadmap
+# order; the last is the awakening.
+STARTUP_SUFFIX_STEPS = (
+    "load_persona_kernel", "initialize_retrieval_index",
+    "initialize_persona_state", "awaken",
+)
+
+# The §51 startup steps, in roadmap order, with the
+# branch named as its combined step.
+STARTUP_STEPS = (
+    *STARTUP_PREFIX_STEPS,
+    "load_compiled_persona_or_compile_persona",
+    *STARTUP_SUFFIX_STEPS,
+)
+
+
+def startup_steps() -> list[str]:
+    """The §51 startup steps, in roadmap order. Pure."""
+    return list(STARTUP_STEPS)
+
+
+def startup_contract() -> dict[str, Any]:
+    """The §51 Startup Sequence contract. Pure.
+
+    The hash comparison decides the branch: unchanged
+    source hashes load the compiled persona, changed
+    hashes (or no previous compile) compile it. This
+    layer plans the sequence only — it owns no boot
+    hook, starts no Hermes, and awakens no persona.
+    """
+    return {
+        "name": "PersonaStartupSequence",
+        "steps": startup_steps(),
+        "branch_decided_by": "source_hash_comparison",
+        "loads_compiled_when_unchanged": True,
+        "compiles_when_changed_or_absent": True,
+        "final_step": "awaken",
+        "owns_boot_hook": False,
+        "starts_hermes": False,
+        "restart_required": False,
+        "injects": False,
+    }
+
+
+def startup_plan(previous: dict[str, Any] | None,
+                 current: dict[str, Any] | None) -> dict[str, Any]:
+    """The §51 startup plan for two compiled artefacts. Pure.
+
+    Either side may be None (no persona compiled). The
+    branch is decided by the §19 hash comparison
+    (``detect_changes``): unchanged hashes take the
+    load-compiled branch; changed hashes, a first
+    compile, take the compile branch; a persona that is
+    gone awakens nothing. A malformed compiled artefact
+    is refused, as is a comparison across personas.
+    """
+    if previous is None and current is None:
+        return {
+            "branch": "no_persona", "changed": False,
+            "steps": [], "documents_added": [],
+            "documents_removed": [], "documents_changed": [],
+            "kernel_changed": False, "awakens": False,
+            "restart_required": False,
+        }
+    if current is None:
+        record = hash_record(previous)  # type: ignore[arg-type]
+        return {
+            "branch": "persona_removed", "changed": True,
+            "steps": list(STARTUP_PREFIX_STEPS),
+            "documents_added": [],
+            "documents_removed": list(record["document_hashes"]),
+            "documents_changed": [],
+            "kernel_changed": True, "awakens": False,
+            "restart_required": False,
+        }
+    if previous is None:
+        record = hash_record(current)
+        return {
+            "branch": "compile_persona", "changed": True,
+            "steps": [
+                *STARTUP_PREFIX_STEPS, "compile_persona",
+                *STARTUP_SUFFIX_STEPS],
+            "documents_added": list(record["document_hashes"]),
+            "documents_removed": [], "documents_changed": [],
+            "kernel_changed": True, "awakens": True,
+            "restart_required": False,
+        }
+    diff = detect_changes(hash_record(previous), hash_record(current))
+    branch = "compile_persona" if diff["changed"] \
+        else "load_compiled_persona"
+    return {
+        "branch": branch, "changed": diff["changed"],
+        "steps": [
+            *STARTUP_PREFIX_STEPS, branch, *STARTUP_SUFFIX_STEPS],
+        "documents_added": diff["documents_added"],
+        "documents_removed": diff["documents_removed"],
+        "documents_changed": diff["documents_changed"],
+        "kernel_changed": diff["kernel_changed"],
+        "awakens": True, "restart_required": False,
+    }
+
+
+# The §52 request pipeline stages, in roadmap order:
+# the stage paired with its owner surface and that
+# owner's status — "banked" (a surface in this plugin),
+# "external" (the caller, the memory subsystem, or the
+# model owns it), or "later_section" (§53 prompt
+# assembly, named here and not claimed).
+REQUEST_PIPELINE = (
+    ("user_message", "caller_input", "external"),
+    ("task_classifier", "classify_task", "banked"),
+    ("persona_router", "PersonaRouter", "banked"),
+    ("persona_retrieval", "PersonaRetriever", "banked"),
+    ("memory_retrieval", "memory_subsystem", "external"),
+    ("context_budgeter", "PersonaContextBudgeter", "banked"),
+    ("prompt_assembler", "prompt_assembly_53", "later_section"),
+    ("model", "model", "external"),
+    ("persona_watchdog", "watchdog_contract", "banked"),
+    ("tools_or_response", "caller", "external"),
+)
+
+REQUEST_PIPELINE_STAGES = tuple(
+    stage for stage, _owner, _status in REQUEST_PIPELINE)
+
+# The §52 task classifier's outputs, in roadmap order.
+TASK_CLASSIFIER_FIELDS = (
+    "task_type", "entities", "project", "tool_intent",
+)
+
+# This layer's recorded bound on a classification's
+# entity list.
+MAX_CLASSIFICATION_ENTITIES = 32
+
+
+def request_pipeline_stages() -> list[dict[str, Any]]:
+    """The §52 pipeline stages, in roadmap order. Pure.
+
+    Each entry names its stage, the surface or party
+    that owns it, and the owner's status (banked in
+    this plugin, external, or a later section).
+    """
+    return [
+        {"stage": stage, "owner": owner, "status": status}
+        for stage, owner, status in REQUEST_PIPELINE]
+
+
+def task_classifier_fields() -> list[str]:
+    """The §52 task classifier's outputs. Pure."""
+    return list(TASK_CLASSIFIER_FIELDS)
+
+
+def request_pipeline_contract() -> dict[str, Any]:
+    """The §52 Request Pipeline contract. Pure.
+
+    Every interaction walks the ten stages in order.
+    This layer names the stages and their owners only:
+    it classifies no live message, assembles no prompt
+    (§53 is a later section), calls no model, and runs
+    no pipeline.
+    """
+    return {
+        "name": "PersonaRequestPipeline",
+        "stages": request_pipeline_stages(),
+        "task_classifier_fields": task_classifier_fields(),
+        "prompt_assembly": "later_section_53",
+        "runs_pipeline": False,
+        "classifies_live_messages": False,
+        "injects": False,
+    }
+
+
+def _validate_task_classification(
+        classification: Any) -> dict[str, Any]:
+    """Normalise one §52 task classification. Pure.
+
+    None means no classification was supplied. A present
+    classification is a mapping over at most the four
+    §52 fields: task type, project, and tool intent are
+    slugified names or None; entities is a bounded list
+    of names, slugified and deduplicated in order.
+    Unknown fields and malformed values are refused.
+    """
+    if classification is None:
+        return {
+            "task_type": None, "entities": [],
+            "project": None, "tool_intent": None,
+        }
+    if not isinstance(classification, dict) \
+            or not set(classification) <= set(TASK_CLASSIFIER_FIELDS):
+        raise PersonaRuntimeError("task classification is invalid")
+
+    def _name(field: str) -> str | None:
+        value = classification.get(field)
+        if value is None:
+            return None
+        if not isinstance(value, str) or not value.strip():
+            raise PersonaRuntimeError(
+                "task classification is invalid")
+        return _slugify(value)
+
+    raw_entities = classification.get("entities", [])
+    if not isinstance(raw_entities, list) \
+            or len(raw_entities) > MAX_CLASSIFICATION_ENTITIES:
+        raise PersonaRuntimeError("task classification is invalid")
+    entities: list[str] = []
+    for entity in raw_entities:
+        if not isinstance(entity, str) or not entity.strip():
+            raise PersonaRuntimeError(
+                "task classification is invalid")
+        slug = _slugify(entity)
+        if slug not in entities:
+            entities.append(slug)
+    return {
+        "task_type": _name("task_type"), "entities": entities,
+        "project": _name("project"),
+        "tool_intent": _name("tool_intent"),
+    }
+
+
+def request_pipeline_plan(
+        classification: Any = None) -> dict[str, Any]:
+    """The §52 pipeline plan for one classification. Pure.
+
+    Names the ten stages in order with their owners and
+    carries the validated classification (task type,
+    entities, project, tool intent) the task-classifier
+    stage would produce. This layer executes no stage.
+    A malformed classification is refused.
+    """
+    return {
+        "stages": request_pipeline_stages(),
+        "classification": _validate_task_classification(
+            classification),
+        "prompt_assembly": "later_section_53",
+        "executes": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -6696,7 +6997,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-50): persona "
+            f"Persona runtime (§§3-52): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -6925,6 +7226,23 @@ class PersonaRuntimeBridge:
             f"compiled_at, the documents by role with "
             f"file and hash, and kernel_hash; this layer "
             f"writes no manifest. "
+            f"§51 startup: the startup sequence stands "
+            f"as a pure plan — load persona.yaml, resolve "
+            f"the directory, validate required documents, "
+            f"compare source hashes, then load the "
+            f"compiled persona if unchanged or compile "
+            f"it if changed, load the kernel, initialize "
+            f"the retrieval index and Persona State, and "
+            f"the persona awakens; this layer owns no "
+            f"boot hook. §52 request pipeline: the ten "
+            f"stages stand named in order (user message, "
+            f"task classifier, persona router, persona "
+            f"retrieval, memory retrieval, context "
+            f"budgeter, prompt assembler, model, persona "
+            f"watchdog, tools / response) with their "
+            f"banked or external owners; prompt assembly "
+            f"is §53, a later section, and no pipeline "
+            f"runs here. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -7173,6 +7491,21 @@ __all__ = [
     "manifest",
     "manifest_staleness",
     "validate_manifest",
+    "STARTUP_STEPS",
+    "STARTUP_PREFIX_STEPS",
+    "STARTUP_BRANCH_STEPS",
+    "STARTUP_SUFFIX_STEPS",
+    "REQUEST_PIPELINE",
+    "REQUEST_PIPELINE_STAGES",
+    "TASK_CLASSIFIER_FIELDS",
+    "MAX_CLASSIFICATION_ENTITIES",
+    "startup_steps",
+    "startup_contract",
+    "startup_plan",
+    "request_pipeline_stages",
+    "task_classifier_fields",
+    "request_pipeline_contract",
+    "request_pipeline_plan",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
