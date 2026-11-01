@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-60).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-62).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -654,6 +654,29 @@ What stands here, and nothing more:
   relitigate). The roadmap names these behaviors as
   automatically testable; this layer builds and
   validates records only and evaluates no response.
+- §61 character drift telemetry: the pure
+  ``telemetry_fields`` / ``drift_telemetry_record`` /
+  ``validate_drift_telemetry_record`` /
+  ``telemetry_example_averages`` /
+  ``model_drift_averages`` / ``telemetry_contract``
+  functions stand one locally comparable record
+  (drift score, kernel version, model used, mode,
+  retrieved persona sections by stable id) and the
+  deterministic per-model average drift over validated
+  records, with the roadmap's example averages carried
+  verbatim. This layer persists no record and records
+  no live telemetry.
+- §62 model router + persona quality: the pure
+  ``model_selection_considerations`` /
+  ``persona_adherence`` / ``model_quality_table`` /
+  ``preferred_companionship_model`` /
+  ``model_router_contract`` functions stand model
+  selection considering persona adherence alongside
+  intelligence — adherence derived purely from the
+  §61 average drift — ranking supplied averages by
+  adherence for everyday companionship. The per-model
+  metric set carrying intelligence is §63, a later
+  section; this layer routes no live model.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -7208,6 +7231,238 @@ def behavior_contract() -> dict[str, Any]:
     }
 
 
+# §61: character drift telemetry — locally record the
+# drift score, kernel version, model used, mode, and
+# retrieved persona sections for each scored response,
+# so models can be compared by how well they hold the
+# persona. This layer builds and validates records and
+# computes deterministic per-model averages only; it
+# persists nothing and records no live telemetry.
+TELEMETRY_FIELDS = (
+    "drift_score",
+    "kernel_version",
+    "model",
+    "mode",
+    "retrieved_sections",
+)
+
+TELEMETRY_EXAMPLE_AVERAGES = {
+    "gemma_4_e2b": 0.18,
+    "qwen": 0.11,
+    "remote_model": 0.06,
+}
+
+
+def telemetry_fields() -> list[str]:
+    """The §61 telemetry record fields, in roadmap order. Pure."""
+    return list(TELEMETRY_FIELDS)
+
+
+def _validate_telemetry_value(value: Any) -> float:
+    """Validate one unit-interval telemetry value. Pure."""
+    if isinstance(value, bool) \
+            or not isinstance(value, (int, float)) \
+            or not math.isfinite(float(value)) \
+            or not 0.0 <= float(value) <= 1.0:
+        raise PersonaRuntimeError("drift telemetry is invalid")
+    return float(value)
+
+
+def drift_telemetry_record(drift_score: Any, kernel_version: Any,
+                           model: Any, mode: Any,
+                           retrieved_sections: Any = ()
+                           ) -> dict[str, Any]:
+    """Build one §61 character drift telemetry record. Pure.
+
+    The artefact carries exactly a ``telemetry`` mapping
+    with the five roadmap fields in roadmap order: the
+    §28/§29 drift score (unit interval), the kernel
+    version (the §22 strict semver the compile carries),
+    the model used (slugified), the §38 mode, and the
+    retrieved persona sections named by §12 stable id
+    (bounded and deduplicated by the handoff-section
+    validation). Malformed values are refused. This
+    layer records nothing anywhere.
+    """
+    score = _validate_telemetry_value(drift_score)
+    parse_persona_version(kernel_version)
+    record = {
+        "drift_score": score,
+        "kernel_version": kernel_version,
+        "model": _validate_model_name(model),
+        "mode": _validate_active_mode(mode),
+        "retrieved_sections": _validate_handoff_sections(
+            retrieved_sections),
+    }
+    return {"telemetry": record}
+
+
+def validate_drift_telemetry_record(
+        record: Any) -> dict[str, Any]:
+    """Validate one §61 telemetry record's shape. Pure.
+
+    The artefact must carry exactly the ``telemetry``
+    field, and its mapping must rebuild to itself under
+    ``drift_telemetry_record`` — unknown or missing
+    fields, out-of-interval scores, and a mapping whose
+    key order is not roadmap order are refused.
+    """
+    if not isinstance(record, dict) \
+            or set(record) != {"telemetry"} \
+            or not isinstance(record["telemetry"], dict) \
+            or list(record["telemetry"]) != list(TELEMETRY_FIELDS):
+        raise PersonaRuntimeError("drift telemetry is invalid")
+    body = record["telemetry"]
+    rebuilt = drift_telemetry_record(
+        body["drift_score"], body["kernel_version"], body["model"],
+        body["mode"], body["retrieved_sections"])
+    if rebuilt != record:
+        raise PersonaRuntimeError("drift telemetry is invalid")
+    return rebuilt
+
+
+def telemetry_example_averages() -> dict[str, float]:
+    """The §61 roadmap example per-model averages, verbatim. Pure.
+
+    The roadmap's example names Gemma 4 E2B at 0.18, Qwen
+    at 0.11, and a remote model at 0.06; the model names
+    stand slugified, as every record's model field does.
+    """
+    return dict(TELEMETRY_EXAMPLE_AVERAGES)
+
+
+def model_drift_averages(records: Any) -> dict[str, float]:
+    """Deterministic per-model average drift over §61 records. Pure.
+
+    Every record is validated first; averages are grouped
+    by the record's model in first-appearance order and
+    rounded to ten decimals so identical inputs always
+    produce identical outputs. An empty or malformed
+    record set is refused.
+    """
+    if not isinstance(records, (list, tuple)) or not records:
+        raise PersonaRuntimeError("drift telemetry is invalid")
+    totals: dict[str, float] = {}
+    counts: dict[str, int] = {}
+    for raw in records:
+        body = validate_drift_telemetry_record(raw)["telemetry"]
+        model = body["model"]
+        totals[model] = totals.get(model, 0.0) + body["drift_score"]
+        counts[model] = counts.get(model, 0) + 1
+    return {
+        model: round(totals[model] / counts[model], 10)
+        for model in totals}
+
+
+def telemetry_contract() -> dict[str, Any]:
+    """The §61 Character Drift Telemetry contract. Pure.
+
+    Drift score, kernel version, model used, mode, and
+    retrieved persona sections are recorded locally so
+    models can be compared. This layer builds and
+    validates records and averages them only; it
+    persists no record and records no live telemetry.
+    """
+    return {
+        "name": "PersonaDriftTelemetry",
+        "fields": telemetry_fields(),
+        "example_averages": telemetry_example_averages(),
+        "recorded_locally": True,
+        "compares_models": True,
+        "persists_records": False,
+        "records_live_telemetry": False,
+    }
+
+
+# §62: model router + persona quality — model selection
+# should consider not only intelligence but also persona
+# adherence: a slightly less intelligent model that holds
+# the personality beautifully may be preferable for
+# everyday companionship. Adherence here derives purely
+# from the §61 average drift (adherence = 1 - average
+# drift); the per-model metric set that would carry an
+# intelligence score is §63, a later section, so this
+# surface ranks by adherence only and names that honestly.
+MODEL_SELECTION_CONSIDERATIONS = (
+    "intelligence",
+    "persona_adherence",
+)
+
+
+def model_selection_considerations() -> list[str]:
+    """The §62 model-selection considerations, in roadmap order. Pure."""
+    return list(MODEL_SELECTION_CONSIDERATIONS)
+
+
+def persona_adherence(average_drift: Any) -> float:
+    """Persona adherence derived from one §61 average drift. Pure."""
+    return round(1.0 - _validate_telemetry_value(average_drift), 10)
+
+
+def _validate_model_averages(averages: Any) -> dict[str, float]:
+    """Validate a per-model average-drift mapping. Pure."""
+    if not isinstance(averages, dict) or not averages:
+        raise PersonaRuntimeError("model averages are invalid")
+    validated: dict[str, float] = {}
+    for model, drift in averages.items():
+        name = _validate_model_name(model)
+        if name in validated:
+            raise PersonaRuntimeError("model averages are invalid")
+        validated[name] = _validate_telemetry_value(drift)
+    return validated
+
+
+def model_quality_table(averages: Any) -> list[dict[str, Any]]:
+    """The §62 per-model quality table over §61 averages. Pure.
+
+    One row per model carrying its average drift and its
+    derived persona adherence, ordered by adherence
+    descending with the model name as the deterministic
+    tiebreak. No intelligence score is carried — that
+    metric set is §63, a later section.
+    """
+    validated = _validate_model_averages(averages)
+    rows = [{
+        "model": model,
+        "average_drift": drift,
+        "persona_adherence": persona_adherence(drift),
+    } for model, drift in validated.items()]
+    rows.sort(key=lambda row: (-row["persona_adherence"], row["model"]))
+    return rows
+
+
+def preferred_companionship_model(averages: Any) -> str:
+    """The §62 preferred everyday-companionship model. Pure.
+
+    The model with the strongest persona adherence (the
+    lowest §61 average drift) is preferred for everyday
+    companionship, even if another model might be more
+    intelligent — intelligence scores are §63 metrics
+    this surface does not carry.
+    """
+    return model_quality_table(averages)[0]["model"]
+
+
+def model_router_contract() -> dict[str, Any]:
+    """The §62 Model Router + Persona Quality contract. Pure.
+
+    Model selection considers persona adherence alongside
+    intelligence. This layer ranks supplied §61 averages
+    by adherence only and routes no live model; the
+    per-model metrics that carry intelligence are §63.
+    """
+    return {
+        "name": "PersonaAwareModelRouter",
+        "considerations": model_selection_considerations(),
+        "adherence_basis": "character_drift_telemetry",
+        "example_averages": telemetry_example_averages(),
+        "example_preferred_model": preferred_companionship_model(
+            TELEMETRY_EXAMPLE_AVERAGES),
+        "routes_live_models": False,
+        "per_model_metrics_section": 63,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -7917,7 +8172,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-60): persona "
+            f"Persona runtime (§§3-62): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -8216,6 +8471,16 @@ class PersonaRuntimeBridge:
             f"the roadmap's behavior shape as "
             f"automatically testable expectations; "
             f"this layer evaluates no response. "
+            f"§61 drift telemetry: drift score, kernel "
+            f"version, model, mode, and retrieved "
+            f"sections stand as locally comparable "
+            f"records with deterministic per-model "
+            f"averages; this layer persists no record. "
+            f"§62 model router + persona quality: model "
+            f"selection considers persona adherence "
+            f"alongside intelligence, adherence derived "
+            f"from the §61 averages; this layer routes "
+            f"no live model. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -8535,6 +8800,20 @@ __all__ = [
     "behavior_expectation",
     "validate_behavior_fingerprint",
     "behavior_contract",
+    "TELEMETRY_FIELDS",
+    "TELEMETRY_EXAMPLE_AVERAGES",
+    "telemetry_fields",
+    "drift_telemetry_record",
+    "validate_drift_telemetry_record",
+    "telemetry_example_averages",
+    "model_drift_averages",
+    "telemetry_contract",
+    "MODEL_SELECTION_CONSIDERATIONS",
+    "model_selection_considerations",
+    "persona_adherence",
+    "model_quality_table",
+    "preferred_companionship_model",
+    "model_router_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

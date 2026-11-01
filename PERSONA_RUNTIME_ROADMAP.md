@@ -3715,6 +3715,32 @@ average drift 0.06
 This could become extremely useful for Hermes model routing.
 
 
+> **Completion note — Slice 148 (2026-11-01): §61 stands
+> in the same module as a pure telemetry-record surface.
+> The pure `telemetry_fields` function names the five
+> recorded fields in roadmap order (drift score, kernel
+> version, model used, mode, retrieved persona
+> sections); the pure `drift_telemetry_record` function
+> builds one record in that shape — the §28/§29 drift
+> score as a unit interval, the kernel version as the
+> §22 strict semver, the model slugified, the mode a
+> §38 mode, the retrieved sections named by §12 stable
+> id — and the pure `validate_drift_telemetry_record`
+> function refuses a record whose fields are not
+> exactly the roadmap's five in roadmap order or whose
+> values do not rebuild to themselves. The pure
+> `model_drift_averages` function averages validated
+> records deterministically per model in
+> first-appearance order, and the pure
+> `telemetry_example_averages` function carries the
+> roadmap's example verbatim (Gemma 4 E2B 0.18, Qwen
+> 0.11, remote model 0.06 — the averages the contract
+> tests reproduce from individual records). Honest
+> gaps: this layer persists no record, records no live
+> telemetry, and no caller consumes a record yet;
+> §62's router consideration stands below.**
+
+
 ---
 
 
@@ -3733,6 +3759,27 @@ persona adherence
 
 
 A slightly less intelligent model that holds Caducea's personality beautifully may be preferable for everyday companionship.
+
+
+> **Completion note — Slice 148 (2026-11-01): §62 stands
+> in the same module as a pure consideration surface
+> over the §61 averages. The pure
+> `model_selection_considerations` function names the
+> two considerations in roadmap order (intelligence,
+> persona adherence); the pure `persona_adherence`
+> function derives adherence from one average drift
+> (adherence = 1 − average drift); the pure
+> `model_quality_table` function ranks supplied
+> averages by adherence descending (model name as the
+> deterministic tiebreak), and the pure
+> `preferred_companionship_model` function returns the
+> strongest-adherence model — for the §61 example,
+> the remote model at 0.94 adherence. Honest gaps:
+> no intelligence score is carried here — the
+> per-model metric set that would carry one is §63,
+> a later section — so this surface ranks by adherence
+> only and names that in its contract; no live model
+> is routed and no caller consumes a ranking yet.**
 
 
 ---
