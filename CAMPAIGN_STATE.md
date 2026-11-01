@@ -3896,3 +3896,86 @@ portable state: any agent (Muse or Hermes) resumes from here.
   over the banked surfaces, not a live prompt assembler
   wired into the turn path; §54 names why the order
   matters (per the §54 spec when read at slice start).
+- 2026-11-01 ~01:4x–02:5x EDT keeper tick: **Slice 144 DONE —
+  Persona Runtime §53 (Prompt Assembly Order) and §54 (Why
+  Order Matters) complete, banked and PUSHED under the standing
+  go-ahead.** No live work found at tick start in progress
+  (Slice 143's state commit at 01:42 EDT, minutes before this
+  tick, was verified as its own completed push — tree clean,
+  HEAD == origin/main at `1d6a7d491c`, no hermes process on
+  this tree; the Python-write blocker was probed absent).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §53's pure
+  `prompt_assembly_slots` / `prompt_assembly_order` /
+  `prompt_assembly_contract` / `prompt_assembly_plan` stand
+  the recommended prompt order in roadmap order (runtime
+  system rules, Persona Kernel, current Persona State,
+  relevant persona sections, relevant long-term memory,
+  active project context, recent conversation context,
+  current user message), each slot with its source and
+  status (banked: compiled kernel, §37 persona state, §13
+  persona retrieval; external: runtime, memory subsystem,
+  project context, conversation, caller) — the enforcer
+  the §10 pinning spec designated: kernel at position 1,
+  directly under the runtime system rules, character slots
+  before transient slots; a caller-supplied slot list is
+  validated as an order-preserving subsequence (unknown,
+  duplicated, or out-of-order refused). The §52 pipeline's
+  prompt-assembler stage now names this surface as its
+  banked owner and the §10 pinning `enforced_by` names it.
+  §54's pure `order_matters_reasons` /
+  `order_matters_contract` / `evaluate_prompt_order` stand
+  the roadmap's two reasons (recent context may dominate
+  when persona follows huge conversation history; identity
+  near the highest-level instructions anchors the model)
+  and evaluate any supplied order of known, unique slots
+  (kernel position, character-before-transient, anchored
+  flag, named risks persona_kernel_missing /
+  recent_context_may_dominate /
+  identity_not_near_highest_instructions); the canonical
+  §53 order evaluates anchored with no risks. Packet label
+  updated to §§3–54 (twenty-one older persona files'
+  packet assertions updated in-slice, plus the
+  startup-pipeline file's §52 assertions). Tests: targeted
+  27/27 pass (9 new prompt-assembly contracts +
+  startup-pipeline + kernel files); targeted persona run
+  (28 files): **248 passed, 0 failed**; full volmarr/kista
+  run (97 files): **727 passed, 7 failed, 1 skipped** — the
+  same name-identical pre-existing environmental set in
+  the same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice144_full_run.log`); 727
+  is exactly Slice 143's 718 + the 9 new contracts. Smoke:
+  `hermes --version` runs (`vgit.1d6a7d4.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §53 + §54 completion notes in the Persona Runtime
+  roadmap, plugin.yaml description now §§3–54. Push:
+  fast-forward, no force — origin/main moved
+  `1d6a7d491c` → Slice 144 commit, verified by
+  `git ls-remote` (remote == local HEAD). Honest gaps: no
+  prompt is assembled, nothing is injected, the surface
+  is not wired into the turn path, no order is reordered
+  live, and no caller consumes a plan or evaluation yet;
+  §55's conversation history compression stands
+  unclaimed.
+- **Next resume point: Slice 145 — Persona Runtime §55
+  (Conversation History Compression) and §56 (Long-Term
+  Conversation Design)**: §55 names compression instead of
+  endless appending (recent verbatim window + structured
+  conversation state + episodic summaries + retrieved
+  older memories; the example: last 8–20 messages verbatim
+  plus persistent state — making conversations effectively
+  unlimited) — reconcile against the banked §25 summary /
+  §26 state surfaces and the §52/§53 context slots when
+  read at slice start, expect a pure
+  compression-shape/window surface, not a live compressor
+  or summariser this plugin does not own; §56 names the
+  long-term design (the model should never need the entire
+  conversation history to remain itself; identity lives in
+  persona, history lives in memory, task state lives in
+  project/context, the conversation window handles
+  immediacy) — expect a pure placement/contract surface
+  over the banked surfaces, per the §56 spec when read at
+  slice start.
