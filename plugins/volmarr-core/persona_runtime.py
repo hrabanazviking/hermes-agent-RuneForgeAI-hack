@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-68).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-70).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -8462,6 +8462,347 @@ def conflict_contract() -> dict[str, Any]:
     }
 
 
+# §69: configurable priorities — a human may author a
+# ``persona.precedence`` list ordering the six document
+# roles, but safe defaults ship: the roadmap's example
+# order (core, relationship, service_bible, tool_policy,
+# memory_policy, avatar). That example itself shows the
+# configurability §67 does not offer: the branch
+# documents are §67 siblings sharing one rank, and the
+# example orders tool_policy before memory_policy. Two
+# safety rails are not configurable, because removing
+# them would silently rewrite the §67/§68 authority the
+# rest of this layer stands on: the persona core stays
+# first (the core wins, §68), and every branch document
+# stays below its parent, the service bible (§67). Any
+# other relative order is the human's configuration.
+# This layer stands the pure defaults/validation surface
+# only; the read-only persona config loader (§3) does
+# not read a precedence key and its behaviour is
+# unchanged.
+CONFIGURABLE_PRECEDENCE_DEFAULT = (
+    "core",
+    "relationship",
+    "service_bible",
+    "tool_policy",
+    "memory_policy",
+    "avatar",
+)
+
+CONFIGURABLE_PRECEDENCE_CONFIG_KEY = "persona.precedence"
+
+_CONFIGURABLE_PRECEDENCE_ROLES = tuple(
+    _CANONICAL_FILE_ROLES[document]
+    for document in CANONICAL_FILE_ORDER)
+
+_PRECEDENCE_BRANCH_ROLES = tuple(
+    _CANONICAL_FILE_ROLES[document]
+    for document in CANONICAL_FILE_BRANCHES)
+
+
+def _precedence_role(source: Any) -> str:
+    if not isinstance(source, str) or not source.strip():
+        raise PersonaRuntimeError("precedence role is invalid")
+    return _CANONICAL_FILE_ROLES[_canonical_file_document(source)]
+
+
+def configurable_precedence_roles() -> list[str]:
+    """The six roles a §69 precedence list orders. Pure.
+
+    The compiler's semantic document roles, in §67
+    canonical traversal order.
+    """
+    return list(_CONFIGURABLE_PRECEDENCE_ROLES)
+
+
+def default_precedence() -> list[str]:
+    """The §69 shipped safe default precedence. Pure.
+
+    The roadmap's example order: core, relationship,
+    service_bible, tool_policy, memory_policy, avatar.
+    """
+    return list(CONFIGURABLE_PRECEDENCE_DEFAULT)
+
+
+def configurable_precedence_example() -> dict[str, Any]:
+    """The §69 roadmap config example, in YAML shape. Pure."""
+    return {"persona": {"precedence": default_precedence()}}
+
+
+def validate_precedence(precedence: Any) -> list[str]:
+    """Validate one §69 precedence list. Pure.
+
+    The list must name every one of the six document
+    roles exactly once (roadmap document names and
+    compiler roles both resolve, slugified). The two
+    safety rails are enforced: the persona core stands
+    first, and every branch document (memory_policy,
+    tool_policy, avatar) stands below the service
+    bible, its §67 parent. Any other relative order
+    is the human's configuration. A malformed,
+    incomplete, duplicated, or rail-breaking list is
+    refused — never silently repaired into a different
+    order.
+    """
+    if not isinstance(precedence, (list, tuple)):
+        raise PersonaRuntimeError("persona precedence is invalid")
+    resolved = [_precedence_role(entry) for entry in precedence]
+    if len(resolved) != len(_CONFIGURABLE_PRECEDENCE_ROLES) \
+            or set(resolved) != set(_CONFIGURABLE_PRECEDENCE_ROLES):
+        raise PersonaRuntimeError(
+            "persona precedence must name every document "
+            "role exactly once")
+    if resolved[0] != "core":
+        raise PersonaRuntimeError(
+            "persona precedence must keep the persona core first")
+    bible = resolved.index("service_bible")
+    if any(resolved.index(role) < bible
+           for role in _PRECEDENCE_BRANCH_ROLES):
+        raise PersonaRuntimeError(
+            "persona precedence must keep branch documents "
+            "below the service bible")
+    return resolved
+
+
+def resolve_precedence(precedence: Any = None) -> list[str]:
+    """The effective §69 precedence. Pure.
+
+    No supplied list resolves to the shipped safe
+    default; a supplied list is validated, never
+    repaired.
+    """
+    if precedence is None:
+        return default_precedence()
+    return validate_precedence(precedence)
+
+
+def configurable_precedence_rank(source: Any,
+                                 precedence: Any = None) -> int:
+    """One role's rank in a §69 precedence. Pure.
+
+    0 is highest. The role may be named by roadmap
+    document name or compiler role; the precedence is
+    the shipped default unless a valid list is
+    supplied.
+    """
+    return resolve_precedence(precedence).index(
+        _precedence_role(source))
+
+
+def configurable_precedence_winner(first: Any, second: Any,
+                                   precedence: Any = None) -> str:
+    """The winning role of two under a §69 precedence. Pure.
+
+    Returns the winning role's slug; on a tie the
+    shared role wins (a role never loses to itself).
+    """
+    resolved = resolve_precedence(precedence)
+    first_role = _precedence_role(first)
+    second_role = _precedence_role(second)
+    if resolved.index(first_role) <= resolved.index(second_role):
+        return first_role
+    return second_role
+
+
+def configurable_precedence_outranks(first: Any, second: Any,
+                                     precedence: Any = None) -> bool:
+    """Whether ``first`` strictly outranks ``second`` (§69). Pure."""
+    resolved = resolve_precedence(precedence)
+    return resolved.index(_precedence_role(first)) \
+        < resolved.index(_precedence_role(second))
+
+
+def configurable_priorities_contract() -> dict[str, Any]:
+    """The §69 Configurable Priorities contract. Pure.
+
+    A ``persona.precedence`` list may order the six
+    document roles; the shipped default is the
+    roadmap's example, and the two safety rails (core
+    first, branch documents below the service bible)
+    are not configurable. This layer changes no config
+    loader behaviour: the §3 loader reads no precedence
+    key.
+    """
+    return {
+        "name": "ConfigurablePriorities",
+        "config_key": CONFIGURABLE_PRECEDENCE_CONFIG_KEY,
+        "default": default_precedence(),
+        "roles": configurable_precedence_roles(),
+        "example": configurable_precedence_example(),
+        "safe_defaults": True,
+        "core_first": True,
+        "branches_below_service_bible": True,
+        "canonical_basis": "§67 canonical file priority",
+        "changes_config_loader": False,
+    }
+
+
+# §70: persona validator — at compile time detect
+# contradictory directives, missing required files,
+# duplicate identities, invalid references, extreme
+# token size, broken Markdown, empty sections, and
+# unresolvable paths; warn the human; do not silently
+# invent missing character traits. This layer stands
+# the pure issue catalogue only: each §70 kind is
+# named with the banked surface that detects it, at
+# the honesty level the tree actually supports —
+# compile-time detection where a banked surface fails
+# or reports the condition at compile, partial where a
+# banked surface covers only part of the kind, and
+# not detected where no surface does the work (no
+# surface interprets document prose, §7, so
+# contradictory directives are resolved by §68 once
+# supplied but never detected here). No second
+# compiler runs and no validation pass is performed
+# by this catalogue.
+VALIDATOR_ISSUES = (
+    "contradictory_directives",
+    "missing_required_files",
+    "duplicate_identities",
+    "invalid_references",
+    "extreme_token_size",
+    "broken_markdown",
+    "empty_sections",
+    "unresolvable_paths",
+)
+
+_VALIDATOR_ROWS = (
+    ("contradictory_directives", "contradictory directives",
+     "none", "not_detected",
+     "No surface interprets document prose (§7); §68 "
+     "conflict resolution resolves a conflict once one "
+     "is supplied, it does not detect one."),
+    ("missing_required_files", "missing required files",
+     "PersonaCompiler.compile (§6)", "compile_time",
+     "A missing required document fails the compile "
+     "closed; a missing optional document is reported "
+     "in the compile's missing_optional list."),
+    ("duplicate_identities", "duplicate identities",
+     "PersonaConfigStore validation (§3)", "partial",
+     "A validated config carries exactly one persona id "
+     "and a document map whose roles are unique mapping "
+     "keys; two separate configs claiming one identity "
+     "are not detected."),
+    ("invalid_references", "invalid references",
+     "validate_handoff_packet (§35)", "partial",
+     "Section references are validated as well-formed "
+     "§12 stable ids wherever a handoff packet is built "
+     "or validated; whether a named section exists in a "
+     "compile is the packet builder's check, not a "
+     "validator pass."),
+    ("extreme_token_size", "extreme token size",
+     "PersonaCompiler.compile (§6)", "compile_time",
+     "A document over the document size limit fails "
+     "the compile, the config file carries its own "
+     "size limit in PersonaConfigStore.read (§3), and "
+     "an over-band kernel surfaces as within_band "
+     "False (§5)."),
+    ("broken_markdown", "broken Markdown",
+     "none", "not_detected",
+     "The §11 parser is heading-based and tolerant by "
+     "design; malformed YAML config is refused by "
+     "PersonaConfigStore.read (§3), but Markdown "
+     "syntax itself is not validated."),
+    ("empty_sections", "empty sections",
+     "none", "not_detected",
+     "The §11 parser carries sections verbatim (§7): "
+     "an empty section stands in the index unflagged; "
+     "only the empty preamble is skipped."),
+    ("unresolvable_paths", "unresolvable paths",
+     "PersonaConfigStore.document_path (§3)",
+     "compile_time",
+     "A document path resolving outside the persona "
+     "directory is refused, and a symlinked document "
+     "fails the compile (§6)."),
+)
+
+_VALIDATOR_DETECTIONS = (
+    "compile_time", "partial", "not_detected")
+
+
+def _validator_issue(issue: Any) -> str:
+    if not isinstance(issue, str) or not issue.strip():
+        raise PersonaRuntimeError("validator issue is invalid")
+    slug = _slugify(issue)
+    if slug in VALIDATOR_ISSUES:
+        return slug
+    for row in _VALIDATOR_ROWS:
+        if _slugify(row[1]) == slug:
+            return row[0]
+    raise PersonaRuntimeError(
+        f"unknown validator issue: {issue!r}")
+
+
+def validator_issues() -> list[str]:
+    """The §70 validator issue kinds, in roadmap order. Pure."""
+    return list(VALIDATOR_ISSUES)
+
+
+def persona_validator_catalogue() -> list[dict[str, Any]]:
+    """The §70 validator issue catalogue. Pure.
+
+    Each row names its issue kind (a stable slug), the
+    roadmap's name for it, the banked surface that
+    detects it (``none`` where no surface does), its
+    detection level (``compile_time``, ``partial``, or
+    ``not_detected``), that the human is warned, and a
+    note stating the honest scope of the detection.
+    """
+    return [{
+        "issue": issue,
+        "name": name,
+        "detector": detector,
+        "detection": detection,
+        "warn_human": True,
+        "note": note,
+    } for issue, name, detector, detection, note
+        in _VALIDATOR_ROWS]
+
+
+def persona_validator_issue(issue: Any) -> dict[str, Any]:
+    """One §70 catalogue row, by slug or roadmap name. Pure."""
+    resolved = _validator_issue(issue)
+    for row in persona_validator_catalogue():
+        if row["issue"] == resolved:
+            return row
+    raise PersonaRuntimeError("validator issue is invalid")
+
+
+def persona_validator_detection(issue: Any) -> str:
+    """One §70 issue kind's detection level. Pure."""
+    return persona_validator_issue(issue)["detection"]
+
+
+def persona_validator_contract() -> dict[str, Any]:
+    """The §70 Persona Validator contract. Pure.
+
+    The validator catalogue names the eight roadmap
+    issue kinds with the banked surfaces that detect
+    them, at honest detection levels. The human is
+    warned; missing character traits are never
+    silently invented. This layer runs no second
+    compiler and performs no validation pass.
+    """
+    catalogue = persona_validator_catalogue()
+    return {
+        "name": "PersonaValidator",
+        "issues": validator_issues(),
+        "compile_time_detected": [
+            row["issue"] for row in catalogue
+            if row["detection"] == "compile_time"],
+        "partially_detected": [
+            row["issue"] for row in catalogue
+            if row["detection"] == "partial"],
+        "not_detected": [
+            row["issue"] for row in catalogue
+            if row["detection"] == "not_detected"],
+        "warns_human": True,
+        "invents_missing_traits": False,
+        "second_compiler": False,
+        "interprets_prose": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -9171,7 +9512,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-68): persona "
+            f"Persona runtime (§§3-70): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -9513,6 +9854,26 @@ class PersonaRuntimeBridge:
             f"memory — core honesty beats a relationship "
             f"file's tell-him-what-he-wants, core wins; "
             f"this layer detects no live conflict. "
+            f"§69 configurable priorities: a "
+            f"persona.precedence list may order the six "
+            f"document roles under two safety rails "
+            f"(the core first, branch documents below "
+            f"the service bible), and the shipped safe "
+            f"default is core, relationship, service "
+            f"bible, tool policy, memory policy, avatar; "
+            f"this layer changes no loader behaviour. "
+            f"§70 persona validator: the compile-time "
+            f"issue catalogue names eight kinds — "
+            f"missing required files, extreme token "
+            f"size, and unresolvable paths are detected "
+            f"at compile time, duplicate identities and "
+            f"invalid references are partially detected, "
+            f"and contradictory directives, broken "
+            f"Markdown, and empty sections are not "
+            f"detected (no prose is interpreted); the "
+            f"human is warned and missing traits are "
+            f"never silently invented; this layer runs "
+            f"no second compiler. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -9906,6 +10267,23 @@ __all__ = [
     "conflict_outranks",
     "conflict_example",
     "conflict_contract",
+    "CONFIGURABLE_PRECEDENCE_DEFAULT",
+    "CONFIGURABLE_PRECEDENCE_CONFIG_KEY",
+    "configurable_precedence_roles",
+    "default_precedence",
+    "configurable_precedence_example",
+    "validate_precedence",
+    "resolve_precedence",
+    "configurable_precedence_rank",
+    "configurable_precedence_winner",
+    "configurable_precedence_outranks",
+    "configurable_priorities_contract",
+    "VALIDATOR_ISSUES",
+    "validator_issues",
+    "persona_validator_catalogue",
+    "persona_validator_issue",
+    "persona_validator_detection",
+    "persona_validator_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

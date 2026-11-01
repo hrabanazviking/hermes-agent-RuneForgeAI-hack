@@ -4141,6 +4141,38 @@ persona:
 But ship safe defaults.
 
 
+> **Completion note — Slice 152 (2026-11-01): §69 stands
+> in `plugins/volmarr-core/persona_runtime.py` as a pure
+> defaults/validation surface. The pure
+> `default_precedence` / `configurable_precedence_example`
+> functions ship the roadmap's example order as the safe
+> default (core, relationship, service_bible,
+> tool_policy, memory_policy, avatar — the example itself
+> shows the configurability §67 does not offer: the
+> branch documents are §67 siblings sharing one rank,
+> and the example orders tool_policy before
+> memory_policy). The pure `validate_precedence` /
+> `resolve_precedence` functions accept a supplied
+> `persona.precedence` list only when it names every
+> one of the six document roles exactly once (roadmap
+> document names and compiler roles both resolve) and
+> keeps the two safety rails that are not configurable:
+> the persona core first (§68: the core wins), and
+> every branch document below its parent, the service
+> bible (§67); any other relative order is the human's
+> configuration, and a malformed, incomplete,
+> duplicated, or rail-breaking list is refused, never
+> silently repaired. The pure
+> `configurable_precedence_rank` /
+> `configurable_precedence_winner` /
+> `configurable_precedence_outranks` functions compare
+> roles under the default or a supplied valid list.
+> Honest gaps: the §3 read-only persona config loader
+> reads no precedence key and its behaviour is
+> unchanged — no caller consumes a resolved precedence
+> yet.**
+
+
 ---
 
 
@@ -4166,6 +4198,38 @@ Warn the human.
 
 
 Do not silently invent missing character traits.
+
+
+> **Completion note — Slice 152 (2026-11-01): §70 stands
+> in the same module as a pure validator-issue
+> catalogue. The pure `validator_issues` /
+> `persona_validator_catalogue` /
+> `persona_validator_issue` /
+> `persona_validator_detection` /
+> `persona_validator_contract` functions name the eight
+> roadmap issue kinds, each with the banked surface
+> that detects it, at the honesty level the tree
+> actually supports: missing required files, extreme
+> token size, and unresolvable paths are detected at
+> compile time (the §6 compiler fails closed on a
+> missing required or oversized document and reports
+> missing optional documents; the §3 config store
+> refuses paths resolving outside the persona
+> directory and carries the config/document size
+> limits); duplicate identities and invalid references
+> are partially detected (a validated §3 config
+> carries exactly one persona id with unique document
+> roles, and §35 handoff validation checks section
+> references are well-formed §12 stable ids);
+> contradictory directives, broken Markdown, and empty
+> sections are not detected — no surface interprets
+> document prose (§7), the §11 parser is heading-based
+> and tolerant by design, and §68 resolves a conflict
+> once one is supplied without detecting one. Every
+> row warns the human, and missing character traits
+> are never silently invented. Honest gaps: this
+> catalogue performs no validation pass and runs no
+> second compiler, and no caller consumes it yet.**
 
 
 ---

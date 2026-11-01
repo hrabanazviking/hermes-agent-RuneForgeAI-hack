@@ -361,7 +361,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert first[0].content == second[0].content == third[0].content
     assert len(first) == 1
     content = first[0].content
-    assert "§§3-68" in content
+    assert "§§3-70" in content
     assert "§59 style fingerprint" in content
     assert "guidance, not rigid" in content
     assert "§60 behavior fingerprint" in content
