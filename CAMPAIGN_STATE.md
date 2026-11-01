@@ -4896,3 +4896,75 @@ portable state: any agent (Muse or Hermes) resumes from here.
   when read at slice start, expect pure bundle-shape /
   validation surfaces, not a bundle writer or importer
   this layer does not own.
+- 2026-11-01 ~08:2x–09:5x EST keeper tick: **Slice 155 DONE —
+  Persona Runtime §75 (Persona Export) and §76 (Persona
+  Import) complete, banked and PUSHED under the standing
+  go-ahead.** No live work found at tick start (tree clean,
+  HEAD == origin/main at `c652574e60`; Slice 154's completing
+  tick had pushed minutes earlier; the Python-write blocker
+  was probed absent). `plugins/volmarr-core/persona_runtime.py`
+  extended in place — no new file or config key: §75's pure
+  `persona_export` / `validate_persona_export` /
+  `persona_export_example` / `persona_export_contract` stand
+  a compiled persona as a portable bundle record
+  (`<persona_id>.persona`; the roadmap example is
+  `caducea.persona`) built on the §50 manifest and the §22
+  version record — contents in roadmap order (manifest,
+  source Markdown, compiled IR, kernel, version metadata,
+  optional avatar metadata), the source Markdown standing
+  by role with each document's file and hash (the §50
+  entries), the compiled IR by its §8 hash and category
+  counts, the kernel by its §19 hash; the validator refuses
+  a tampered or internally inconsistent bundle. Avatar
+  metadata is caller-supplied, bounded, and optional
+  (absence None, never invented). §76's pure
+  `persona_import_plan` / `persona_import_contract` stand
+  the import as a plan over a validated bundle: no
+  collision plans a plain import; a collision refuses
+  under the default handling and plans a replacement only
+  under the explicit `replace` handling — an existing
+  persona is never overwritten without explicit handling.
+  The roadmap's `hermes persona` spelling registers no new
+  core command in either section. Packet label updated to
+  §§3–76 (thirty-two older persona files' packet assertions
+  updated in-slice). Tests: targeted 9/9 pass (new file;
+  19/19 with the §73–74 file); targeted persona run
+  (39 files): **358 passed, 0 failed**; full volmarr/kista
+  run (108 files): **837 passed, 7 failed, 1 skipped** —
+  the same name-identical pre-existing environmental set
+  in the same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice155_full_run.log`); 837 is
+  exactly Slice 154's 828 + the 9 new contracts. **Recorded
+  plainly: the first full-run attempt was killed at ~88%
+  by a VM restart (uptime 1 min on recovery) and discarded
+  (`slice155_full_run_contaminated.log`); the re-run
+  supplied the totals above.** Smoke: `hermes --version`
+  runs (`vgit.c652574.dirty` pre-commit); README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §75 + §76 completion notes
+  in the Persona Runtime roadmap, plugin.yaml description
+  now §§3–76. Push: fast-forward, no force — origin/main
+  moved `c652574e60` → Slice 155 commit, verified by
+  `git ls-remote` (remote == local HEAD). Honest gaps: no
+  bundle file is written or read, the bundle embeds no
+  source document text (a receiving installation still
+  needs the Markdown itself), no import is performed, and
+  no caller consumes a bundle or a plan yet.
+- **Next resume point: Slice 156 — Persona Runtime §77
+  (Multi-Persona Support) and §78 (Memory Namespace)**:
+  §77 names multiple personas (the roadmap's
+  `personas/caducea|runa|yrsa|…` layout, config choosing
+  `active_persona`, each persona independent in
+  documents, kernel, memory namespace, relationship
+  state, avatar, and compiled index) — reconcile against
+  the banked single-persona §3 config/compiler when read
+  at slice start, expect a pure roster/active-selection
+  surface over caller-supplied persona ids, not a
+  multi-persona loader this layer does not own; §78
+  names the memory namespace rule (never mix characters'
+  autobiographical memory; namespaces keyed
+  `persona:<id>:…`, with shared world knowledge standing
+  separately) — expect a pure namespace-key
+  builder/validation surface, not a memory store.
