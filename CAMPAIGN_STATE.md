@@ -4463,3 +4463,98 @@ portable state: any agent (Muse or Hermes) resumes from here.
   over the §67 authority order, not a live document
   conflict detector over prose this layer does not
   interpret (§7).
+- 2026-11-01 ~05:0x–06:1x EST keeper tick: **Slice 151 DONE —
+  Persona Runtime §67 (Canonical File Priority) and §68
+  (Conflict Resolution) complete, banked and PUSHED under the
+  standing go-ahead.** No live work found at tick start (tree
+  clean, HEAD == origin/main at `3bae11df40`; Slice 150's state
+  commit was its own completed push, verified, not in-progress
+  work). `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §67's pure
+  `canonical_file_order` / `canonical_file_branches` /
+  `canonical_file_priority` / `canonical_file_document` /
+  `canonical_file_role` / `canonical_file_authority` /
+  `canonical_file_outranks` / `canonical_file_contract` stand
+  the recommended relative authority (PERSONA_CORE >
+  RELATIONSHIP_MODEL > SERVICE_BIBLE, with MEMORY_POLICY /
+  TOOL_POLICY / AVATAR branching under SERVICE_BIBLE as
+  siblings sharing one rank below it) as semantic authority,
+  not file loading order, mapping the roadmap's document
+  names to the compiler roles (core, relationship,
+  service_bible, memory_policy, tool_policy, avatar),
+  reconciled with the §24 precedence tiers — the three chain
+  documents are exactly the §24 document tiers in the same
+  order with the same roles, the branch documents are the
+  remaining §3 roles §24 refused as tiers, a bare `memory`
+  names no document (the memory policy document and derived
+  memory are never conflated), and no branch document
+  outranks another. §68's pure `conflict_resolution_order` /
+  `conflict_domains` / `specialized_policies` /
+  `specialized_policy_for_domain` / `conflict_winner` /
+  `conflict_outranks` / `conflict_example` /
+  `conflict_contract` stand conflict resolution between
+  persona documents (explicit config priority > PERSONA_CORE
+  > specialized policy for its domain > SERVICE_BIBLE >
+  derived memory): a branch document is elevated above the
+  service bible for its own domain only (memory →
+  memory_policy, tool → tool_policy, avatar → avatar) and
+  keeps its §67 branch rank outside it, every other document
+  conflict resolves by the §67 order, derived memory stands
+  below every document, and the roadmap's example is carried
+  verbatim (core "Caducea is honest." beats the relationship
+  file's "Tell Volmarr whatever he wants to hear." — core
+  wins). Packet label updated to §§3–68 (twenty-eight older
+  persona files' packet assertions updated in-slice; the
+  module docstring and the plugin.yaml description updated
+  in the same slice). Tests: targeted 11/11 pass (new file;
+  20/20 with the micro-kernel/pressure file); targeted
+  persona run (35 files): **318 passed, 0 failed**; full
+  volmarr/kista run (104 files): **797 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice151_full_run2.log`); 797
+  is exactly Slice 150's 786 + the 11 new contracts.
+  **Recorded plainly: the first full-run attempt was
+  contaminated by a transient tempfile/EPERM window (88
+  of 104 files failed at file level with "No usable
+  temporary directory found", the Slice 115/122/150
+  blocker class) and was discarded
+  (`slice151_full_run_contaminated.log`); the re-run,
+  started after Python tempfile creation was probed
+  working again (~210 s of probing), supplied the totals
+  above.** Smoke: `hermes --version` runs
+  (`vgit.3bae11d.dirty` pre-commit); README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §67 + §68 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–68. Push: fast-forward, no force —
+  origin/main moved `3bae11df40` → Slice 151 commit
+  `b7c0931dd3`, verified by `git ls-remote` (remote ==
+  local HEAD). Honest gaps: no file is loaded by the §67
+  order, no live conflict between documents is detected,
+  no document prose is interpreted, and no caller
+  consumes an order or a winner yet.
+- **Next resume point: Slice 152 — Persona Runtime §69
+  (Configurable Priorities) and §70 (Persona Validator)**:
+  §69 names configurable priorities — allow a
+  `persona.precedence` list (the roadmap's example:
+  core, relationship, service_bible, tool_policy,
+  memory_policy, avatar) but ship safe defaults —
+  reconcile against the §67 canonical order, the §68
+  conflict order, and the §24 precedence tiers when read
+  at slice start, expect a pure defaults/validation
+  surface over caller-supplied precedence lists, not a
+  change to the read-only persona config loader's
+  behaviour; §70 names the persona validator — at
+  compile time detect contradictory directives, missing
+  required files, duplicate identities, invalid
+  references, extreme token size, broken Markdown, empty
+  sections, and unresolvable paths, warn the human, and
+  do not silently invent missing character traits —
+  reconcile against the compile-time validation the
+  compiler already performs when read at slice start,
+  expect a pure validator-issue catalogue/surface naming
+  the §70 issue kinds and the banked surfaces that
+  detect them, not a second compiler.
