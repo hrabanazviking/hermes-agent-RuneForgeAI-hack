@@ -5669,3 +5669,60 @@ portable state: any agent (Muse or Hermes) resumes from here.
   and §56 long-term placements likewise. After Slice
   163: §93 (Target Result) + §94 (Essence) close the
   roadmap.
+- 2026-11-01 ~16:2x EDT keeper tick: **Slice 163 DONE —
+  Persona Runtime §91 (Long-Term Architecture) + §92
+  (Most Important Rule) complete, banked and PUSHED under
+  the standing go-ahead.** The slice's work was found
+  fully staged in the index by the prior tick (staged
+  16:12 EDT, no live process on this tree, CAMPAIGN_STATE
+  untouched since Slice 162's entry) — this tick verified
+  it from disk before banking: the CUSTOMIZATIONS ledger
+  row's claims check against the on-disk logs
+  (`slice163_persona_run.log`: 47 files, 440 passed,
+  0 failed; `slice163_full_run.log` hit the transient
+  "No usable temporary directory" window mid-run — the
+  Slice 156 blocker class — and the affected files were
+  re-run clean the same tick per `slice163_rerun.log` +
+  `slice163_rerun3.log`, the only failures the known
+  Verðandi-stimuli + voice-runner pair), README.md sha256
+  invariant held (`4e022de7…c4910`), and the roadmap
+  carries the §91 + §92 completion notes. §91's pure
+  `architecture_items` / `architecture_contract` stand the
+  Long-Term Architecture reconciled (spine implemented by
+  its own sections; Memory Router, Project Context, Tools
+  State, ContextBuilder, local/heavy models, and Caducea
+  output honestly **equivalent**, carried by the §52
+  pipeline stages / §56 placement / §44 retrieval / §15
+  budgeter + §53 assembly order / §34 switch sides — no
+  separate architecture stands). §92's pure
+  `most_important_rule_items` / `most_important_rule_contract`
+  + `caducea_moment_components` stand the Most Important
+  Rule reconciled: six statements implemented, memory
+  supplying lived history **equivalent**, and the formula
+  PERSONA + MEMORY + STATE + CONTEXT + MODEL = CADUCEA
+  AT THIS MOMENT standing with exactly one defining
+  component — persona. The pure `architecture_rule_audit`
+  proves both from supplied artefacts (a tampered kernel
+  hash surfaces as unmet). Packet label updated to §§3–92.
+  Tests per the ledger row: targeted 10/10 pass (new file
+  `test_volmarr_persona_phase_architecture_rule.py`);
+  targeted persona run (47 files): **440 passed,
+  0 failed**; full volmarr/kista run (116 files): **919
+  passed, 7 failed, 1 skipped** — exactly Slice 162's
+  909 + the 10 new contracts, the failures the same
+  name-identical pre-existing environmental set in the
+  same 3 files (5 core-plugin, 1 Verðandi-stimuli socket,
+  1 voice-runner loopback). Honest gaps: no pipeline
+  runs, no prompt is assembled, no model is called, no
+  output is generated, no memory store is owned for the
+  history itself, and no caller consumes a reconciliation
+  or an audit yet.
+- **Next resume point: Slice 164 — Persona Runtime §93
+  (Target Result) + §94 (Essence)**: the roadmap's final
+  two sections — reconcile against the banked §§3–92
+  surfaces when read at slice start, expect an
+  audit/reconciliation slice in the Slice 158–163
+  pattern. With Slice 164 the Persona Runtime roadmap
+  (queue item 4) closes, and with it all four in-repo
+  roadmaps' named phases stand developed; the campaign
+  then reports completion.
