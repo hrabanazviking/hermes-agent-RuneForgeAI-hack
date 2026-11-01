@@ -5472,3 +5472,102 @@ portable state: any agent (Muse or Hermes) resumes from here.
   the banked §46 avatar policy usage and the avatar-facing
   surfaces (§§21/75 impact + export treatment of the avatar
   document) likewise.
+- 2026-11-01 ~13:4x–14:2x EST keeper tick: **Slice 161 DONE —
+  Persona Runtime §87 (Phase 7 — Tool Integration) and §88
+  (Phase 8 — Avatar Integration) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found
+  at tick start (Slice 160's state commit at 13:41 EST was
+  its own completed push, verified, not in-progress work;
+  tree clean, HEAD == origin/main at `c4b2b21156`). A
+  transient tempdir failure at tick start (python tempfile
+  found no usable temporary directory, the Slice 156
+  blocker class) was probed and had cleared within a
+  minute — mkstemp writes succeeded in /tmp and the
+  verify dir before any test ran; no work was lost.
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new module file or config key: §87's pure
+  `tool_phase_items` / `tool_phase_item` /
+  `tool_phase_contract` stand Phase 7 reconciled against
+  the banked surfaces (Tool Policy Markdown implemented
+  by §44), with three items honestly **equivalent** —
+  the Policy Compiler, carried by the §6 PersonaCompiler
+  plus §47's governance classification (no separate
+  compiler stands); ToolPermissionIR, carried in code by
+  §44's deterministic per-action needs table and action
+  classification (no named IR artefact stands); and
+  Runtime Enforcement, carried by those deterministic
+  surfaces in code (this layer executes no tool; live
+  enforcement at call time belongs to the Hermes tool
+  layer outside the persona layer). §88's pure
+  `avatar_phase_items` / `avatar_phase_item` /
+  `avatar_phase_contract` stand Phase 8 reconciled — all
+  six items **equivalent**: AvatarIR carried by the §6
+  compiler's avatar role sections in the compiled index
+  (§46 names them directly consumable by an avatar
+  controller; no separate AvatarIR builder stands), and
+  the VRM controller, emotion mapper, outfit manager,
+  visual state system, and image-generation prompts each
+  carried by their §46 occasion-gated retrieval of the
+  one compiled avatar document, the outfit manager
+  additionally by §75's optional export avatar metadata.
+  The pure `tool_avatar_audit` / `tool_avatar_contract`
+  prove both criteria from supplied artefacts: for §87,
+  the force-push example classifies deterministically
+  with exactly its four roadmap sections in code, §44
+  retrieval returns only the needed tool_policy sections
+  by rebuilt stable ids, file reading needs no extra
+  policy, and §47 holds permissions/expiration/limits in
+  code; for §88, the five §46 occasions stand complete,
+  occasion-gated retrieval returns only avatar sections
+  carrying the signalled occasion by rebuilt stable ids
+  and nothing with no occasion signalled, and the §75
+  export bundle's avatar source entry carries the §19
+  hash record's avatar hash with avatar presence
+  matching supplied metadata exactly, while the stored
+  §19 hash record matches its recomputation (a tampered
+  kernel hash surfaces as unmet). Packet label updated
+  to §§3–88 (thirty-eight older persona files' packet
+  assertions updated in-slice). Tests: targeted 10/10
+  pass (new file `test_volmarr_persona_phase_tool_avatar.py`);
+  targeted persona run (45 files): **420 passed,
+  0 failed**; full volmarr/kista run (114 files):
+  **899 passed, 7 failed, 1 skipped** — exactly Slice
+  160's 889 + the 10 new contracts, the failures the
+  same name-identical pre-existing environmental set in
+  the same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice161_full_run.log`,
+  1096.7s). Smoke: `hermes --version` runs
+  (`vgit.c4b2b21.dirty` pre-commit); README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §87 + §88 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–88. Push: fast-forward, no
+  force — verified by `git ls-remote` (remote == local
+  HEAD `bd77281308`). Honest gaps: no tool is executed
+  and no live tool call is enforced, no visual consumer
+  (VRM controller, emotion mapper, outfit manager,
+  visual state system, image generator) is owned, no
+  avatar is controlled, and no caller consumes a
+  reconciliation or an audit yet.
+- **Next resume point: Slice 162 — Persona Runtime §89
+  (Phase 9 — Evaluation Framework) and §90 (Phase 10 —
+  Persona Development System)**: §89 lists golden
+  scenarios, long-context tests, model-switch tests,
+  memory drift tests, relationship consistency tests,
+  and persona regression tests, with success criterion
+  "Character stability becomes measurable rather than
+  subjective" — reconcile against the banked drift-test
+  scenario / golden-record, style/behavior fingerprint,
+  drift telemetry, and model-switch surfaces when read
+  at slice start, expect an audit/reconciliation slice
+  in the Slice 158–161 pattern, not a second evaluation
+  harness; §90 lets Hermes propose persona improvements
+  as a human-readable patch/diff for Volmarr's review
+  and approval before any canonical Markdown update and
+  recompile, and Caducea must NOT silently rewrite her
+  foundational identity — reconcile against the banked
+  change-impact, diff-record, import-plan, and reload
+  surfaces likewise, with the honest bound that this
+  layer proposes nothing and updates no canonical file.
