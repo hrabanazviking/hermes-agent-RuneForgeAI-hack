@@ -75,8 +75,8 @@ PIPELINE = [
      "status": "external"},
     {"stage": "context_budgeter",
      "owner": "PersonaContextBudgeter", "status": "banked"},
-    {"stage": "prompt_assembler", "owner": "prompt_assembly_53",
-     "status": "later_section"},
+    {"stage": "prompt_assembler", "owner": "prompt_assembly_order",
+     "status": "banked"},
     {"stage": "model", "owner": "model", "status": "external"},
     {"stage": "persona_watchdog", "owner": "watchdog_contract",
      "status": "banked"},
@@ -287,17 +287,18 @@ def test_request_pipeline_stages_and_contract():
     assert fresh == PIPELINE
     assert list(runtime.REQUEST_PIPELINE_STAGES) == [
         row["stage"] for row in PIPELINE]
-    # Prompt assembly is §53: named in the pipeline,
-    # honestly a later section, never claimed here.
+    # Prompt assembly is §53: its owner is the §53 pure
+    # order surface (Slice 144), banked here, not a live
+    # assembler wired into the turn path.
     assert fresh[6] == {
         "stage": "prompt_assembler",
-        "owner": "prompt_assembly_53", "status": "later_section"}
+        "owner": "prompt_assembly_order", "status": "banked"}
     assert contract == {
         "name": "PersonaRequestPipeline",
         "stages": PIPELINE,
         "task_classifier_fields": [
             "task_type", "entities", "project", "tool_intent"],
-        "prompt_assembly": "later_section_53",
+        "prompt_assembly": "section_53_prompt_assembly_order",
         "runs_pipeline": False,
         "classifies_live_messages": False,
         "injects": False,
@@ -324,7 +325,7 @@ def test_request_pipeline_plan_classification():
         "classification": {
             "task_type": None, "entities": [], "project": None,
             "tool_intent": None},
-        "prompt_assembly": "later_section_53",
+        "prompt_assembly": "section_53_prompt_assembly_order",
         "executes": False,
     }
     assert plan["classification"] == {
@@ -391,11 +392,11 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert first[0].content == second[0].content == third[0].content
     assert len(first) == 1
     content = first[0].content
-    assert "§§3-52" in content
+    assert "§§3-54" in content
     assert "§51 startup" in content
     assert "owns no boot hook" in content
     assert "§52 request pipeline" in content
-    assert "prompt assembly is §53" in content
+    assert "§53 prompt assembly" in content
     assert "no pipeline runs here" in content
     # The packet names the contracts only — never canonical
     # persona text.

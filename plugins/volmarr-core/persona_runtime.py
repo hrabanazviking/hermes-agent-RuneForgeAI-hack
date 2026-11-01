@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-52).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-54).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -93,7 +93,8 @@ What stands here, and nothing more:
   identical documents produce an identical kernel hash,
   and changing a non-kernel section never changes the
   kernel). Actual placement in a live prompt belongs to
-  prompt assembly (§53, a later section); this layer
+  prompt assembly (§53, which stands below as a pure
+  order surface, not a live assembler); this layer
   injects nothing and claims no placement it does not
   perform.
 - §11 section-aware Markdown parser: documents are split
@@ -548,11 +549,40 @@ What stands here, and nothing more:
   (§13 task classification, §14 router, §13 retrieval,
   §15 budgeter, §27 watchdog), an external owner where
   the stage belongs elsewhere (the caller, the memory
-  subsystem, the model), and prompt assembly honestly
-  marked a later section (§53). The task classifier's
+  subsystem, the model); prompt assembly's owner is the
+  §53 pure order surface below. The task classifier's
   four outputs (task type, entities, project, tool
   intent) are validated in shape only. This layer runs
   no per-message pipeline.
+- §53 prompt assembly order: the pure
+  ``prompt_assembly_order`` / ``prompt_assembly_contract``
+  / ``prompt_assembly_plan`` functions stand the
+  recommended prompt order in roadmap order (runtime
+  system rules, Persona Kernel, current Persona State,
+  relevant persona sections, relevant long-term memory,
+  active project context, recent conversation context,
+  current user message) as a pure plan surface. This is
+  the section the §10 pinning spec designated as its
+  enforcer: the kernel sits at position 1, directly
+  under the runtime system rules, and the character
+  appears before transient context. A caller-supplied
+  slot list is validated as an order-preserving
+  subsequence of the canonical order (unknown,
+  duplicated, or out-of-order slots are refused). This
+  layer assembles no prompt and is not wired into the
+  turn path.
+- §54 why order matters: the pure
+  ``order_matters_reasons`` / ``order_matters_contract``
+  / ``evaluate_prompt_order`` functions stand the two
+  roadmap reasons in roadmap order (if persona comes
+  after huge conversation history, recent context may
+  dominate; putting identity near the highest-level
+  instructions helps keep the model anchored) and
+  evaluate a caller-supplied order against them: the
+  kernel's position, whether character appears before
+  transient context, whether the order is anchored, and
+  the named risks when it is not. This layer evaluates
+  an order only; it reorders nothing live.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -6035,8 +6065,8 @@ def validate_manifest(manifest_value: Any,
 # model, persona watchdog, tools / response. Most stages
 # have a banked owner surface in this plugin; memory
 # retrieval belongs to the memory subsystem, the model
-# stage to the model, and prompt assembly is §53, a
-# later section — named here, not claimed.
+# stage to the model, and prompt assembly's owner is
+# the §53 pure order surface below — no stage runs.
 
 # The §51 startup steps before the branch, in roadmap
 # order.
@@ -6154,10 +6184,10 @@ def startup_plan(previous: dict[str, Any] | None,
 
 # The §52 request pipeline stages, in roadmap order:
 # the stage paired with its owner surface and that
-# owner's status — "banked" (a surface in this plugin),
-# "external" (the caller, the memory subsystem, or the
-# model owns it), or "later_section" (§53 prompt
-# assembly, named here and not claimed).
+# owner's status — "banked" (a surface in this plugin)
+# or "external" (the caller, the memory subsystem, or
+# the model owns it). Prompt assembly's owner is the
+# §53 pure order surface below; no stage is executed.
 REQUEST_PIPELINE = (
     ("user_message", "caller_input", "external"),
     ("task_classifier", "classify_task", "banked"),
@@ -6165,7 +6195,7 @@ REQUEST_PIPELINE = (
     ("persona_retrieval", "PersonaRetriever", "banked"),
     ("memory_retrieval", "memory_subsystem", "external"),
     ("context_budgeter", "PersonaContextBudgeter", "banked"),
-    ("prompt_assembler", "prompt_assembly_53", "later_section"),
+    ("prompt_assembler", "prompt_assembly_order", "banked"),
     ("model", "model", "external"),
     ("persona_watchdog", "watchdog_contract", "banked"),
     ("tools_or_response", "caller", "external"),
@@ -6189,7 +6219,7 @@ def request_pipeline_stages() -> list[dict[str, Any]]:
 
     Each entry names its stage, the surface or party
     that owns it, and the owner's status (banked in
-    this plugin, external, or a later section).
+    this plugin, or external).
     """
     return [
         {"stage": stage, "owner": owner, "status": status}
@@ -6207,14 +6237,14 @@ def request_pipeline_contract() -> dict[str, Any]:
     Every interaction walks the ten stages in order.
     This layer names the stages and their owners only:
     it classifies no live message, assembles no prompt
-    (§53 is a later section), calls no model, and runs
-    no pipeline.
+    (§53 stands as a pure order surface, not a live
+    assembler), calls no model, and runs no pipeline.
     """
     return {
         "name": "PersonaRequestPipeline",
         "stages": request_pipeline_stages(),
         "task_classifier_fields": task_classifier_fields(),
-        "prompt_assembly": "later_section_53",
+        "prompt_assembly": "section_53_prompt_assembly_order",
         "runs_pipeline": False,
         "classifies_live_messages": False,
         "injects": False,
@@ -6283,8 +6313,228 @@ def request_pipeline_plan(
         "stages": request_pipeline_stages(),
         "classification": _validate_task_classification(
             classification),
-        "prompt_assembly": "later_section_53",
+        "prompt_assembly": "section_53_prompt_assembly_order",
         "executes": False,
+    }
+
+
+# --- §53 prompt assembly order + §54 why order matters -----------
+
+# §53: the recommended prompt order, in roadmap order:
+# the slot paired with its source surface and that
+# source's status — "banked" (a surface in this
+# plugin), "external" (the runtime, the memory
+# subsystem, the caller, or the conversation owns it).
+PROMPT_ASSEMBLY_ORDER = (
+    ("runtime_system_rules", "runtime", "external"),
+    ("persona_kernel", "compiled_kernel", "banked"),
+    ("current_persona_state", "persona_state", "banked"),
+    ("relevant_persona_sections", "persona_retrieval", "banked"),
+    ("relevant_long_term_memory", "memory_subsystem", "external"),
+    ("active_project_context", "project_context", "external"),
+    ("recent_conversation_context", "conversation_context",
+     "external"),
+    ("current_user_message", "caller_input", "external"),
+)
+
+PROMPT_ASSEMBLY_SLOTS = tuple(
+    slot for slot, _source, _status in PROMPT_ASSEMBLY_ORDER)
+
+# The character slots (§53: the character should appear
+# before transient context) and the transient slots
+# they must precede.
+CHARACTER_SLOTS = (
+    "persona_kernel", "current_persona_state",
+    "relevant_persona_sections",
+)
+TRANSIENT_CONTEXT_SLOTS = (
+    "relevant_long_term_memory", "active_project_context",
+    "recent_conversation_context", "current_user_message",
+)
+
+# §54: why order matters, in roadmap order — the
+# roadmap's own two reasons, verbatim in substance.
+ORDER_MATTERS_REASONS = (
+    ("recent_context_may_dominate",
+     "If persona comes after huge conversation history, "
+     "recent context may dominate."),
+    ("identity_near_highest_instructions_anchors",
+     "Putting identity near the highest-level instructions "
+     "helps keep the model anchored."),
+)
+
+
+def prompt_assembly_slots() -> list[str]:
+    """The §53 prompt assembly slots, in roadmap order. Pure."""
+    return list(PROMPT_ASSEMBLY_SLOTS)
+
+
+def prompt_assembly_order() -> list[dict[str, Any]]:
+    """The §53 prompt assembly order, in roadmap order. Pure.
+
+    Each entry names its slot, the surface or party that
+    supplies it, and that source's status (banked in this
+    plugin, or external).
+    """
+    return [
+        {"slot": slot, "source": source, "status": status}
+        for slot, source, status in PROMPT_ASSEMBLY_ORDER]
+
+
+def prompt_assembly_contract() -> dict[str, Any]:
+    """The §53 Prompt Assembly Order contract. Pure.
+
+    This section is the enforcer the §10 pinning spec
+    designated: the Persona Kernel sits at position 1,
+    directly under the runtime system rules, and the
+    character appears before transient context. This
+    layer stands the order only — it assembles no
+    prompt and is not wired into the turn path.
+    """
+    return {
+        "name": "PersonaPromptAssemblyOrder",
+        "slots": prompt_assembly_order(),
+        "kernel_position": list(PROMPT_ASSEMBLY_SLOTS).index(
+            "persona_kernel"),
+        "enforces_pinning": "section_10",
+        "character_before_transient_context": True,
+        "assembles_prompt": False,
+        "injects": False,
+        "wired_into_turn_path": False,
+    }
+
+
+def _validate_assembly_slots(slots: Any) -> list[str]:
+    """Validate a caller-supplied §53 slot list. Pure.
+
+    The list must be non-empty, unique, known, and in
+    canonical order (an order-preserving subsequence of
+    the §53 order). Unknown, duplicated, malformed, or
+    out-of-order slots are refused.
+    """
+    if not isinstance(slots, list) or not slots:
+        raise PersonaRuntimeError("prompt assembly slots are invalid")
+    names: list[str] = []
+    for slot in slots:
+        if not isinstance(slot, str) or slot not in PROMPT_ASSEMBLY_SLOTS:
+            raise PersonaRuntimeError(
+                "prompt assembly slots are invalid")
+        if slot in names:
+            raise PersonaRuntimeError(
+                "prompt assembly slots are invalid")
+        names.append(slot)
+    positions = [PROMPT_ASSEMBLY_SLOTS.index(name) for name in names]
+    if positions != sorted(positions):
+        raise PersonaRuntimeError("prompt assembly slots are invalid")
+    return names
+
+
+def _character_before_transient(names: list[str]) -> bool:
+    """True when every named character slot precedes
+    every named transient slot. Pure. A missing kernel
+    is not character-before-transient."""
+    if "persona_kernel" not in names:
+        return False
+    character = [names.index(slot) for slot in CHARACTER_SLOTS
+                 if slot in names]
+    transient = [names.index(slot) for slot in TRANSIENT_CONTEXT_SLOTS
+                 if slot in names]
+    return not transient or max(character) < min(transient)
+
+
+def prompt_assembly_plan(slots: Any = None) -> dict[str, Any]:
+    """The §53 assembly plan for a slot list. Pure.
+
+    None plans the full canonical order. A supplied list
+    is validated as an order-preserving subsequence.
+    This layer assembles nothing.
+    """
+    names = list(PROMPT_ASSEMBLY_SLOTS) if slots is None \
+        else _validate_assembly_slots(slots)
+    by_slot = {row["slot"]: row for row in prompt_assembly_order()}
+    return {
+        "slots": [by_slot[name] for name in names],
+        "slot_names": names,
+        "kernel_position": names.index("persona_kernel")
+        if "persona_kernel" in names else None,
+        "character_before_transient_context":
+            _character_before_transient(names),
+        "assembles": False,
+    }
+
+
+def order_matters_reasons() -> list[dict[str, Any]]:
+    """The §54 reasons order matters, in roadmap order. Pure."""
+    return [
+        {"reason": reason, "statement": statement}
+        for reason, statement in ORDER_MATTERS_REASONS]
+
+
+def order_matters_contract() -> dict[str, Any]:
+    """The §54 Why Order Matters contract. Pure.
+
+    Order is an anchoring defense, not a cosmetic
+    preference: persona placed after huge conversation
+    history can be dominated by recent context, while
+    identity near the highest-level instructions keeps
+    the model anchored. This layer evaluates an order
+    only; it reorders nothing live.
+    """
+    return {
+        "name": "PersonaOrderMatters",
+        "reasons": order_matters_reasons(),
+        "kernel_must_precede_transient_context": True,
+        "anchored_kernel_position": list(
+            PROMPT_ASSEMBLY_SLOTS).index("persona_kernel"),
+        "evaluates_only": True,
+        "reorders_live_prompt": False,
+        "injects": False,
+    }
+
+
+def evaluate_prompt_order(slots: Any) -> dict[str, Any]:
+    """Evaluate a caller-supplied order against §54. Pure.
+
+    Accepts any non-empty list of known, unique slots in
+    any order (unlike the §53 plan, which requires the
+    canonical order) so a bad order can be named, not
+    merely refused. Unknown, duplicated, or malformed
+    slots are refused. Risks are named deterministically:
+    a missing kernel, recent context dominating (the
+    kernel after recent conversation), and identity not
+    near the highest-level instructions (the kernel past
+    position 1).
+    """
+    if not isinstance(slots, list) or not slots:
+        raise PersonaRuntimeError("prompt order is invalid")
+    names: list[str] = []
+    for slot in slots:
+        if not isinstance(slot, str) or slot not in PROMPT_ASSEMBLY_SLOTS:
+            raise PersonaRuntimeError("prompt order is invalid")
+        if slot in names:
+            raise PersonaRuntimeError("prompt order is invalid")
+        names.append(slot)
+    kernel_position = names.index("persona_kernel") \
+        if "persona_kernel" in names else None
+    risks: list[str] = []
+    if kernel_position is None:
+        risks.append("persona_kernel_missing")
+    else:
+        if "recent_conversation_context" in names and \
+                kernel_position > names.index(
+                    "recent_conversation_context"):
+            risks.append("recent_context_may_dominate")
+        if kernel_position != list(PROMPT_ASSEMBLY_SLOTS).index(
+                "persona_kernel"):
+            risks.append(
+                "identity_not_near_highest_instructions")
+    return {
+        "slots": names,
+        "kernel_position": kernel_position,
+        "character_before_transient_context":
+            _character_before_transient(names),
+        "anchored": not risks,
+        "risks": risks,
     }
 
 
@@ -6644,7 +6894,7 @@ class PersonaCompiler:
                 "buried_in_retrieved_memory": False,
                 "kernel_hash": digest,
                 "stable_for_identical_documents": True,
-                "enforced_by": "prompt_assembly (§53, later section)",
+                "enforced_by": "prompt_assembly_order (§53)",
             },
         }
 
@@ -6997,7 +7247,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-52): persona "
+            f"Persona runtime (§§3-54): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -7240,9 +7490,26 @@ class PersonaRuntimeBridge:
             f"retrieval, memory retrieval, context "
             f"budgeter, prompt assembler, model, persona "
             f"watchdog, tools / response) with their "
-            f"banked or external owners; prompt assembly "
-            f"is §53, a later section, and no pipeline "
+            f"banked or external owners; no pipeline "
             f"runs here. "
+            f"§53 prompt assembly: the eight slots stand "
+            f"in roadmap order (runtime system rules, "
+            f"Persona Kernel, current Persona State, "
+            f"relevant persona sections, relevant "
+            f"long-term memory, active project context, "
+            f"recent conversation context, current user "
+            f"message) — the kernel at position 1, "
+            f"enforcing the §10 pinning, with the "
+            f"character before transient context; this "
+            f"layer assembles no prompt and is not wired "
+            f"into the turn path. §54 order matters: if "
+            f"persona comes after huge conversation "
+            f"history, recent context may dominate; "
+            f"putting identity near the highest-level "
+            f"instructions helps keep the model anchored "
+            f"— a supplied order is evaluated against "
+            f"those risks only, and nothing is reordered "
+            f"live. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -7506,6 +7773,18 @@ __all__ = [
     "task_classifier_fields",
     "request_pipeline_contract",
     "request_pipeline_plan",
+    "PROMPT_ASSEMBLY_ORDER",
+    "PROMPT_ASSEMBLY_SLOTS",
+    "CHARACTER_SLOTS",
+    "TRANSIENT_CONTEXT_SLOTS",
+    "ORDER_MATTERS_REASONS",
+    "prompt_assembly_slots",
+    "prompt_assembly_order",
+    "prompt_assembly_contract",
+    "prompt_assembly_plan",
+    "order_matters_reasons",
+    "order_matters_contract",
+    "evaluate_prompt_order",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

@@ -380,7 +380,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert compiled_b is None
     assert record["persona_memory"]["memory_text"] == CORRECT_TEXT
     assert len(items) == 1
-    assert "§§3-52" in items[0].content
+    assert "§§3-54" in items[0].content
     assert "§39 mode routing" in items[0].content
     assert "manually select" in items[0].content
     assert "§40 persona-aware" in items[0].content

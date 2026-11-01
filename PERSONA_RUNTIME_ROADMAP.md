@@ -3257,6 +3257,34 @@ Recommended order:
 The character should appear before transient context.
 
 
+> **Completion note — Slice 144 (2026-11-01): §53 stands
+> in `plugins/volmarr-core/persona_runtime.py` as a pure
+> assembly-order surface — the enforcer the §10 pinning
+> spec designated. The pure `prompt_assembly_order` and
+> `prompt_assembly_contract` functions name the eight
+> slots in roadmap order, each with its source and that
+> source's status: banked surfaces in this plugin (the
+> compiled kernel, the §37 persona state, §13 persona
+> retrieval) and external sources (the runtime, the
+> memory subsystem, project context, the conversation,
+> the caller). The kernel sits at position 1, directly
+> under the runtime system rules, consistent with the
+> §10 pinning order it refines, and the character slots
+> (kernel, current Persona State, relevant persona
+> sections) appear before the transient slots
+> (long-term memory, project context, recent
+> conversation, current user message). The pure
+> `prompt_assembly_plan` function validates a
+> caller-supplied slot list as an order-preserving
+> subsequence of the canonical order (unknown,
+> duplicated, or out-of-order slots refused). The §52
+> pipeline's prompt-assembler stage now names this
+> surface as its banked owner. Honest gaps: this layer
+> assembles no prompt, injects nothing, and is not
+> wired into the turn path — no caller consumes a plan
+> yet; §54's reasons for the order stand below.**
+
+
 ---
 
 
@@ -3267,6 +3295,31 @@ If persona comes after huge conversation history, recent context may dominate.
 
 
 Putting identity near the highest-level instructions helps keep the model anchored.
+
+
+> **Completion note — Slice 144 (2026-11-01): §54 stands
+> in the same module as a pure evaluation surface. The
+> pure `order_matters_reasons` and
+> `order_matters_contract` functions name the two
+> roadmap reasons in roadmap order
+> (recent_context_may_dominate;
+> identity_near_highest_instructions_anchors), and the
+> pure `evaluate_prompt_order` function evaluates any
+> caller-supplied order of known, unique slots against
+> them — accepting out-of-order lists precisely so a
+> bad order can be named, not merely refused: it
+> reports the kernel position, whether character
+> appears before transient context, whether the order
+> is anchored, and the named risks
+> (persona_kernel_missing, recent_context_may_dominate
+> when the kernel follows recent conversation,
+> identity_not_near_highest_instructions when the
+> kernel sits past position 1). The canonical §53
+> order evaluates anchored with no risks. Honest gaps:
+> this layer evaluates an order only — it reorders no
+> live prompt, monitors no conversation, and no caller
+> consumes an evaluation yet; §55's conversation
+> history compression stands unclaimed.**
 
 
 ---

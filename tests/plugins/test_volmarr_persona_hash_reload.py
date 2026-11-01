@@ -359,6 +359,6 @@ def test_compile_deterministic_packet_and_isolation(tmp_path):
     assert quiet_b["changed"] is False
     assert quiet_b["compiled"] is None
     assert len(items) == 1
-    assert "§§3-52" in items[0].content
+    assert "§§3-54" in items[0].content
     assert "§19 hash record" in items[0].content
     assert "§20 hot reload" in items[0].content
