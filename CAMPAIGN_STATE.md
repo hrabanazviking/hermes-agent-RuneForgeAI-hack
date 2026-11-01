@@ -3731,3 +3731,90 @@ portable state: any agent (Muse or Hermes) resumes from here.
   per-document file+hash entries the §48 manifest does
   not carry), not a directory or file writer this layer
   does not own.
+- 2026-11-01 ~00:2x–01:0x EDT keeper tick: **Slice 142 DONE —
+  Persona Runtime §49 (Generated Directory) and §50
+  (Manifest) complete, banked and PUSHED under the
+  standing go-ahead.** No live work found at tick start
+  (tree clean, HEAD == origin/main at `ebb98d3a69`;
+  Slice 141's state commit at 00:21 EDT was its own
+  completed push, verified, not in-progress work).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §49's pure
+  `generated_source_documents` names the six authored
+  documents in roadmap order (the six §3 core roles,
+  their roadmap CADUCEA file names, paths under
+  `persona/source/`); `generated_compiled_artifacts`
+  names the five generated artefacts in roadmap order
+  (paths under `persona/.compiled/`);
+  `generated_directory_layout` /
+  `generated_directory_contract` stand the whole
+  recommended layout (root `persona`, `.compiled/`
+  regenerable at any time). Naming gap recorded
+  honestly in the module: §49's compiled names differ
+  from §48's cache names for two artefacts
+  (sections.jsonl, not persona_sections.jsonl;
+  manifest.json, not persona_manifest.json) — each
+  naming stands as its own section wrote it. §50's
+  pure `manifest` builds the manifest in the roadmap's
+  JSON shape on the §19 hash record (persona_id,
+  version — the §22 per-persona semver the compile
+  carries, not the §19 config format version —
+  compiled_at as an explicit caller stamp under §19
+  handling or None, documents by role in document
+  order each with exactly file + sha256 hash, and
+  kernel_hash); the per-document file+hash entries are
+  the genuine gap §50 adds over the §48 cache manifest.
+  `manifest_staleness` names changed roles (file or
+  hash), missing roles, and kernel-hash / version /
+  persona-id disagreements by field;
+  `validate_manifest` returns False — never raises —
+  on a mismatch, raising only on malformed shapes.
+  Packet label updated to §§3–50 (nineteen older
+  persona files' packet assertions updated in-slice).
+  Tests: targeted 12/12 pass; targeted persona run
+  (26 files): **230 passed, 0 failed**; full
+  volmarr/kista run (95 files): **709 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin,
+  1 Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice142_full_run.log`);
+  709 is exactly Slice 141's 697 + the 12 new
+  contracts. Smoke: `hermes --version` runs
+  (`vgit.ebb98d3.dirty` pre-commit); README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §49 + §50 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–50. Push: fast-forward, no force
+  — origin/main moved `ebb98d3a69` → `8c56b2598d`,
+  verified by `git ls-remote` (remote == local HEAD).
+  Honest gaps: no directory is created and no manifest
+  is written or persisted by this layer; no caller
+  consumes the layout or the manifest yet; a compile's
+  own configured directory/files (§3) are neither
+  required nor checked against the §49 layout; §51's
+  startup sequence stands unclaimed.
+- **Next resume point: Slice 143 — Persona Runtime
+  §51 (Startup Sequence) and §52 (Request Pipeline)**:
+  §51 names the Hermes startup order (load
+  persona.yaml → resolve persona directory → validate
+  required documents → compare source hashes → if
+  unchanged load the compiled persona, else compile →
+  load Persona Kernel → initialize retrieval index →
+  initialize Persona State → Caducea awakens) —
+  reconcile against the §19 hash record / §20 reload /
+  §37 persona-state surfaces when read at slice start,
+  expect a pure startup-plan surface over a hash
+  comparison (load-compiled vs compile branch named
+  deterministically), not a boot hook this plugin does
+  not own; §52 names the per-request pipeline (USER
+  MESSAGE → TASK CLASSIFIER naming task type /
+  entities / project / tool intent → PERSONA ROUTER →
+  PERSONA RETRIEVAL → MEMORY RETRIEVAL → CONTEXT
+  BUDGETER → PROMPT ASSEMBLER → MODEL → PERSONA
+  WATCHDOG → TOOLS / RESPONSE) — reconcile against the
+  banked §13/§14/§15/§27 surfaces when read at slice
+  start, expect a pure pipeline-stage surface naming
+  the stages and their banked owners, not a live
+  per-message pipeline (§53 prompt assembly is a
+  later section and stays unclaimed there).
