@@ -5373,3 +5373,102 @@ portable state: any agent (Muse or Hermes) resumes from here.
   reconcile against the banked §§64/65 kernel tiers, §35
   handoff packet, §§61–63 drift telemetry / adherence /
   model metrics, and §15 context budgets likewise.
+- 2026-11-01 ~12:5x–13:5x EST keeper tick: **Slice 160 DONE —
+  Persona Runtime §85 (Phase 5 — Memory Integration) and §86
+  (Phase 6 — Model Router Integration) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found at
+  tick start (Slice 159's state commit at 12:53 EST was its
+  own completed push, verified, not in-progress work; tree
+  clean, HEAD == origin/main at `c8cea8f90c`).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new module file or config key: §85's pure
+  `memory_phase_items` / `memory_phase_item` /
+  `memory_phase_contract` stand Phase 5 reconciled against
+  the banked surfaces (PersonaIR implemented by §8,
+  relationship memory by §43, trait/state separation by
+  §26), with three items honestly **equivalent** — Muninn /
+  SQLite memory, carried outside the persona layer by the
+  memory fabric's read-only `probe_bifrost_muninn` plus the
+  Slice 90 ravens Muninn binding (the persona layer owns no
+  memory store, §78); Service Bible promotion, carried by
+  §42's selective retrieval (promoted into context per
+  query, never continuously injected); and persona-aware
+  consolidation, carried by §55's `compression_plan` as
+  governed by the §25 summary guard and §26 trait/state
+  separation. §86's pure `model_router_phase_items` /
+  `model_router_phase_item` / `model_router_phase_contract`
+  stand Phase 6 reconciled — all four items implemented by
+  their own sections (§§64–65 kernel tiers, §35 handoff
+  packets, §§61–63 adherence/metrics, §15 model-class
+  budgets). The pure `memory_model_audit` /
+  `memory_model_contract` prove both criteria from supplied
+  artefacts: for §85, the PersonaIR rebuilds to its stored
+  ir_hash and category counts (a post-compile IR tamper
+  surfaces as unmet), a §40 record validates by exact
+  recomputation while its contract writes no memory and
+  introduces no drift, the §41 guard holds in every
+  recomputation (memory may touch mood/context/recent
+  events, never personality/identity/traits, however often
+  repeated; trait-form claims from memory refused as
+  persona definition, state-form claims recordable as
+  history; a trait claimed from a non-canonical source is
+  at most a state), §§42–43 retrieval returns only its own
+  role's sections by rebuilt stable ids, and a §55 plan
+  appends nothing endlessly; for §86, the §64 distillation
+  plan derives every tier from the one canonical kernel
+  named by the compile's kernel hash (tier-for-budget names
+  full/medium/micro at their own targets, the §65 micro
+  kernel example validates), a §34 switch plan between two
+  distinct models carries the same kernel hash on both
+  sides and the §35 handoff packet names that same hash,
+  the stored §19 hash record matches its recomputation (a
+  tampered kernel hash surfaces as unmet), §62 adherence
+  equals one minus supplied average drift with the §63
+  metrics agreeing, and §15 allocations scale by model
+  context class (small_local minimums, standard maximums,
+  large twice the maximums). Malformed inputs are refused
+  with `PersonaRuntimeError` in the neighbouring
+  convention; the audit loads and compiles nothing beyond
+  the pure functions over the supplied compile. Packet
+  label updated to §§3–86 (thirty-seven older persona
+  files' packet assertions updated in-slice). Tests:
+  targeted 10/10 pass (new file
+  `test_volmarr_persona_phase_memory_router.py`); targeted
+  persona run (44 files): **410 passed, 0 failed**; full
+  volmarr/kista run (113 files): **889 passed, 7 failed,
+  1 skipped** — exactly Slice 159's 879 + the 10 new
+  contracts, the failures the same name-identical
+  pre-existing environmental set in the same 3 files (5
+  core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback), verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice160_full_run.log`,
+  1258.9s). Smoke: `hermes --version` runs
+  (`vgit.c8cea8f.dirty` pre-commit); README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §85 + §86 completion notes
+  in the Persona Runtime roadmap, plugin.yaml description
+  now §§3–86. Honest gaps: no memory store is owned or
+  written, no memory is retrieved from a live store, no
+  live model is routed or switched, no kernel tier text is
+  built, and no caller consumes a reconciliation or an
+  audit yet.
+- **Next resume point: Slice 161 — Persona Runtime §87
+  (Phase 7 — Tool Integration) and §88 (Phase 8 — Avatar
+  Integration)**: §87 asks to connect Tool Policy to actual
+  runtime enforcement — move deterministic permissions from
+  prose into code (Tool Policy Markdown → Policy Compiler →
+  ToolPermissionIR → Runtime Enforcement), with success
+  criterion "Caducea's stated tool boundaries become actual
+  software behavior" — reconcile against the banked §44
+  tool-policy retrieval and §47 policy→code migration
+  surfaces when read at slice start, expect an
+  audit/reconciliation slice in the Slice 158–160 pattern,
+  with the honest bound that this layer enforces no live
+  tool call; §88 asks to compile Avatar Markdown into
+  AvatarIR, used by the VRM controller, emotion mapper,
+  outfit manager, visual state system, and image-generation
+  prompts, with criterion "Caducea looks like the same
+  character across visual platforms" — reconcile against
+  the banked §46 avatar policy usage and the avatar-facing
+  surfaces (§§21/75 impact + export treatment of the avatar
+  document) likewise.
