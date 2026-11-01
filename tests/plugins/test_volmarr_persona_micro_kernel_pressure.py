@@ -363,7 +363,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert first[0].content == second[0].content == third[0].content
     assert len(first) == 1
     content = first[0].content
-    assert "§§3-72" in content
+    assert "§§3-74" in content
     assert "§65 micro kernel" in content
     assert "tiny local model" in content
     assert "§66 context pressure" in content

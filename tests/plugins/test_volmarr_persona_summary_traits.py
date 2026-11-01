@@ -403,7 +403,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert before == after
     assert compiled_b is None
     assert len(items) == 1
-    assert "§§3-72" in items[0].content
+    assert "§§3-74" in items[0].content
     assert "§25 summaries" in items[0].content
     assert "must never become a trait claim" in items[0].content
     assert "§26 trait vs state" in items[0].content

@@ -4372,6 +4372,33 @@ refresh kernel
 without restarting Hermes.
 
 
+> **Completion note — Slice 154 (2026-11-01): §73 stands
+> in `plugins/volmarr-core/persona_runtime.py` as the
+> pure `persona_reload` / `persona_reload_contract`
+> surfaces over two supplied compiles: the record
+> forces the four roadmap actions (reload, recompile,
+> reindex, refresh kernel) in full — the §20 reload
+> chain walked unconditionally and the kernel
+> refreshed whether or not its hash changed — with
+> `restart_required` always false. This reconciles
+> against the banked §20 chain rather than replacing
+> it: §20's `PersonaReloader.check` stays hash-driven
+> (an unchanged persona returns its previous artefact
+> untouched), while §73 is the operator's override of
+> that economy; the hash comparison is still reported
+> honestly on the record (`changed` / `kernel_changed`
+> name what the hashes actually did), so a forced
+> reload of an unchanged persona is recorded as
+> forced, not as a change, and a first compile stands
+> as a forced load. Cross-persona pairs and a missing
+> current compile are refused. The roadmap's `hermes
+> persona` spelling registers no new core command
+> (this plugin's CLI surface is `hermes volmarr`).
+> Honest gaps: no live `hermes persona reload` command
+> exists, nothing is reloaded by this layer, and no
+> caller consumes a reload record yet.**
+
+
 ---
 
 
@@ -4401,6 +4428,37 @@ TOOLS:
 
 
 This could become incredibly useful.
+
+
+> **Completion note — Slice 154 (2026-11-01): §74 stands
+> in `plugins/volmarr-core/persona_runtime.py` as the
+> pure `persona_diff` / `render_persona_diff` /
+> `persona_diff_example` / `persona_diff_contract`
+> surfaces over two caller-supplied compiles, built
+> on the banked §21 change-impact section diff: every
+> added section contributes a `+` line, every removed
+> section a `-` line, and every changed section a `-`
+> line for its previous text followed by a `+` line
+> for its current text, grouped by document role
+> under the roadmap's group labels (RELATIONSHIP;
+> TOOLS for the `tool_policy` role) in the order the
+> §21 details first touch each role. A line's text is
+> the section's verbatim text (§7) collapsed to one
+> line and bounded at 240 chars (this layer's recorded
+> convention); the record also carries the §21 impact
+> class and the §22 suggested next version, and the
+> roadmap's example stands verbatim as a record and a
+> render (RELATIONSHIP gaining the reopen-decisions
+> directive; TOOLS replacing the git-push confirmation
+> with the preauthorized-repositories allowance — the
+> example names no version or section id, so those
+> fields are None there rather than invented). An
+> unchanged pair renders "No behavioral changes."
+> Honest gaps: no compile is persisted by this layer
+> (§48/§49), so no previous version is stored and both
+> compiles are caller-supplied; no live `hermes
+> persona diff` command exists, and no caller consumes
+> a diff record or render yet.**
 
 
 ---

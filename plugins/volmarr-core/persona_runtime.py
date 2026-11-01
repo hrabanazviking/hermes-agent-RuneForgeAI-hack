@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-72).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-74).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -9076,6 +9076,293 @@ def persona_explain_contract() -> dict[str, Any]:
     }
 
 
+# §73: persona reload command — ``hermes persona
+# reload`` forces reload, recompile, reindex, and a
+# kernel refresh without restarting Hermes. The §20
+# hot-reload check is hash-driven (it walks the chain
+# only as far as the hashes require and returns the
+# previous artefact untouched when nothing changed);
+# the §73 command is the operator's override of that
+# economy — every forced action stands whether or not
+# the hashes moved. This layer registers no core
+# command and restarts nothing: it stands the pure
+# forced-reload record over two supplied compiles.
+RELOAD_COMMAND = "hermes persona reload"
+
+# The four actions §73 forces, as stable slugs, in
+# roadmap order.
+RELOAD_FORCED_ACTIONS = (
+    "reload", "recompile", "reindex", "refresh_kernel",
+)
+
+
+def reload_forced_actions() -> list[str]:
+    return list(RELOAD_FORCED_ACTIONS)
+
+
+def persona_reload(previous: Any,
+                   current: Any) -> dict[str, Any]:
+    """The §73 forced-reload record between two compiles. Pure.
+
+    Unlike the §20 plan, the forced actions stand
+    unconditionally: the full §20 chain is named as the
+    steps, the kernel is refreshed whether or not its
+    hash changed, and no restart is ever required. The
+    hash comparison is still reported honestly
+    (``changed`` / ``kernel_changed`` name what the
+    hashes actually did), so a forced reload of an
+    unchanged persona is recorded as forced, not as a
+    change. A first compile (``previous`` None) is a
+    forced load. Nothing to reload to (``current``
+    None) and cross-persona pairs are refused.
+    """
+    if current is None:
+        raise PersonaRuntimeError(
+            "persona reload needs a current compile")
+    current_record = hash_record(current)
+    if previous is None:
+        changed = True
+        kernel_changed = True
+        previous_version = None
+    else:
+        diff = detect_changes(
+            hash_record(previous), current_record)
+        changed = diff["changed"]
+        kernel_changed = diff["kernel_changed"]
+        previous_version = _compiled_version(previous)
+    return {
+        "command": RELOAD_COMMAND,
+        "persona_id": current_record["persona_id"],
+        "forced": True,
+        "actions": list(RELOAD_FORCED_ACTIONS),
+        "steps": list(RELOAD_STEPS),
+        "changed": changed,
+        "kernel_changed": kernel_changed,
+        "recompiled": True,
+        "reindexed": True,
+        "kernel_refreshed": True,
+        "restart_required": False,
+        "previous_version": previous_version,
+        "current_version": _compiled_version(current),
+    }
+
+
+def persona_reload_contract() -> dict[str, Any]:
+    """The §73 Persona Reload contract. Pure.
+
+    The reload command stands as a pure forced-reload
+    record over two supplied compiles, forcing the
+    §20 chain in full without restarting Hermes. The
+    roadmap's ``hermes persona`` spelling registers
+    no new core command: this plugin's CLI surface is
+    ``hermes volmarr``.
+    """
+    return {
+        "name": "PersonaReload",
+        "command": RELOAD_COMMAND,
+        "plugin_cli_surface": "hermes volmarr",
+        "forced_actions": list(RELOAD_FORCED_ACTIONS),
+        "steps": list(RELOAD_STEPS),
+        "forced": True,
+        "restart_required": False,
+        "new_core_command": False,
+        "basis": "§20 reload chain, forced in full",
+    }
+
+
+# §74: persona diff — ``hermes persona diff`` shows
+# behavioral changes since the previous version,
+# grouped by document, as +/- directive lines. The
+# diff stands on the §21 change-impact section diff:
+# sections added, removed, or changed between two
+# supplied compiles, grouped by their document role
+# under the roadmap's group labels (RELATIONSHIP,
+# TOOLS). A line's text is the section's verbatim
+# text (§7) collapsed to one line and bounded — this
+# layer interprets no prose and persists no version
+# (no compile is persisted by this layer, §48/§49),
+# so both compiles are caller-supplied.
+DIFF_COMMAND = "hermes persona diff"
+
+# Group labels by document role, in the roadmap's
+# display style; unlisted roles display uppercased.
+DIFF_GROUP_LABELS = {
+    "core": "CORE",
+    "relationship": "RELATIONSHIP",
+    "service_bible": "SERVICE BIBLE",
+    "memory_policy": "MEMORY POLICY",
+    "tool_policy": "TOOLS",
+    "avatar": "AVATAR",
+}
+
+MAX_DIFF_LINE_CHARS = 240
+
+_DIFF_EXAMPLE_GROUPS = (
+    {
+        "role": "relationship",
+        "label": "RELATIONSHIP",
+        "lines": (
+            {"sign": "+", "stable_id": None, "text":
+             "Caducea may reopen decisions when materially "
+             "new information appears."},
+        ),
+    },
+    {
+        "role": "tool_policy",
+        "label": "TOOLS",
+        "lines": (
+            {"sign": "-", "stable_id": None, "text":
+             "Git push required confirmation."},
+            {"sign": "+", "stable_id": None, "text":
+             "Git push allowed for preauthorized repositories."},
+        ),
+    },
+)
+
+
+def _diff_label(role: str) -> str:
+    return DIFF_GROUP_LABELS.get(role, role.upper())
+
+
+def _diff_line_text(text: str) -> str:
+    collapsed = " ".join(text.split())
+    if len(collapsed) > MAX_DIFF_LINE_CHARS:
+        return collapsed[:MAX_DIFF_LINE_CHARS]
+    return collapsed
+
+
+def persona_diff(previous: Any,
+                 current: Any) -> dict[str, Any]:
+    """The §74 behavioral diff between two compiles. Pure.
+
+    Built on the §21 change impact: every added section
+    contributes a ``+`` line, every removed section a
+    ``-`` line, and every changed section a ``-`` line
+    for its previous text followed by a ``+`` line for
+    its current text, grouped by document role in the
+    order the §21 details first touch each role. The
+    record also carries the §21 impact class and the
+    §22 suggested next version, so the display names
+    how large the behavioral change is. Cross-persona
+    and malformed compiles are refused (via §21).
+    """
+    impact = change_impact(previous, current)
+    before = _impact_index(previous)
+    after = _impact_index(current)
+    groups: list[dict[str, Any]] = []
+    by_role: dict[str, dict[str, Any]] = {}
+    for detail in impact["details"]:
+        role = detail["role"]
+        group = by_role.get(role)
+        if group is None:
+            group = {"role": role, "label": _diff_label(role),
+                     "lines": []}
+            by_role[role] = group
+            groups.append(group)
+        sid = detail["stable_id"]
+        if detail["action"] in ("removed", "changed"):
+            group["lines"].append({
+                "sign": "-", "stable_id": sid,
+                "text": _diff_line_text(before[sid]["text"])})
+        if detail["action"] in ("added", "changed"):
+            group["lines"].append({
+                "sign": "+", "stable_id": sid,
+                "text": _diff_line_text(after[sid]["text"])})
+    return {
+        "persona_id": hash_record(current)["persona_id"],
+        "previous_version": impact["previous_version"],
+        "current_version": impact["current_version"],
+        "impact_class": impact["impact_class"],
+        "suggested_next_version":
+            impact["suggested_next_version"],
+        "kernel_rebuild_required":
+            impact["kernel_rebuild_required"],
+        "changed": bool(groups),
+        "groups": groups,
+    }
+
+
+def render_persona_diff(record: Any) -> str:
+    """The §74 diff display text for one diff record. Pure.
+
+    One block per document group (the group's label,
+    then one ``+ text`` / ``- text`` line per change),
+    blocks separated by a blank line, no trailing
+    newline. A record with no groups renders the
+    no-change line.
+    """
+    if not isinstance(record, dict) \
+            or not isinstance(record.get("groups"), list):
+        raise PersonaRuntimeError("persona diff record is invalid")
+    if not record["groups"]:
+        return "No behavioral changes."
+    blocks = []
+    for group in record["groups"]:
+        if not isinstance(group, dict) \
+                or not isinstance(group.get("label"), str) \
+                or not isinstance(group.get("lines"), list):
+            raise PersonaRuntimeError(
+                "persona diff record is invalid")
+        lines = [f"{group['label']}:"]
+        for line in group["lines"]:
+            if not isinstance(line, dict) \
+                    or line.get("sign") not in ("+", "-") \
+                    or not isinstance(line.get("text"), str):
+                raise PersonaRuntimeError(
+                    "persona diff record is invalid")
+            lines.append(f"{line['sign']} {line['text']}")
+        blocks.append("\n".join(lines))
+    return "\n\n".join(blocks)
+
+
+def persona_diff_example() -> dict[str, Any]:
+    """The §74 roadmap diff example as a record. Pure.
+
+    The roadmap's two groups verbatim (RELATIONSHIP
+    gaining the reopen-decisions directive; TOOLS
+    replacing the git-push confirmation with the
+    preauthorized-repositories allowance). The example
+    names no persona version or section id, so those
+    fields are None / unnamed here rather than
+    invented.
+    """
+    return {
+        "persona_id": None,
+        "previous_version": None,
+        "current_version": None,
+        "impact_class": None,
+        "suggested_next_version": None,
+        "kernel_rebuild_required": None,
+        "changed": True,
+        "groups": [
+            {"role": group["role"], "label": group["label"],
+             "lines": [dict(line) for line in group["lines"]]}
+            for group in _DIFF_EXAMPLE_GROUPS],
+    }
+
+
+def persona_diff_contract() -> dict[str, Any]:
+    """The §74 Persona Diff contract. Pure.
+
+    The diff display stands as a pure record and
+    render over two caller-supplied compiles, built
+    on the §21 section diff. No compile is persisted
+    by this layer, so no previous version is stored
+    here; the roadmap's ``hermes persona`` spelling
+    registers no new core command.
+    """
+    return {
+        "name": "PersonaDiff",
+        "command": DIFF_COMMAND,
+        "plugin_cli_surface": "hermes volmarr",
+        "basis": "§21 change impact section diff",
+        "groups_by": "document role",
+        "example": persona_diff_example(),
+        "new_core_command": False,
+        "persists_versions": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -9785,7 +10072,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-72): persona "
+            f"Persona runtime (§§3-74): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -10160,6 +10447,19 @@ class PersonaRuntimeBridge:
             f"verified against a supplied compile when "
             f"one is given; this layer explains no live "
             f"response. "
+            f"§73 persona reload: the forced-reload "
+            f"record forces reload, recompile, reindex, "
+            f"and kernel refresh in full over two "
+            f"supplied compiles, without restarting "
+            f"Hermes; the roadmap's hermes persona "
+            f"spelling registers no new core command "
+            f"here. "
+            f"§74 persona diff: the diff record shows "
+            f"behavioral changes since the previous "
+            f"version as +/- directive lines grouped by "
+            f"document, built on the §21 section diff "
+            f"over two supplied compiles; no version is "
+            f"persisted here. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -10585,6 +10885,18 @@ __all__ = [
     "render_persona_explain",
     "persona_explain_example",
     "persona_explain_contract",
+    "RELOAD_COMMAND",
+    "RELOAD_FORCED_ACTIONS",
+    "reload_forced_actions",
+    "persona_reload",
+    "persona_reload_contract",
+    "DIFF_COMMAND",
+    "DIFF_GROUP_LABELS",
+    "MAX_DIFF_LINE_CHARS",
+    "persona_diff",
+    "render_persona_diff",
+    "persona_diff_example",
+    "persona_diff_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",
