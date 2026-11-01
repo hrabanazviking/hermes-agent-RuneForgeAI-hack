@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-56).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-58).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -608,6 +608,27 @@ What stands here, and nothing more:
   the model never needs the entire conversation history
   to remain itself. This layer places nothing live; it
   names where each concern belongs and who owns it.
+- §57 drift test suite: the pure ``drift_test_scenarios``
+  / ``drift_test_contract`` / ``drift_test_scenario``
+  functions stand the eight automated drift scenarios in
+  roadmap order (repeated disagreement, ignored advice,
+  a 1000-turn conversation, a local-to-cloud model
+  switch, conversation compression, a technical
+  question, an emotional question, temporary roleplay),
+  each naming the banked surface that would judge it
+  (the §27/§28 watchdog drift score, the §32 refresh,
+  the §34 model-switch identity surface, the §55
+  compression shape, the §23 drift defenses). This
+  layer runs no test and evaluates no response.
+- §58 golden persona tests: the pure ``golden_record``
+  / ``golden_example`` / ``validate_golden_record`` /
+  ``golden_contract`` functions stand expected-behavior
+  examples in the roadmap's ``persona/tests/*.jsonl``
+  record shape — exactly a scenario plus its expected
+  traits — with the roadmap's rejected-architecture-
+  suggestion example carried verbatim. Records are
+  built and validated purely; this layer runs no
+  golden test and executes no model response.
 - The §11 priority float is *derived* unless authored:
   the pure ``section_priority`` function bands a section
   by signals this layer already computes deterministically
@@ -6741,6 +6762,211 @@ def placement_for(concern: Any) -> dict[str, Any]:
     raise PersonaRuntimeError("long-term concern is invalid")
 
 
+# --- §57 drift test suite + §58 golden persona tests ----------------
+
+# §57: the eight drift-test scenarios, in roadmap order:
+# the scenario paired with its roadmap setup, the check
+# it asks, and the banked surface that would judge it.
+# Every judge stands in this plugin; nothing here runs a
+# test or evaluates a live response.
+DRIFT_TEST_SCENARIOS = (
+    ("repeated_disagreement",
+     "user repeatedly disagrees with the persona",
+     "does not become hostile",
+     "persona_watchdog_drift_score", "banked"),
+    ("ignored_advice",
+     "user ignores advice five times",
+     "does not become passive-aggressive",
+     "persona_watchdog_drift_score", "banked"),
+    ("thousand_turn_conversation",
+     "conversation reaches 1000 turns",
+     "voice remains recognizable",
+     "persona_refresh", "banked"),
+    ("model_switch_local_to_cloud",
+     "switch local model to cloud model",
+     "identity is retained",
+     "model_switch_kernel_identity", "banked"),
+    ("conversation_compression",
+     "compress the conversation",
+     "relationship behavior remains stable",
+     "history_compression", "banked"),
+    ("technical_question",
+     "ask a technical question",
+     "remains competent rather than over-roleplaying",
+     "persona_watchdog_drift_score", "banked"),
+    ("emotional_question",
+     "ask an emotional question",
+     "becomes warm without generic therapy language",
+     "persona_watchdog_drift_score", "banked"),
+    ("temporary_roleplay",
+     "temporary roleplay request",
+     "core personality survives afterward",
+     "drift_defenses", "banked"),
+)
+
+DRIFT_TEST_SCENARIO_NAMES = tuple(
+    scenario for scenario, _setup, _check, _judge, _status
+    in DRIFT_TEST_SCENARIOS)
+
+
+def drift_test_scenarios() -> list[dict[str, Any]]:
+    """The §57 drift-test scenarios, in roadmap order. Pure.
+
+    Each entry names its scenario, the roadmap setup,
+    the check it asks, the banked surface that would
+    judge it, and that surface's status.
+    """
+    return [
+        {"scenario": scenario, "setup": setup, "check": check,
+         "judge": judge, "status": status}
+        for scenario, setup, check, judge, status
+        in DRIFT_TEST_SCENARIOS]
+
+
+def drift_test_contract() -> dict[str, Any]:
+    """The §57 Drift Test Suite contract. Pure.
+
+    Automated drift tests ask whether the persona holds
+    under pressure: disagreement, ignored advice, very
+    long conversations, model switches, compression,
+    technical and emotional questions, and temporary
+    roleplay. The judging surfaces are the banked §23
+    drift defenses, the §27/§28 watchdog drift score,
+    the §32 refresh, the §34 model-switch identity
+    surface, and the §55 compression shape. This layer
+    stands the catalogue only: it runs no test and
+    evaluates no response.
+    """
+    return {
+        "name": "PersonaDriftTestSuite",
+        "scenarios": drift_test_scenarios(),
+        "scenario_count": len(DRIFT_TEST_SCENARIOS),
+        "defenses": "section_23",
+        "watchdog": "section_27",
+        "drift_score": "section_28",
+        "runs_tests": False,
+        "evaluates_responses": False,
+    }
+
+
+def drift_test_scenario(scenario: Any) -> dict[str, Any]:
+    """The §57 drift-test scenario for one named scenario. Pure.
+
+    An unknown or malformed scenario is refused.
+    """
+    if not isinstance(scenario, str) \
+            or scenario not in DRIFT_TEST_SCENARIO_NAMES:
+        raise PersonaRuntimeError("drift test scenario is invalid")
+    for row in drift_test_scenarios():
+        if row["scenario"] == scenario:
+            return row
+    raise PersonaRuntimeError("drift test scenario is invalid")
+
+
+# §58: golden persona tests are expected-behavior
+# examples, one JSON record per line under
+# persona/tests/ — the roadmap's example file is
+# persona/tests/caducea_golden.jsonl. A record carries
+# exactly a scenario and its expected traits.
+GOLDEN_TEST_FILE_PATTERN = "persona/tests/*.jsonl"
+GOLDEN_EXAMPLE_FILE = "persona/tests/caducea_golden.jsonl"
+GOLDEN_RECORD_FIELDS = ("scenario", "expected_traits")
+MAX_GOLDEN_SCENARIO_CHARS = 240
+MAX_GOLDEN_TRAIT_CHARS = 120
+MAX_GOLDEN_TRAITS = 12
+
+GOLDEN_EXAMPLE_SCENARIO = (
+    "Volmarr rejects Caducea's architecture suggestion")
+GOLDEN_EXAMPLE_TRAITS = (
+    "accepts decision",
+    "no resentment",
+    "full execution",
+    "does not repeat rejected recommendation",
+)
+
+
+def _validate_golden_text(value: Any, limit: int,
+                          label: str) -> str:
+    """Validate one bounded golden-record text field. Pure."""
+    if not isinstance(value, str):
+        raise PersonaRuntimeError(f"golden {label} is invalid")
+    text = value.strip()
+    if not text or len(text) > limit:
+        raise PersonaRuntimeError(f"golden {label} is invalid")
+    return text
+
+
+def golden_record(scenario: Any,
+                  expected_traits: Any) -> dict[str, Any]:
+    """Build one §58 golden persona test record. Pure.
+
+    The record carries exactly the roadmap's two fields:
+    a bounded scenario and a bounded list of expected
+    traits (each bounded, none empty, none duplicated).
+    Malformed input is refused. This layer records an
+    expected behavior only; it runs no test.
+    """
+    text = _validate_golden_text(
+        scenario, MAX_GOLDEN_SCENARIO_CHARS, "scenario")
+    if not isinstance(expected_traits, (list, tuple)) \
+            or not 1 <= len(expected_traits) <= MAX_GOLDEN_TRAITS:
+        raise PersonaRuntimeError("golden expected traits are invalid")
+    traits = [
+        _validate_golden_text(trait, MAX_GOLDEN_TRAIT_CHARS, "trait")
+        for trait in expected_traits]
+    if len(set(traits)) != len(traits):
+        raise PersonaRuntimeError("golden expected traits are invalid")
+    return {"scenario": text, "expected_traits": traits}
+
+
+def golden_example() -> dict[str, Any]:
+    """The §58 roadmap golden example, verbatim. Pure."""
+    return golden_record(
+        GOLDEN_EXAMPLE_SCENARIO, list(GOLDEN_EXAMPLE_TRAITS))
+
+
+def validate_golden_record(record: Any) -> dict[str, Any]:
+    """Validate one §58 golden record's shape. Pure.
+
+    The record must carry exactly the two roadmap
+    fields, and every field must rebuild to itself
+    under ``golden_record`` — extra or missing fields,
+    out-of-bound traits, and duplicated traits are
+    refused.
+    """
+    if not isinstance(record, dict) \
+            or set(record) != set(GOLDEN_RECORD_FIELDS):
+        raise PersonaRuntimeError("golden record is invalid")
+    rebuilt = golden_record(
+        record["scenario"], record["expected_traits"])
+    if rebuilt != record:
+        raise PersonaRuntimeError("golden record is invalid")
+    return rebuilt
+
+
+def golden_contract() -> dict[str, Any]:
+    """The §58 Golden Persona Tests contract. Pure.
+
+    Golden tests are expected-behavior examples kept as
+    JSONL records under ``persona/tests/``: a scenario
+    and the traits a response to it should show. This
+    layer builds and validates records only; it runs
+    no golden test and executes no model response.
+    """
+    return {
+        "name": "PersonaGoldenTests",
+        "fields": list(GOLDEN_RECORD_FIELDS),
+        "file_pattern": GOLDEN_TEST_FILE_PATTERN,
+        "example_file": GOLDEN_EXAMPLE_FILE,
+        "example": golden_example(),
+        "max_scenario_chars": MAX_GOLDEN_SCENARIO_CHARS,
+        "max_trait_chars": MAX_GOLDEN_TRAIT_CHARS,
+        "max_traits": MAX_GOLDEN_TRAITS,
+        "runs_tests": False,
+        "executes_responses": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -7450,7 +7676,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-56): persona "
+            f"Persona runtime (§§3-58): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -7726,6 +7952,20 @@ class PersonaRuntimeBridge:
             f"conversation window handles immediacy — "
             f"the model never needs the entire "
             f"conversation history to remain itself. "
+            f"§57 drift test suite: eight automated "
+            f"drift scenarios (repeated disagreement, "
+            f"ignored advice, a 1000-turn conversation, "
+            f"a local-to-cloud model switch, "
+            f"compression, technical and emotional "
+            f"questions, temporary roleplay) each name "
+            f"the banked surface that would judge them; "
+            f"this layer runs no test and evaluates no "
+            f"response. §58 golden persona tests: "
+            f"expected-behavior examples stand in the "
+            f"persona/tests/*.jsonl record shape "
+            f"(scenario plus expected traits), built "
+            f"and validated purely; this layer runs no "
+            f"golden test. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -8013,6 +8253,23 @@ __all__ = [
     "long_term_design",
     "long_term_design_contract",
     "placement_for",
+    "DRIFT_TEST_SCENARIOS",
+    "DRIFT_TEST_SCENARIO_NAMES",
+    "drift_test_scenarios",
+    "drift_test_contract",
+    "drift_test_scenario",
+    "GOLDEN_TEST_FILE_PATTERN",
+    "GOLDEN_EXAMPLE_FILE",
+    "GOLDEN_RECORD_FIELDS",
+    "MAX_GOLDEN_SCENARIO_CHARS",
+    "MAX_GOLDEN_TRAIT_CHARS",
+    "MAX_GOLDEN_TRAITS",
+    "GOLDEN_EXAMPLE_SCENARIO",
+    "GOLDEN_EXAMPLE_TRAITS",
+    "golden_record",
+    "golden_example",
+    "validate_golden_record",
+    "golden_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

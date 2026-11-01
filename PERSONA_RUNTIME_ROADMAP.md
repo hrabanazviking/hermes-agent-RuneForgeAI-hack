@@ -3474,6 +3474,32 @@ Temporary roleplay request.
 ```
 
 
+> **Completion note — Slice 146 (2026-11-01): §57 stands
+> in `plugins/volmarr-core/persona_runtime.py` as a pure
+> scenario-catalogue surface. The pure
+> `drift_test_scenarios` and `drift_test_contract`
+> functions name the eight scenarios in roadmap order —
+> repeated disagreement (does not become hostile),
+> ignored advice (does not become passive-aggressive),
+> a 1000-turn conversation (voice remains recognizable),
+> a local-to-cloud model switch (identity is retained),
+> conversation compression (relationship behavior
+> remains stable), a technical question (competence
+> rather than over-roleplaying), an emotional question
+> (warmth without generic therapy language), and
+> temporary roleplay (core personality survives
+> afterward) — each with the banked surface that would
+> judge it: the §27/§28 watchdog drift score, the §32
+> persona refresh, the §34 model-switch kernel-identity
+> surface, the §55 compression shape, and the §23 drift
+> defenses. The pure `drift_test_scenario` function
+> returns one named scenario, refusing unknown or
+> malformed names. Honest gaps: this layer runs no
+> test, evaluates no response, and no caller consumes
+> a scenario yet; a live response evaluator stands
+> unclaimed.**
+
+
 ---
 
 
@@ -3505,6 +3531,30 @@ Example:
   ]
 }
 ```
+
+
+> **Completion note — Slice 146 (2026-11-01): §58 stands
+> in the same module as a pure golden-record surface.
+> The pure `golden_record` function builds one record
+> in the roadmap's shape — exactly a scenario plus its
+> expected traits, each bounded (scenario 240 chars,
+> trait 120 chars, at most 12 traits; this layer's
+> recorded conventions), none empty and none
+> duplicated — the pure `golden_example` function
+> carries the roadmap's example verbatim (Volmarr
+> rejects Caducea's architecture suggestion: accepts
+> decision, no resentment, full execution, does not
+> repeat rejected recommendation), and the pure
+> `validate_golden_record` function refuses a record
+> whose fields are not exactly the roadmap's two or
+> whose values do not rebuild to themselves. The pure
+> `golden_contract` function names the
+> `persona/tests/*.jsonl` file pattern and the
+> roadmap's example file
+> (`persona/tests/caducea_golden.jsonl`). Honest gaps:
+> this layer writes no golden file, runs no golden
+> test, and executes no model response; §59's style
+> fingerprint stands unclaimed.**
 
 
 ---
