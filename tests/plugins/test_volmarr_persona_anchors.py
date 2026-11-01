@@ -289,7 +289,7 @@ def test_compile_deterministic_packet_and_isolation(tmp_path):
     assert before == after
     assert compiled_b is None
     assert len(items) == 1
-    assert "§§3-62" in items[0].content
+    assert "§§3-64" in items[0].content
     assert "§17/§18 anchors: 8 character anchors" in items[0].content
     assert "7 negative anchors" in items[0].content
     # The packet names counts only — no anchor prose leaks.

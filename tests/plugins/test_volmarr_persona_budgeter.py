@@ -378,7 +378,7 @@ def test_budgeter_no_config_and_packet_and_isolation(tmp_path):
     assert first["persona_id"] == "caducea"
     assert before == after
     assert len(items) == 1
-    assert "§§3-62" in items[0].content
+    assert "§§3-64" in items[0].content
     assert "§15 budgeting" in items[0].content
     assert "persistent Hermes entity" not in items[0].content
     # Profile B has no persona config: caller items are

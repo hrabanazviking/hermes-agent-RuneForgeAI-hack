@@ -7463,6 +7463,398 @@ def model_router_contract() -> dict[str, Any]:
     }
 
 
+# §63: persona adherence score — maintain per-model
+# metrics (reasoning, latency, persona_adherence,
+# tool_use, cost) so the router can choose models based
+# on task. The persona_adherence metric is the §62
+# adherence (1 - average drift) carried as one metric
+# among five. This layer builds and validates metric
+# records and selects deterministically over supplied
+# records only; it measures no live model and routes
+# nothing.
+MODEL_METRIC_NAMES = (
+    "reasoning",
+    "latency",
+    "persona_adherence",
+    "tool_use",
+    "cost",
+)
+
+MODEL_METRICS_EXAMPLE = {
+    "reasoning": 0.82,
+    "latency": 0.95,
+    "persona_adherence": 0.93,
+    "tool_use": 0.76,
+    "cost": 0.99,
+}
+
+# The §63 selection tasks, each with its primary metric;
+# the balanced task scores the deterministic mean over
+# all five metrics. This mapping is this layer's
+# recorded convention — the roadmap names the metrics
+# and the by-task choice, not the task list.
+MODEL_TASKS = (
+    "reasoning",
+    "companionship",
+    "tool_work",
+    "fast_response",
+    "low_cost",
+    "balanced",
+)
+
+TASK_PRIMARY_METRICS = {
+    "reasoning": "reasoning",
+    "companionship": "persona_adherence",
+    "tool_work": "tool_use",
+    "fast_response": "latency",
+    "low_cost": "cost",
+    "balanced": "mean",
+}
+
+
+def model_metric_names() -> list[str]:
+    """The §63 per-model metric names, in roadmap order. Pure."""
+    return list(MODEL_METRIC_NAMES)
+
+
+def _validate_metric_value(value: Any) -> float:
+    """Validate one unit-interval model metric value. Pure."""
+    if isinstance(value, bool) \
+            or not isinstance(value, (int, float)) \
+            or not math.isfinite(float(value)) \
+            or not 0.0 <= float(value) <= 1.0:
+        raise PersonaRuntimeError("model metrics are invalid")
+    return float(value)
+
+
+def model_metrics(metrics: Any) -> dict[str, Any]:
+    """Build one §63 per-model metrics record. Pure.
+
+    The artefact carries exactly a ``model`` mapping
+    covering exactly the five roadmap metrics, each a
+    unit-interval number, normalised into roadmap
+    order. Unknown or missing metrics and
+    out-of-interval or non-numeric values are refused.
+    """
+    if not isinstance(metrics, dict) \
+            or set(metrics) != set(MODEL_METRIC_NAMES):
+        raise PersonaRuntimeError("model metrics are invalid")
+    return {"model": {
+        name: _validate_metric_value(metrics[name])
+        for name in MODEL_METRIC_NAMES}}
+
+
+def model_metrics_example() -> dict[str, Any]:
+    """The §63 roadmap per-model metrics example, verbatim. Pure."""
+    return model_metrics(dict(MODEL_METRICS_EXAMPLE))
+
+
+def validate_model_metrics(record: Any) -> dict[str, Any]:
+    """Validate one §63 per-model metrics record's shape. Pure.
+
+    The artefact must carry exactly the ``model``
+    field, and its mapping must rebuild to itself
+    under ``model_metrics`` — missing, extra,
+    out-of-interval, or out-of-order entries are
+    refused.
+    """
+    if not isinstance(record, dict) \
+            or set(record) != {"model"}:
+        raise PersonaRuntimeError("model metrics are invalid")
+    rebuilt = model_metrics(record["model"])
+    if rebuilt != record \
+            or list(record["model"]) != list(rebuilt["model"]):
+        raise PersonaRuntimeError("model metrics are invalid")
+    return rebuilt
+
+
+def model_tasks() -> list[str]:
+    """The §63 model-selection tasks, in recorded order. Pure."""
+    return list(MODEL_TASKS)
+
+
+def task_primary_metric(task: Any) -> str:
+    """The §63 primary metric for one selection task. Pure.
+
+    The balanced task's primary metric is the
+    deterministic mean, named ``mean``. An unknown or
+    malformed task is refused.
+    """
+    if not isinstance(task, str) or task not in TASK_PRIMARY_METRICS:
+        raise PersonaRuntimeError("model task is invalid")
+    return TASK_PRIMARY_METRICS[task]
+
+
+def _validate_model_metrics_table(
+        models: Any) -> dict[str, dict[str, float]]:
+    """Validate a named per-model metrics mapping. Pure."""
+    if not isinstance(models, dict) or not models:
+        raise PersonaRuntimeError("model metrics are invalid")
+    validated: dict[str, dict[str, float]] = {}
+    for model, metrics in models.items():
+        name = _validate_model_name(model)
+        if name in validated:
+            raise PersonaRuntimeError("model metrics are invalid")
+        if isinstance(metrics, dict) and set(metrics) == {"model"}:
+            body = validate_model_metrics(metrics)["model"]
+        else:
+            body = model_metrics(metrics)["model"]
+        validated[name] = body
+    return validated
+
+
+def model_selection_table(task: Any,
+                          models: Any) -> list[dict[str, Any]]:
+    """The §63 deterministic by-task selection table. Pure.
+
+    One row per supplied model carrying its validated
+    metrics and its score for the task — the task's
+    primary metric, or the deterministic mean over all
+    five metrics for the balanced task — ordered by
+    score descending with the model name as the
+    deterministic tiebreak.
+    """
+    primary = task_primary_metric(task)
+    validated = _validate_model_metrics_table(models)
+    rows = []
+    for name, body in validated.items():
+        if primary == "mean":
+            score = round(
+                sum(body.values()) / len(MODEL_METRIC_NAMES), 10)
+        else:
+            score = body[primary]
+        rows.append({
+            "model": name,
+            "task": task,
+            "primary_metric": primary,
+            "score": score,
+            "metrics": dict(body),
+        })
+    rows.sort(key=lambda row: (-row["score"], row["model"]))
+    return rows
+
+
+def select_model_for_task(task: Any, models: Any) -> str:
+    """The §63 model the router would choose for a task. Pure.
+
+    The strongest scorer under ``model_selection_table``
+    for the task's primary metric. This layer routes no
+    live model; the choice is over supplied records only.
+    """
+    return model_selection_table(task, models)[0]["model"]
+
+
+def model_metrics_contract() -> dict[str, Any]:
+    """The §63 Persona Adherence Score contract. Pure.
+
+    Per-model metrics are maintained so the router can
+    choose models based on task; the persona_adherence
+    metric is the §62 adherence carried among the five.
+    This layer builds and validates records and selects
+    over supplied records only; it measures no live
+    model and routes nothing.
+    """
+    return {
+        "name": "PersonaAdherenceScore",
+        "metrics": model_metric_names(),
+        "example": model_metrics_example(),
+        "tasks": model_tasks(),
+        "task_primary_metrics": dict(TASK_PRIMARY_METRICS),
+        "adherence_basis": "persona_adherence (§62)",
+        "router_chooses_by_task": True,
+        "routes_live_models": False,
+        "measures_live_models": False,
+    }
+
+
+# §64: distill persona for small models — small models
+# need a smaller persona representation, so multiple
+# kernels compile from the same canonical source:
+# kernel_full (~1500 tokens, the §5 ceiling), kernel_
+# medium (~750), and kernel_micro (~250, below the §5
+# band minimum by design — the micro tier exists
+# precisely for models the full band cannot serve; the
+# §65 micro-kernel example text is the next section).
+# This layer stands the pure tier/band surface over the
+# compiled kernel only; it builds no new kernel.
+KERNEL_TIERS = (
+    "kernel_full",
+    "kernel_medium",
+    "kernel_micro",
+)
+
+KERNEL_TIER_TARGETS = {
+    "kernel_full": KERNEL_TOKEN_MAX,
+    "kernel_medium": 750,
+    "kernel_micro": 250,
+}
+
+DISTILLED_KERNEL_FIELDS = (
+    "tier",
+    "target_tokens",
+    "kernel_hash",
+    "estimated_tokens",
+    "within_target",
+    "source",
+)
+
+
+def kernel_tiers() -> list[str]:
+    """The §64 kernel tiers, in roadmap order. Pure."""
+    return list(KERNEL_TIERS)
+
+
+def kernel_tier_targets() -> dict[str, int]:
+    """The §64 per-tier approximate token targets. Pure."""
+    return dict(KERNEL_TIER_TARGETS)
+
+
+def kernel_tier_target(tier: Any) -> int:
+    """The §64 token target for one kernel tier. Pure.
+
+    An unknown or malformed tier is refused.
+    """
+    if not isinstance(tier, str) or tier not in KERNEL_TIER_TARGETS:
+        raise PersonaRuntimeError("kernel tier is invalid")
+    return KERNEL_TIER_TARGETS[tier]
+
+
+def kernel_tier_for_budget(available_tokens: Any) -> str:
+    """The §64 kernel tier that fits a token budget. Pure.
+
+    The largest tier whose target fits the budget: the
+    full tier at or above its target, then medium, then
+    micro. A budget below even the micro target fits no
+    tier and is refused, as is a non-integer or
+    non-positive budget.
+    """
+    if isinstance(available_tokens, bool) \
+            or not isinstance(available_tokens, int) \
+            or available_tokens <= 0:
+        raise PersonaRuntimeError("kernel tier budget is invalid")
+    for tier in KERNEL_TIERS:
+        if available_tokens >= KERNEL_TIER_TARGETS[tier]:
+            return tier
+    raise PersonaRuntimeError("kernel tier budget is invalid")
+
+
+def distilled_kernel_record(tier: Any, kernel_hash: Any,
+                            estimated_tokens: Any) -> dict[str, Any]:
+    """Build one §64 distilled-kernel tier record. Pure.
+
+    The artefact carries exactly a ``distilled_kernel``
+    mapping with the fields in recorded order: the
+    tier, its token target, the source kernel's
+    §§9–10 hash, the distilled representation's
+    estimated tokens (a positive integer), whether it
+    sits within its target, and the canonical source
+    every tier derives from. Malformed values are
+    refused. This layer builds no kernel text.
+    """
+    target = kernel_tier_target(tier)
+    digest = _validate_kernel_hash(kernel_hash)
+    if isinstance(estimated_tokens, bool) \
+            or not isinstance(estimated_tokens, int) \
+            or estimated_tokens <= 0:
+        raise PersonaRuntimeError("distilled kernel is invalid")
+    record = {
+        "tier": tier,
+        "target_tokens": target,
+        "kernel_hash": digest,
+        "estimated_tokens": estimated_tokens,
+        "within_target": estimated_tokens <= target,
+        "source": "canonical_persona_kernel",
+    }
+    return {"distilled_kernel": record}
+
+
+def validate_distilled_kernel_record(
+        record: Any) -> dict[str, Any]:
+    """Validate one §64 distilled-kernel record's shape. Pure.
+
+    The artefact must carry exactly the
+    ``distilled_kernel`` field, and its mapping must
+    rebuild to itself under ``distilled_kernel_record``
+    — unknown or missing fields, a target that
+    disagrees with its tier, a ``within_target`` that
+    disagrees with its numbers, and a mapping whose
+    key order is not the recorded order are refused.
+    """
+    if not isinstance(record, dict) \
+            or set(record) != {"distilled_kernel"} \
+            or not isinstance(record["distilled_kernel"], dict) \
+            or list(record["distilled_kernel"]) \
+            != list(DISTILLED_KERNEL_FIELDS):
+        raise PersonaRuntimeError("distilled kernel is invalid")
+    body = record["distilled_kernel"]
+    rebuilt = distilled_kernel_record(
+        body["tier"], body["kernel_hash"], body["estimated_tokens"])
+    if rebuilt != record:
+        raise PersonaRuntimeError("distilled kernel is invalid")
+    return rebuilt
+
+
+def kernel_distillation_plan(compiled: Any) -> dict[str, Any]:
+    """The §64 distillation plan over a compiled kernel. Pure.
+
+    Accepts a compiled artefact (its ``kernel`` entry)
+    or a kernel mapping directly, and names, per tier,
+    the tier's target and whether the source kernel
+    already fits it undistilled. Every tier derives
+    from the same canonical source — the one compiled
+    kernel, named by its hash. This layer compiles and
+    builds no kernel.
+    """
+    kernel = None
+    if isinstance(compiled, dict):
+        if isinstance(compiled.get("kernel"), dict):
+            kernel = compiled["kernel"]
+        elif "sha256" in compiled:
+            kernel = compiled
+    if kernel is None:
+        raise PersonaRuntimeError("distilled kernel is invalid")
+    digest = _validate_kernel_hash(kernel.get("sha256"))
+    tokens = kernel.get("estimated_tokens")
+    if isinstance(tokens, bool) or not isinstance(tokens, int) \
+            or tokens <= 0:
+        raise PersonaRuntimeError("distilled kernel is invalid")
+    return {
+        "source": "canonical_persona_kernel",
+        "kernel_hash": digest,
+        "source_estimated_tokens": tokens,
+        "tiers": [{
+            "tier": tier,
+            "target_tokens": KERNEL_TIER_TARGETS[tier],
+            "fits_source_kernel": tokens <= KERNEL_TIER_TARGETS[tier],
+        } for tier in KERNEL_TIERS],
+        "same_canonical_source": True,
+        "builds_kernels": False,
+    }
+
+
+def kernel_distillation_contract() -> dict[str, Any]:
+    """The §64 Distill Persona For Small Models contract. Pure.
+
+    Multiple kernels compile from the same canonical
+    source — full at the §5 ceiling, medium at half,
+    micro below the §5 band minimum by design — so
+    small models receive a smaller persona
+    representation. This layer stands the tier/band
+    surface over the compiled kernel only; it builds
+    no kernel, and the §65 micro-kernel example text
+    is a later section.
+    """
+    return {
+        "name": "PersonaKernelDistillation",
+        "tiers": kernel_tiers(),
+        "target_tokens": kernel_tier_targets(),
+        "same_canonical_source": True,
+        "micro_below_section_5_band": True,
+        "micro_kernel_section": 65,
+        "builds_kernels": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -8172,7 +8564,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-62): persona "
+            f"Persona runtime (§§3-64): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -8481,6 +8873,16 @@ class PersonaRuntimeBridge:
             f"alongside intelligence, adherence derived "
             f"from the §61 averages; this layer routes "
             f"no live model. "
+            f"§63 model metrics: per-model metrics "
+            f"(reasoning, latency, persona adherence, "
+            f"tool use, cost) stand as validated records "
+            f"the router can choose between by task; "
+            f"this layer measures no live model. "
+            f"§64 kernel distillation: multiple kernels "
+            f"(full ~1500, medium ~750, micro ~250 "
+            f"tokens) compile from the same canonical "
+            f"source for small models; this layer builds "
+            f"no kernel. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -8814,6 +9216,30 @@ __all__ = [
     "model_quality_table",
     "preferred_companionship_model",
     "model_router_contract",
+    "MODEL_METRIC_NAMES",
+    "MODEL_METRICS_EXAMPLE",
+    "MODEL_TASKS",
+    "TASK_PRIMARY_METRICS",
+    "model_metric_names",
+    "model_metrics",
+    "model_metrics_example",
+    "validate_model_metrics",
+    "model_tasks",
+    "task_primary_metric",
+    "model_selection_table",
+    "select_model_for_task",
+    "model_metrics_contract",
+    "KERNEL_TIERS",
+    "KERNEL_TIER_TARGETS",
+    "DISTILLED_KERNEL_FIELDS",
+    "kernel_tiers",
+    "kernel_tier_targets",
+    "kernel_tier_target",
+    "kernel_tier_for_budget",
+    "distilled_kernel_record",
+    "validate_distilled_kernel_record",
+    "kernel_distillation_plan",
+    "kernel_distillation_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

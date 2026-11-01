@@ -534,7 +534,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert empty_rel == []
     assert empty_tool == []
     assert len(items) == 1
-    assert "§§3-62" in items[0].content
+    assert "§§3-64" in items[0].content
     assert "§43 relationship" in items[0].content
     assert "routine coding" in items[0].content
     assert "§44 tool policy" in items[0].content

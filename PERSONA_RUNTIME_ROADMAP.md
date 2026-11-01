@@ -3804,6 +3804,31 @@ model:
 The router can choose models based on task.
 
 
+> **Completion note — Slice 149 (2026-11-01): §63 stands
+> in the same module as a pure per-model metrics
+> surface. The pure `model_metric_names` function names
+> the five metrics in roadmap order (reasoning, latency,
+> persona_adherence, tool_use, cost); the pure
+> `model_metrics` function builds one record in the
+> roadmap's YAML shape (exactly a `model` mapping over
+> the five, each a unit-interval number), the pure
+> `validate_model_metrics` function refuses a record
+> whose fields are not exactly the roadmap's five in
+> roadmap order or whose values do not rebuild to
+> themselves, and the roadmap's example stands verbatim
+> — its persona_adherence 0.93 is exactly the §62
+> adherence derived from an 0.07 average drift, which
+> the contract tests prove. The pure
+> `model_selection_table` / `select_model_for_task`
+> functions choose deterministically by task over
+> supplied records under this layer's recorded task
+> convention (reasoning, companionship, tool_work,
+> fast_response, and low_cost each score by their
+> primary metric; balanced scores the mean). Honest
+> gaps: no live model is measured, no model is routed,
+> and no caller consumes a record or selection yet.**
+
+
 ---
 
 
@@ -3841,6 +3866,31 @@ MICRO:
 
 
 All derive from the same canonical source.
+
+
+> **Completion note — Slice 149 (2026-11-01): §64 stands
+> in the same module as a pure kernel-tier/band surface
+> over the compiled kernel. The pure `kernel_tiers` /
+> `kernel_tier_targets` functions name the three tiers
+> in roadmap order with their approximate targets
+> (kernel_full 1500 — the §5 ceiling — kernel_medium
+> 750, kernel_micro 250); the pure
+> `kernel_tier_for_budget` function returns the largest
+> tier fitting a supplied budget and refuses a budget
+> below even the micro target; the pure
+> `distilled_kernel_record` / `validate_distilled_
+> kernel_record` functions stand one tier record
+> (tier, target, source kernel hash, estimated tokens,
+> within-target) that must rebuild to itself; and the
+> pure `kernel_distillation_plan` function names, per
+> tier, whether a compiled kernel already fits it
+> undistilled — every tier deriving from the same
+> canonical source. Honest gaps: no new kernel is
+> built (the micro tier stands below the §5 band
+> minimum by design, for models the full band cannot
+> serve), no kernel text is distilled, and no caller
+> consumes a tier or plan yet; §65's micro-kernel
+> example text stands unclaimed.**
 
 
 ---

@@ -392,7 +392,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert first[0].content == second[0].content == third[0].content
     assert len(first) == 1
     content = first[0].content
-    assert "§§3-62" in content
+    assert "§§3-64" in content
     assert "§51 startup" in content
     assert "owns no boot hook" in content
     assert "§52 request pipeline" in content
