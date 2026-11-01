@@ -3979,3 +3979,79 @@ portable state: any agent (Muse or Hermes) resumes from here.
   immediacy) — expect a pure placement/contract surface
   over the banked surfaces, per the §56 spec when read at
   slice start.
+- 2026-11-01 ~01:2x–02:0x EST keeper tick: **Slice 145 DONE —
+  Persona Runtime §55 (Conversation History Compression) and
+  §56 (Long-Term Conversation Design) complete, banked and
+  PUSHED under the standing go-ahead.** No live work found at
+  tick start (tree clean, HEAD == origin/main at
+  `edd8053cdf`; Slice 144's state commit at 01:20 EST was its
+  own completed push, verified, not in-progress work — the
+  running test processes on the box belonged to other
+  campaigns' trees; the Python-write blocker was probed
+  absent). `plugins/volmarr-core/persona_runtime.py` extended
+  in place — no new file or config key: §55's pure
+  `compression_components` / `compression_contract` name the
+  four components in roadmap order (recent verbatim window —
+  external, the conversation; structured conversation state —
+  banked, governed by the §26 trait/state separation;
+  episodic summaries — banked, governed by the §25
+  summary-claim guard; retrieved older memories — external,
+  the memory subsystem) with the roadmap's example window
+  band recorded as `RECENT_WINDOW_MIN` 8 /
+  `RECENT_WINDOW_MAX` 20, and the pure `compression_plan` is
+  arithmetic over caller-supplied counts only (the most
+  recent messages up to a capacity inside the band stay
+  verbatim — default the band maximum, this layer's recorded
+  convention — and every older message is carried by the
+  other three components; out-of-band capacities and
+  malformed/negative counts are refused). The compressed
+  window is what the §53 prompt order carries as its
+  recent-conversation slot. §56's pure `long_term_design` /
+  `long_term_design_contract` / `placement_for` name the
+  four placements in roadmap order (identity lives in
+  persona — banked, the compiled persona documents; history
+  lives in memory; task state lives in project/context;
+  immediacy lives in the conversation window — the rest
+  external), refusing unknown or malformed concerns; the
+  contract records the section's core claim: the model never
+  needs the entire conversation history to remain itself.
+  Packet label updated to §§3–56 (the twenty-two older
+  persona files' packet assertions updated in-slice). Tests:
+  targeted 9/9 pass (new file); targeted persona run
+  (29 files): **257 passed, 0 failed**; full volmarr/kista
+  run (98 files): **736 passed, 7 failed, 1 skipped** — the
+  same name-identical pre-existing environmental set in the
+  same 3 files (5 core-plugin, 1 Verðandi-stimuli socket, 1
+  voice-runner loopback), verified in the run log's own
+  summary line (`~/workspace/.verify-tmp/slice145_full_run.log`);
+  736 is exactly Slice 144's 727 + the 9 new contracts.
+  Smoke: `hermes --version` runs (`vgit.edd8053.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md ledger
+  row, §55 + §56 completion notes in the Persona Runtime
+  roadmap, plugin.yaml description now §§3–56. Honest gaps:
+  no live history is compressed, nothing is summarised or
+  retrieved, nothing is injected, and no caller consumes a
+  plan or placement yet; §57's drift test suite stands
+  unclaimed.
+- **Next resume point: Slice 146 — Persona Runtime §57
+  (Drift Test Suite) and §58 (Golden Persona Tests)**: §57
+  names automated drift tests over eight named scenarios
+  (repeated disagreement → hostility check, ignored advice
+  → passive-aggression check, 1000 turns → voice
+  recognisable, local→cloud model switch → identity
+  retained, compression → relationship behavior stable,
+  technical question → competence, emotional question →
+  warmth without generic therapy language, temporary
+  roleplay → core personality survives) — reconcile against
+  the banked §23 drift defenses / §27–§30 watchdog surfaces
+  when read at slice start, expect a pure scenario-catalogue
+  surface naming each scenario with the banked surface that
+  would judge it, not a live response evaluator this plugin
+  does not own; §58 names golden persona tests as expected-
+  behavior examples in a `persona/tests/*.jsonl` shape
+  (scenario + expected_traits, e.g. the rejected-
+  architecture-suggestion example) — expect a pure
+  golden-record builder/validator in that shape over the
+  banked surfaces, not a test runner that executes model
+  responses.
