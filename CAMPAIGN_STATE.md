@@ -3818,3 +3818,81 @@ portable state: any agent (Muse or Hermes) resumes from here.
   the stages and their banked owners, not a live
   per-message pipeline (§53 prompt assembly is a
   later section and stays unclaimed there).
+- 2026-11-01 ~00:5x–01:5x EDT keeper tick: **Slice 143 DONE —
+  Persona Runtime §51 (Startup Sequence) and §52 (Request
+  Pipeline) complete, banked and PUSHED under the standing
+  go-ahead.** No live work found at tick start (tree clean,
+  HEAD == origin/main at `4cfa5bee31`; Slice 142's state
+  commit at 00:53 EDT was its own completed push, verified,
+  not in-progress work; the Python-write blocker was probed
+  absent at tick start). `plugins/volmarr-core/
+  persona_runtime.py` extended in place — no new file or
+  config key: §51's pure `startup_steps` /
+  `startup_contract` / `startup_plan` stand the Hermes
+  startup order in roadmap order (load persona.yaml,
+  resolve the persona directory, validate required
+  documents, compare source hashes, the load-or-compile
+  branch, load the Persona Kernel, initialize the
+  retrieval index, initialize Persona State, awaken) as a
+  pure plan over two compiled artefacts' §19 hash records
+  — the branch is decided by `detect_changes` (unchanged
+  hashes load the compiled persona; changed hashes or a
+  first compile compile it; a removed persona awakens
+  nothing; a cross-persona comparison is refused). §52's
+  pure `request_pipeline_stages` /
+  `request_pipeline_contract` / `request_pipeline_plan`
+  name the ten per-request stages in roadmap order, each
+  with its owner and status — banked surfaces in this
+  plugin (§13 `classify_task`, §14 `PersonaRouter`, §13
+  `PersonaRetriever`, §15 `PersonaContextBudgeter`, §27
+  watchdog contract), external owners (the caller for the
+  user message and for tools / response, the memory
+  subsystem for memory retrieval, the model), and prompt
+  assembly honestly marked a later section (§53) — and
+  carry one validated task classification (the
+  classifier's four outputs: task type, entities,
+  project, tool intent; slugified, shape-checked only,
+  unknown fields and malformed values refused). Packet
+  label updated to §§3–52 (twenty older persona files'
+  packet assertions updated in-slice). Tests: targeted
+  9/9 pass (new file) and 21/21 with the
+  generated-manifest file; targeted persona run
+  (27 files): **239 passed, 0 failed**; full
+  volmarr/kista run (96 files): **718 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice143_full_run2.log`); 718
+  is exactly Slice 142's 709 + the 9 new contracts.
+  **Recorded plainly: the first full-run attempt was
+  contaminated by a transient tempfile/EPERM window
+  (70 of 96 files failed at file level while Python
+  writes were failing, the Slice 115/122 blocker class,
+  with /tmp also under cross-campaign pressure) and was
+  discarded; the re-run, started after Python writes
+  verified OK again, supplied the totals above.** Smoke:
+  `hermes --version` runs (`vgit.4cfa5be.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §51 + §52 completion notes in the Persona
+  Runtime roadmap, plugin.yaml description now §§3–52.
+  Push: fast-forward, no force — origin/main moved
+  `4cfa5bee31` → Slice 143 commit, verified by
+  `git ls-remote` (remote == local HEAD). Honest gaps:
+  no boot hook is owned, no stage is executed, no
+  pipeline runs, nothing is injected, and no caller
+  consumes a plan yet; §53's prompt assembly stands
+  unclaimed.
+- **Next resume point: Slice 144 — Persona Runtime §53
+  (Prompt Assembly Order) and §54 (Why Order Matters)**:
+  §53 names the recommended prompt order (runtime
+  system rules, Persona Kernel, current Persona State,
+  relevant persona sections, … per the §53 spec when
+  read at slice start) — reconcile against the §10
+  pinning spec, which designated this section as its
+  enforcer, and the §15 budgeter's outputs when read at
+  slice start, expect a pure assembly-order/plan surface
+  over the banked surfaces, not a live prompt assembler
+  wired into the turn path; §54 names why the order
+  matters (per the §54 spec when read at slice start).
