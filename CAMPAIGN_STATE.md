@@ -4055,3 +4055,79 @@ portable state: any agent (Muse or Hermes) resumes from here.
   golden-record builder/validator in that shape over the
   banked surfaces, not a test runner that executes model
   responses.
+- 2026-11-01 ~01:5x–02:5x EST keeper tick: **Slice 146 DONE —
+  Persona Runtime §57 (Drift Test Suite) and §58 (Golden
+  Persona Tests) complete, banked and PUSHED under the standing
+  go-ahead.** No live work found at tick start (tree clean,
+  HEAD == origin/main at `0615ba3f0b`; Slice 145's state commit
+  at 01:49 EST was its own completed push, verified, not
+  in-progress work — the running test processes on the box
+  belonged to other campaigns' trees; the Python-write blocker
+  was probed absent). `plugins/volmarr-core/persona_runtime.py`
+  extended in place — no new file or config key: §57's pure
+  `drift_test_scenarios` / `drift_test_contract` /
+  `drift_test_scenario` name the eight drift scenarios in
+  roadmap order (repeated disagreement — does not become
+  hostile; ignored advice — does not become
+  passive-aggressive; a 1000-turn conversation — voice remains
+  recognizable; a local-to-cloud model switch — identity is
+  retained; conversation compression — relationship behavior
+  remains stable; a technical question — competence rather
+  than over-roleplaying; an emotional question — warmth
+  without generic therapy language; temporary roleplay — core
+  personality survives afterward), each with the banked
+  surface that would judge it (the §27/§28 watchdog drift
+  score, the §32 persona refresh, the §34 model-switch
+  kernel-identity surface, the §55 compression shape, the
+  §23 drift defenses), refusing unknown scenarios. §58's pure
+  `golden_record` / `golden_example` /
+  `validate_golden_record` / `golden_contract` stand
+  expected-behavior records in the `persona/tests/*.jsonl`
+  shape — exactly a scenario plus its expected traits
+  (bounded: scenario 240 chars, trait 120 chars, at most 12
+  traits, recorded conventions; none empty, none
+  duplicated) — with the roadmap's example carried verbatim
+  (Volmarr rejects Caducea's architecture suggestion) and
+  the example file named `persona/tests/caducea_golden.jsonl`;
+  the validator refuses records whose fields are not
+  exactly the roadmap's two or whose values do not rebuild
+  to themselves. Packet label updated to §§3–58 (the
+  twenty-three older persona files' packet assertions
+  updated in-slice). Tests: targeted 9/9 pass (new file);
+  targeted persona run (30 files): **266 passed, 0 failed**;
+  full volmarr/kista run (99 files): **745 passed, 7 failed,
+  1 skipped** — the same name-identical pre-existing
+  environmental set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice146_full_run.log`); 745 is
+  exactly Slice 145's 736 + the 9 new contracts. Smoke:
+  `hermes --version` runs (`vgit.0615ba3.dirty` pre-commit);
+  README.md sha256 invariant held (`4e022de7…c4910`).
+  Bookkeeping: CUSTOMIZATIONS.md ledger row, §57 + §58
+  completion notes in the Persona Runtime roadmap,
+  plugin.yaml description now §§3–58. Honest gaps: no test
+  is run, no response is evaluated, no golden file is
+  written, nothing is injected, and no caller consumes a
+  scenario or record yet; §59's style fingerprint stands
+  unclaimed.
+- **Next resume point: Slice 147 — Persona Runtime §59
+  (Style Fingerprint) and §60 (Behavior Fingerprint)**:
+  §59 names a lightweight style fingerprint generated
+  from the Persona Core over nine dimensions (warmth,
+  formality, verbosity, playfulness, deference,
+  initiative, technicality, mythic_language,
+  emotional_intensity) as guidance, not rigid
+  mathematical personality — reconcile against the
+  compiled kernel/IR surfaces when read at slice start,
+  expect a pure fingerprint-shape/validation surface
+  over caller-supplied or compiled dimensions, not a
+  live style scorer; §60 names the behavior fingerprint
+  as named boolean behaviors (counsel before material
+  risk, accept final decision, never relitigate, surface
+  new information, anticipate needs, avoid unnecessary
+  questions, prefer complete outputs) that "can be
+  automatically tested" — expect a pure
+  behavior-record builder/validator in that shape,
+  reconciled against the §58 golden traits where they
+  overlap, not a behavior evaluator of live responses.
