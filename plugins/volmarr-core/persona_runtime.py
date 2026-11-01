@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-70).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-72).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -8803,6 +8803,279 @@ def persona_validator_contract() -> dict[str, Any]:
     }
 
 
+# §71: persona inspect command — ``hermes persona
+# inspect`` displays the persona name, version,
+# document count, kernel tokens, indexed sections,
+# source hash, and status VALID. The roadmap's
+# ``hermes persona`` spelling is reconciled against
+# this plugin's established surface: plugin CLI lives
+# under ``hermes volmarr`` (see cli.py) and plugins
+# never add core commands, so this layer stands the
+# pure inspect record and its render over a supplied
+# compile only — no new CLI command is registered and
+# nothing is compiled here. The status is honest
+# where the §70 catalogue is: a compile exists only
+# because the §6 compiler's compile-time detections
+# (missing required files, extreme document size,
+# unresolvable paths) passed or failed the compile
+# closed, so a structurally valid supplied compile
+# carries VALID; this layer performs no new
+# validation pass over document prose (§7).
+INSPECT_FIELDS = (
+    "persona",
+    "version",
+    "documents",
+    "kernel_tokens",
+    "indexed_sections",
+    "source_hash",
+    "status",
+)
+
+INSPECT_COMMAND = "hermes persona inspect"
+
+INSPECT_STATUS_VALID = "VALID"
+
+_INSPECT_EXAMPLE_SOURCE_HASH = "0" * 64
+
+
+def _inspect_compiled(compiled: Any) -> dict[str, Any]:
+    if not isinstance(compiled, dict):
+        raise PersonaRuntimeError("persona inspect compile is invalid")
+    display_name = compiled.get("display_name")
+    persona_id = compiled.get("persona_id")
+    version = compiled.get("persona_version")
+    documents = compiled.get("documents")
+    index = compiled.get("index")
+    kernel = compiled.get("kernel")
+    source_hash = compiled.get("persona_hash")
+    if not isinstance(display_name, str) or not display_name.strip() \
+            or not isinstance(persona_id, str) \
+            or not persona_id.strip() \
+            or not isinstance(version, str) or not version.strip() \
+            or not isinstance(documents, list) \
+            or not isinstance(index, list) \
+            or not isinstance(kernel, dict) \
+            or not isinstance(source_hash, str) \
+            or not source_hash.strip():
+        raise PersonaRuntimeError("persona inspect compile is invalid")
+    tokens = kernel.get("estimated_tokens")
+    if isinstance(tokens, bool) or not isinstance(tokens, int) \
+            or tokens < 0:
+        raise PersonaRuntimeError("persona inspect compile is invalid")
+    return compiled
+
+
+def persona_inspect(compiled: Any) -> dict[str, Any]:
+    """The §71 inspect record for one supplied compile. Pure.
+
+    Names exactly the roadmap's display fields: the
+    persona's display name, its human-authored version,
+    the document count, the kernel's estimated tokens,
+    the indexed-section count, the source hash (the
+    compile's combined persona hash, §19/§22), and the
+    status. A malformed compile is refused, never
+    partially displayed.
+    """
+    compiled = _inspect_compiled(compiled)
+    return {
+        "persona": compiled["display_name"],
+        "version": compiled["persona_version"],
+        "documents": len(compiled["documents"]),
+        "kernel_tokens": compiled["kernel"]["estimated_tokens"],
+        "indexed_sections": len(compiled["index"]),
+        "source_hash": compiled["persona_hash"],
+        "status": INSPECT_STATUS_VALID,
+    }
+
+
+def render_persona_inspect(compiled: Any) -> str:
+    """The §71 inspect display text for one compile. Pure.
+
+    The roadmap's display, one field per line in
+    roadmap order, with no trailing newline.
+    """
+    record = persona_inspect(compiled)
+    return "\n".join((
+        f"Persona: {record['persona']}",
+        f"Version: {record['version']}",
+        f"Documents: {record['documents']}",
+        f"Kernel tokens: {record['kernel_tokens']}",
+        f"Indexed sections: {record['indexed_sections']}",
+        f"Source hash: {record['source_hash']}",
+        f"Status: {record['status']}",
+    ))
+
+
+def persona_inspect_example() -> dict[str, Any]:
+    """The §71 roadmap inspect example as a record. Pure.
+
+    Caducea Hermesdottir, version 1.4.2, 6 documents,
+    934 kernel tokens, 271 indexed sections; the
+    roadmap elides the source hash, carried here as a
+    zero hash of the §19 shape.
+    """
+    compiled = {
+        "persona_id": "caducea",
+        "display_name": "Caducea Hermesdottir",
+        "persona_version": "1.4.2",
+        "documents": [{} for _ in range(6)],
+        "index": [{} for _ in range(271)],
+        "kernel": {"estimated_tokens": 934},
+        "persona_hash": _INSPECT_EXAMPLE_SOURCE_HASH,
+    }
+    return persona_inspect(compiled)
+
+
+def persona_inspect_contract() -> dict[str, Any]:
+    """The §71 Persona Inspect contract. Pure.
+
+    The inspect display stands as a pure record and
+    render over a supplied compile. The roadmap's
+    ``hermes persona`` spelling is not a new core
+    command: this plugin's CLI surface is
+    ``hermes volmarr``, and no command is registered
+    by this layer.
+    """
+    return {
+        "name": "PersonaInspect",
+        "command": INSPECT_COMMAND,
+        "plugin_cli_surface": "hermes volmarr",
+        "fields": list(INSPECT_FIELDS),
+        "example": persona_inspect_example(),
+        "status": INSPECT_STATUS_VALID,
+        "status_basis": "§70 compile-time detections (§6)",
+        "new_core_command": False,
+        "compiles_persona": False,
+    }
+
+
+# §72: persona explain command — ``hermes persona
+# explain`` answers "Why did Caducea respond this
+# way?" with the relevant persona sections, named by
+# §12 stable id, making persona behavior debuggable.
+# This layer generates no responses, so it explains
+# none: it stands the pure explain record and its
+# render over caller-supplied section ids only. Ids
+# are validated as well-formed §12 stable ids (the
+# §35 handoff form); when a compile is also supplied,
+# each id must name a section that compile actually
+# indexed — existence is then verified, not assumed.
+EXPLAIN_COMMAND = "hermes persona explain"
+
+EXPLAIN_QUESTION = "Why did Caducea respond this way?"
+
+EXPLAIN_EXAMPLE_SECTIONS = (
+    "relationship.settled_decisions",
+    "service_bible.advice_style",
+    "core.graceful_deference",
+)
+
+MAX_EXPLAIN_SECTIONS = 32
+
+
+def _explain_sections(sections: Any) -> list[str]:
+    if not isinstance(sections, (list, tuple)) \
+            or not sections \
+            or len(sections) > MAX_EXPLAIN_SECTIONS:
+        raise PersonaRuntimeError("persona explain sections are invalid")
+    resolved: list[str] = []
+    for item in sections:
+        if not isinstance(item, str) \
+                or not _STABLE_ID_FORM.match(item.strip()):
+            raise PersonaRuntimeError(
+                "persona explain sections are invalid")
+        section = item.strip()
+        if section in resolved:
+            raise PersonaRuntimeError(
+                "persona explain sections are invalid")
+        resolved.append(section)
+    return resolved
+
+
+def persona_explain(sections: Any,
+                    compiled: Any = None) -> dict[str, Any]:
+    """The §72 explain record over supplied section ids. Pure.
+
+    The record carries the roadmap's question, the
+    relevant sections in the order supplied (named by
+    §12 stable id), and whether existence was verified
+    against a supplied compile's index. Without a
+    compile, ids are form-checked only and
+    ``sections_verified`` is False — never upgraded.
+    A supplied compile whose index lacks a named
+    section is refused. This layer explains no live
+    response: it generates none.
+    """
+    resolved = _explain_sections(sections)
+    persona_id = None
+    verified = False
+    if compiled is not None:
+        compiled = _inspect_compiled(compiled)
+        persona_id = compiled["persona_id"]
+        indexed = {
+            row.get("stable_id") for row in compiled["index"]
+            if isinstance(row, dict)}
+        if any(section not in indexed for section in resolved):
+            raise PersonaRuntimeError(
+                "persona explain section is not in the compile")
+        verified = True
+    return {
+        "question": EXPLAIN_QUESTION,
+        "persona_id": persona_id,
+        "relevant_sections": resolved,
+        "sections_verified": verified,
+        "explains_live_response": False,
+    }
+
+
+def render_persona_explain(sections: Any,
+                           compiled: Any = None) -> str:
+    """The §72 explain display text. Pure.
+
+    The roadmap's display: the question, a blank
+    pair of lines, the relevant-sections heading, and
+    one ``- <stable id>`` line per section in the
+    order supplied, with no trailing newline.
+    """
+    record = persona_explain(sections, compiled)
+    lines = [record["question"], "", "", "Relevant persona sections:"]
+    lines += [f"- {section}" for section in record["relevant_sections"]]
+    return "\n".join(lines)
+
+
+def persona_explain_example() -> dict[str, Any]:
+    """The §72 roadmap explain example as a record. Pure.
+
+    The three sections the roadmap names, in roadmap
+    order, form-checked only (no compile is supplied,
+    so existence is not claimed verified).
+    """
+    return persona_explain(list(EXPLAIN_EXAMPLE_SECTIONS))
+
+
+def persona_explain_contract() -> dict[str, Any]:
+    """The §72 Persona Explain contract. Pure.
+
+    An explanation stands as a pure record over
+    caller-supplied §12 stable ids, verified against
+    a compile's index when one is supplied. This
+    layer generates no responses and explains no live
+    response; the roadmap's ``hermes persona``
+    spelling registers no new core command.
+    """
+    return {
+        "name": "PersonaExplain",
+        "command": EXPLAIN_COMMAND,
+        "plugin_cli_surface": "hermes volmarr",
+        "question": EXPLAIN_QUESTION,
+        "example_sections": list(EXPLAIN_EXAMPLE_SECTIONS),
+        "sections_named_by": "stable_id",
+        "max_sections": MAX_EXPLAIN_SECTIONS,
+        "new_core_command": False,
+        "explains_live_response": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -9512,7 +9785,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-70): persona "
+            f"Persona runtime (§§3-72): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -9874,6 +10147,19 @@ class PersonaRuntimeBridge:
             f"human is warned and missing traits are "
             f"never silently invented; this layer runs "
             f"no second compiler. "
+            f"§71 persona inspect: the inspect record "
+            f"names persona, version, documents, kernel "
+            f"tokens, indexed sections, source hash, and "
+            f"status VALID (from the §70 compile-time "
+            f"detections) over a supplied compile; the "
+            f"roadmap's hermes persona spelling registers "
+            f"no new core command here. "
+            f"§72 persona explain: the explain record "
+            f"answers why-did-Caducea-respond-this-way "
+            f"with relevant sections by §12 stable id, "
+            f"verified against a supplied compile when "
+            f"one is given; this layer explains no live "
+            f"response. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -10284,6 +10570,21 @@ __all__ = [
     "persona_validator_issue",
     "persona_validator_detection",
     "persona_validator_contract",
+    "INSPECT_FIELDS",
+    "INSPECT_COMMAND",
+    "INSPECT_STATUS_VALID",
+    "persona_inspect",
+    "render_persona_inspect",
+    "persona_inspect_example",
+    "persona_inspect_contract",
+    "EXPLAIN_COMMAND",
+    "EXPLAIN_QUESTION",
+    "EXPLAIN_EXAMPLE_SECTIONS",
+    "MAX_EXPLAIN_SECTIONS",
+    "persona_explain",
+    "render_persona_explain",
+    "persona_explain_example",
+    "persona_explain_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

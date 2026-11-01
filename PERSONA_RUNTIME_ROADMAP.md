@@ -4260,6 +4260,38 @@ Status: VALID
 ```
 
 
+> **Completion note — Slice 153 (2026-11-01): §71 stands
+> in `plugins/volmarr-core/persona_runtime.py` as the
+> pure `persona_inspect` / `render_persona_inspect` /
+> `persona_inspect_example` / `persona_inspect_contract`
+> surfaces over a supplied compile: the record names
+> exactly the roadmap's display fields (persona display
+> name, human-authored version, document count, kernel
+> estimated tokens, indexed-section count, source hash
+> — the compile's combined persona hash, the same hash
+> the §22 version record carries — and status), and the
+> render is the roadmap's display verbatim, one field
+> per line. The status is honest where the §70
+> catalogue is: a compile exists only because the §6
+> compiler's compile-time detections (missing required
+> files, extreme document size, unresolvable paths)
+> passed or failed the compile closed, so a
+> structurally valid supplied compile carries VALID;
+> a malformed compile is refused, never partially
+> displayed. The roadmap's `hermes persona` spelling
+> is reconciled against this plugin's established CLI
+> surface: plugin CLI lives under `hermes volmarr` and
+> plugins never add core commands, so no new CLI
+> command is registered and the inspect surface
+> compiles nothing. The roadmap example stands as a
+> record (Caducea Hermesdottir, 1.4.2, 6 documents, 934
+> kernel tokens, 271 indexed sections; the elided
+> source hash is carried as a zero hash of the §19
+> shape). Honest gaps: no live `hermes persona inspect`
+> command exists, and no caller consumes a record or
+> render yet.**
+
+
 ---
 
 
@@ -4286,6 +4318,33 @@ Relevant persona sections:
 
 
 This makes persona behavior debuggable.
+
+
+> **Completion note — Slice 153 (2026-11-01): §72 stands
+> in `plugins/volmarr-core/persona_runtime.py` as the
+> pure `persona_explain` / `render_persona_explain` /
+> `persona_explain_example` / `persona_explain_contract`
+> surfaces over caller-supplied section ids: the record
+> carries the roadmap's question ("Why did Caducea
+> respond this way?"), the relevant sections in the
+> order supplied, named by §12 stable id (form-checked
+> against the §35 stable-id form, bounded at 32,
+> duplicates refused), and the render is the roadmap's
+> display verbatim. When a compile is also supplied,
+> each id must name a section that compile actually
+> indexed — existence is verified, an unindexed section
+> is refused, and the record carries the compile's
+> persona id with `sections_verified` true; without a
+> compile, ids are form-checked only and
+> `sections_verified` stays false, never upgraded. The
+> roadmap's example stands as a record (the three named
+> sections in roadmap order, form-checked only). The
+> roadmap's `hermes persona` spelling registers no new
+> core command (this plugin's CLI surface is
+> `hermes volmarr`). Honest gaps: this layer generates
+> no responses, so it explains no live response — no
+> real response is traced to the sections that shaped
+> it — and no caller consumes a record or render yet.**
 
 
 ---
