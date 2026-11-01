@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-86).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-88).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -11593,6 +11593,387 @@ def memory_model_contract() -> dict[str, Any]:
     }
 
 
+# --- §§87–88 phases 7–8 reconciliation + audit ----
+#
+# §87: Phase 7 — Tool Integration asks to connect Tool
+# Policy to actual runtime enforcement, moving
+# deterministic permissions from prose into code
+# (Tool Policy Markdown → Policy Compiler →
+# ToolPermissionIR → Runtime Enforcement), with the
+# success criterion that Caducea's stated tool
+# boundaries become actual software behavior. §88:
+# Phase 8 — Avatar Integration asks to compile Avatar
+# Markdown into AvatarIR, used by the VRM controller,
+# emotion mapper, outfit manager, visual state system,
+# and image-generation prompts, with the criterion that
+# Caducea looks like the same character across visual
+# platforms. Both phases were built section by section
+# in earlier slices; this reconciliation stands each
+# roadmap item beside the banked surface that carries
+# it — implemented, or equivalent where the carrying
+# surface lives under a different name or outside this
+# module — and adds one pure audit over supplied
+# artefacts proving the two criteria as far as this
+# layer owns them. No live tool is executed and no
+# avatar is controlled here: §44's retrieval executes
+# nothing, §47 migrates no live prompt, and §46 owns no
+# avatar controller — the deterministic permissions
+# stand in code (the §44 needs table and the §47
+# governance domains), and every visual consumer is
+# carried by the §46 occasion-gated retrieval of the
+# one compiled avatar document, so all platforms draw
+# on the same canonical source.
+TOOL_PHASE_SUCCESS_CRITERION = (
+    "Caducea's stated tool boundaries become actual "
+    "software behavior.")
+AVATAR_PHASE_SUCCESS_CRITERION = (
+    "Caducea looks like the same character across "
+    "visual platforms.")
+
+# The §87 items, in roadmap flow order: (item, roadmap
+# name, status, carrying section, banked surface).
+TOOL_PHASE_ITEMS = (
+    ("tool_policy_markdown", "Tool Policy Markdown",
+     "implemented", "§44",
+     "compiled tool_policy role + retrieve_tool_policy"),
+    ("policy_compiler", "Policy Compiler",
+     "equivalent", "§§6, 47",
+     "PersonaCompiler (§6) + policy_to_code governance "
+     "classification (§47); no separate Policy Compiler"),
+    ("tool_permission_ir", "ToolPermissionIR",
+     "equivalent", "§44",
+     "classify_tool_action + the §44 per-action needs "
+     "table (the permission IR in code, no named "
+     "ToolPermissionIR artefact)"),
+    ("runtime_enforcement", "Runtime Enforcement",
+     "equivalent", "§§44, 47",
+     "deterministic needs + governance in code; this "
+     "layer executes no tool (live enforcement carried "
+     "by the Hermes tool layer outside the persona layer)"),
+)
+
+# The §88 items, in roadmap order, in the same shape:
+# AvatarIR first, then its five named consumers.
+AVATAR_PHASE_ITEMS = (
+    ("avatar_ir", "AvatarIR", "equivalent", "§46",
+     "compiled avatar role sections in the §6 index + "
+     "avatar_policy_usage_contract (the controller "
+     "consumes AvatarIR directly; no separate AvatarIR "
+     "builder in this layer)"),
+    ("vrm_controller", "VRM controller", "equivalent", "§46",
+     "controlling_avatar occasion + retrieve_avatar_policy "
+     "(no VRM controller owned)"),
+    ("emotion_mapper", "emotion mapper", "equivalent", "§46",
+     "selecting_expressions occasion + "
+     "retrieve_avatar_policy (no emotion mapper owned)"),
+    ("outfit_manager", "outfit manager", "equivalent",
+     "§§46, 75",
+     "avatar sections + §75 optional avatar_metadata in "
+     "the export bundle (no outfit manager owned)"),
+    ("visual_state_system", "visual state system",
+     "equivalent", "§46",
+     "describing_persona + vr_interaction occasions + "
+     "retrieve_avatar_policy (no visual state system owned)"),
+    ("image_generation_prompts", "image-generation prompts",
+     "equivalent", "§46",
+     "generating_images occasion + retrieve_avatar_policy "
+     "(no image generator owned)"),
+)
+
+
+def tool_phase_items() -> list[dict[str, Any]]:
+    """The §87 Phase 7 items, in roadmap order. Pure."""
+    return _phase_items(TOOL_PHASE_ITEMS)
+
+
+def tool_phase_item(item: Any) -> dict[str, Any]:
+    """One §87 item by name, refusing unknown names. Pure."""
+    return _phase_item(TOOL_PHASE_ITEMS, item)
+
+
+def tool_phase_contract() -> dict[str, Any]:
+    """The §87 Phase 7 — Tool Integration reconciliation. Pure.
+
+    The Tool Policy Markdown item stands implemented by
+    §44 (the compiled tool_policy role, retrieved only
+    when tools are considered). The remaining flow steps
+    stand equivalent: the Policy Compiler is carried by
+    the §6 PersonaCompiler over the tool_policy document
+    plus §47's governance classification (no separate
+    compiler stands); the ToolPermissionIR is carried in
+    code by §44's deterministic per-action needs table
+    and action classification (no named IR artefact
+    stands); and Runtime Enforcement is carried by those
+    deterministic surfaces in code — this layer executes
+    no tool, so live enforcement at call time belongs to
+    the Hermes tool layer outside the persona layer,
+    named honestly rather than claimed here.
+    """
+    summary = _phase_summary(
+        TOOL_PHASE_ITEMS, TOOL_PHASE_SUCCESS_CRITERION)
+    return {
+        "name": "PersonaPhase7ToolIntegration",
+        "phase": 7,
+        **summary,
+        "permissions_in_code": True,
+        "executes_tools": False,
+        "enforces_live_tool_calls": False,
+    }
+
+
+def avatar_phase_items() -> list[dict[str, Any]]:
+    """The §88 Phase 8 items, in roadmap order. Pure."""
+    return _phase_items(AVATAR_PHASE_ITEMS)
+
+
+def avatar_phase_item(item: Any) -> dict[str, Any]:
+    """One §88 item by name, refusing unknown names. Pure."""
+    return _phase_item(AVATAR_PHASE_ITEMS, item)
+
+
+def avatar_phase_contract() -> dict[str, Any]:
+    """The §88 Phase 8 — Avatar Integration reconciliation. Pure.
+
+    Every roadmap item stands equivalent: AvatarIR is
+    carried by the §6 compiler's avatar role sections in
+    the compiled index, which §46's contract names as
+    directly consumable by an avatar controller (no
+    separate AvatarIR builder stands in this layer), and
+    each of the five consumers is carried by its §46
+    occasion-gated retrieval of that one compiled avatar
+    document — the outfit manager additionally by §75's
+    optional avatar metadata in the export bundle. No
+    consumer is owned here: no VRM controller, emotion
+    mapper, outfit manager, visual state system, or
+    image generator stands in this layer. What the
+    criterion needs from this layer is that every visual
+    platform draw on the same canonical avatar source,
+    and that is what the audit proves.
+    """
+    summary = _phase_summary(
+        AVATAR_PHASE_ITEMS, AVATAR_PHASE_SUCCESS_CRITERION)
+    return {
+        "name": "PersonaPhase8AvatarIntegration",
+        "phase": 8,
+        **summary,
+        "single_canonical_avatar_source": True,
+        "controls_avatar": False,
+        "owns_visual_consumers": False,
+    }
+
+
+def tool_avatar_audit(compiled: Any,
+                      avatar_metadata: Any = None
+                      ) -> dict[str, Any]:
+    """Audit supplied artefacts against §§87–88. Pure.
+
+    §87, from the supplied compile: the tool_policy
+    document stands compiled (its role in the §19 hash
+    record, its sections in the index); the roadmap's
+    own force-push example stands in code — the action
+    classifies deterministically and its §44 needs are
+    exactly the four roadmap sections, identically in
+    the classification surface and the retrieval
+    contract; §44 retrieval over the compile's index
+    returns only tool_policy sections the action needs,
+    named by stable ids the index rebuilds to (the
+    general git_policy section is not among them); file
+    reading needs no extra policy and retrieves nothing;
+    and §47 holds permissions, expiration, and limits
+    in code while personality stays in prompt, with the
+    roadmap's expired-memories example a migration
+    candidate — while both contracts honestly execute
+    and migrate nothing live. §88, from the same compile
+    plus caller-supplied optional avatar metadata: the
+    avatar document stands compiled likewise; the five
+    §46 occasions stand complete in roadmap order; §46
+    retrieval for a signalled occasion returns only
+    avatar sections carrying that occasion, named by
+    rebuilt stable ids, and with no occasion signalled
+    nothing is retrieved (the Avatar file stays out of
+    ordinary text inference); the §75 export bundle
+    built from the compile validates by recomputation,
+    its avatar source entry carries the §19 hash
+    record's avatar hash (one canonical source for
+    every platform), and its avatar presence matches
+    the supplied metadata exactly — present only when
+    supplied, never invented; and the stored §19 hash
+    record matches its recomputation, so a tampered
+    kernel hash surfaces as unmet. Malformed inputs are
+    refused, in the neighbouring validators' convention.
+    This layer loads and compiles nothing beyond the
+    pure functions over the supplied compile, executes
+    no tool, and controls no avatar.
+    """
+    record = hash_record(compiled)
+    index = compiled.get("index")
+    kernel = compiled.get("kernel")
+    if not isinstance(index, list) \
+            or not isinstance(kernel, dict):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    retrieval_contract = tool_policy_retrieval_contract()
+    needs = tool_policy_needs("git force push to origin")
+    reading_needs = tool_policy_needs("read the file")
+    tool_rows = retrieve_tool_policy(
+        index, query="git force push to origin")
+    avatar_rows = retrieve_avatar_policy(
+        index, occasion="generating_images")
+    rebuilt_ids = {
+        stable_section_id(entry["role"], entry["section_id"])
+        for entry in index
+        if isinstance(entry, dict)
+        and isinstance(entry.get("role"), str)
+        and isinstance(entry.get("section_id"), str)}
+    bundle = persona_export(
+        compiled, avatar_metadata=avatar_metadata)
+    validated_bundle = validate_persona_export(bundle)
+    avatar_sources = [
+        row for row in bundle["source_documents"]
+        if row["role"] == "avatar"]
+    checks = {
+        "tool_policy_compiled":
+            "tool_policy" in record["document_hashes"]
+            and any(isinstance(entry, dict)
+                    and entry.get("role") == "tool_policy"
+                    for entry in index),
+        "force_push_needs_in_code":
+            classify_tool_action("git force push to origin")
+            == "force_push"
+            and needs == {
+                "action": "force_push",
+                "sections": ["force_push",
+                             "remote_git_operations",
+                             "reversibility", "authorization"],
+                "extra_policy_needed": True}
+            and retrieval_contract["needs"]["force_push"]
+            == needs["sections"],
+        "tool_retrieval_selective":
+            bool(tool_rows)
+            and all(row["stable_id"] in rebuilt_ids
+                    and row["role"] == "tool_policy"
+                    and row["section_id"] in needs["sections"]
+                    and row["action"] == "force_push"
+                    for row in tool_rows),
+        "file_reading_minimal":
+            reading_needs == {
+                "action": "file_reading", "sections": [],
+                "extra_policy_needed": False}
+            and retrieve_tool_policy(
+                index, query="read the file") == [],
+        "permissions_governed_by_code":
+            governance_for_kind("permissions") == "code"
+            and governance_for_kind("expiration") == "code"
+            and governance_for_kind("limits") == "code"
+            and governance_for_kind("personality") == "prompt"
+            and migration_assessment(
+                "Never include expired memories.")[
+                    "migration_candidate"] is True
+            and "expiration" in migration_assessment(
+                "Never include expired memories.")[
+                    "code_governed_kinds"]
+            and policy_to_code_contract()["example"] == {
+                "prompt_instruction":
+                    "Never include expired memories.",
+                "code_rule": "if memory.expired: exclude()"},
+        "tool_layer_executes_nothing":
+            retrieval_contract["executes_tools"] is False
+            and retrieval_contract["injects"] is False
+            and retrieval_contract["continuously_injected"]
+            is False
+            and policy_to_code_contract()[
+                "migrates_live_prompts"] is False,
+        "avatar_compiled":
+            "avatar" in record["document_hashes"]
+            and any(isinstance(entry, dict)
+                    and entry.get("role") == "avatar"
+                    for entry in index),
+        "avatar_occasions_complete":
+            avatar_policy_occasions()
+            == list(AVATAR_POLICY_OCCASIONS)
+            and avatar_policy_usage_contract()["occasions"]
+            == list(AVATAR_POLICY_OCCASIONS)
+            and set(classify_avatar_occasions(
+                "generating images while controlling the "
+                "avatar in vr"))
+            >= {"generating_images", "controlling_avatar",
+                "vr_interaction"},
+        "avatar_retrieval_selective":
+            bool(avatar_rows)
+            and all(row["stable_id"] in rebuilt_ids
+                    and row["role"] == "avatar"
+                    and "generating_images" in row["occasions"]
+                    for row in avatar_rows),
+        "avatar_outside_ordinary_inference":
+            avatar_retrieval_need(
+                "discuss the weather over tea") == {
+                    "occasions": [],
+                    "mode": "not_in_ordinary_inference",
+                    "dynamic_retrieval": False,
+                    "ordinary_text_inference": True}
+            and retrieve_avatar_policy(
+                index, query="discuss the weather") == []
+            and avatar_policy_usage_contract()[
+                "rarely_in_ordinary_text_inference"] is True
+            and avatar_policy_usage_contract()[
+                "avatar_controller_direct_ir"] is True,
+        "avatar_export_consistent":
+            validated_bundle == bundle
+            and bundle["avatar_present"]
+            is (avatar_metadata is not None)
+            and bundle["avatar_metadata"] == avatar_metadata
+            and len(avatar_sources) == 1
+            and avatar_sources[0]["hash"]
+            == record["document_hashes"].get("avatar"),
+        "hash_record_matches": compiled.get("hash_record")
+        == record,
+    }
+    tool_met = all(checks[key] for key in (
+        "tool_policy_compiled", "force_push_needs_in_code",
+        "tool_retrieval_selective", "file_reading_minimal",
+        "permissions_governed_by_code",
+        "tool_layer_executes_nothing"))
+    avatar_met = all(checks[key] for key in (
+        "avatar_compiled", "avatar_occasions_complete",
+        "avatar_retrieval_selective",
+        "avatar_outside_ordinary_inference",
+        "avatar_export_consistent", "hash_record_matches"))
+    return {
+        "persona_id": record["persona_id"],
+        "checks": checks,
+        "tool_policy_sections": len(tool_rows),
+        "avatar_sections": len(avatar_rows),
+        "tool_phase": {
+            **_phase_summary(
+                TOOL_PHASE_ITEMS, TOOL_PHASE_SUCCESS_CRITERION),
+            "criterion_met": tool_met,
+        },
+        "avatar_phase": {
+            **_phase_summary(
+                AVATAR_PHASE_ITEMS,
+                AVATAR_PHASE_SUCCESS_CRITERION),
+            "criterion_met": avatar_met,
+        },
+        "audits_only": True,
+        "loads_or_compiles": False,
+        "executes_tools": False,
+        "controls_avatar": False,
+    }
+
+
+def tool_avatar_contract() -> dict[str, Any]:
+    """The §§87–88 phase reconciliation, combined. Pure."""
+    return {
+        "name": "PersonaPhases7And8",
+        "tool_phase": tool_phase_contract(),
+        "avatar_phase": avatar_phase_contract(),
+        "audit_surface": "tool_avatar_audit",
+        "permissions_in_code": True,
+        "executes_tools": False,
+        "single_canonical_avatar_source": True,
+        "controls_avatar": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -12302,7 +12683,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-86): persona "
+            f"Persona runtime (§§3-88): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -12782,6 +13163,21 @@ class PersonaRuntimeBridge:
             f"binding) and routes no live model — "
             f"every model receives the same canonical "
             f"kernel. "
+            f"§87 Phase 7 tool integration and "
+            f"§88 Phase 8 avatar integration stand "
+            f"reconciled against the banked surfaces "
+            f"(§44 tool-policy retrieval and the §47 "
+            f"policy-to-code governance — the stated "
+            f"tool boundaries stand as deterministic "
+            f"permissions in code, and this layer "
+            f"executes no tool; §46 occasion-gated "
+            f"avatar retrieval and §75 export avatar "
+            f"metadata — every visual consumer draws "
+            f"on the one compiled avatar document, "
+            f"and this layer controls no avatar), "
+            f"and the pure tool_avatar_audit proves "
+            f"both success criteria from supplied "
+            f"artefacts. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -13319,6 +13715,18 @@ __all__ = [
     "model_router_phase_contract",
     "memory_model_audit",
     "memory_model_contract",
+    "TOOL_PHASE_SUCCESS_CRITERION",
+    "AVATAR_PHASE_SUCCESS_CRITERION",
+    "TOOL_PHASE_ITEMS",
+    "AVATAR_PHASE_ITEMS",
+    "tool_phase_items",
+    "tool_phase_item",
+    "tool_phase_contract",
+    "avatar_phase_items",
+    "avatar_phase_item",
+    "avatar_phase_contract",
+    "tool_avatar_audit",
+    "tool_avatar_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

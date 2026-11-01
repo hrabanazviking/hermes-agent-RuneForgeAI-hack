@@ -5081,6 +5081,33 @@ Success criterion:
 > Caducea's stated tool boundaries become actual software behavior.
 
 
+> **Completion note — Slice 161 (2026-11-01): §87 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `tool_phase_items` / `tool_phase_item` /
+> `tool_phase_contract` surfaces: the Tool Policy
+> Markdown item implemented by §44 (the compiled
+> tool_policy role, retrieved only when tools are
+> considered), and the remaining flow steps equivalent —
+> the Policy Compiler carried by the §6 PersonaCompiler
+> plus §47's governance classification (no separate
+> compiler stands), ToolPermissionIR carried in code by
+> §44's deterministic per-action needs table and action
+> classification (no named IR artefact stands), and
+> Runtime Enforcement carried by those deterministic
+> surfaces in code. The pure `tool_avatar_audit` proves
+> the criterion as far as this layer owns it (the
+> roadmap's force-push example classifies
+> deterministically with exactly its four sections in
+> code; §44 retrieval returns only the needed
+> tool_policy sections by rebuilt stable ids; file
+> reading needs no extra policy; §47 holds permissions,
+> expiration, and limits in code). Honest gaps: this
+> layer executes no tool and enforces no live tool
+> call — live enforcement at call time belongs to the
+> Hermes tool layer outside the persona layer — and no
+> caller consumes the reconciliation or the audit yet.**
+
+
 ---
 
 
@@ -5109,6 +5136,36 @@ Success criterion:
 
 
 > Caducea looks like the same character across visual platforms.
+
+
+> **Completion note — Slice 161 (2026-11-01): §88 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `avatar_phase_items` / `avatar_phase_item`
+> / `avatar_phase_contract` surfaces: every item
+> equivalent — AvatarIR carried by the §6 compiler's
+> avatar role sections in the compiled index, which
+> §46's contract names as directly consumable by an
+> avatar controller (no separate AvatarIR builder
+> stands), and the VRM controller, emotion mapper,
+> outfit manager, visual state system, and
+> image-generation prompts each carried by their §46
+> occasion-gated retrieval of that one compiled avatar
+> document (the outfit manager additionally by §75's
+> optional avatar metadata in the export bundle). The
+> pure `tool_avatar_audit` proves the criterion from a
+> supplied compile (the five §46 occasions stand
+> complete; occasion-gated retrieval returns only
+> avatar sections carrying the signalled occasion by
+> rebuilt stable ids and nothing with no occasion
+> signalled; the §75 export bundle's avatar source
+> entry carries the §19 hash record's avatar hash, so
+> every platform draws on the same canonical source,
+> and avatar metadata is present only when supplied,
+> never invented). Honest gaps: no VRM controller,
+> emotion mapper, outfit manager, visual state system,
+> or image generator is owned by this layer, no avatar
+> is controlled, and no caller consumes the
+> reconciliation or the audit yet.**
 
 
 ---

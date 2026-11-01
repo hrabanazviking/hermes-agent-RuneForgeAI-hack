@@ -357,7 +357,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert before == after
     assert compiled_b is None
     assert len(items) == 1
-    assert "§§3-86" in items[0].content
+    assert "§§3-88" in items[0].content
     assert "§29 drift score" in items[0].content
     assert "§30 drift repair" in items[0].content
     assert "rewrite minimally" in items[0].content
