@@ -4968,3 +4968,156 @@ portable state: any agent (Muse or Hermes) resumes from here.
   `persona:<id>:…`, with shared world knowledge standing
   separately) — expect a pure namespace-key
   builder/validation surface, not a memory store.
+- 2026-11-01 ~09:1x–10:5x EST keeper tick: **Slice 156 CODE
+  COMPLETE — Persona Runtime §77 (Multi-Persona Support)
+  and §78 (Memory Namespace) — banked LOCALLY ONLY,
+  UNCOMMITTED, NOT PUSHED; FULL SUITE NOT VERIFIED
+  (environment blocker, below).** No live work found at
+  tick start (tree clean, HEAD == origin/main at
+  `f21e27e2fb`; Slice 155's state commit at 09:16 EST was
+  its own completed push, verified, not in-progress
+  work; the Python-write blocker was probed absent at
+  tick start). `plugins/volmarr-core/persona_runtime.py`
+  extended in place — no new file or config key: §77's
+  pure `multi_persona_roster` /
+  `validate_multi_persona_roster` /
+  `multi_persona_example` / `multi_persona_contract`
+  stand several personas under one `personas/` root
+  over caller-supplied ids (each with its own directory,
+  the six independence facets in roadmap order, and its
+  §78 namespace prefix; the roadmap layout caducea /
+  runa / yrsa / another_agent stands verbatim as the
+  example roster with caducea active; a supplied
+  `active_persona` must name a roster member; the
+  validator refuses a roster that does not rebuild to
+  itself). §78's pure `memory_namespace_prefix` /
+  `memory_namespace` / `shared_memory_namespace` /
+  `parse_memory_namespace` / `memory_namespace_owner` /
+  `memory_namespaces_mixed` / `memory_namespace_contract`
+  stand the key shape (autobiographical keys
+  `persona:<id>:<segment>...`, bounded validated
+  segments, malformed keys refused; shared world
+  knowledge keyed separately under `shared:`; mixing =
+  persona-owned keys spanning more than one persona).
+  Packet label updated to §§3–78 (thirty-three older
+  persona files' packet assertions updated in-slice).
+  Tests: targeted 19/19 pass (new file 10/10 + the
+  §75–76 file); targeted persona run (40 files): **368
+  passed, 0 failed**. **Blocker: the VM's Python-write(2)
+  EPERM failure recurred mid-tick during the first full
+  volmarr/kista run (109 files) — 70 of 109 files failed
+  at file level with "No usable temporary directory
+  found" (313 tests counted instead of ~847) — and was
+  discarded (`~/workspace/.verify-tmp/slice156_full_run.log`,
+  the run's own log; a copy-aside attempt failed under
+  the same EPERM window). The blocker was still present
+  after ~15 minutes of probing at bookkeeping time
+  (python tempfile writes and git index writes both
+  EPERM), so no re-run, smoke, commit, or push was
+  possible.** The working tree holds exactly the Slice
+  156 set (persona_runtime.py, plugin.yaml,
+  CUSTOMIZATIONS.md, the roadmap, this file modified;
+  the new contract file added; the 33 older persona
+  test files' packet labels updated). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §77 + §78 completion
+  notes in the Persona Runtime roadmap — the
+  CUSTOMIZATIONS row records the unverified state
+  plainly. Honest gaps: no persona is loaded or
+  activated, the §3 config loader still names a single
+  persona, no memory store is owned or touched, and no
+  caller consumes a roster or a key yet.
+- **Next resume point: FIRST verify the Python-write
+  blocker is gone (a python mkstemp write + a git
+  write), then run Slice 156's full volmarr/kista suite
+  (109 files; expected 847 passed, 7 failed, 1 skipped —
+  Slice 155's 837 + the 10 new contracts, failures the
+  same name-identical pre-existing environmental set)
+  + smoke + README invariant; fix any failures in
+  scope, correct the CUSTOMIZATIONS row's unverified
+  paragraph in place, then commit + push Slice 156
+  under the standing go-ahead (fetch + remote-diff
+  first, ls-remote verify). Only then Slice 157 —
+  Persona Runtime §79 (Shared Knowledge vs Personal
+  Memory) and §80 (Persona Bootstrap)**: §79 names the
+  shared/personal split (SHARED: shared world knowledge
+  such as Project Aesir architecture; persona-PRIVATE:
+  that persona's own reflections on it) — reconcile
+  against Slice 156's §78 namespace kinds when read at
+  slice start, expect a pure classification surface
+  over namespace keys / caller-supplied records, not a
+  memory store; §80 names persona bootstrap (per the
+  §80 spec when read at slice start).
+- 2026-11-01 ~11:0x EST keeper tick (same tick, later):
+  **Blocker re-verified STILL PRESENT — Slice 156
+  remains uncommitted/unpushed, no test run attempted.**
+  Probes across ~25 minutes: python tempfile writes and
+  git index writes both fail EPERM throughout. The
+  Slice 156 working tree was verified intact read-only
+  (`GIT_OPTIONAL_LOCKS=0`): exactly 39 files — 5
+  modified (persona_runtime.py, plugin.yaml,
+  CUSTOMIZATIONS.md, the roadmap, this file), the 33
+  older persona test files' packet labels, and the new
+  contract file; HEAD still `f21e27e2fb` (Slice 155);
+  README.md sha256 invariant held (`4e022de7…c4910`).
+  Resume unchanged: when a python mkstemp write + a git
+  write both succeed, run Slice 156's full suite
+  (expected 847/7/1), smoke, invariant, correct the
+  CUSTOMIZATIONS row, commit + push, then Slice 157.
+- 2026-11-01 ~10:10 EST keeper tick: **Blocker re-verified STILL
+  PRESENT — Slice 156 remains uncommitted/unpushed, no test run
+  attempted.** Probes at tick start: python `mkstemp` and plain
+  `open(...,'w')` writes fail EPERM (`Operation not permitted`)
+  in both /tmp and the workspace verify dir; a scratch `git init`
+  in /tmp fails on a template copy with the same EPERM, and bash
+  `printf` to a new /tmp file also failed this tick — a VM-wide
+  write(2) episode, not a Hermes defect. /tmp at 12% used (not
+  space). The Slice 156 working tree was verified intact
+  read-only (`GIT_OPTIONAL_LOCKS=0`): 38 files in diffstat (5
+  core modified + 33 older persona packet-label files) plus the
+  new untracked
+  `tests/plugins/test_volmarr_persona_multi_memory_namespace.py`
+  = 39 files, matching the Slice 156 record; HEAD still
+  `f21e27e2fb` (Slice 155 state); README.md sha256 invariant
+  held (`4e022de7…c4910`). No live work found on this tree.
+  Resume unchanged: when a python mkstemp write + a git write
+  both succeed, run Slice 156's full suite (109 files; expected
+  847 passed, 7 failed, 1 skipped), smoke, invariant, correct
+  the CUSTOMIZATIONS row, commit + push, then Slice 157
+  (§§79–80).
+- 2026-11-01 ~10:21 EST keeper tick: **Blocker GONE — Slice 156
+  verified, banked and PUSHED under the standing go-ahead.**
+  Probes at tick start: system python3.12 mkstemp + open writes,
+  the checkout's venv python, and a scratch `git init`/`git add`
+  all succeed again; no live work on this tree (running test
+  processes belonged to other campaigns); the Slice 156 working
+  tree was intact (39 files, exactly the recorded set). Full
+  volmarr/kista run (109 files): **847 passed, 7 failed,
+  1 skipped** — exactly the expected totals (Slice 155's 837 +
+  the 10 new multi-persona/namespace contracts; the new file
+  itself 10/10), the failures the same name-identical
+  pre-existing environmental set in the same 3 files
+  (5 core-plugin, 1 Verðandi-stimuli socket, 1 voice-runner
+  loopback), verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice156_full_run2.log`, 1011.0s).
+  Smoke: `hermes --version` runs (`vgit.f21e27e.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). The CUSTOMIZATIONS.md ledger row's
+  unverified paragraph was corrected in place to the verified
+  numbers. Push: fast-forward, no force — verified by
+  `git ls-remote` (remote == local HEAD).
+- **Next resume point: Slice 157 — Persona Runtime §79
+  (Shared Knowledge vs Personal Memory) and §80 (Persona
+  Bootstrap)**: §79 names the shared/personal split (SHARED:
+  shared world knowledge such as Project Aesir architecture;
+  persona-PRIVATE: that persona's own reflections on it) —
+  reconcile against Slice 156's §78 namespace kinds when read
+  at slice start, expect a pure classification surface over
+  namespace keys / caller-supplied records, not a memory
+  store; §80 names persona bootstrap (`hermes persona create`
+  generating persona.yaml + the six document files —
+  PERSONA_CORE, SERVICE_BIBLE, MEMORY_POLICY, TOOL_POLICY,
+  RELATIONSHIP_MODEL, AVATAR — with names freely changeable in
+  configuration) — reconcile against the §3 config / §49
+  generated-directory surfaces when read at slice start,
+  expect a pure bootstrap-plan/file-list surface, not a
+  persona creator this layer does not own.

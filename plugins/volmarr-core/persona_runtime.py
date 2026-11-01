@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-76).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-78).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -9720,6 +9720,322 @@ def persona_import_contract() -> dict[str, Any]:
     }
 
 
+# §77: multi-persona support — the architecture supports
+# several personas side by side under one ``personas/``
+# root (the roadmap's layout names caducea, runa, yrsa,
+# and another_agent), the config chooses one
+# ``active_persona``, and each persona is independent in
+# its documents, kernel, memory namespace, relationship
+# state, avatar, and compiled index. The banked §3
+# config/compiler are single-persona; this layer stands
+# the roster as a pure surface over caller-supplied
+# persona ids — it loads no persona, reads no config,
+# and activates nothing.
+PERSONAS_ROOT = "personas"
+
+# The §77 roadmap layout's example personas, in roadmap
+# order.
+MULTI_PERSONA_EXAMPLES = (
+    "caducea", "runa", "yrsa", "another_agent",
+)
+
+# The §77 independence facets, in roadmap order: each
+# persona carries its own value for every one of these.
+PERSONA_INDEPENDENT_FACETS = (
+    "documents", "kernel", "memory_namespace",
+    "relationship_state", "avatar", "compiled_index",
+)
+
+# This layer's recorded bound on a roster's size.
+MAX_PERSONAS = 32
+
+# The §77 roster record's fields, in stored order.
+MULTI_PERSONA_ROSTER_FIELDS = (
+    "root", "active_persona", "count", "personas",
+)
+
+# One §77 roster entry's fields, in stored order.
+MULTI_PERSONA_ENTRY_FIELDS = (
+    "persona_id", "directory", "active", "independent",
+    "memory_namespace_prefix",
+)
+
+
+def multi_persona_examples() -> list[str]:
+    return list(MULTI_PERSONA_EXAMPLES)
+
+
+def persona_independent_facets() -> list[str]:
+    return list(PERSONA_INDEPENDENT_FACETS)
+
+
+def persona_directory(persona_id: Any) -> str:
+    """The §77 directory of one persona. Pure."""
+    if not isinstance(persona_id, str) or not persona_id \
+            or not _SLUG.match(persona_id):
+        raise PersonaRuntimeError("persona id is invalid")
+    return f"{PERSONAS_ROOT}/{persona_id}"
+
+
+def _validate_persona_ids(persona_ids: Any) -> list[str]:
+    if not isinstance(persona_ids, (list, tuple)) \
+            or not persona_ids \
+            or len(persona_ids) > MAX_PERSONAS:
+        raise PersonaRuntimeError("persona roster is invalid")
+    cleaned: list[str] = []
+    for persona_id in persona_ids:
+        persona_directory(persona_id)
+        if persona_id in cleaned:
+            raise PersonaRuntimeError("persona roster is invalid")
+        cleaned.append(persona_id)
+    return cleaned
+
+
+def _roster_entry(persona_id: str,
+                  active_persona: str | None) -> dict[str, Any]:
+    return {
+        "persona_id": persona_id,
+        "directory": persona_directory(persona_id),
+        "active": persona_id == active_persona,
+        "independent": list(PERSONA_INDEPENDENT_FACETS),
+        "memory_namespace_prefix":
+            memory_namespace_prefix(persona_id),
+    }
+
+
+def multi_persona_roster(persona_ids: Any,
+                         active_persona: Any = None
+                         ) -> dict[str, Any]:
+    """The §77 multi-persona roster record. Pure.
+
+    Caller-supplied persona ids stand under the
+    ``personas/`` root, each with its own directory and
+    the six independence facets; the config's chosen
+    ``active_persona``, when supplied, must name a
+    roster member (an unknown or malformed choice is
+    refused, never silently dropped). Deterministic in
+    the supplied order; this layer loads and activates
+    nothing.
+    """
+    cleaned = _validate_persona_ids(persona_ids)
+    if active_persona is not None:
+        if not isinstance(active_persona, str) \
+                or active_persona not in cleaned:
+            raise PersonaRuntimeError(
+                "active persona is not in the roster")
+    return {
+        "root": PERSONAS_ROOT,
+        "active_persona": active_persona,
+        "count": len(cleaned),
+        "personas": [
+            _roster_entry(persona_id, active_persona)
+            for persona_id in cleaned],
+    }
+
+
+def validate_multi_persona_roster(roster: Any) -> dict[str, Any]:
+    """Validate one §77 roster record, refusing tampering. Pure.
+
+    The record must carry exactly the §77 fields and
+    rebuild to itself from its persona ids and active
+    choice alone: a renamed directory, a dropped
+    independence facet, a second active persona, or a
+    count that disagrees with its entries is refused.
+    """
+    if not isinstance(roster, dict) \
+            or set(roster) != set(MULTI_PERSONA_ROSTER_FIELDS) \
+            or roster["root"] != PERSONAS_ROOT \
+            or not isinstance(roster["personas"], list):
+        raise PersonaRuntimeError("persona roster is invalid")
+    for entry in roster["personas"]:
+        if not isinstance(entry, dict) \
+                or set(entry) != set(MULTI_PERSONA_ENTRY_FIELDS):
+            raise PersonaRuntimeError("persona roster is invalid")
+    rebuilt = multi_persona_roster(
+        [entry["persona_id"] for entry in roster["personas"]],
+        active_persona=roster["active_persona"])
+    if rebuilt != roster:
+        raise PersonaRuntimeError("persona roster is invalid")
+    return rebuilt
+
+
+def multi_persona_example() -> dict[str, Any]:
+    """The §77 roadmap layout as a roster record. Pure."""
+    return multi_persona_roster(
+        MULTI_PERSONA_EXAMPLES, active_persona="caducea")
+
+
+def multi_persona_contract() -> dict[str, Any]:
+    """The §77 Multi-Persona Support contract. Pure.
+
+    Several personas stand side by side, each
+    independent in the six facets; the config chooses
+    the active one. This layer stands the roster as a
+    pure record only — the §3 config loader still names
+    a single persona, and no multi-persona loader is
+    claimed.
+    """
+    return {
+        "name": "MultiPersonaSupport",
+        "root": PERSONAS_ROOT,
+        "examples": list(MULTI_PERSONA_EXAMPLES),
+        "example": multi_persona_example(),
+        "config_key": "active_persona",
+        "independent_facets": list(PERSONA_INDEPENDENT_FACETS),
+        "max_personas": MAX_PERSONAS,
+        "loads_personas": False,
+        "activates_persona": False,
+    }
+
+
+# §78: memory namespace — critical: characters'
+# autobiographical memory is never mixed. Persona memory
+# is keyed ``persona:<persona_id>:...``; shared world
+# knowledge may exist separately, under its own
+# ``shared:`` key space, and is never a persona's
+# autobiographical memory. This layer stands the key
+# shape as pure builder/parser functions — it owns no
+# memory store, reads and writes no memory.
+MEMORY_NAMESPACE_KIND = "persona"
+SHARED_MEMORY_KIND = "shared"
+
+# This layer's recorded bounds on a namespace key: at
+# most eight segments past the kind (and persona id).
+MAX_NAMESPACE_SEGMENTS = 8
+_NAMESPACE_SEGMENT = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
+
+
+def _validate_namespace_segments(segments: Any) -> list[str]:
+    if not isinstance(segments, (list, tuple)) \
+            or not segments \
+            or len(segments) > MAX_NAMESPACE_SEGMENTS:
+        raise PersonaRuntimeError("memory namespace is invalid")
+    cleaned: list[str] = []
+    for segment in segments:
+        if not isinstance(segment, str) \
+                or not _NAMESPACE_SEGMENT.match(segment):
+            raise PersonaRuntimeError("memory namespace is invalid")
+        cleaned.append(segment)
+    return cleaned
+
+
+def memory_namespace_prefix(persona_id: Any) -> str:
+    """The §78 namespace prefix of one persona. Pure."""
+    if not isinstance(persona_id, str) or not persona_id \
+            or not _SLUG.match(persona_id):
+        raise PersonaRuntimeError("persona id is invalid")
+    return f"{MEMORY_NAMESPACE_KIND}:{persona_id}:"
+
+
+def memory_namespace(persona_id: Any, *segments: Any) -> str:
+    """Build one §78 persona memory namespace key. Pure."""
+    prefix = memory_namespace_prefix(persona_id)
+    return prefix + ":".join(_validate_namespace_segments(segments))
+
+
+def shared_memory_namespace(*segments: Any) -> str:
+    """Build one §78 shared-knowledge namespace key. Pure.
+
+    Shared world knowledge stands separately from every
+    persona's autobiographical memory, under the
+    ``shared:`` kind — never under a persona prefix.
+    """
+    return SHARED_MEMORY_KIND + ":" + ":".join(
+        _validate_namespace_segments(segments))
+
+
+def parse_memory_namespace(key: Any) -> dict[str, Any]:
+    """Parse one §78 namespace key, refusing malformed keys. Pure.
+
+    A persona key names its owning persona; a shared
+    key names no persona. Any other kind, a malformed
+    persona id, or a malformed segment is refused — a
+    key this layer cannot attribute is never guessed
+    at.
+    """
+    if not isinstance(key, str) or not key:
+        raise PersonaRuntimeError("memory namespace is invalid")
+    parts = key.split(":")
+    if parts[0] == MEMORY_NAMESPACE_KIND:
+        if len(parts) < 3:
+            raise PersonaRuntimeError("memory namespace is invalid")
+        persona_id = parts[1]
+        memory_namespace_prefix(persona_id)
+        segments = _validate_namespace_segments(parts[2:])
+        return {
+            "kind": MEMORY_NAMESPACE_KIND,
+            "persona_id": persona_id,
+            "segments": segments,
+            "key": key,
+        }
+    if parts[0] == SHARED_MEMORY_KIND:
+        segments = _validate_namespace_segments(parts[1:])
+        return {
+            "kind": SHARED_MEMORY_KIND,
+            "persona_id": None,
+            "segments": segments,
+            "key": key,
+        }
+    raise PersonaRuntimeError("memory namespace is invalid")
+
+
+def memory_namespace_owner(key: Any) -> str:
+    """The §78 owner of one namespace key. Pure.
+
+    Returns the owning persona's id, or ``shared`` for
+    shared world knowledge.
+    """
+    parsed = parse_memory_namespace(key)
+    if parsed["kind"] == SHARED_MEMORY_KIND:
+        return SHARED_MEMORY_KIND
+    return str(parsed["persona_id"])
+
+
+def memory_namespaces_mixed(keys: Any) -> bool:
+    """Whether supplied keys mix personas' memory. Pure.
+
+    Mixing means persona-owned keys spanning more than
+    one persona — the §78 failure. Shared keys stand
+    separately and never count as mixing, and a single
+    persona's keys never mix. Malformed keys are
+    refused, not quietly treated as unmixed.
+    """
+    if not isinstance(keys, (list, tuple)):
+        raise PersonaRuntimeError("memory namespace is invalid")
+    owners = {
+        memory_namespace_owner(key) for key in keys}
+    owners.discard(SHARED_MEMORY_KIND)
+    return len(owners) > 1
+
+
+def memory_namespace_examples() -> list[str]:
+    """The §78 roadmap namespace prefixes, in roadmap order. Pure."""
+    return [
+        memory_namespace_prefix(persona_id)
+        for persona_id in ("caducea", "runa", "yrsa")]
+
+
+def memory_namespace_contract() -> dict[str, Any]:
+    """The §78 Memory Namespace contract. Pure.
+
+    Autobiographical memory is keyed per persona and
+    never mixed across personas; shared world knowledge
+    exists separately under its own kind. This layer
+    builds and parses keys only — it owns no memory
+    store and moves no memory.
+    """
+    return {
+        "name": "MemoryNamespace",
+        "persona_key_form": "persona:<persona_id>:...",
+        "examples": memory_namespace_examples(),
+        "shared_kind": SHARED_MEMORY_KIND,
+        "shared_separate": True,
+        "never_mix_autobiographical": True,
+        "max_segments": MAX_NAMESPACE_SEGMENTS,
+        "owns_memory_store": False,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -10429,7 +10745,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-76): persona "
+            f"Persona runtime (§§3-78): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -10834,6 +11150,20 @@ class PersonaRuntimeBridge:
             f"explicit replace handling; this layer "
             f"imports nothing and registers no new "
             f"core command. "
+            f"§77 multi-persona support: a pure roster "
+            f"stands several personas under one "
+            f"personas/ root, each independent in "
+            f"documents, kernel, memory namespace, "
+            f"relationship state, avatar, and compiled "
+            f"index, with the config-chosen active "
+            f"persona named; this layer loads and "
+            f"activates nothing. "
+            f"§78 memory namespace: autobiographical "
+            f"memory keys are persona:<id>:... and are "
+            f"never mixed across personas, with shared "
+            f"world knowledge keyed separately; this "
+            f"layer builds and parses keys only and "
+            f"owns no memory store. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -11289,6 +11619,28 @@ __all__ = [
     "import_handlings",
     "persona_import_plan",
     "persona_import_contract",
+    "PERSONAS_ROOT",
+    "MULTI_PERSONA_EXAMPLES",
+    "PERSONA_INDEPENDENT_FACETS",
+    "MAX_PERSONAS",
+    "multi_persona_examples",
+    "persona_independent_facets",
+    "persona_directory",
+    "multi_persona_roster",
+    "validate_multi_persona_roster",
+    "multi_persona_example",
+    "multi_persona_contract",
+    "MEMORY_NAMESPACE_KIND",
+    "SHARED_MEMORY_KIND",
+    "MAX_NAMESPACE_SEGMENTS",
+    "memory_namespace_prefix",
+    "memory_namespace",
+    "shared_memory_namespace",
+    "parse_memory_namespace",
+    "memory_namespace_owner",
+    "memory_namespaces_mixed",
+    "memory_namespace_examples",
+    "memory_namespace_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

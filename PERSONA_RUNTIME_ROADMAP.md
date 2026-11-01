@@ -4593,6 +4593,28 @@ Each has independent:
 * compiled index
 
 
+> **Completion note — Slice 156 (2026-11-01): §77 stands
+> in `plugins/volmarr-core/persona_runtime.py` as the
+> pure `multi_persona_roster` /
+> `validate_multi_persona_roster` /
+> `multi_persona_example` / `multi_persona_contract`
+> surfaces over caller-supplied persona ids: each
+> persona stands under the `personas/` root with its
+> own directory and the six independence facets in
+> roadmap order, and the config-chosen `active_persona`,
+> when supplied, must name a roster member (an unknown
+> or malformed choice is refused); the roadmap layout
+> (caducea, runa, yrsa, another_agent) stands verbatim
+> as the example roster with caducea active, and the
+> validator refuses a roster that does not rebuild to
+> itself (renamed directory, dropped facet, second
+> active persona, disagreeing count). Honest gaps: the
+> §3 config loader still names a single persona — this
+> layer loads no persona, activates none, and claims
+> no multi-persona loader; no caller consumes a roster
+> yet.**
+
+
 ---
 
 
@@ -4616,6 +4638,26 @@ persona:yrsa:...
 
 
 Shared world knowledge may exist separately.
+
+
+> **Completion note — Slice 156 (2026-11-01): §78 stands
+> in `plugins/volmarr-core/persona_runtime.py` as the
+> pure `memory_namespace_prefix` / `memory_namespace` /
+> `shared_memory_namespace` / `parse_memory_namespace` /
+> `memory_namespace_owner` / `memory_namespaces_mixed` /
+> `memory_namespace_contract` key surfaces:
+> autobiographical keys are built and parsed as
+> `persona:<persona_id>:<segment>...` (bounded segments,
+> malformed keys refused, never guessed at), the three
+> roadmap prefixes stand as the examples, shared world
+> knowledge is keyed separately under the `shared:`
+> kind and names no persona, and mixing is exactly
+> persona-owned keys spanning more than one persona —
+> shared keys never count as mixing. Honest gaps: this
+> layer owns no memory store, reads and writes no
+> memory, and no caller builds or parses a key yet;
+> §79's shared-vs-private content rule is the next
+> section.**
 
 
 ---

@@ -382,7 +382,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert before == after
     assert compiled_b is None
     assert len(items) == 1
-    assert "§§3-76" in items[0].content
+    assert "§§3-78" in items[0].content
     assert "§37 persona state" in items[0].content
     assert "never replaces" in items[0].content
     assert "§38 modes" in items[0].content
