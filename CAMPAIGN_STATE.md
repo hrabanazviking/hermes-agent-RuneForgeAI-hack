@@ -3410,3 +3410,94 @@ portable state: any agent (Muse or Hermes) resumes from here.
   `service_bible` role when read at slice start,
   expect a pure selective-retrieval surface over the
   compiled index, not continuous injection.
+- 2026-10-31 ~21:2x EDT keeper tick: **Slice 138 DONE —
+  Persona Runtime §41 (Memory Must Not Override
+  Persona) and §42 (Service Bible Dynamic Retrieval)
+  complete, banked and PUSHED under the standing
+  go-ahead.** No live work found at tick start (tree
+  clean, HEAD == origin/main at `ee99d0839d`; Slice
+  137's state commit at 21:18 EDT was its own completed
+  push, verified, not in-progress work; the
+  Python-write blocker was probed absent).
+  `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §41 stands as the
+  §24 precedence rule applied to the memory tier,
+  reconciled against §25/§26 — the pure
+  `memory_override_contract` (traits remain canonical;
+  memory's role is history at the long_term_memory
+  tier; memory may never override the persona or
+  redefine foundational personality/identity/traits;
+  repeated evidence never changes its authority), the
+  pure `memory_influence_allowed` delegating to §24
+  (mood/context/recent events only), the pure
+  `evaluate_memory_claim` classifying by the §25 forms
+  (state-form may be recorded as history; trait-form —
+  the roadmap's "is a frustrated personality" danger —
+  and unclassified forms refused as history and barred
+  from defining/redefining/overriding), and the pure
+  `memory_claim_authority` (any non-negative count
+  returns the same long_term_memory tier at §24 rank 3,
+  never canonical). §42's pure `service_bible_topics`
+  names the ten roadmap topics in order; the pure
+  `classify_service_topics` / `service_topics_for_section`
+  derive topics deterministically (lexicon over tokens;
+  heading + bare section id for sections); the pure
+  `retrieve_service_bible` and explicit
+  `PersonaServiceBibleRetriever` select over the
+  compiled index restricted to the `service_bible`
+  role, ranked by §13, each result annotated with its
+  §42 topics — an optional topic filter narrows and
+  can supply the signal, and no signal retrieves
+  nothing (never a wholesale dump, never continuous
+  injection). Packet label updated to §§3–42 (fifteen
+  older persona files' packet assertions updated
+  in-slice). One in-slice fix, test-side: the
+  topic-derivation contract's neutral heading ("Shell
+  Policy") legitimately signals linux via its shell
+  token under the recorded lexicon — the expectation
+  now uses a topic-free heading (no production
+  change). Tests: targeted 10/10 pass; targeted
+  persona run (22 files) green — runner exit 0 over
+  182 contract functions (172 prior + 10 new); full
+  volmarr/kista run (91 files): **661 passed, 7
+  failed, 1 skipped** — the same name-identical
+  pre-existing environmental set in the same 3 files
+  (5 core-plugin, 1 Verðandi-stimuli socket, 1
+  voice-runner loopback), verified in the run log's
+  own summary line
+  (`~/workspace/.verify-tmp/slice138_full_run.log`);
+  661 is exactly Slice 137's 651 + the 10 new
+  contracts. Smoke: `hermes --version` runs
+  (`vgit.ee99d08.dirty` pre-commit); README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §41 + §42 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–42. Push: fast-forward, no
+  force — origin/main moved `ee99d0839d` →
+  `a9075506cd`, verified by `git ls-remote` (remote
+  == local HEAD). Honest gaps: no memory is read or
+  retrieved, nothing is injected, and no caller
+  consumes the guard or a Bible selection yet; §43's
+  relationship-model retrieval stands unclaimed.
+- **Next resume point: Slice 139 — Persona Runtime
+  §43 (Relationship Model Dynamic Retrieval) and §44
+  (Tool Policy Dynamic Retrieval)**: §43 names when
+  relationship context is especially important
+  (disagreements, personal conversation, advice,
+  emotionally meaningful interaction, shared-history
+  discussion) and that for routine coding only the
+  relevant relational anchors need to remain in the
+  kernel — reconcile against the §13/§14 surfaces and
+  Slice 138's §42 selective-retrieval pattern over the
+  `relationship` role when read at slice start, expect
+  a pure context-classification + selective-retrieval
+  surface, not continuous injection; §44 names Tool
+  Policy dynamic retrieval (retrieve policy sections
+  when actual tools are being considered; the
+  roadmap's examples: file reading needs minimal or no
+  extra policy, a git force push retrieves
+  force_push / remote_git_operations / reversibility /
+  authorization) — reconcile against the same pattern
+  over the `tool_policy` role, expect a pure
+  tool-consideration classification + selective
+  retrieval surface, not a tool executor.
