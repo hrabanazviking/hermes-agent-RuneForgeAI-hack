@@ -3332,3 +3332,81 @@ portable state: any agent (Muse or Hermes) resumes from here.
   contract/classification surface reconciled against
   the banked memory surfaces, not a memory writer this
   plugin does not own in that form.
+- 2026-10-31 ~20:5x EDT keeper tick: **Slice 137 DONE —
+  Persona Runtime §39 (Mode Routing) and §40
+  (Persona-Aware Memory Write) complete, banked and
+  PUSHED under the standing go-ahead.** No live work
+  found at tick start (tree clean, HEAD == origin/main
+  at `1e1bc1968a`; Slice 136's state mtime at 20:44 EDT
+  was its own completed push, verified, not in-progress
+  work). `plugins/volmarr-core/persona_runtime.py`
+  extended in place — no new file or config key: §39's
+  pure `mode_routing_examples` /
+  `mode_routing_contract` / `route_mode` stand
+  automatic routing over the roadmap's four examples
+  (coding architect → forge_worker, personal
+  reflection companion → counselor, research
+  researcher, creative article skald) — the signal is
+  an example name or task text classified by the §13
+  lexicon plus the reflection/creative-article tokens
+  that lexicon does not carry, every routed mode is a
+  §38 mode, the user does not manually select, and
+  identity never changes. §40's pure
+  `memory_write_contract` / `persona_memory` /
+  `validate_persona_memory` / `classify_memory_write`
+  stand the persona-aware memory record under one
+  neutral template (decider, decision, recommendation
+  considered with its recommender, persona response
+  with its responder), reproducing the roadmap's
+  correct example exactly (Volmarr selected
+  architecture B after considering Caducea's
+  recommendation of A. Caducea accepted decision and
+  implemented B.), while biased summarization —
+  `ignored good advice` and its recorded marker kin —
+  is refused at build time in any field and flagged by
+  classification, so a memory cannot introduce
+  personality drift. Packet label updated to §§3–40
+  (fourteen older persona files' packet assertions
+  updated in-slice). Tests: targeted 25/25 pass (9 new
+  routing/memory contracts + state/modes + handoff
+  files); targeted persona run (21 files): **172
+  passed, 0 failed**; full volmarr/kista run
+  (90 files): **651 passed, 7 failed, 1 skipped** —
+  the same name-identical pre-existing environmental
+  set in the same 3 files (5 core-plugin, 1
+  Verðandi-stimuli socket, 1 voice-runner loopback),
+  verified in the run log's own summary line
+  (`~/workspace/.verify-tmp/slice137_full_run.log`);
+  651 is exactly Slice 136's 642 + the 9 new
+  contracts. Smoke: `hermes --version` runs
+  (`vgit.1e1bc19.dirty` pre-commit); README.md sha256
+  invariant held (`4e022de7…c4910`). Bookkeeping:
+  CUSTOMIZATIONS.md ledger row, §39 + §40 completion
+  notes in the Persona Runtime roadmap, plugin.yaml
+  description now §§3–40. Push: fast-forward, no
+  force — origin/main moved `1e1bc1968a` →
+  `f54be92424`, verified by `git ls-remote` (remote
+  == local HEAD). Honest gaps: no mode is switched
+  live, no memory is extracted or written, and no
+  caller consumes a route or a memory record yet;
+  §41's memory-must-not-override rule stands
+  unclaimed.
+- **Next resume point: Slice 138 — Persona Runtime
+  §41 (Memory Must Not Override Persona) and §42
+  (Service Bible Dynamic Retrieval)**: §41 names the
+  rule that memory retrieval must not gradually
+  transform the persona (traits remain canonical;
+  memory provides history) — reconcile against the
+  banked §24 precedence / §25 summary / §26 trait-vs-
+  state surfaces and Slice 137's §40 record when read
+  at slice start, expect a pure guard/classification
+  surface, not a memory retriever; §42 names Service
+  Bible dynamic retrieval (the Bible may be huge; do
+  not continuously inject it; index by sections such
+  as communication/coding/linux/open_source/AI/
+  documentation/research/project_aesir/attention/ADHD
+  and retrieve selectively) — reconcile against the
+  §13 hybrid retrieval / §14 router surfaces over the
+  `service_bible` role when read at slice start,
+  expect a pure selective-retrieval surface over the
+  compiled index, not continuous injection.
