@@ -381,7 +381,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert first[0].content == second[0].content == third[0].content
     assert len(first) == 1
     content = first[0].content
-    assert "§§3-84" in content
+    assert "§§3-86" in content
     assert "§81 Phase 1 foundation" in content
     assert "§82 Phase 2" in content
     assert "phase_audit proves both" in content

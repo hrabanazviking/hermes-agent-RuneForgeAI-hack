@@ -326,7 +326,7 @@ def test_router_service_deterministic_writes_nothing():
     assert "core.execution" in first["required"]
     assert before == after
     assert len(items) == 1
-    assert "§§3-84" in items[0].content
+    assert "§§3-86" in items[0].content
     assert "§14 routing" in items[0].content
     assert "persistent Hermes entity" not in items[0].content
 

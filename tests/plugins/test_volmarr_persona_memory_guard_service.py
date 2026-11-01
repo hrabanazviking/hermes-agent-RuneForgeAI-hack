@@ -425,7 +425,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert before == after
     assert empty == []
     assert len(items) == 1
-    assert "§§3-84" in items[0].content
+    assert "§§3-86" in items[0].content
     assert "§41 memory guard" in items[0].content
     assert "must not override" in items[0].content
     assert "§42 service" in items[0].content

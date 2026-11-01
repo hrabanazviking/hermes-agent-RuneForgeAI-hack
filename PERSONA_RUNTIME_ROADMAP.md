@@ -4971,6 +4971,35 @@ Success criterion:
 > Caducea learns without rewriting her core personality.
 
 
+> **Completion note — Slice 160 (2026-11-01): §85 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `memory_phase_items` / `memory_phase_item` /
+> `memory_phase_contract` surfaces: three items implemented
+> by their own sections (PersonaIR §8, relationship memory
+> §43, trait/state separation §26) and three equivalent —
+> Muninn / SQLite memory, carried outside the persona layer
+> by the memory fabric's read-only Muninn probe plus the
+> ravens Muninn binding (the persona layer owns no memory
+> store, §78); Service Bible promotion, carried by §42's
+> selective retrieval (promoted into context per query,
+> never continuously injected); and persona-aware
+> consolidation, carried by §55's compression plan as
+> governed by the §25 summary guard and the §26 trait/state
+> separation. The pure `memory_model_audit` proves the
+> criterion from a supplied compile (the PersonaIR rebuilds
+> to its stored hash; a §40 memory record validates by
+> recomputation under the neutral template; the §41 guard
+> holds in every recomputation — memory may touch mood,
+> context, and recent events, never personality, identity,
+> or traits, however often repeated; a trait-form claim
+> from memory is refused as persona definition while a
+> state-form claim may be recorded as history; §§42–43
+> retrieval returns only its own role's sections). Honest
+> gaps: no memory store is owned or written, no memory is
+> retrieved from any live store, and no caller consumes
+> the reconciliation or the audit yet.**
+
+
 ---
 
 
@@ -4992,6 +5021,32 @@ Success criterion:
 
 
 > Switching models does not feel like switching characters.
+
+
+> **Completion note — Slice 160 (2026-11-01): §86 stands
+> reconciled in `plugins/volmarr-core/persona_runtime.py`
+> as the pure `model_router_phase_items` /
+> `model_router_phase_item` / `model_router_phase_contract`
+> surfaces: all four items implemented by their own
+> sections (micro/medium/full kernels §§64–65, persona
+> handoff packets §35, per-model adherence scores
+> §§61–63, model-specific context budgets §15). The pure
+> `memory_model_audit` proves the criterion from a supplied
+> compile plus caller-supplied per-model records (the §64
+> distillation plan derives every tier from the one
+> canonical kernel named by the compile's kernel hash and
+> tier-for-budget names full/medium/micro at their own
+> targets; a §34 switch plan between two distinct models
+> carries the same kernel hash on both sides and the §35
+> handoff packet names that same hash, while the stored
+> §19 hash record matches its recomputation, so a tampered
+> kernel hash surfaces as unmet; §62 adherence equals one
+> minus the supplied average drift for every model and the
+> §63 metrics agree with that derivation; §15 allocations
+> scale by model context class). Honest gaps: no live
+> model is routed or switched, no kernel tier text is
+> built, and no caller consumes the reconciliation or the
+> audit yet.**
 
 
 ---

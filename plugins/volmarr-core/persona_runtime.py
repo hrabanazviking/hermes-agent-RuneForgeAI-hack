@@ -1,4 +1,4 @@
-"""Persona runtime foundations (Persona Runtime roadmap §§3-84).
+"""Persona runtime foundations (Persona Runtime roadmap §§3-86).
 
 The Persona Runtime roadmap defines a character by a collection
 of human-editable Markdown documents whose *semantic roles* are
@@ -11144,6 +11144,455 @@ def retrieval_drift_contract() -> dict[str, Any]:
     }
 
 
+# §85: Phase 5 — Memory Integration lists PersonaIR,
+# Muninn / SQLite memory, Service Bible promotion,
+# relationship memory, trait/state separation, and
+# persona-aware consolidation, with the success
+# criterion that Caducea learns without rewriting her
+# core personality. §86: Phase 6 — Model Router
+# Integration lists micro/medium/full kernels, persona
+# handoff packets, per-model adherence scores, and
+# model-specific context budgets, with the criterion
+# that switching models does not feel like switching
+# characters. Both phases were built section by section
+# in earlier slices; this reconciliation stands each
+# roadmap item beside the banked surface that carries
+# it — implemented, or equivalent where the carrying
+# surface lives under a different name or outside this
+# module — and adds one pure audit over supplied
+# artefacts proving the two criteria. No new memory
+# store and no live model router stands here: the
+# persona layer owns no memory store (§78), the Muninn
+# SQLite store is carried by the plugin's memory fabric
+# and ravens binding, and every memory-facing surface in
+# this module shapes, guards, or retrieves — it writes
+# no memory and routes no live model.
+MEMORY_PHASE_SUCCESS_CRITERION = (
+    "Caducea learns without rewriting her core personality.")
+MODEL_ROUTER_PHASE_SUCCESS_CRITERION = (
+    "Switching models does not feel like switching characters.")
+
+# The §85 items, in roadmap order: (item, roadmap name,
+# status, carrying section, banked surface).
+MEMORY_PHASE_ITEMS = (
+    ("persona_ir", "PersonaIR", "implemented", "§8",
+     "build_persona_ir + compiled PersonaIR ir_hash"),
+    ("muninn_sqlite_memory", "Muninn / SQLite memory",
+     "equivalent", "memory fabric",
+     "probe_bifrost_muninn + ravens Muninn binding "
+     "(persona layer owns no store)"),
+    ("service_bible_promotion", "Service Bible promotion",
+     "equivalent", "§42",
+     "retrieve_service_bible (selective promotion into "
+     "context, never continuously injected)"),
+    ("relationship_memory", "relationship memory",
+     "implemented", "§43",
+     "retrieve_relationship_model + "
+     "relationship_retrieval_need"),
+    ("trait_state_separation", "trait/state separation",
+     "implemented", "§26",
+     "trait_state_separation + classify_attribute"),
+    ("persona_aware_consolidation", "persona-aware consolidation",
+     "equivalent", "§§55, 25-26",
+     "compression_plan governed by the §25 summary guard "
+     "+ §26 trait/state separation"),
+)
+
+# The §86 items, in roadmap order, in the same shape.
+MODEL_ROUTER_PHASE_ITEMS = (
+    ("kernel_tiers", "micro/medium/full kernels",
+     "implemented", "§§64-65",
+     "kernel_tiers + kernel_distillation_plan + micro_kernel"),
+    ("persona_handoff_packets", "persona handoff packets",
+     "implemented", "§35",
+     "handoff_packet + validate_handoff_packet"),
+    ("per_model_adherence_scores", "per-model adherence scores",
+     "implemented", "§§61-63",
+     "persona_adherence + model_quality_table + model_metrics"),
+    ("model_specific_context_budgets",
+     "model-specific context budgets", "implemented", "§15",
+     "budget_allocations + budget_items (model context classes)"),
+)
+
+
+def memory_phase_items() -> list[dict[str, Any]]:
+    """The §85 Phase 5 items, in roadmap order. Pure."""
+    return _phase_items(MEMORY_PHASE_ITEMS)
+
+
+def memory_phase_item(item: Any) -> dict[str, Any]:
+    """One §85 item by name, refusing unknown names. Pure."""
+    return _phase_item(MEMORY_PHASE_ITEMS, item)
+
+
+def memory_phase_contract() -> dict[str, Any]:
+    """The §85 Phase 5 — Memory Integration reconciliation. Pure.
+
+    Two roadmap items stand implemented by their own
+    earlier sections and three stand equivalent. PersonaIR
+    is §8's generated artefact; relationship memory is
+    §43's selective retrieval; trait/state separation is
+    §26's. The Muninn / SQLite memory item is carried
+    outside this module — the plugin's read-only Muninn
+    association-store probe (memory fabric) and the
+    ravens Muninn binding — because the persona layer
+    owns no memory store (§78): its memory-facing
+    surfaces shape records (§40), guard them (§41), and
+    retrieve selectively (§§42–43). Service Bible
+    promotion is §42's selective retrieval — material is
+    promoted into context per query, never continuously
+    injected — and persona-aware consolidation is §55's
+    compression plan as governed by the §25 summary guard
+    and the §26 trait/state separation, so consolidated
+    history can record state but can never rewrite a
+    trait. Nothing here writes memory or creates a store.
+    """
+    summary = _phase_summary(
+        MEMORY_PHASE_ITEMS, MEMORY_PHASE_SUCCESS_CRITERION)
+    return {
+        "name": "PersonaPhase5MemoryIntegration",
+        "phase": 5,
+        **summary,
+        "owns_memory_store": False,
+        "writes_memory": False,
+        "rewrites_core_personality": False,
+        "muninn_sqlite_carried_by": (
+            "memory fabric probe + ravens binding"),
+    }
+
+
+def model_router_phase_items() -> list[dict[str, Any]]:
+    """The §86 Phase 6 items, in roadmap order. Pure."""
+    return _phase_items(MODEL_ROUTER_PHASE_ITEMS)
+
+
+def model_router_phase_item(item: Any) -> dict[str, Any]:
+    """One §86 item by name, refusing unknown names. Pure."""
+    return _phase_item(MODEL_ROUTER_PHASE_ITEMS, item)
+
+
+def model_router_phase_contract() -> dict[str, Any]:
+    """The §86 Phase 6 — Model Router Integration. Pure.
+
+    Every roadmap item stands implemented by its own
+    earlier section: the micro/medium/full kernel tiers
+    by §§64–65 (every tier derived from the one canonical
+    kernel, named by its hash), persona handoff packets
+    by §35, per-model adherence scores by §§61–63
+    (adherence derived from §61 average drift, carried in
+    the §63 metric set), and model-specific context
+    budgets by §15's allocations scaled by model context
+    class. The §34 contract underneath all four: every
+    model receives the same canonical Persona Kernel —
+    the model is the engine, the persona system is the
+    identity layer. No live model is routed here.
+    """
+    summary = _phase_summary(
+        MODEL_ROUTER_PHASE_ITEMS,
+        MODEL_ROUTER_PHASE_SUCCESS_CRITERION)
+    return {
+        "name": "PersonaPhase6ModelRouterIntegration",
+        "phase": 6,
+        **summary,
+        "same_kernel_for_all_models": True,
+        "routes_live_models": False,
+    }
+def memory_model_audit(compiled: Any, memory_record: Any = None,
+                       trait_claim: Any = None,
+                       state_claim: Any = None,
+                       model_averages: Any = None,
+                       models: Any = None,
+                       from_model: Any = "local_model",
+                       to_model: Any = "cloud_model"
+                       ) -> dict[str, Any]:
+    """Audit supplied artefacts against §§85–86. Pure.
+
+    §85, from the supplied compile: the §8 PersonaIR
+    rebuilds from the compile's own index to the stored
+    ir_hash and category counts (so a post-compile IR
+    tamper surfaces as unmet); a §40 memory record —
+    caller-supplied or the neutral default built here —
+    validates by exact recomputation under the neutral
+    template, and the §40 contract writes no memory and
+    introduces no personality drift; the §41 guard holds
+    in every recomputation — memory may affect current
+    mood, immediate context, and recent events and may
+    never touch foundational personality, identity, or
+    traits, repetition never changes that authority, a
+    trait-form claim from memory is refused as persona
+    definition while a state-form claim may be recorded
+    as history, and a trait claimed from a non-canonical
+    source classifies as at most a state while canonical
+    persona files alone define traits; §42 Service Bible
+    and §43 relationship retrieval over the compile's
+    index return only their own roles' sections, named
+    by stable ids the index rebuilds to; and a §55
+    consolidation plan governed by §§25–26 carries older
+    messages by summary/state components and appends
+    nothing endlessly. §86, from the same compile plus
+    caller-supplied per-model averages and metric
+    records: the §64 distillation plan derives every
+    tier from the one canonical kernel named by the
+    compile's kernel hash, the tier-for-budget selection
+    names full/medium/micro at their own targets, and
+    the §65 micro kernel example validates; a §34 switch
+    plan between two distinct supplied models carries
+    the same kernel hash on both sides and the §35
+    handoff packet built from the compile validates by
+    recomputation and names that same kernel hash, while
+    the stored §19 hash record matches its recomputation
+    (so a tampered kernel hash surfaces as unmet); §62
+    adherence in the quality table equals one minus the
+    supplied average drift for every model and the
+    preferred companionship model is the lowest-drift
+    one; the §63 selection table's persona_adherence
+    metric agrees with that same derivation for every
+    model named in both inputs; and §15 allocations
+    scale by model context class — small_local at the
+    category minimums, standard at the suggested
+    maximums, large at twice the maximums. Malformed
+    inputs are refused, in the neighbouring validators'
+    convention. This layer loads and compiles nothing —
+    the caller supplies the artefact and the per-model
+    records — owns and writes no memory, and routes no
+    live model.
+    """
+    record = hash_record(compiled)
+    index = compiled.get("index")
+    kernel = compiled.get("kernel")
+    ir = compiled.get("ir")
+    if not isinstance(index, list) \
+            or not isinstance(kernel, dict) \
+            or not isinstance(ir, dict):
+        raise PersonaRuntimeError("compiled persona is invalid")
+    rebuilt_ir = build_persona_ir(record["persona_id"], index)
+    if memory_record is None:
+        memory_record = persona_memory(
+            "caducea", "kept the northern road",
+            response_by="caducea",
+            response="noted the storm warning")
+    validated_record = validate_persona_memory(memory_record)
+    write_contract = memory_write_contract()
+    override = memory_override_contract()
+    authority = memory_claim_authority(25)
+    if trait_claim is None:
+        trait_claim = "Caducea is an anxious personality"
+    if state_claim is None:
+        state_claim = "Caducea was frustrated during debugging"
+    trait_verdict = evaluate_memory_claim(trait_claim)
+    state_verdict = evaluate_memory_claim(state_claim)
+    memory_trait = classify_attribute("memory", "trait")
+    canonical_trait = classify_attribute("core", "trait")
+    separation = {row["kind"]: row
+                  for row in trait_state_separation()}
+    bible_rows = retrieve_service_bible(
+        index, topic="communication")
+    relationship_rows = retrieve_relationship_model(
+        index, context="advice")
+    rebuilt_ids = {
+        stable_section_id(entry["role"], entry["section_id"])
+        for entry in index
+        if isinstance(entry, dict)
+        and isinstance(entry.get("role"), str)
+        and isinstance(entry.get("section_id"), str)}
+    plan = compression_plan(120)
+    averages = telemetry_example_averages() \
+        if model_averages is None else model_averages
+    quality = model_quality_table(averages)
+    if models is None:
+        models = {
+            name: {**MODEL_METRICS_EXAMPLE,
+                   "persona_adherence": persona_adherence(drift)}
+            for name, drift in _validate_model_averages(
+                averages).items()}
+    selection = model_selection_table("companionship", models)
+    validated_models = _validate_model_metrics_table(models)
+    switch = model_switch_plan(
+        from_model, to_model, record["kernel_hash"])
+    packet = handoff_packet(
+        compiled, "companionship", "steady and warm")
+    validated_packet = validate_handoff_packet(packet)
+    distillation = kernel_distillation_plan(compiled)
+    targets = kernel_tier_targets()
+    allocations = {
+        context_class: budget_allocations(context_class)
+        for context_class in CONTEXT_CLASSES}
+    checks = {
+        "ir_matches_recomputation":
+            rebuilt_ir["ir_hash"] == ir.get("ir_hash")
+            and rebuilt_ir["category_counts"]
+            == ir.get("category_counts")
+            and list(ir.get("categories", {}))
+            == list(IR_CATEGORIES),
+        "memory_record_validates":
+            validated_record == memory_record
+            and write_contract["writes_memory"] is False
+            and write_contract["introduces_personality_drift"]
+            is False
+            and write_contract["biased_summarization_allowed"]
+            is False,
+        "memory_cannot_override":
+            override["memory_may_override_persona"] is False
+            and override["memory_may_redefine_traits"] is False
+            and override["repeated_evidence_changes_authority"]
+            is False
+            and authority["canonical"] is False
+            and authority["may_redefine_traits"] is False
+            and memory_influence_allowed("current_mood") is True
+            and memory_influence_allowed("recent_events") is True
+            and memory_influence_allowed("traits") is False
+            and memory_influence_allowed("identity") is False
+            and memory_influence_allowed(
+                "foundational_personality") is False,
+        "memory_claims_classified":
+            trait_verdict["form"] == "trait"
+            and trait_verdict["may_define_persona"] is False
+            and trait_verdict["may_record_as_history"] is False
+            and state_verdict["form"] == "state"
+            and state_verdict["may_record_as_history"] is True
+            and state_verdict["may_define_persona"] is False,
+        "trait_state_separation_holds":
+            separation["trait"]["defined_by"]
+            == ["canonical_persona_files"]
+            and separation["trait"]["decays"] is False
+            and separation["state"]["decays"] is True
+            and memory_trait["kind"] == "state"
+            and memory_trait["trait_claim_allowed"] is False
+            and memory_trait["may_define_persona"] is False
+            and canonical_trait["kind"] == "trait"
+            and canonical_trait["may_define_persona"] is True,
+        "service_bible_promotion_selective":
+            service_bible_retrieval_contract()[
+                "continuously_injected"] is False
+            and all(row["stable_id"] in rebuilt_ids
+                    and row["stable_id"].startswith(
+                        "service_bible.")
+                    for row in bible_rows),
+        "relationship_retrieval_selective":
+            all(row["stable_id"] in rebuilt_ids
+                and row["stable_id"].startswith("relationship.")
+                for row in relationship_rows),
+        "consolidation_governed":
+            plan["appends_endlessly"] is False
+            and plan["verbatim_messages"]
+            == plan["window_capacity"]
+            and plan["compressed_messages"] > 0
+            and plan["components"] == compression_components(),
+        "kernel_tiers_same_source":
+            distillation["same_canonical_source"] is True
+            and distillation["kernel_hash"]
+            == kernel.get("sha256")
+            and [row["tier"] for row in distillation["tiers"]]
+            == kernel_tiers()
+            and all(row["target_tokens"] == targets[row["tier"]]
+                    for row in distillation["tiers"])
+            and kernel_tier_for_budget(targets["kernel_full"])
+            == "kernel_full"
+            and kernel_tier_for_budget(targets["kernel_medium"])
+            == "kernel_medium"
+            and kernel_tier_for_budget(targets["kernel_micro"])
+            == "kernel_micro"
+            and validate_micro_kernel(micro_kernel_example())
+            == micro_kernel_example(),
+        "switch_preserves_kernel":
+            switch["same_kernel"] is True
+            and switch["identity_preserved"] is True
+            and switch["from_kernel_hash"]
+            == switch["to_kernel_hash"]
+            == record["kernel_hash"]
+            and kernel_identity_preserved(
+                switch["from_kernel_hash"],
+                switch["to_kernel_hash"]) is True
+            and validated_packet == packet
+            and packet["persona_handoff"]["kernel"]
+            == record["kernel_hash"]
+            and packet["persona_handoff"]["persona_id"]
+            == record["persona_id"],
+        "hash_record_matches": compiled.get("hash_record")
+        == record,
+        "adherence_derived_from_drift":
+            all(math.isclose(
+                    row["persona_adherence"],
+                    persona_adherence(row["average_drift"]),
+                    rel_tol=0.0, abs_tol=1e-9)
+                for row in quality)
+            and quality[0]["model"]
+            == preferred_companionship_model(averages),
+        "metrics_adherence_agrees":
+            all(math.isclose(
+                    row["metrics"]["persona_adherence"],
+                    persona_adherence(
+                        _validate_model_averages(
+                            averages)[row["model"]]),
+                    rel_tol=0.0, abs_tol=1e-9)
+                for row in selection
+                if row["model"] in _validate_model_averages(
+                    averages))
+            and set(validated_models) == set(models),
+        "budgets_scale_by_model_class":
+            all(allocations["small_local"][category]
+                == bounds[0]
+                and allocations["standard"][category]
+                == bounds[1]
+                and allocations["large"][category]
+                == 2 * bounds[1]
+                for category, bounds
+                in SUGGESTED_BUDGETS.items()),
+    }
+    memory_met = all(checks[key] for key in (
+        "ir_matches_recomputation", "memory_record_validates",
+        "memory_cannot_override", "memory_claims_classified",
+        "trait_state_separation_holds",
+        "service_bible_promotion_selective",
+        "relationship_retrieval_selective",
+        "consolidation_governed"))
+    router_met = all(checks[key] for key in (
+        "kernel_tiers_same_source", "switch_preserves_kernel",
+        "hash_record_matches", "adherence_derived_from_drift",
+        "metrics_adherence_agrees",
+        "budgets_scale_by_model_class"))
+    return {
+        "persona_id": record["persona_id"],
+        "checks": checks,
+        "service_bible_sections": len(bible_rows),
+        "relationship_sections": len(relationship_rows),
+        "preferred_companionship_model":
+            quality[0]["model"] if quality else None,
+        "switch_from": switch["from_model"],
+        "switch_to": switch["to_model"],
+        "kernel_hash": record["kernel_hash"],
+        "memory_phase": {
+            **_phase_summary(
+                MEMORY_PHASE_ITEMS, MEMORY_PHASE_SUCCESS_CRITERION),
+            "criterion_met": memory_met,
+        },
+        "model_router_phase": {
+            **_phase_summary(
+                MODEL_ROUTER_PHASE_ITEMS,
+                MODEL_ROUTER_PHASE_SUCCESS_CRITERION),
+            "criterion_met": router_met,
+        },
+        "audits_only": True,
+        "loads_or_compiles": False,
+        "writes_memory": False,
+        "routes_live_models": False,
+    }
+
+
+def memory_model_contract() -> dict[str, Any]:
+    """The §§85–86 phase reconciliation, combined. Pure."""
+    return {
+        "name": "PersonaPhases5And6",
+        "memory_phase": memory_phase_contract(),
+        "model_router_phase": model_router_phase_contract(),
+        "audit_surface": "memory_model_audit",
+        "owns_memory_store": False,
+        "new_memory_store_created": False,
+        "routes_live_models": False,
+        "same_kernel_for_all_models": True,
+    }
+
+
 class PersonaConfigStore:
     """Read the human-authored persona config; never write it."""
 
@@ -11853,7 +12302,7 @@ class PersonaRuntimeBridge:
             if count)
         counts = kernel["source_counts"]
         content = (
-            f"Persona runtime (§§3-84): persona "
+            f"Persona runtime (§§3-86): persona "
             f"{compiled['persona_id']} version "
             f"{compiled['persona_version']} compiled from "
             f"{len(compiled['documents'])} documents / "
@@ -12314,6 +12763,25 @@ class PersonaRuntimeBridge:
             f"or watchdog stands, nothing is "
             f"injected into a prompt, and no live "
             f"drift is evaluated. "
+            f"§85 Phase 5 memory integration and "
+            f"§86 Phase 6 model router integration "
+            f"stand reconciled against the banked "
+            f"surfaces (§8 PersonaIR, §26 trait/state "
+            f"separation, §§40–41 memory write and "
+            f"guard, §42 Service Bible and §43 "
+            f"relationship retrieval, §55 governed "
+            f"consolidation; §§64–65 kernel tiers, "
+            f"§35 handoff packets, §§61–63 adherence "
+            f"and model metrics, §15 model-class "
+            f"budgets), and the pure "
+            f"memory_model_audit proves both success "
+            f"criteria from supplied artefacts; this "
+            f"layer owns and writes no memory store "
+            f"(the Muninn SQLite store is carried by "
+            f"the memory fabric and the ravens "
+            f"binding) and routes no live model — "
+            f"every model receives the same canonical "
+            f"kernel. "
             f"Canonical document "
             f"text is compiled, not injected by this layer."
         )
@@ -12839,6 +13307,18 @@ __all__ = [
     "drift_phase_contract",
     "retrieval_drift_audit",
     "retrieval_drift_contract",
+    "MEMORY_PHASE_SUCCESS_CRITERION",
+    "MODEL_ROUTER_PHASE_SUCCESS_CRITERION",
+    "MEMORY_PHASE_ITEMS",
+    "MODEL_ROUTER_PHASE_ITEMS",
+    "memory_phase_items",
+    "memory_phase_item",
+    "memory_phase_contract",
+    "model_router_phase_items",
+    "model_router_phase_item",
+    "model_router_phase_contract",
+    "memory_model_audit",
+    "memory_model_contract",
     "reload_steps",
     "context_classes",
     "suggested_budgets",

@@ -536,7 +536,7 @@ def test_packet_determinism_and_isolation(tmp_path):
     assert valid_other is False
     assert len(first) == 1
     content = first[0].content
-    assert "§§3-84" in content
+    assert "§§3-86" in content
     assert "§47 policy to code" in content
     assert "personality, judgment" in content
     assert "deterministic constraints" in content
