@@ -4558,3 +4558,95 @@ portable state: any agent (Muse or Hermes) resumes from here.
   expect a pure validator-issue catalogue/surface naming
   the §70 issue kinds and the banked surfaces that
   detect them, not a second compiler.
+- 2026-11-01 ~05:4x–06:1x EST keeper tick: **Slice 152 DONE —
+  Persona Runtime §69 (Configurable Priorities) and §70
+  (Persona Validator) complete, banked and PUSHED under the
+  standing go-ahead.** No live work found at tick start (tree
+  clean, HEAD == origin/main at `b9acd8fcb3`; Slice 151's state
+  commit was its own completed push, verified, not in-progress
+  work). `plugins/volmarr-core/persona_runtime.py` extended in
+  place — no new file or config key: §69's pure
+  `default_precedence` / `validate_precedence` /
+  `resolve_precedence` / `configurable_precedence_rank` /
+  `configurable_precedence_winner` /
+  `configurable_precedence_outranks` /
+  `configurable_priorities_contract` stand a
+  `persona.precedence` list ordering the six document roles
+  with shipped safe defaults — the roadmap's example order
+  (core, relationship, service_bible, tool_policy,
+  memory_policy, avatar), which itself shows the
+  configurability §67 does not offer (the branch documents
+  are §67 siblings sharing one rank, and the example orders
+  tool_policy before memory_policy) — under two
+  non-configurable safety rails: the persona core first
+  (§68: the core wins) and every branch document below its
+  parent, the service bible (§67); a supplied list must
+  name every role exactly once and a malformed, incomplete,
+  duplicated, or rail-breaking list is refused, never
+  silently repaired; the §3 read-only config loader reads
+  no precedence key and is unchanged. §70's pure
+  `validator_issues` / `persona_validator_catalogue` /
+  `persona_validator_issue` / `persona_validator_detection`
+  / `persona_validator_contract` stand the compile-time
+  validator issue catalogue: the eight roadmap kinds, each
+  named with the banked surface that detects it at an
+  honest level — missing required files, extreme token
+  size, and unresolvable paths detected at compile time
+  (§6 compiler / §3 config store), duplicate identities
+  and invalid references partially detected, and
+  contradictory directives, broken Markdown, and empty
+  sections not detected (no surface interprets prose, §7);
+  every row warns the human and missing traits are never
+  silently invented. **One in-slice bug found and fixed:
+  the §69 role tuple first shipped as `_PRECEDENCE_ROLES`,
+  shadowing §24's tier→role dict and breaking
+  `classify_influence` (3 drift contracts failed in the
+  first persona run, which was discarded) — renamed
+  `_CONFIGURABLE_PRECEDENCE_ROLES` in scope, a coexistence
+  regression contract added to the new test file, and the
+  re-runs supplied the totals below.** Packet label updated
+  to §§3–70 (twenty-nine older persona files' packet
+  assertions updated in-slice; the module docstring and the
+  plugin.yaml description updated in the same slice).
+  Tests: targeted 11/11 pass (new file; 19/19 with the
+  drift file after the fix); targeted persona run
+  (36 files): **329 passed, 0 failed**; full volmarr/kista
+  run (105 files): **808 passed, 7 failed, 1 skipped** —
+  the same name-identical pre-existing environmental set
+  in the same 3 files (5 core-plugin, 1 Verðandi-stimuli
+  socket, 1 voice-runner loopback), verified in the run
+  log's own summary line
+  (`~/workspace/.verify-tmp/slice152_full_run.log`); 808
+  is exactly Slice 151's 797 + the 11 new contracts.
+  Smoke: `hermes --version` runs (`vgit.b9acd8f.dirty`
+  pre-commit); README.md sha256 invariant held
+  (`4e022de7…c4910`). Bookkeeping: CUSTOMIZATIONS.md
+  ledger row, §69 + §70 completion notes in the Persona
+  Runtime roadmap, plugin.yaml description now §§3–70.
+  Push: fast-forward, no force — origin/main moved
+  `b9acd8fcb3` → Slice 152 commit `1a36e48684`, verified
+  by `git ls-remote` (remote == local HEAD). Honest gaps:
+  the §3 config loader consumes no precedence list, no
+  validation pass is performed by the §70 catalogue, no
+  second compiler runs, and no caller consumes a
+  precedence, a winner, or a catalogue row yet.
+- **Next resume point: Slice 153 — Persona Runtime §71
+  (Persona Inspect Command) and §72 (Persona Explain
+  Command)**: §71 names a `hermes persona inspect`
+  display (persona name, version, document count, kernel
+  tokens, indexed sections, source hash, status VALID) —
+  reconcile the roadmap's `hermes persona` spelling
+  against this plugin's established `hermes volmarr`
+  CLI surface when read at slice start, expect a pure
+  inspect-record/render surface over a supplied compile
+  (status from the §70 catalogue's compile-time
+  detections where honest), not a new core CLI command;
+  §72 names `hermes persona explain` — "Why did Caducea
+  respond this way?" answered with the relevant persona
+  sections by §12 stable id (the roadmap's example:
+  relationship.settled_decisions,
+  service_bible.advice_style, core.graceful_deference) —
+  expect a pure explain-record surface over
+  caller-supplied section ids, not a live explanation
+  of any real response (this layer generates no
+  responses to explain).
