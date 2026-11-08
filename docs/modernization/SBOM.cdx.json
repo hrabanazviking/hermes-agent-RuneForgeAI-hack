@@ -1,0 +1,4319 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": [
+      {
+        "name": "hermes generate_sbom.py",
+        "version": "1"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "hermes-agent (RuneForgeAI fork)",
+      "properties": [
+        {
+          "name": "hermes:lockfile",
+          "value": "uv.lock"
+        },
+        {
+          "name": "hermes:source-class-counts",
+          "value": "{\"archive-url\": 1, \"editable-local\": 3, \"git\": 2, \"registry\": 352}"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "addict",
+      "version": "2.4.0",
+      "purl": "pkg:pypi/addict@2.4.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "agent-client-protocol",
+      "version": "0.9.0",
+      "purl": "pkg:pypi/agent-client-protocol@0.9.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aiofiles",
+      "version": "24.1.0",
+      "purl": "pkg:pypi/aiofiles@24.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aiohappyeyeballs",
+      "version": "2.7.1",
+      "purl": "pkg:pypi/aiohappyeyeballs@2.7.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aiohttp",
+      "version": "3.14.5",
+      "purl": "pkg:pypi/aiohttp@3.14.5",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aiohttp-retry",
+      "version": "2.9.1",
+      "purl": "pkg:pypi/aiohttp-retry@2.9.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aiohttp-socks",
+      "version": "0.12.0",
+      "purl": "pkg:pypi/aiohttp-socks@0.12.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aiosignal",
+      "version": "1.4.0",
+      "purl": "pkg:pypi/aiosignal@1.4.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "aiosqlite",
+      "version": "0.22.1",
+      "purl": "pkg:pypi/aiosqlite@0.22.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alibabacloud-credentials",
+      "version": "1.0.12",
+      "purl": "pkg:pypi/alibabacloud-credentials@1.0.12",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alibabacloud-credentials-api",
+      "version": "1.0.1",
+      "purl": "pkg:pypi/alibabacloud-credentials-api@1.0.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alibabacloud-dingtalk",
+      "version": "2.2.65",
+      "purl": "pkg:pypi/alibabacloud-dingtalk@2.2.65",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alibabacloud-endpoint-util",
+      "version": "0.0.4",
+      "purl": "pkg:pypi/alibabacloud-endpoint-util@0.0.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alibabacloud-gateway-dingtalk",
+      "version": "1.0.2",
+      "purl": "pkg:pypi/alibabacloud-gateway-dingtalk@1.0.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alibabacloud-gateway-spi",
+      "version": "0.0.4",
+      "purl": "pkg:pypi/alibabacloud-gateway-spi@0.0.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alibabacloud-openapi-util",
+      "version": "0.2.4",
+      "purl": "pkg:pypi/alibabacloud-openapi-util@0.2.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alibabacloud-tea",
+      "version": "0.4.3",
+      "purl": "pkg:pypi/alibabacloud-tea@0.4.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alibabacloud-tea-openapi",
+      "version": "0.4.6",
+      "purl": "pkg:pypi/alibabacloud-tea-openapi@0.4.6",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "alibabacloud-tea-util",
+      "version": "0.3.15",
+      "purl": "pkg:pypi/alibabacloud-tea-util@0.3.15",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "annotated-doc",
+      "version": "0.0.5",
+      "purl": "pkg:pypi/annotated-doc@0.0.5",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "purl": "pkg:pypi/annotated-types@0.8.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "anthropic",
+      "version": "0.125.0",
+      "purl": "pkg:pypi/anthropic@0.125.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "anyio",
+      "version": "4.15.1",
+      "purl": "pkg:pypi/anyio@4.15.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "apscheduler",
+      "version": "3.11.3",
+      "purl": "pkg:pypi/apscheduler@3.11.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "asyncpg",
+      "version": "0.32.0",
+      "purl": "pkg:pypi/asyncpg@0.32.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "attrs",
+      "version": "26.1.0",
+      "purl": "pkg:pypi/attrs@26.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "audioop-lts",
+      "version": "0.2.2",
+      "purl": "pkg:pypi/audioop-lts@0.2.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "av",
+      "version": "18.1.0",
+      "purl": "pkg:pypi/av@18.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "azure-core",
+      "version": "1.41.0",
+      "purl": "pkg:pypi/azure-core@1.41.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "azure-identity",
+      "version": "1.26.0",
+      "purl": "pkg:pypi/azure-identity@1.26.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "babel",
+      "version": "2.18.0",
+      "purl": "pkg:pypi/babel@2.18.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "base58",
+      "version": "2.1.1",
+      "purl": "pkg:pypi/base58@2.1.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "bidict",
+      "version": "0.24.1",
+      "purl": "pkg:pypi/bidict@0.24.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "blis",
+      "version": "1.3.3",
+      "purl": "pkg:pypi/blis@1.3.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "boto3",
+      "version": "1.43.115",
+      "purl": "pkg:pypi/boto3@1.43.115",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "botocore",
+      "version": "1.43.115",
+      "purl": "pkg:pypi/botocore@1.43.115",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "brotlicffi",
+      "version": "1.2.1.0",
+      "purl": "pkg:pypi/brotlicffi@1.2.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "browser-harness",
+      "version": "0.1.13",
+      "purl": "pkg:pypi/browser-harness@0.1.13",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "catalogue",
+      "version": "2.0.10",
+      "purl": "pkg:pypi/catalogue@2.0.10",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cbor2",
+      "version": "6.1.5",
+      "purl": "pkg:pypi/cbor2@6.1.5",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cdp-use",
+      "version": "1.4.5",
+      "purl": "pkg:pypi/cdp-use@1.4.5",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "certifi",
+      "version": "2026.10.19",
+      "purl": "pkg:pypi/certifi@2026.10.19",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cffi",
+      "version": "2.1.1",
+      "purl": "pkg:pypi/cffi@2.1.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "charset-normalizer",
+      "version": "3.5.2",
+      "purl": "pkg:pypi/charset-normalizer@3.5.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "click",
+      "version": "8.5.0",
+      "purl": "pkg:pypi/click@8.5.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cloudpathlib",
+      "version": "0.26.0",
+      "purl": "pkg:pypi/cloudpathlib@0.26.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cloudpickle",
+      "version": "3.1.2",
+      "purl": "pkg:pypi/cloudpickle@3.1.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "colorama",
+      "version": "0.4.6",
+      "purl": "pkg:pypi/colorama@0.4.6",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "concurrent-log-handler",
+      "version": "0.9.30",
+      "purl": "pkg:pypi/concurrent-log-handler@0.9.30",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "confection",
+      "version": "1.3.3",
+      "purl": "pkg:pypi/confection@1.3.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "croniter",
+      "version": "6.2.4",
+      "purl": "pkg:pypi/croniter@6.2.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cryptography",
+      "version": "50.0.2",
+      "purl": "pkg:pypi/cryptography@50.0.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "csvw",
+      "version": "4.1.1",
+      "purl": "pkg:pypi/csvw@4.1.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ctranslate2",
+      "version": "4.8.3",
+      "purl": "pkg:pypi/ctranslate2@4.8.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cuda-bindings",
+      "version": "13.4.4",
+      "purl": "pkg:pypi/cuda-bindings@13.4.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cuda-pathfinder",
+      "version": "1.8.3",
+      "purl": "pkg:pypi/cuda-pathfinder@1.8.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cuda-toolkit",
+      "version": "13.0.3.0",
+      "purl": "pkg:pypi/cuda-toolkit@13.0.3.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "curated-tokenizers",
+      "version": "0.0.10",
+      "purl": "pkg:pypi/curated-tokenizers@0.0.10",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "curated-transformers",
+      "version": "0.1.1",
+      "purl": "pkg:pypi/curated-transformers@0.1.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cymem",
+      "version": "2.0.13",
+      "purl": "pkg:pypi/cymem@2.0.13",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "darabonba-core",
+      "version": "1.0.9",
+      "purl": "pkg:pypi/darabonba-core@1.0.9",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "davey",
+      "version": "0.1.7",
+      "purl": "pkg:pypi/davey@0.1.7",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "daytona",
+      "version": "0.225.0",
+      "purl": "pkg:pypi/daytona@0.225.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "daytona-analytics-api-client",
+      "version": "0.225.0",
+      "purl": "pkg:pypi/daytona-analytics-api-client@0.225.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "daytona-analytics-api-client-async",
+      "version": "0.225.0",
+      "purl": "pkg:pypi/daytona-analytics-api-client-async@0.225.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "daytona-api-client",
+      "version": "0.225.0",
+      "purl": "pkg:pypi/daytona-api-client@0.225.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "daytona-api-client-async",
+      "version": "0.225.0",
+      "purl": "pkg:pypi/daytona-api-client-async@0.225.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "daytona-toolbox-api-client",
+      "version": "0.225.0",
+      "purl": "pkg:pypi/daytona-toolbox-api-client@0.225.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "daytona-toolbox-api-client-async",
+      "version": "0.225.0",
+      "purl": "pkg:pypi/daytona-toolbox-api-client-async@0.225.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ddgs",
+      "version": "9.16.0",
+      "purl": "pkg:pypi/ddgs@9.16.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "debugpy",
+      "version": "1.8.22",
+      "purl": "pkg:pypi/debugpy@1.8.22",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "defusedxml",
+      "version": "0.7.1",
+      "purl": "pkg:pypi/defusedxml@0.7.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dependency-injector",
+      "version": "4.49.1",
+      "purl": "pkg:pypi/dependency-injector@4.49.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "deprecated",
+      "version": "1.3.1",
+      "purl": "pkg:pypi/deprecated@1.3.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dingtalk-stream",
+      "version": "0.24.3",
+      "purl": "pkg:pypi/dingtalk-stream@0.24.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "discord-py",
+      "version": "2.7.1",
+      "purl": "pkg:pypi/discord-py@2.7.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "distlib",
+      "version": "0.4.4",
+      "purl": "pkg:pypi/distlib@0.4.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "distro",
+      "version": "1.9.0",
+      "purl": "pkg:pypi/distro@1.9.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "dlinfo",
+      "version": "2.0.0",
+      "purl": "pkg:pypi/dlinfo@2.0.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "docopt",
+      "version": "0.6.2",
+      "purl": "pkg:pypi/docopt@0.6.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "docstring-parser",
+      "version": "0.18.0",
+      "purl": "pkg:pypi/docstring-parser@0.18.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "edge-tts",
+      "version": "7.3.1",
+      "purl": "pkg:pypi/edge-tts@7.3.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "elevenlabs",
+      "version": "1.59.0",
+      "purl": "pkg:pypi/elevenlabs@1.59.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "espeakng-loader",
+      "version": "0.2.4",
+      "purl": "pkg:pypi/espeakng-loader@0.2.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "et-xmlfile",
+      "version": "2.0.0",
+      "purl": "pkg:pypi/et-xmlfile@2.0.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "eval-type-backport",
+      "version": "0.4.0",
+      "purl": "pkg:pypi/eval-type-backport@0.4.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "exa-py",
+      "version": "2.26.0",
+      "purl": "pkg:pypi/exa-py@2.26.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fal-client",
+      "version": "0.14.1",
+      "purl": "pkg:pypi/fal-client@0.14.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fastapi",
+      "version": "0.133.1",
+      "purl": "pkg:pypi/fastapi@0.133.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "faster-whisper",
+      "version": "1.2.1",
+      "purl": "pkg:pypi/faster-whisper@1.2.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fetch-use",
+      "version": "0.4.0",
+      "purl": "pkg:pypi/fetch-use@0.4.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "filelock",
+      "version": "4.2.6",
+      "purl": "pkg:pypi/filelock@4.2.6",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fire",
+      "version": "0.7.1",
+      "purl": "pkg:pypi/fire@0.7.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "firecrawl-anydoc",
+      "version": "0.2.4",
+      "purl": "pkg:pypi/firecrawl-anydoc@0.2.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "firecrawl-py",
+      "version": "4.53.2",
+      "purl": "pkg:pypi/firecrawl-py@4.53.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "flatbuffers",
+      "version": "25.12.19",
+      "purl": "pkg:pypi/flatbuffers@25.12.19",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "frozenlist",
+      "version": "1.8.0",
+      "purl": "pkg:pypi/frozenlist@1.8.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fsspec",
+      "version": "2026.9.0",
+      "purl": "pkg:pypi/fsspec@2026.9.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "google-api-core",
+      "version": "2.42.0",
+      "purl": "pkg:pypi/google-api-core@2.42.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "google-api-python-client",
+      "version": "2.201.0",
+      "purl": "pkg:pypi/google-api-python-client@2.201.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "google-auth",
+      "version": "2.62.0",
+      "purl": "pkg:pypi/google-auth@2.62.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "google-auth-httplib2",
+      "version": "0.4.4",
+      "purl": "pkg:pypi/google-auth-httplib2@0.4.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "google-auth-oauthlib",
+      "version": "1.5.0",
+      "purl": "pkg:pypi/google-auth-oauthlib@1.5.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "google-cloud-pubsub",
+      "version": "2.43.0",
+      "purl": "pkg:pypi/google-cloud-pubsub@2.43.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "googleapis-common-protos",
+      "version": "1.75.5",
+      "purl": "pkg:pypi/googleapis-common-protos@1.75.5",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "greenlet",
+      "version": "3.5.6",
+      "purl": "pkg:pypi/greenlet@3.5.6",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "grpc-google-iam-v1",
+      "version": "0.14.5",
+      "purl": "pkg:pypi/grpc-google-iam-v1@0.14.5",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "grpcio",
+      "version": "1.84.0",
+      "purl": "pkg:pypi/grpcio@1.84.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "grpcio-status",
+      "version": "1.84.0",
+      "purl": "pkg:pypi/grpcio-status@1.84.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "grpclib",
+      "version": "0.4.9",
+      "purl": "pkg:pypi/grpclib@0.4.9",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "h11",
+      "version": "0.16.0",
+      "purl": "pkg:pypi/h11@0.16.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "h2",
+      "version": "4.4.1",
+      "purl": "pkg:pypi/h2@4.4.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "hermes-agent",
+      "version": "0.0.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "editable-local"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "hf-xet",
+      "version": "1.7.0",
+      "purl": "pkg:pypi/hf-xet@1.7.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "hpack",
+      "version": "4.2.0",
+      "purl": "pkg:pypi/hpack@4.2.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpcore",
+      "version": "1.0.9",
+      "purl": "pkg:pypi/httpcore@1.0.9",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpcore2",
+      "version": "2.15.1",
+      "purl": "pkg:pypi/httpcore2@2.15.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httplib2",
+      "version": "0.32.0",
+      "purl": "pkg:pypi/httplib2@0.32.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httptools",
+      "version": "0.8.0",
+      "purl": "pkg:pypi/httptools@0.8.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpx",
+      "version": "0.28.1",
+      "purl": "pkg:pypi/httpx@0.28.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpx-sse",
+      "version": "0.4.3",
+      "purl": "pkg:pypi/httpx-sse@0.4.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpx-ws",
+      "version": "0.9.0",
+      "purl": "pkg:pypi/httpx-ws@0.9.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpx2",
+      "version": "2.15.1",
+      "purl": "pkg:pypi/httpx2@2.15.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "httpx2-jsfetch",
+      "version": "1.0",
+      "purl": "pkg:pypi/httpx2-jsfetch@1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "huggingface-hub",
+      "version": "1.33.0",
+      "purl": "pkg:pypi/huggingface-hub@1.33.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "huginn",
+      "version": "1.0.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "editable-local"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "hyperframe",
+      "version": "6.1.0",
+      "purl": "pkg:pypi/hyperframe@6.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "idna",
+      "version": "3.20",
+      "purl": "pkg:pypi/idna@3.20",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "iniconfig",
+      "version": "2.3.1",
+      "purl": "pkg:pypi/iniconfig@2.3.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "isodate",
+      "version": "0.7.2",
+      "purl": "pkg:pypi/isodate@0.7.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jaraco-classes",
+      "version": "3.4.0",
+      "purl": "pkg:pypi/jaraco-classes@3.4.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jaraco-context",
+      "version": "6.1.2",
+      "purl": "pkg:pypi/jaraco-context@6.1.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jaraco-functools",
+      "version": "4.6.0",
+      "purl": "pkg:pypi/jaraco-functools@4.6.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jeepney",
+      "version": "0.9.0",
+      "purl": "pkg:pypi/jeepney@0.9.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jinja2",
+      "version": "3.1.6",
+      "purl": "pkg:pypi/jinja2@3.1.6",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jiter",
+      "version": "0.17.0",
+      "purl": "pkg:pypi/jiter@0.17.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jmespath",
+      "version": "1.1.0",
+      "purl": "pkg:pypi/jmespath@1.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "joblib",
+      "version": "1.6.0",
+      "purl": "pkg:pypi/joblib@1.6.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jsonpath-python",
+      "version": "1.1.6",
+      "purl": "pkg:pypi/jsonpath-python@1.1.6",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jsonschema",
+      "version": "4.26.0",
+      "purl": "pkg:pypi/jsonschema@4.26.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "purl": "pkg:pypi/jsonschema-specifications@2025.9.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "keyring",
+      "version": "25.7.0",
+      "purl": "pkg:pypi/keyring@25.7.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "kittentts",
+      "version": "0.8.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "archive-url"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "language-tags",
+      "version": "1.3.1",
+      "purl": "pkg:pypi/language-tags@1.3.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "lark-oapi",
+      "version": "1.7.5",
+      "purl": "pkg:pypi/lark-oapi@1.7.5",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "lxml",
+      "version": "6.1.3",
+      "purl": "pkg:pypi/lxml@6.1.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "markdown",
+      "version": "3.11.2",
+      "purl": "pkg:pypi/markdown@3.11.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "markdown-it-py",
+      "version": "4.2.0",
+      "purl": "pkg:pypi/markdown-it-py@4.2.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "markupsafe",
+      "version": "3.0.4",
+      "purl": "pkg:pypi/markupsafe@3.0.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mautrix",
+      "version": "0.21.1",
+      "purl": "pkg:pypi/mautrix@0.21.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mcp",
+      "version": "2.3.0",
+      "purl": "pkg:pypi/mcp@2.3.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mcp-types",
+      "version": "2.3.0",
+      "purl": "pkg:pypi/mcp-types@2.3.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mdurl",
+      "version": "0.1.2",
+      "purl": "pkg:pypi/mdurl@0.1.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "microsoft-teams-api",
+      "version": "2.1.1",
+      "purl": "pkg:pypi/microsoft-teams-api@2.1.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "microsoft-teams-apps",
+      "version": "2.1.1",
+      "purl": "pkg:pypi/microsoft-teams-apps@2.1.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "microsoft-teams-cards",
+      "version": "2.1.1",
+      "purl": "pkg:pypi/microsoft-teams-cards@2.1.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "microsoft-teams-common",
+      "version": "2.1.1",
+      "purl": "pkg:pypi/microsoft-teams-common@2.1.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "misaki",
+      "version": "0.9.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "git"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mistralai",
+      "version": "2.10.1",
+      "purl": "pkg:pypi/mistralai@2.10.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "modal",
+      "version": "1.6.2",
+      "purl": "pkg:pypi/modal@1.6.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "more-itertools",
+      "version": "11.2.1",
+      "purl": "pkg:pypi/more-itertools@11.2.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "mpmath",
+      "version": "1.3.0",
+      "purl": "pkg:pypi/mpmath@1.3.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "msal",
+      "version": "1.39.0",
+      "purl": "pkg:pypi/msal@1.39.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "msal-extensions",
+      "version": "1.3.1",
+      "purl": "pkg:pypi/msal-extensions@1.3.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "msgpack",
+      "version": "1.2.3",
+      "purl": "pkg:pypi/msgpack@1.2.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "multidict",
+      "version": "6.9.1",
+      "purl": "pkg:pypi/multidict@6.9.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "muninn",
+      "version": "1.0.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "editable-local"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "murmurhash",
+      "version": "1.0.15",
+      "purl": "pkg:pypi/murmurhash@1.0.15",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nemo-relay",
+      "version": "0.11.0",
+      "purl": "pkg:pypi/nemo-relay@0.11.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nest-asyncio",
+      "version": "1.6.0",
+      "purl": "pkg:pypi/nest-asyncio@1.6.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "networkx",
+      "version": "3.7",
+      "purl": "pkg:pypi/networkx@3.7",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "num2words",
+      "version": "0.5.14",
+      "purl": "pkg:pypi/num2words@0.5.14",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "numpy",
+      "version": "2.5.4",
+      "purl": "pkg:pypi/numpy@2.5.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-cublas",
+      "version": "13.1.1.3",
+      "purl": "pkg:pypi/nvidia-cublas@13.1.1.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-cuda-cupti",
+      "version": "13.0.85",
+      "purl": "pkg:pypi/nvidia-cuda-cupti@13.0.85",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-cuda-nvrtc",
+      "version": "13.0.88",
+      "purl": "pkg:pypi/nvidia-cuda-nvrtc@13.0.88",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-cuda-runtime",
+      "version": "13.0.96",
+      "purl": "pkg:pypi/nvidia-cuda-runtime@13.0.96",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-cudnn-cu13",
+      "version": "9.24.0.43",
+      "purl": "pkg:pypi/nvidia-cudnn-cu13@9.24.0.43",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-cufft",
+      "version": "12.0.0.61",
+      "purl": "pkg:pypi/nvidia-cufft@12.0.0.61",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-cufile",
+      "version": "1.15.1.6",
+      "purl": "pkg:pypi/nvidia-cufile@1.15.1.6",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-curand",
+      "version": "10.4.0.35",
+      "purl": "pkg:pypi/nvidia-curand@10.4.0.35",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-cusolver",
+      "version": "12.0.4.66",
+      "purl": "pkg:pypi/nvidia-cusolver@12.0.4.66",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-cusparse",
+      "version": "12.6.3.3",
+      "purl": "pkg:pypi/nvidia-cusparse@12.6.3.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-cusparselt-cu13",
+      "version": "0.8.1",
+      "purl": "pkg:pypi/nvidia-cusparselt-cu13@0.8.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-nccl-cu13",
+      "version": "2.30.7",
+      "purl": "pkg:pypi/nvidia-nccl-cu13@2.30.7",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-nvjitlink",
+      "version": "13.4.92",
+      "purl": "pkg:pypi/nvidia-nvjitlink@13.4.92",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-nvshmem-cu13",
+      "version": "3.4.5",
+      "purl": "pkg:pypi/nvidia-nvshmem-cu13@3.4.5",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nvidia-nvtx",
+      "version": "13.0.85",
+      "purl": "pkg:pypi/nvidia-nvtx@13.0.85",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "oauthlib",
+      "version": "4.0.0",
+      "purl": "pkg:pypi/oauthlib@4.0.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "obstore",
+      "version": "0.11.1",
+      "purl": "pkg:pypi/obstore@0.11.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "onnxruntime",
+      "version": "1.31.0",
+      "purl": "pkg:pypi/onnxruntime@1.31.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openai",
+      "version": "2.54.0",
+      "purl": "pkg:pypi/openai@2.54.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "openpyxl",
+      "version": "3.1.5",
+      "purl": "pkg:pypi/openpyxl@3.1.5",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-api",
+      "version": "1.45.1",
+      "purl": "pkg:pypi/opentelemetry-api@1.45.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-exporter-http-transport",
+      "version": "0.66b1",
+      "purl": "pkg:pypi/opentelemetry-exporter-http-transport@0.66b1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-exporter-otlp-common",
+      "version": "0.66b1",
+      "purl": "pkg:pypi/opentelemetry-exporter-otlp-common@0.66b1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-exporter-otlp-proto-common",
+      "version": "1.45.1",
+      "purl": "pkg:pypi/opentelemetry-exporter-otlp-proto-common@1.45.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-exporter-otlp-proto-http",
+      "version": "1.45.1",
+      "purl": "pkg:pypi/opentelemetry-exporter-otlp-proto-http@1.45.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-instrumentation",
+      "version": "0.66b1",
+      "purl": "pkg:pypi/opentelemetry-instrumentation@0.66b1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-instrumentation-aiohttp-client",
+      "version": "0.66b1",
+      "purl": "pkg:pypi/opentelemetry-instrumentation-aiohttp-client@0.66b1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-proto",
+      "version": "1.45.1",
+      "purl": "pkg:pypi/opentelemetry-proto@1.45.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-sdk",
+      "version": "1.45.1",
+      "purl": "pkg:pypi/opentelemetry-sdk@1.45.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-semantic-conventions",
+      "version": "0.66b1",
+      "purl": "pkg:pypi/opentelemetry-semantic-conventions@0.66b1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "opentelemetry-util-http",
+      "version": "0.66b1",
+      "purl": "pkg:pypi/opentelemetry-util-http@0.66b1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "packaging",
+      "version": "26.3",
+      "purl": "pkg:pypi/packaging@26.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "parallel-web",
+      "version": "0.6.0",
+      "purl": "pkg:pypi/parallel-web@0.6.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pathspec",
+      "version": "1.1.1",
+      "purl": "pkg:pypi/pathspec@1.1.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pathvalidate",
+      "version": "3.3.1",
+      "purl": "pkg:pypi/pathvalidate@3.3.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pdfminer-six",
+      "version": "20260107",
+      "purl": "pkg:pypi/pdfminer-six@20260107",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pdfplumber",
+      "version": "0.11.10",
+      "purl": "pkg:pypi/pdfplumber@0.11.10",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "phonemizer-fork",
+      "version": "3.3.2",
+      "purl": "pkg:pypi/phonemizer-fork@3.3.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pilk",
+      "version": "0.2.4",
+      "purl": "pkg:pypi/pilk@0.2.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pillow",
+      "version": "13.0.0",
+      "purl": "pkg:pypi/pillow@13.0.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pillow-heif",
+      "version": "1.8.1",
+      "purl": "pkg:pypi/pillow-heif@1.8.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pip",
+      "version": "26.2.1",
+      "purl": "pkg:pypi/pip@26.2.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "piper-tts",
+      "version": "1.8.0",
+      "purl": "pkg:pypi/piper-tts@1.8.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "playwright",
+      "version": "1.64.0",
+      "purl": "pkg:pypi/playwright@1.64.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pluggy",
+      "version": "1.7.0",
+      "purl": "pkg:pypi/pluggy@1.7.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "portalocker",
+      "version": "3.2.0",
+      "purl": "pkg:pypi/portalocker@3.2.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "preshed",
+      "version": "3.0.13",
+      "purl": "pkg:pypi/preshed@3.0.13",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "primp",
+      "version": "2.0.1",
+      "purl": "pkg:pypi/primp@2.0.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "prompt-toolkit",
+      "version": "3.0.53",
+      "purl": "pkg:pypi/prompt-toolkit@3.0.53",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "propcache",
+      "version": "0.5.4",
+      "purl": "pkg:pypi/propcache@0.5.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "proto-plus",
+      "version": "1.29.0",
+      "purl": "pkg:pypi/proto-plus@1.29.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "protobuf",
+      "version": "6.33.6",
+      "purl": "pkg:pypi/protobuf@6.33.6",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "psutil",
+      "version": "7.2.2",
+      "purl": "pkg:pypi/psutil@7.2.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "psutil",
+      "version": "8.0.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "git"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ptyprocess",
+      "version": "0.7.0",
+      "purl": "pkg:pypi/ptyprocess@0.7.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pvporcupine",
+      "version": "4.0.3",
+      "purl": "pkg:pypi/pvporcupine@4.0.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pyasn1",
+      "version": "0.6.5",
+      "purl": "pkg:pypi/pyasn1@0.6.5",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pyasn1-modules",
+      "version": "0.4.2",
+      "purl": "pkg:pypi/pyasn1-modules@0.4.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pycparser",
+      "version": "3.11",
+      "purl": "pkg:pypi/pycparser@3.11",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pycryptodome",
+      "version": "3.24.1",
+      "purl": "pkg:pypi/pycryptodome@3.24.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pydantic",
+      "version": "2.14.1",
+      "purl": "pkg:pypi/pydantic@2.14.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pydantic-core",
+      "version": "2.50.1",
+      "purl": "pkg:pypi/pydantic-core@2.50.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pydantic-settings",
+      "version": "2.16.0",
+      "purl": "pkg:pypi/pydantic-settings@2.16.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pyee",
+      "version": "13.0.1",
+      "purl": "pkg:pypi/pyee@13.0.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pygments",
+      "version": "2.21.0",
+      "purl": "pkg:pypi/pygments@2.21.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pyjwt",
+      "version": "2.15.1",
+      "purl": "pkg:pypi/pyjwt@2.15.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pynacl",
+      "version": "1.6.2",
+      "purl": "pkg:pypi/pynacl@1.6.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pyopen-wakeword",
+      "version": "1.1.0",
+      "purl": "pkg:pypi/pyopen-wakeword@1.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pyparsing",
+      "version": "3.3.3",
+      "purl": "pkg:pypi/pyparsing@3.3.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pypdf",
+      "version": "6.21.4",
+      "purl": "pkg:pypi/pypdf@6.21.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pypdfium2",
+      "version": "5.14.0",
+      "purl": "pkg:pypi/pypdfium2@5.14.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pypinyin",
+      "version": "0.55.0",
+      "purl": "pkg:pypi/pypinyin@0.55.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pypng",
+      "version": "0.20220715.0",
+      "purl": "pkg:pypi/pypng@0.20220715.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pytest",
+      "version": "9.1.1",
+      "purl": "pkg:pypi/pytest@9.1.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pytest-asyncio",
+      "version": "1.4.0",
+      "purl": "pkg:pypi/pytest-asyncio@1.4.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-dateutil",
+      "version": "2.9.0.post0",
+      "purl": "pkg:pypi/python-dateutil@2.9.0.post0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-docx",
+      "version": "1.2.0",
+      "purl": "pkg:pypi/python-docx@1.2.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-dotenv",
+      "version": "1.2.4",
+      "purl": "pkg:pypi/python-dotenv@1.2.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-engineio",
+      "version": "4.14.0",
+      "purl": "pkg:pypi/python-engineio@4.14.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-multipart",
+      "version": "0.0.32",
+      "purl": "pkg:pypi/python-multipart@0.0.32",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-olm",
+      "version": "3.2.16",
+      "purl": "pkg:pypi/python-olm@3.2.16",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-pptx",
+      "version": "1.0.2",
+      "purl": "pkg:pypi/python-pptx@1.0.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-socketio",
+      "version": "5.17.0",
+      "purl": "pkg:pypi/python-socketio@5.17.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-socks",
+      "version": "2.8.2",
+      "purl": "pkg:pypi/python-socks@2.8.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "python-telegram-bot",
+      "version": "22.8",
+      "purl": "pkg:pypi/python-telegram-bot@22.8",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pywin32",
+      "version": "311",
+      "purl": "pkg:pypi/pywin32@311",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pywin32-ctypes",
+      "version": "0.2.3",
+      "purl": "pkg:pypi/pywin32-ctypes@0.2.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pywinpty",
+      "version": "3.1.0",
+      "purl": "pkg:pypi/pywinpty@3.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pyyaml",
+      "version": "6.0.3",
+      "purl": "pkg:pypi/pyyaml@6.0.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "qrcode",
+      "version": "7.4.2",
+      "purl": "pkg:pypi/qrcode@7.4.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "rdflib",
+      "version": "7.6.0",
+      "purl": "pkg:pypi/rdflib@7.6.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "referencing",
+      "version": "0.37.0",
+      "purl": "pkg:pypi/referencing@0.37.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "regex",
+      "version": "2026.9.29",
+      "purl": "pkg:pypi/regex@2026.9.29",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "reportlab",
+      "version": "5.1.0",
+      "purl": "pkg:pypi/reportlab@5.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "requests",
+      "version": "2.34.2",
+      "purl": "pkg:pypi/requests@2.34.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "requests-oauthlib",
+      "version": "2.0.0",
+      "purl": "pkg:pypi/requests-oauthlib@2.0.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "requests-toolbelt",
+      "version": "1.0.0",
+      "purl": "pkg:pypi/requests-toolbelt@1.0.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "resvg-py",
+      "version": "0.5.0",
+      "purl": "pkg:pypi/resvg-py@0.5.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "rfc3986",
+      "version": "1.5.0",
+      "purl": "pkg:pypi/rfc3986@1.5.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "rich",
+      "version": "14.3.4",
+      "purl": "pkg:pypi/rich@14.3.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "rpds-py",
+      "version": "2026.9.1",
+      "purl": "pkg:pypi/rpds-py@2026.9.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ruamel-yaml",
+      "version": "0.18.16",
+      "purl": "pkg:pypi/ruamel-yaml@0.18.16",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ruamel-yaml-clib",
+      "version": "0.2.15",
+      "purl": "pkg:pypi/ruamel-yaml-clib@0.2.15",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ruff",
+      "version": "0.15.22",
+      "purl": "pkg:pypi/ruff@0.15.22",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "s3transfer",
+      "version": "0.19.3",
+      "purl": "pkg:pypi/s3transfer@0.19.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "safetensors",
+      "version": "0.8.0",
+      "purl": "pkg:pypi/safetensors@0.8.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "secretstorage",
+      "version": "3.5.0",
+      "purl": "pkg:pypi/secretstorage@3.5.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "segments",
+      "version": "2.4.0",
+      "purl": "pkg:pypi/segments@2.4.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "semver",
+      "version": "3.1.0",
+      "purl": "pkg:pypi/semver@3.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sentencepiece",
+      "version": "0.2.2",
+      "purl": "pkg:pypi/sentencepiece@0.2.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "setuptools",
+      "version": "84.1.0",
+      "purl": "pkg:pypi/setuptools@84.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "shellingham",
+      "version": "1.5.4",
+      "purl": "pkg:pypi/shellingham@1.5.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sherpa-onnx",
+      "version": "1.13.8",
+      "purl": "pkg:pypi/sherpa-onnx@1.13.8",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sherpa-onnx-core",
+      "version": "1.13.8",
+      "purl": "pkg:pypi/sherpa-onnx-core@1.13.8",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "simple-websocket",
+      "version": "1.1.0",
+      "purl": "pkg:pypi/simple-websocket@1.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "six",
+      "version": "1.17.0",
+      "purl": "pkg:pypi/six@1.17.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "slack-bolt",
+      "version": "1.30.0",
+      "purl": "pkg:pypi/slack-bolt@1.30.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "slack-sdk",
+      "version": "3.45.0",
+      "purl": "pkg:pypi/slack-sdk@3.45.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "smart-open",
+      "version": "8.0.4",
+      "purl": "pkg:pypi/smart-open@8.0.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sniffio",
+      "version": "1.3.1",
+      "purl": "pkg:pypi/sniffio@1.3.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "snowballstemmer",
+      "version": "3.1.1",
+      "purl": "pkg:pypi/snowballstemmer@3.1.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "socksio",
+      "version": "1.0.0",
+      "purl": "pkg:pypi/socksio@1.0.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sounddevice",
+      "version": "0.5.6",
+      "purl": "pkg:pypi/sounddevice@0.5.6",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "soundfile",
+      "version": "0.14.0",
+      "purl": "pkg:pypi/soundfile@0.14.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "spacy",
+      "version": "3.8.16",
+      "purl": "pkg:pypi/spacy@3.8.16",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "spacy-curated-transformers",
+      "version": "0.3.1",
+      "purl": "pkg:pypi/spacy-curated-transformers@0.3.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "spacy-legacy",
+      "version": "3.0.12",
+      "purl": "pkg:pypi/spacy-legacy@3.0.12",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "spacy-loggers",
+      "version": "1.0.5",
+      "purl": "pkg:pypi/spacy-loggers@1.0.5",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "srsly",
+      "version": "2.5.4",
+      "purl": "pkg:pypi/srsly@2.5.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sse-starlette",
+      "version": "3.5.0",
+      "purl": "pkg:pypi/sse-starlette@3.5.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "starlette",
+      "version": "1.9.0",
+      "purl": "pkg:pypi/starlette@1.9.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "sympy",
+      "version": "1.14.0",
+      "purl": "pkg:pypi/sympy@1.14.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "synchronicity",
+      "version": "0.12.6",
+      "purl": "pkg:pypi/synchronicity@0.12.6",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tabulate",
+      "version": "0.10.0",
+      "purl": "pkg:pypi/tabulate@0.10.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tenacity",
+      "version": "9.2.1",
+      "purl": "pkg:pypi/tenacity@9.2.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "termcolor",
+      "version": "3.3.0",
+      "purl": "pkg:pypi/termcolor@3.3.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "thinc",
+      "version": "8.3.13",
+      "purl": "pkg:pypi/thinc@8.3.13",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tokenizers",
+      "version": "0.23.3",
+      "purl": "pkg:pypi/tokenizers@0.23.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "toml",
+      "version": "0.10.2",
+      "purl": "pkg:pypi/toml@0.10.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tomli-w",
+      "version": "1.2.0",
+      "purl": "pkg:pypi/tomli-w@1.2.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "torch",
+      "version": "2.14.1",
+      "purl": "pkg:pypi/torch@2.14.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tornado",
+      "version": "6.6",
+      "purl": "pkg:pypi/tornado@6.6",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tqdm",
+      "version": "4.70.1",
+      "purl": "pkg:pypi/tqdm@4.70.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "transformers",
+      "version": "5.20.2",
+      "purl": "pkg:pypi/transformers@5.20.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "triton",
+      "version": "3.8.0",
+      "purl": "pkg:pypi/triton@3.8.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "truststore",
+      "version": "0.10.5",
+      "purl": "pkg:pypi/truststore@0.10.5",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "ty",
+      "version": "0.0.89",
+      "purl": "pkg:pypi/ty@0.0.89",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "typer",
+      "version": "0.27.3",
+      "purl": "pkg:pypi/typer@0.27.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "types-certifi",
+      "version": "2021.10.8.3",
+      "purl": "pkg:pypi/types-certifi@2021.10.8.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "types-toml",
+      "version": "0.10.8.20260518",
+      "purl": "pkg:pypi/types-toml@0.10.8.20260518",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "purl": "pkg:pypi/typing-extensions@4.16.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "typing-inspection",
+      "version": "0.4.4",
+      "purl": "pkg:pypi/typing-inspection@0.4.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tzdata",
+      "version": "2025.3",
+      "purl": "pkg:pypi/tzdata@2025.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tzlocal",
+      "version": "5.4.4",
+      "purl": "pkg:pypi/tzlocal@5.4.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "unpaddedbase64",
+      "version": "2.1.0",
+      "purl": "pkg:pypi/unpaddedbase64@2.1.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uritemplate",
+      "version": "4.2.0",
+      "purl": "pkg:pypi/uritemplate@4.2.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "urllib3",
+      "version": "2.8.0",
+      "purl": "pkg:pypi/urllib3@2.8.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "purl": "pkg:pypi/uvicorn@0.54.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "uvloop",
+      "version": "0.23.0",
+      "purl": "pkg:pypi/uvloop@0.23.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vercel",
+      "version": "0.12.0",
+      "purl": "pkg:pypi/vercel@0.12.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vercel-blob",
+      "version": "0.5.0",
+      "purl": "pkg:pypi/vercel-blob@0.5.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vercel-cache",
+      "version": "0.7.6",
+      "purl": "pkg:pypi/vercel-cache@0.7.6",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vercel-headers",
+      "version": "0.7.2",
+      "purl": "pkg:pypi/vercel-headers@0.7.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vercel-internal-core",
+      "version": "0.2.2",
+      "purl": "pkg:pypi/vercel-internal-core@0.2.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vercel-internal-telemetry",
+      "version": "0.8.1",
+      "purl": "pkg:pypi/vercel-internal-telemetry@0.8.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vercel-oidc",
+      "version": "0.10.0",
+      "purl": "pkg:pypi/vercel-oidc@0.10.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vercel-queue",
+      "version": "0.9.2",
+      "purl": "pkg:pypi/vercel-queue@0.9.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vercel-sandbox",
+      "version": "0.9.1",
+      "purl": "pkg:pypi/vercel-sandbox@0.9.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "vercel-workflow",
+      "version": "0.11.2",
+      "purl": "pkg:pypi/vercel-workflow@0.11.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "wasabi",
+      "version": "1.1.3",
+      "purl": "pkg:pypi/wasabi@1.1.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "watchfiles",
+      "version": "1.3.0",
+      "purl": "pkg:pypi/watchfiles@1.3.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "wcwidth",
+      "version": "0.9.2",
+      "purl": "pkg:pypi/wcwidth@0.9.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "weasel",
+      "version": "1.0.0",
+      "purl": "pkg:pypi/weasel@1.0.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "websocket-client",
+      "version": "1.9.2",
+      "purl": "pkg:pypi/websocket-client@1.9.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "websockets",
+      "version": "15.0.1",
+      "purl": "pkg:pypi/websockets@15.0.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "winrt-runtime",
+      "version": "3.2.1",
+      "purl": "pkg:pypi/winrt-runtime@3.2.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "winrt-windows-applicationmodel",
+      "version": "3.2.1",
+      "purl": "pkg:pypi/winrt-windows-applicationmodel@3.2.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "winrt-windows-foundation",
+      "version": "3.2.1",
+      "purl": "pkg:pypi/winrt-windows-foundation@3.2.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "winrt-windows-foundation-collections",
+      "version": "3.2.1",
+      "purl": "pkg:pypi/winrt-windows-foundation-collections@3.2.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "winrt-windows-services-store",
+      "version": "3.2.1",
+      "purl": "pkg:pypi/winrt-windows-services-store@3.2.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "wrapt",
+      "version": "1.17.3",
+      "purl": "pkg:pypi/wrapt@1.17.3",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "wsproto",
+      "version": "1.3.2",
+      "purl": "pkg:pypi/wsproto@1.3.2",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "xlsxwriter",
+      "version": "3.3.0",
+      "purl": "pkg:pypi/xlsxwriter@3.3.0",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "yarl",
+      "version": "1.25.1",
+      "purl": "pkg:pypi/yarl@1.25.1",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "youtube-transcript-api",
+      "version": "1.2.4",
+      "purl": "pkg:pypi/youtube-transcript-api@1.2.4",
+      "properties": [
+        {
+          "name": "hermes:source-class",
+          "value": "registry"
+        }
+      ]
+    }
+  ]
+}
