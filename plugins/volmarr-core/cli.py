@@ -408,6 +408,22 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     world_bridge_presence.add_argument("--data-class", default="local-private")
     world_bridge_presence.add_argument("--approved", action="store_true")
     world_bridge_presence.add_argument("--json", action="store_true", dest="json_output")
+    edge_research = subcommands.add_parser(
+        "edge-research",
+        help="N5 edge+research (W12): resource meter, allocator gate, mesh fixtures, repair proposals; read/propose only",
+    )
+    edge_research_subcommands = edge_research.add_subparsers(dest="edge_research_action")
+    edge_research_status = edge_research_subcommands.add_parser(
+        "status", help="Edge/research descriptor + honest availability status (no live connection)")
+    edge_research_status.add_argument("--json", action="store_true", dest="json_output")
+    edge_research_meter = edge_research_subcommands.add_parser(
+        "meter", help="Read the local machine resource meter (private, no transmission)")
+    edge_research_meter.add_argument("--json", action="store_true", dest="json_output")
+    edge_research_propose = edge_research_subcommands.add_parser(
+        "propose", help="Record a Lif-thrasir self-repair proposal (never applied)")
+    edge_research_propose.add_argument("--title", required=True)
+    edge_research_propose.add_argument("--detail", default="")
+    edge_research_propose.add_argument("--json", action="store_true", dest="json_output")
     agency = subcommands.add_parser(
         "agency",
         help="Manage the proposal-only agency review routine (Phase 7)",
@@ -961,6 +977,42 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
         else:
             print("Usage: hermes volmarr world-bridge {status|presence-check} [--json]")
             return 2
+    elif action == "edge-research":
+        from datetime import datetime as _dt2, timezone as _tz2
+        from .edge_research import EdgeError, ProposalBook, edge_status, read_resource_meter
+        _eaction = getattr(args, "edge_research_action", None)
+        _now2 = _dt2.now(_tz2.utc).isoformat()
+        try:
+            if _eaction == "status":
+                _record = edge_status(recorded_at=_now2)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Edge research: {_record['edge_research']['service']} / {_record['edge_research']['availability']} / live connection not-claimed")
+                    print(f"Lifthrasir: {_record['lifthrasir']['mode']} / auto-apply off")
+                return 0
+            elif _eaction == "meter":
+                _record = read_resource_meter(recorded_at=_now2)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    _mem = _record["outputs"]["memory"]
+                    print(f"Resource meter: memory {_mem.get('status')} / telemetry local-private, transmission none")
+                return 0
+            elif _eaction == "propose":
+                _book = ProposalBook()
+                _record = _book.propose(getattr(args, "title", ""), getattr(args, "detail", ""), recorded_at=_now2)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Proposal recorded: {_record['proposal_id']} / {_record['status']} / never applied automatically")
+                return 0
+            else:
+                print("Usage: hermes volmarr edge-research {status|meter|propose} [--json]")
+                return 2
+        except EdgeError as exc:
+            print(json.dumps({"error": exc.name, "detail": exc.detail}, sort_keys=True), file=sys.stderr)
+            return 1
     elif action == "persona":
         from pathlib import Path as _Path
         from .persona_ops import PersonaOps, PersonaOpsError
@@ -1019,7 +1071,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research} ...")
         return 2
 
     if getattr(args, "json_output", False):
