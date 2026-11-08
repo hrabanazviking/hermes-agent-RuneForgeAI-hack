@@ -187,3 +187,13 @@ Ticket status: W01.01 DONE, W01.02 DONE, W01.03-W01.05 audited at intake
 (no fork intersection; live wiring is W05), W01.06 DONE (contracts +
 discovery), W01.07 audited (no fork intersection), W01.08 DONE,
 W01.09 DONE (upstream-changes.md + this entry).
+
+Banking note (Team 02, at branch completion): origin/main MOVED during
+the W01 run, 281843f10f -> e229b1d390, by two docs commits from outside
+this branch (6c49ee7a9c: 15 ecosystem workstreams added to the
+modernization roadmap, +493 lines; e229b1d390: one README roadmap-
+description line, README sha on origin now 336813d11bbe...). This
+branch touched neither file, so a keeper merge onto the new main
+should be conflict-free; the freeze-baseline README proof above stands
+relative to the freeze. The new roadmap workstreams are future-wave
+scope, not W01.
