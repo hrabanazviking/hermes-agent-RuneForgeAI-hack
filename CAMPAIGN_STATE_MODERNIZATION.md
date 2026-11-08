@@ -271,3 +271,34 @@ sha256 8fa79f40...) - W04 implementation follows now that W03 has banked; its
 steps 2+ consume W03 manifest/byte ranges per that draft. Teams 07/08
 worktrees mustered this tick at b5c6743a22 (yrsa/hermes-team-07/08), prep-only
 until their waves base. W00.03-ENC still awaits Volmarr word.
+
+Banking closure (keeper, 2026-11-08 ~00:15 EST): W04 / Phase P2 BANKED to main.
+Team 05 branch yrsa/hermes-team-05 (5 commits over banked 7ce3db56f0:
+28fcada587 design draft committed, 8e112890de merge of banked main,
+4af51ae372 persona_index.py FTS5 index, 1dfdd00c66 contracts + gate,
+7bfe5db1d0 implementation record + ledger) merged --no-ff by the keeper
+as 53f27519db, conflict-free; closure commit follows this entry. Keeper
+verified from logs on the laptop before banking: contracts 121 files =
+976 passed / 7 failed / 1 skipped (976 = 957 W03 baseline + 19 new W04;
+the 7 are the known live-transport set, name-identical - zero
+regressions; log ~/team05-w04-contracts.log); W04 gate green standalone
+(~/team05-w04-gate.log) after a first-run gate failure was fixed in the
+tests (~/team05-w04-tests.log records it). Merged tree is byte-identical
+to the tested team tree (git diff 7bfe5db1d0..merge is empty). README
+untouched (sha256 336813d11bbe...). Gate: buried-section recall 100%
+(9 needle checks, hash-verified citations, zero source loss across
+reindex cycles) on a deterministic >2 MB fixture. Bugs fixed in scope:
+subspan search-projection mid-character decode crash; section-13 ASCII
+slug limitation reconciled at the P2 fusion layer via verbatim trigram
+exact-phrase contact (scorer untouched). Ticketed remainders: W04-R1
+full 100 MB gate corpus run in an uncontended window (at banking),
+W04-R2 receipt retention/rotation default, W04-R3 Unicode tokeniser
+question for a later wave; row_pk 2^40 subspan offset deviation and
+in_kernel=0 recorded in the implementation record. Team 06 W05 prep
+draft is complete and uncommitted in ~/hermes-team-06
+(P3P4_DESIGN_DRAFT.md, 28,957 B, sha256 8e062732...): 30 persona/prompt
+surfaces audited - 4 live, 2 partial default-off, 24 with no live
+caller; zero persona-runtime contracts inject persona content into a
+live prompt today. W05 implementation follows in roadmap order; its
+draft section 12 carries 5 open questions for Volmarr (Q1 two-channel
+vs core patch first). W00.03-ENC still awaits Volmarr word.
