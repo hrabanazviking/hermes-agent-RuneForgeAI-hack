@@ -85,6 +85,16 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Validate Bifröst and the active profile's Mímir store",
     )
     memory_health.add_argument("--json", action="store_true", dest="json_output")
+    corpus = memory_subcommands.add_parser(
+        "corpus",
+        help="Inspect the W06 unbounded MEMORY.md / USER.md corpus",
+    )
+    corpus_subcommands = corpus.add_subparsers(dest="corpus_action")
+    corpus_status = corpus_subcommands.add_parser(
+        "status",
+        help="Show full-store vs hot-view sizes, corpus generation and index state (read-only)",
+    )
+    corpus_status.add_argument("--json", action="store_true", dest="json_output")
     mempalace = memory_subcommands.add_parser(
         "mempalace",
         help="Inspect the profile-scoped MemPalace episodic store",
@@ -444,13 +454,40 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     "{health|reinforce|decay|consolidate|ingest} [--json]"
                 )
                 return 2
+        elif memory_action == "corpus":
+            if getattr(args, "corpus_action", None) != "status":
+                print("Usage: hermes volmarr memory corpus status [--json]")
+                return 2
+            from .memory_corpus import corpus_from_plugin_context
+            from . import memory_digest as _md
+            _corpus = corpus_from_plugin_context(ctx)
+            _status = _corpus.status()
+            _status["digest"] = _md.digest_status(
+                _corpus, _md.load_digest(_corpus))
+            if getattr(args, "json_output", False):
+                print(json.dumps(_status, sort_keys=True))
+            else:
+                print(
+                    "Memory corpus: generation "
+                    f"{_status['generation']}, index "
+                    f"{_status['index']['status']}, digest "
+                    f"{_status['digest']['state']}")
+                for _t in ("memory", "user"):
+                    _row = _status["targets"][_t]
+                    print(
+                        f"  {_t}: full store {_row['full_store_bytes']} "
+                        f"bytes; hot view {_row.get('snapshot_chars', 0)}/"
+                        f"{_row['hot_cap_chars']} chars"
+                        + (" (over cap -- full store only)"
+                           if _row.get("snapshot_over_cap") else ""))
+            return 0
         elif memory_action == "health":
             report = probe_bifrost(ctx)
             label = "Bifröst"
         else:
             print(
                 "Usage: hermes volmarr memory "
-                "{health|mempalace health|openviking health|sessiondb health|"
+                "{health|corpus status|mempalace health|openviking health|sessiondb health|"
                 "muninn health|ravens health} [--json]"
             )
             return 2
