@@ -302,3 +302,39 @@ caller; zero persona-runtime contracts inject persona content into a
 live prompt today. W05 implementation follows in roadmap order; its
 draft section 12 carries 5 open questions for Volmarr (Q1 two-channel
 vs core patch first). W00.03-ENC still awaits Volmarr word.
+
+Banking closure (keeper, 2026-11-08 ~01:40 EST): W05 / Phases P3+P4 BANKED to main.
+Team 06 branch yrsa/hermes-team-06 (commits over banked 1558f55834:
+9edf303f5d design draft, 47b240accc merge of banked main, cc0a424536
+live persona wiring, 2ce3dfbb0a implementation record + ledger)
+merged --no-ff by the keeper as ba3a03c9f7, conflict-free; closure
+commit follows this entry. Keeper verified from logs on the laptop
+before banking: contracts 123 files = 991 passed / 7 failed /
+1 skipped (991 = 976 W04 baseline + 15 new W05; the 7 are the known
+live-transport set, name-identical - zero regressions; log
+~/team06-w05-contracts.log); W05 new tests 15/15
+(~/team06-w05-newtests3.log after two in-slice fixes: render unpack,
+tier-down P0 order), neighbors 34/34, present_state 4/4; the gate
+proves an opt-in profile gets the kernel on BOTH channels through
+the real plugin manager + a real AIAgent system-prompt build, and a
+non-opt-in profile is byte-for-byte stock. Merged tree is
+byte-identical to the tested team tree (git diff 2ce3dfbb0a..merge
+is empty). README untouched (sha256 336813d11bbe...). What W05
+delivered: persona content finally reaches live prompts - Channel S
+frozen kernel section (volmarr.persona.kernel, after_memory) +
+Channel T per-turn pipeline through PresentState as sole owner,
+first live callers for the section 20 reloader snapshot, section 14
+router, section 13 retriever and section 15 budgeter; P.010 opt-in
+refusal while legacy SOUL is loaded; section 36 delegate fragments
+only; P.011/P.017 operator receipts carry no persona text.
+Honest remainders: design draft section 2 rows 13-15, 20, 22, 24-28
+stay contract-only and are NOT declared complete; draft section 12
+open questions Q1-Q5 remain Volmarr's (the two-channel plan
+proceeded under the section 0.2 ground rules); the 7 live-transport
+failures stay environment-bound (no live Verdandi service on this
+laptop) - real-socket diagnosis beyond name-identity stays open.
+Next per WAVE_PLAN: Team 07 W06/P5 implementation from its prep
+draft (41,557 B, sha256 dd263480...) now that W05 has banked;
+Team 08 W07/P6 prep draft complete and uncommitted in
+~/hermes-team-08 (44,531 B, sha256 27d91eea...), prep-only until
+its wave's base banks. W00.03-ENC still awaits Volmarr word.

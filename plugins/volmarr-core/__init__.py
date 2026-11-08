@@ -36,6 +36,7 @@ from .self_state import SelfStateBridge
 from .verdandi_events import VerdandiEventsBridge
 from .background_life import BackgroundLifeBridge
 from .persona_canon import PersonaCanonBridge
+from .persona_live import PersonaLiveBridge
 from .persona_runtime import PersonaRuntimeBridge
 from .blind_spots import BlindSpotBridge
 from .epistemics import EpistemicsBridge
@@ -110,9 +111,13 @@ def register(ctx) -> None:
     wyrd_context = WyrdContextBridge(ctx)
     mempalace_retrieval = MemPalaceRetrievalBridge(ctx)
     openviking_retrieval = OpenVikingRetrievalBridge(ctx)
+    turn_signals: dict = {}
+    persona_live = PersonaLiveBridge(ctx, turn_signals=turn_signals)
     present_state = PresentStateBridge(
         ctx,
+        turn_signals=turn_signals,
         packet_sources=(
+            persona_live.packet_items,
             affective.packet_items,
             wyrd_context.packet_items,
             mempalace_retrieval.packet_items,
@@ -141,7 +146,6 @@ def register(ctx) -> None:
             verdandi_events.packet_items,
             background_life.packet_items,
             persona_canon.packet_items,
-            persona_runtime.packet_items,
             blind_spots.packet_items,
             epistemics.packet_items,
         ),
@@ -153,6 +157,7 @@ def register(ctx) -> None:
     register_goal_tools(ctx)
     register_heartbeat_tool(ctx)
     register_sleep_tool(ctx)
+    persona_live.register(ctx)
     ctx.register_cli_command(
         name="volmarr",
         help="Inspect Volmarr's Hermes integrations",

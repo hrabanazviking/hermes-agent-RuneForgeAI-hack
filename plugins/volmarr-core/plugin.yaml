@@ -553,6 +553,26 @@ config_schema:
     type: str
     default: config/persona.yaml
     description: "Human-authored persona config YAML path relative to the active Hermes profile; escaping paths fall back to the default. Read-only to the runtime."
+  persona_live_owner:
+    type: bool
+    default: false
+    description: "Opt-in per-profile switch for the W05 live persona wiring (roadmap P.008-P.011): when true, this profile's persona owns its prompt on two channels — Channel S registers one frozen system-prompt section (volmarr.persona.kernel, after_memory) carrying the compiled persona kernel verbatim at the largest section 64 tier that fits the core caps, and Channel T replaces the retired descriptive persona-runtime packet item with real routed, retrieved, and budgeted persona content through the PresentState packet, over an immutable generation snapshot with hash-checked next-turn activation and last-known-good fallback. P.010: ownership is refused (stock behaviour, loud receipt) while the profile's legacy SOUL.md block is still loaded and no supported suppression is attested. Disabled by default; non-owner profiles are byte-for-byte stock."
+  persona_live_kernel_tier:
+    type: str
+    default: auto
+    description: "Channel S kernel tier: auto (largest of kernel_full, kernel_medium, kernel_micro whose whole-section text fits the core section budget) or one explicit tier name. Tier-down takes whole sections only, in kernel order, anchors never evicted; omitted section ids are reported on the per-turn receipt. Any other value falls back to auto."
+  persona_live_context_class:
+    type: str
+    default: standard
+    description: "Model context class for the Channel T packet kernel echo and budgets: small_local (micro tier), standard (medium tier), or large (full tier). Unknown values fall back to standard."
+  persona_live_legacy_soul_disabled:
+    type: bool
+    default: false
+    description: "Operator attestation for P.010: set true only when the profile's legacy SOUL.md identity block is genuinely suppressed by a supported route (for example the gateway or CLI ignore-rules path that sets load_soul_identity off), so persona-live may own the prompt without double-injecting the persona. When false and a SOUL.md still exists in the profile home, persona-live refuses ownership and the profile stays stock."
+  persona_live_receipt_path:
+    type: str
+    default: memory/persona_live_receipts.json
+    description: "Per-turn persona-live receipt store path relative to the active Hermes profile (hashes, ids, budgets, and decisions only — never persona text); escaping paths fall back to the default. Operator-side evidence for W07/P6 surfacing."
   blind_spots_enabled:
     type: bool
     default: false
