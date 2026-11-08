@@ -60,6 +60,21 @@ UNDATED_INDEX_HINT = ("the package index did not report upload times, which lock
                       "dependencies needs for its 3-day release-age check. Use https://pypi.org/simple "
                       "or a mirror that serves upload times (pip.conf index-url / UV_INDEX_URL), then retry.")
 
+# The release-age gate dates *index* packages. A package bound to a local path
+# by ``[tool.uv.sources]`` (an editable raven, say) has no publish time by
+# construction — it was never uploaded anywhere — so an undated diagnostic
+# naming one is a local-source problem (missing sibling tree, broken binding),
+# never an index fault. The lock path therefore exempts those names from the
+# gate explicitly, derived from the project's own sources table, instead of
+# widening ``exclude-newer-package`` in pyproject.toml (that table stays
+# reserved for CA trust stores) or keeping a hand-maintained name list an
+# index package could one day slip through.
+UNDATED_LOCAL_HINT = ("the named package is bound to a local path by [tool.uv.sources], so it has "
+                      "no publish time by construction and the release-age gate does not apply to it. "
+                      "Check that the local tree exists beside this checkout (the binding is relative, "
+                      "so the checkout must sit directly beside it) and that the sources entry is intact, "
+                      "then retry.")
+
 # uv's own English diagnostic. A localized Windows tail (os error 1224) rides
 # along, but the marker that means "packages may be installed, only the
 # optional compile step failed" is this line. #124268
@@ -99,16 +114,24 @@ def _is_bytecode_compile_failure(result: subprocess.CompletedProcess) -> bool:
     return _BYTECODE_COMPILE_MARKER in text
 
 
-def classify_uv_failure(stage: str, returncode: int, output: str) -> InstallError:
+def classify_uv_failure(stage: str, returncode: int, output: str, *,
+                        local_packages: Sequence[str] = ()) -> InstallError:
     """Turn a failed `uv <stage>` into the right classified error.
 
     Resolver-conflict output → ResolutionConflict; a build backend that ran and
     failed → BuildFailure; anything else (fetch, tooling) → plain InstallError
-    with the tail of the output.
+    with the tail of the output. An undated (``exclude-newer``) failure naming
+    only *local_packages* — names the caller derived from the project's
+    ``[tool.uv.sources]`` local paths — is a local-source fault, not an index
+    fault: those packages have no publish time by construction.
     """
     cause = f"uv {stage} exited {returncode}: {output.strip()[-600:]}"
     lowered = output.lower()
     if _UNDATED_PIN in lowered or all(marker in lowered for marker in _UNDATED_FILE):
+        undated = _undated_package_names(lowered)
+        local = {_normalize_package_name(name) for name in local_packages}
+        if undated and undated <= local:
+            return InstallError("venv", cause, UNDATED_LOCAL_HINT)
         return InstallError("venv", cause, UNDATED_INDEX_HINT)
     if any(marker in lowered for marker in _RESOLVER_MARKERS):
         return ResolutionConflict("venv", cause)
@@ -117,6 +140,81 @@ def classify_uv_failure(stage: str, returncode: int, output: str) -> InstallErro
 
         return BuildFailure("venv", cause, missing_compiler_remedy(output))
     return InstallError("venv", cause)
+
+
+def _normalize_package_name(name: str) -> str:
+    import re
+
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def _undated_package_names(lowered_output: str) -> set[str]:
+    """Package names an undated diagnostic blames, from uv's own wording.
+
+    Seeded locks say ``Because <name>==<ver> has no publish time``; a cold
+    resolution warns ``<name>-<ver>.tar.gz is missing an upload date``. Names
+    are read from the diagnostic, never assumed, so a failure that cannot be
+    attributed stays with the generic index hint.
+    """
+    import re
+
+    names = set()
+    for pattern in (r"because\s+([a-z0-9._-]+)(?:==\S+)?\s+has no publish time",
+                    r"([a-z0-9._-]+)-\S+\s+is missing an upload date"):
+        names.update(_normalize_package_name(name) for name in re.findall(pattern, lowered_output))
+    return names
+
+
+def _is_local_source(entry: dict) -> bool:
+    """A ``[tool.uv.sources]`` entry naming files on this machine, not an index.
+
+    ``path``/``editable`` entries and workspace members are local by
+    construction; git, URL, index and registry sources name remote artifacts
+    and stay under the release-age gate.
+    """
+    return "path" in entry or "editable" in entry or entry.get("workspace") is True
+
+
+def local_source_packages(source: Path) -> list[str]:
+    """Names bound to local paths by *source*'s ``[tool.uv.sources]``.
+
+    Derived from the project's own table on every call — never a
+    hand-maintained list — so the release-age exemption can only ever cover
+    packages the project itself binds locally. Stdlib-only with a regex
+    fallback like ``_project_name``: the bootstrap runner imports this module
+    on pre-3.11 system pythons where tomllib does not exist.
+    """
+    try:
+        text = (source / "pyproject.toml").read_text(encoding="utf-8-sig")
+    except OSError:
+        return []
+    try:
+        import tomllib
+    except ModuleNotFoundError:
+        return _local_source_packages_regex(text)
+    try:
+        sources = tomllib.loads(text).get("tool", {}).get("uv", {}).get("sources", {})
+    except ValueError:
+        return []
+    if not isinstance(sources, dict):
+        return []
+    return sorted({_normalize_package_name(name) for name, entry in sources.items()
+                   if isinstance(entry, dict) and _is_local_source(entry)})
+
+
+def _local_source_packages_regex(text: str) -> list[str]:
+    import re
+
+    section = re.search(r"(?ms)^\[tool\.uv\.sources\]\s*$(.*?)(?=^\[|\Z)", text + "\n[")
+    if not section:
+        return []
+    names = []
+    for line in section.group(1).splitlines():
+        match = re.match(r'\s*([A-Za-z0-9._-]+)\s*=\s*\{(.*)\}', line)
+        if match and ("path" in match.group(2) or "editable" in match.group(2)
+                      or re.search(r"workspace\s*=\s*true", match.group(2))):
+            names.append(_normalize_package_name(match.group(1)))
+    return sorted(set(names))
 
 
 def _project_name(source: Path) -> str:
@@ -395,19 +493,37 @@ class PythonEnvironment:
         if result.returncode:
             raise InstallError("venv", f"uv venv failed: {result.stderr[-600:]}")
 
-    def lock(self, source: Path, *, upgrade: bool = False, timeout: int = 1800) -> None:
+    def _lock_command(self, source: Path, *, upgrade: bool = False, check: bool = False) -> list[str]:
+        """The `uv lock` argv for *source*, release-age gate scoped to registry sources.
+
+        Every name the project's ``[tool.uv.sources]`` binds to a local path is
+        exempted by name (``--exclude-newer-package <name>=false``): a local
+        package has no publish time for the gate to check, and the exemption is
+        derived from the table so it can never cover an index package. The
+        ``[tool.uv] exclude-newer`` policy itself is untouched and keeps
+        applying to every registry package exactly as before.
+        """
         command = ["lock", "--python", str(self.python)]
+        if check:
+            command.insert(1, "--check")
         if upgrade:
             command.append("--upgrade")
-        result = self._run(command, cwd=source, timeout=timeout)
+        for name in local_source_packages(source):
+            command += ["--exclude-newer-package", f"{name}=false"]
+        return command
+
+    def lock(self, source: Path, *, upgrade: bool = False, timeout: int = 1800) -> None:
+        result = self._run(self._lock_command(source, upgrade=upgrade), cwd=source, timeout=timeout)
         if result.returncode:
-            raise classify_uv_failure("lock", result.returncode, result.stderr or result.stdout)
+            raise classify_uv_failure("lock", result.returncode, result.stderr or result.stdout,
+                                      local_packages=local_source_packages(source))
 
     def check_lock(self, source: Path) -> None:
-        result = self._run(["lock", "--check", "--python", str(self.python)],
+        result = self._run(self._lock_command(source, check=True),
                            cwd=source, timeout=1800)
         if result.returncode:
-            raise classify_uv_failure("lock", result.returncode, result.stderr or result.stdout)
+            raise classify_uv_failure("lock", result.returncode, result.stderr or result.stdout,
+                                      local_packages=local_source_packages(source))
 
     def sync(self, source: Path, *, extras: Sequence[str] = (), groups: Sequence[str] = (),
              timeout: int = 1800, frozen: bool = True, all_extras: bool = False,
@@ -445,7 +561,8 @@ class PythonEnvironment:
         result = self._with_cache_recovery(
             "sync", lambda: self._sync_attempt(command, cwd=source, timeout=timeout))
         if result.returncode:
-            raise classify_uv_failure("sync", result.returncode, result.stderr or result.stdout)
+            raise classify_uv_failure("sync", result.returncode, result.stderr or result.stdout,
+                                      local_packages=local_source_packages(source))
 
     def _sync_attempt(self, command: list[str], *, cwd: Path, timeout: int) -> subprocess.CompletedProcess:
         result = self._run(command, cwd=cwd, timeout=timeout)
