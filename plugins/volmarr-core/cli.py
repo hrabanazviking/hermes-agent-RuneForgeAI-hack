@@ -324,6 +324,25 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     _edit.add_argument("--confirm", action="store_true")
     _edit.add_argument("--approved", action="store_true")
     _edit.add_argument("--json", action="store_true", dest="json_output")
+    engines = subcommands.add_parser(
+        "engines",
+        help="E0 integration ledger (W08): promoted lock status, read-only",
+    )
+    engines_subcommands = engines.add_subparsers(dest="engines_action")
+    engines_status = engines_subcommands.add_parser(
+        "status",
+        help="Full E0 ledger status from the promoted lock (no network)",
+    )
+    engines_status.add_argument("--json", action="store_true", dest="json_output")
+    engines_show = engines_subcommands.add_parser(
+        "show", help="One engine row from the promoted lock, by name"
+    )
+    engines_show.add_argument("name")
+    engines_show.add_argument("--json", action="store_true", dest="json_output")
+    engines_validate = engines_subcommands.add_parser(
+        "validate", help="Validate the promoted lock against this tree"
+    )
+    engines_validate.add_argument("--json", action="store_true", dest="json_output")
     agency = subcommands.add_parser(
         "agency",
         help="Manage the proposal-only agency review routine (Phase 7)",
@@ -712,6 +731,79 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
         else:
             print(f"Entity consolidation: {getattr(report, 'status', 'completed')}")
         return exit_code
+    elif action == "engines":
+        from .integration_ledger import (
+            IntegrationLedgerError,
+            find_engine,
+            integration_status,
+            load_lock,
+        )
+        _eaction = getattr(args, "engines_action", None)
+        try:
+            if _eaction == "status":
+                _record = integration_status()
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(
+                        f"Engines: {_record['engine_count']} rows, "
+                        f"lock {_record['status']}"
+                    )
+                    for _row in _record["engines"]:
+                        print(
+                            f"{_row['name']}: {_row['verification']} / "
+                            f"{_row['evidence_stage']} / "
+                            f"adapter {_row['adapter_mode']}"
+                        )
+                return 0 if _record["status"] == "ok" else 1
+            elif _eaction == "show":
+                _row = find_engine(load_lock(), getattr(args, "name", ""))
+                if _row is None:
+                    print(
+                        json.dumps(
+                            {
+                                "error": "engine_not_found",
+                                "detail": getattr(args, "name", ""),
+                            },
+                            sort_keys=True,
+                        ),
+                        file=sys.stderr,
+                    )
+                    return 1
+                print(json.dumps(_row, sort_keys=True, default=str))
+                return 0
+            elif _eaction == "validate":
+                _record = integration_status()
+                if getattr(args, "json_output", False):
+                    print(
+                        json.dumps(
+                            {
+                                "status": _record["status"],
+                                "problems": _record["problems"],
+                            },
+                            sort_keys=True,
+                        )
+                    )
+                elif _record["problems"]:
+                    for _problem in _record["problems"]:
+                        print(_problem)
+                else:
+                    print(
+                        "Integration lock: valid, all rows verified "
+                        "against this tree"
+                    )
+                return 0 if _record["status"] == "ok" else 1
+            else:
+                print("Usage: hermes volmarr engines {status|show|validate} [--json]")
+                return 2
+        except IntegrationLedgerError as exc:
+            print(
+                json.dumps(
+                    {"error": exc.name, "detail": exc.detail}, sort_keys=True
+                ),
+                file=sys.stderr,
+            )
+            return 1
     elif action == "persona":
         from pathlib import Path as _Path
         from .persona_ops import PersonaOps, PersonaOpsError
@@ -770,7 +862,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines} ...")
         return 2
 
     if getattr(args, "json_output", False):
