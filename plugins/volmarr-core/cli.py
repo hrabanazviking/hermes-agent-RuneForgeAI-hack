@@ -373,6 +373,26 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     capabilities_authorize.add_argument("--device", default=None)
     capabilities_authorize.add_argument("--approved", action="store_true")
     capabilities_authorize.add_argument("--json", action="store_true", dest="json_output")
+    productivity = subcommands.add_parser(
+        "productivity",
+        help="N2/N3 productivity (W10): project packets, publish guard, bridge status; read-only",
+    )
+    productivity_subcommands = productivity.add_subparsers(dest="productivity_action")
+    productivity_packet = productivity_subcommands.add_parser(
+        "packet", help="Build a live project-context packet for a local repo (read-only)")
+    productivity_packet.add_argument("--repo", required=True)
+    productivity_packet.add_argument("--json", action="store_true", dest="json_output")
+    productivity_publish = productivity_subcommands.add_parser(
+        "publish-check", help="Resolve a publish action through the capability policy")
+    productivity_publish.add_argument("--caller", required=True)
+    productivity_publish.add_argument("--data-owner", required=True)
+    productivity_publish.add_argument("--data-class", default="local-private")
+    productivity_publish.add_argument("--destination", default="local")
+    productivity_publish.add_argument("--approved", action="store_true")
+    productivity_publish.add_argument("--json", action="store_true", dest="json_output")
+    productivity_bridge = productivity_subcommands.add_parser(
+        "bridge-status", help="Samtal bridge + Samkoma contract status (no live connection)")
+    productivity_bridge.add_argument("--json", action="store_true", dest="json_output")
     agency = subcommands.add_parser(
         "agency",
         help="Manage the proposal-only agency review routine (Phase 7)",
@@ -871,6 +891,43 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
         else:
             print("Usage: hermes volmarr capabilities {list|show|validate|authorize} [--json]")
             return 2
+    elif action == "productivity":
+        from datetime import datetime as _dt, timezone as _tz
+        from .project_context import ProjectContextError, build_project_packet
+        from .samtal_bridge import SAMKOMA_DESCRIPTOR, SAMTAL_DESCRIPTOR
+        from .task_handoff import guard_publish
+        _paction = getattr(args, "productivity_action", None)
+        _now = _dt.now(_tz.utc).isoformat()
+        try:
+            if _paction == "packet":
+                _record = build_project_packet(getattr(args, "repo", ""), recorded_at=_now)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Project packet: {_record['repo_path']} head {_record['head']}")
+                    for _row in _record["sources"]:
+                        print(f"{_row['kind']}: {_row['path']} {_row['size_bytes']}B sha256 {_row['sha256'][:12]}")
+                    if _record["missing"]:
+                        print(f"Missing: {', '.join(_record['missing'])}")
+                return 0
+            elif _paction == "publish-check":
+                _decision = guard_publish(caller=getattr(args, "caller", ""), data_owner=getattr(args, "data_owner", ""), data_class=getattr(args, "data_class", "local-private"), destination=getattr(args, "destination", "local"), approved=bool(getattr(args, "approved", False)))
+                print(json.dumps(_decision, sort_keys=True))
+                return 0 if _decision["allowed"] else 1
+            elif _paction == "bridge-status":
+                _record = {"samtal": {"service": SAMTAL_DESCRIPTOR["service"], "availability": SAMTAL_DESCRIPTOR["availability"], "actions": SAMTAL_DESCRIPTOR["actions"]}, "samkoma": {"service": SAMKOMA_DESCRIPTOR["service"], "availability": SAMKOMA_DESCRIPTOR["availability"], "actions": SAMKOMA_DESCRIPTOR["actions"]}, "live_connection": "not-claimed"}
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Samtal bridge: {SAMTAL_DESCRIPTOR['service']} / {SAMTAL_DESCRIPTOR['availability']} / live connection not-claimed")
+                    print(f"Samkoma: {SAMKOMA_DESCRIPTOR['service']} / {SAMKOMA_DESCRIPTOR['availability']}")
+                return 0
+            else:
+                print("Usage: hermes volmarr productivity {packet|publish-check|bridge-status} [--json]")
+                return 2
+        except ProjectContextError as exc:
+            print(json.dumps({"error": exc.name, "detail": exc.detail}, sort_keys=True), file=sys.stderr)
+            return 1
     elif action == "persona":
         from pathlib import Path as _Path
         from .persona_ops import PersonaOps, PersonaOpsError
@@ -929,7 +986,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity} ...")
         return 2
 
     if getattr(args, "json_output", False):
