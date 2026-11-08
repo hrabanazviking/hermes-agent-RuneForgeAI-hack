@@ -197,3 +197,26 @@ branch touched neither file, so a keeper merge onto the new main
 should be conflict-free; the freeze-baseline README proof above stands
 relative to the freeze. The new roadmap workstreams are future-wave
 scope, not W01.
+
+Banking closure (keeper, 2026-11-07 ~22:12 EST): W01 BANKED to main.
+Local main was first fast-forwarded 281843f10f -> e229b1d390 (Volmarr's
+two docs commits that landed during the intake; README on main is now
+sha256 336813d11bbe... - his edit governs, freeze proof stands relative
+to the freeze). The pre-bank untracked 138-line copy of this file was
+preserved at ~/hermes-backups/pre-bank-2026-11-07/ (sha256 3aeec7c5...)
+after diff proved the branch version is a strict superset.
+Merge commit fb05080843 (no-ff, conflict-free, exactly as the banking
+note predicted). Tree proof: merged main differs from the tested
+integration tree d6461c1872 in exactly two files - README.md (1 line)
+and the roadmap (+493 lines); zero code differences.
+Extra keeper verification this tick: FULL tests/plugins on the merged
+integration tree via scripts/run_tests.sh = 262 files, 2,846 passed /
+7 failed / 5 skipped (log ~/team02-contracts.log); the 7 failures are
+the same known live-transport set, name-identical to the freeze.
+W00 remains open on: W00.03-ENC (needs Volmarr's encryption key or
+passphrase), W00.05 fixture archive, W00.06 boundary review, W00.07
+offline install recipe (U2 cold-install gate), integration-lock
+promotion (Team 09 / W08), and the 7-failure real-socket diagnosis
+(W05 carries the live wiring). Next per WAVE_PLAN: Team 03 W02/U2
+continues from its audit draft; Teams 04-08 muster gradually, 2-3
+team leads per tick, prep-only until their wave's base banks.
