@@ -602,6 +602,47 @@ class PersonaLiveBridge:
             included_ids = seen_ids
             excluded_rows = []
 
+        # P.018 (W07): the private/public filter at the packet seam.
+        # Destination arrives as a turn signal (default local, set
+        # explicitly by a cloud-bound caller); local turns are
+        # byte-identical to the pre-filter behaviour. Privacy
+        # labels come from the W03 manifest by document role; an
+        # unlabelled item is refused for cloud (fail-closed).
+        privacy_refused: list[dict[str, Any]] = []
+        destination = str(signals.get("destination") or "local")
+        if destination != "local":
+            from .canonical_library import ManifestStore
+            from .persona_ops import egress_decision
+            _manifest = ManifestStore(get_hermes_home()).load()
+            _privacy_by_role: dict[str, dict[str, Any]] = {}
+            for _rec in (_manifest.get("documents") or {}).values():
+                _privacy_by_role.setdefault(str(_rec.get("role")), {
+                    "privacy_class": _rec.get("privacy_class"),
+                    "destinations": list(_rec.get("destinations") or [])})
+            _filter_items = [{"id": "persona_kernel", **{
+                "privacy_class": max(
+                    (str(_privacy_by_role.get(r, {}).get("privacy_class") or "")
+                     for r in {str(e.get("role")) for e in compiled.get("index") or []}),
+                    key=lambda v: {"private": 2, "shared": 1, "public": 0}.get(v, 3),
+                    default=""),
+                "destinations": []}}]
+            for _row in retrieved:
+                _sid = str(_row.get("stable_id") or "")
+                _entry = by_id.get(_sid) or {}
+                _role = str(_entry.get("role") or _row.get("role") or "")
+                _filter_items.append({"id": _sid, "stable_id": _sid,
+                                      **_privacy_by_role.get(_role, {
+                                          "privacy_class": "",
+                                          "destinations": []})})
+            _decision = egress_decision(_filter_items, destination)
+            _allowed_ids = {str(i.get("id")) for i in _decision["allowed"]}
+            for _refused in _decision["refused"]:
+                privacy_refused.append({"id": _refused["item"],
+                                        "reason": "privacy_refused"})
+                if _refused["item"] == "persona_kernel":
+                    included_ids = included_ids - {"persona_kernel"}
+                else:
+                    included_ids = included_ids - {_refused["item"]}
         items: list[ContextItem] = []
         emitted: list[str] = []
         if "persona_kernel" in included_ids and echo_text:
@@ -640,7 +681,7 @@ class PersonaLiveBridge:
             session_id=session_id, signals=signals, generation=generation,
             kind="turn", problem=None,
             included=emitted + echo_included,
-            excluded=excluded_rows + [
+            excluded=excluded_rows + privacy_refused + [
                 {"id": sid, "reason": "over_tier_target"}
                 for sid in echo_excluded],
             budget=budget, tier=echo_tier, route=route)

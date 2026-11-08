@@ -267,6 +267,63 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         default="manual",
     )
     sleep_run.add_argument("--json", action="store_true", dest="json_output")
+    persona = subcommands.add_parser(
+        "persona",
+        help="Live persona operations (W07/P6): the section 12 command table",
+    )
+    persona_subcommands = persona.add_subparsers(dest="persona_action")
+    for _verb, _help in (
+        ("status", "Persona status from live reads (honest-empty aware)"),
+        ("files", "Manifest inventory, hash-verified live"),
+        ("validate", "Section 70 catalogue + on-disk checks"),
+        ("diff", "Active generation vs fresh compile (section 74)"),
+        ("test", "Measured scenario battery against this profile"),
+        ("diagnostics", "Read-only diagnostics bundle (P.020)"),
+        ("watchdog", "Bounded read-only drift diagnostics run"),
+    ):
+        _vp = persona_subcommands.add_parser(_verb, help=_help)
+        _vp.add_argument("--json", action="store_true", dest="json_output")
+    _search = persona_subcommands.add_parser("search", help="W04 retrieval over the real index")
+    _search.add_argument("query")
+    _search.add_argument("--limit", type=int, default=5)
+    _search.add_argument("--json", action="store_true", dest="json_output")
+    _inspect = persona_subcommands.add_parser("inspect", help="Section 71 inspect over the live compile")
+    _inspect.add_argument("section", nargs="?", default=None)
+    _inspect.add_argument("--json", action="store_true", dest="json_output")
+    _explain = persona_subcommands.add_parser("explain", help="Section 72 explain over a stored receipt")
+    _explain.add_argument("turn_id")
+    _explain.add_argument("--json", action="store_true", dest="json_output")
+    _reload = persona_subcommands.add_parser("reload", help="Reload: --dry-run (default) or --activate")
+    _reload.add_argument("--activate", action="store_true")
+    _reload.add_argument("--json", action="store_true", dest="json_output")
+    _export = persona_subcommands.add_parser("export", help="Write a section 75 bundle file")
+    _export.add_argument("--dest", default=None)
+    _export.add_argument("--json", action="store_true", dest="json_output")
+    _import = persona_subcommands.add_parser("import", help="Section 76 import plan (dry-run only in W07)")
+    _import.add_argument("bundle")
+    _import.add_argument("--json", action="store_true", dest="json_output")
+    _backup = persona_subcommands.add_parser("backup", help="Integrity-checked backup (labelled unencrypted-local)")
+    _backup.add_argument("--dest", required=True)
+    _backup.add_argument("--json", action="store_true", dest="json_output")
+    _restore = persona_subcommands.add_parser("restore", help="Restore a verified backup into a non-live profile")
+    _restore.add_argument("backup_dir")
+    _restore.add_argument("--target", required=True)
+    _restore.add_argument("--json", action="store_true", dest="json_output")
+    _read = persona_subcommands.add_parser("read", help="Paged read of one document (P.013 pager)")
+    _read.add_argument("document_id")
+    _read.add_argument("--cursor", type=int, default=0)
+    _read.add_argument("--max-bytes", type=int, default=None)
+    _read.add_argument("--json", action="store_true", dest="json_output")
+    _page = persona_subcommands.add_parser("page", help="Continue a retrieval/read handle")
+    _page.add_argument("handle")
+    _page.add_argument("--max-bytes", type=int, default=None)
+    _page.add_argument("--json", action="store_true", dest="json_output")
+    _edit = persona_subcommands.add_parser("edit", help="Bounded section editor (dry-run unless --confirm)")
+    _edit.add_argument("stable_id")
+    _edit.add_argument("--text", required=True)
+    _edit.add_argument("--confirm", action="store_true")
+    _edit.add_argument("--approved", action="store_true")
+    _edit.add_argument("--json", action="store_true", dest="json_output")
     agency = subcommands.add_parser(
         "agency",
         help="Manage the proposal-only agency review routine (Phase 7)",
@@ -655,6 +712,63 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
         else:
             print(f"Entity consolidation: {getattr(report, 'status', 'completed')}")
         return exit_code
+    elif action == "persona":
+        from pathlib import Path as _Path
+        from .persona_ops import PersonaOps, PersonaOpsError
+        _paction = getattr(args, "persona_action", None)
+        _ops = PersonaOps(ctx)
+        try:
+            if _paction == "status":
+                _record = _ops.status()
+            elif _paction == "files":
+                _record = _ops.files()
+            elif _paction == "search":
+                _record = _ops.search(getattr(args, "query", ""), limit=int(getattr(args, "limit", 5)))
+            elif _paction == "inspect":
+                _record = _ops.inspect(getattr(args, "section", None))
+            elif _paction == "explain":
+                _record = _ops.explain(getattr(args, "turn_id", ""))
+            elif _paction == "validate":
+                _record = _ops.validate()
+            elif _paction == "diff":
+                _record = _ops.diff()
+            elif _paction == "reload":
+                _record = _ops.reload_activate() if getattr(args, "activate", False) else _ops.reload_dry_run()
+            elif _paction == "export":
+                _dest = getattr(args, "dest", None)
+                _record = _ops.export_bundle(_Path(_dest) if _dest else None)
+            elif _paction == "import":
+                _record = _ops.import_dry_run(_Path(getattr(args, "bundle", "")))
+            elif _paction == "backup":
+                _record = _ops.backup(_Path(getattr(args, "dest", "")))
+            elif _paction == "restore":
+                _record = _ops.restore(_Path(getattr(args, "backup_dir", "")), _Path(getattr(args, "target", "")))
+            elif _paction == "read":
+                _record = _ops.read_page(getattr(args, "document_id", ""), int(getattr(args, "cursor", 0)), getattr(args, "max_bytes", None))
+            elif _paction == "page":
+                _record = _ops.continue_read(getattr(args, "handle", ""), getattr(args, "max_bytes", None))
+            elif _paction == "edit":
+                _record = _ops.edit_section(getattr(args, "stable_id", ""), getattr(args, "text", ""), confirm=bool(getattr(args, "confirm", False)), approved=bool(getattr(args, "approved", False)))
+            elif _paction == "watchdog":
+                _record = _ops.watchdog()
+            elif _paction == "test":
+                _record = _ops.test_battery()
+            elif _paction == "diagnostics":
+                _record = _ops.diagnostics()
+            else:
+                print("Usage: hermes volmarr persona {status|files|search|inspect|explain|validate|diff|reload|export|import|backup|restore|read|page|edit|watchdog|test|diagnostics} [--json]")
+                return 2
+        except PersonaOpsError as exc:
+            print(json.dumps({"error": exc.name, "detail": exc.detail}, sort_keys=True), file=sys.stderr)
+            return 1
+        if getattr(args, "json_output", False):
+            print(json.dumps(_record, sort_keys=True, default=str))
+        else:
+            print(f"Persona {_paction}: {_record.get('status', 'ok')}")
+            for _key in ("persona_id", "active_generation", "activation_scope", "document_count", "path", "generation"):
+                if _record.get(_key) is not None:
+                    print(f"{_key}: {_record[_key]}")
+        return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
         print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency} ...")
         return 2
