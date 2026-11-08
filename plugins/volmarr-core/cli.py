@@ -343,6 +343,36 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         "validate", help="Validate the promoted lock against this tree"
     )
     engines_validate.add_argument("--json", action="store_true", dest="json_output")
+    capabilities = subcommands.add_parser(
+        "capabilities",
+        help="N1 capability bus (W09): seed descriptors, read-only",
+    )
+    capabilities_subcommands = capabilities.add_subparsers(dest="capabilities_action")
+    capabilities_list = capabilities_subcommands.add_parser(
+        "list", help="List the built-in capability descriptors"
+    )
+    capabilities_list.add_argument("--json", action="store_true", dest="json_output")
+    capabilities_show = capabilities_subcommands.add_parser(
+        "show", help="One built-in capability descriptor, by service name"
+    )
+    capabilities_show.add_argument("name")
+    capabilities_show.add_argument("--json", action="store_true", dest="json_output")
+    capabilities_validate = capabilities_subcommands.add_parser(
+        "validate", help="Validate the built-in descriptors against this tree"
+    )
+    capabilities_validate.add_argument("--json", action="store_true", dest="json_output")
+    capabilities_authorize = capabilities_subcommands.add_parser(
+        "authorize", help="Run the N1 permission policy for one built-in service"
+    )
+    capabilities_authorize.add_argument("--service", required=True)
+    capabilities_authorize.add_argument("--caller", required=True)
+    capabilities_authorize.add_argument("--action", required=True)
+    capabilities_authorize.add_argument("--data-owner", required=True)
+    capabilities_authorize.add_argument("--data-class", required=True)
+    capabilities_authorize.add_argument("--destination", required=True)
+    capabilities_authorize.add_argument("--device", default=None)
+    capabilities_authorize.add_argument("--approved", action="store_true")
+    capabilities_authorize.add_argument("--json", action="store_true", dest="json_output")
     agency = subcommands.add_parser(
         "agency",
         help="Manage the proposal-only agency review routine (Phase 7)",
@@ -804,6 +834,43 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                 file=sys.stderr,
             )
             return 1
+    elif action == "capabilities":
+        from .capability_bus import BUILTIN_DESCRIPTORS, authorize as _cb_authorize, builtin_status as _cb_status
+        _caction = getattr(args, "capabilities_action", None)
+        if _caction == "list":
+            _record = _cb_status()
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                print(f"Capabilities: {_record['service_count']} built-in services, bus {_record['status']}")
+                for _row in _record["services"]:
+                    print(f"{_row['service']} {_row['version']}: {', '.join(_row['actions'])} / {_row['availability']}")
+            return 0 if _record["status"] == "ok" else 1
+        elif _caction == "show":
+            _found = next((d for d in BUILTIN_DESCRIPTORS if d["service"] == getattr(args, "name", "")), None)
+            if _found is None:
+                print(json.dumps({"error": "service_not_found", "detail": getattr(args, "name", "")}, sort_keys=True), file=sys.stderr)
+                return 1
+            print(json.dumps(_found, sort_keys=True, default=str))
+            return 0
+        elif _caction == "validate":
+            _record = _cb_status()
+            if getattr(args, "json_output", False):
+                print(json.dumps({"status": _record["status"], "problems": _record["problems"]}, sort_keys=True))
+            elif _record["problems"]:
+                for _problem in _record["problems"]:
+                    print(_problem)
+            else:
+                print("Capability bus: valid, all built-in descriptors verified against this tree")
+            return 0 if _record["status"] == "ok" else 1
+        elif _caction == "authorize":
+            _found = next((d for d in BUILTIN_DESCRIPTORS if d["service"] == getattr(args, "service", "")), None)
+            _decision = _cb_authorize(_found, caller=getattr(args, "caller", ""), action=getattr(args, "action", ""), data_owner=getattr(args, "data_owner", ""), data_class=getattr(args, "data_class", ""), destination=getattr(args, "destination", ""), device=getattr(args, "device", None), approved=bool(getattr(args, "approved", False)))
+            print(json.dumps(_decision, sort_keys=True))
+            return 0 if _decision["allowed"] else 1
+        else:
+            print("Usage: hermes volmarr capabilities {list|show|validate|authorize} [--json]")
+            return 2
     elif action == "persona":
         from pathlib import Path as _Path
         from .persona_ops import PersonaOps, PersonaOpsError
@@ -862,7 +929,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities} ...")
         return 2
 
     if getattr(args, "json_output", False):
