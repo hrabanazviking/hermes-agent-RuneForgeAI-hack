@@ -245,3 +245,29 @@ still awaits Volmarr's key/passphrase word. Next per WAVE_PLAN: Team 04
 W03 prep draft (P0P1_DESIGN_DRAFT.md) is complete and uncommitted in
 ~/hermes-team-04 - W03 implementation follows in roadmap order; Teams
 05-08 muster gradually, prep-only until their wave's base banks.
+
+Banking closure (keeper, 2026-11-07 ~23:47 EST): W03 / Phases P0+P1 BANKED to main.
+Team 04 branch yrsa/hermes-team-04 (3 commits over 073660ff15: 9fc83c0c69
+canonical library P.001-P.005 plugin-side, 7ea57de312 contracts + P.016 gate,
+de3a95806c implementation record + ledger) merged --no-ff by the keeper as
+973c55c93c, conflict-free; closure commit follows this entry. Keeper verified
+from logs on the laptop before banking: W03 tests 28 passed / 0 failed
+(~/team04-w03-both.log, final run 23:38 EST; the 23:34/23:36 scale logs record
+a mid-build test-expectation failure - adversary section list missing
+_preamble - fixed in the tests before the final green run); P.016 gate corpus
+148,174,328 bytes / 30 files, ingest wall 7.1s, RSS growth ~11.6 MB, byte
+identity across ingest/verify/reindex/export; contracts 119 files = 957
+passed / 7 failed / 1 skipped (957 = 929 baseline + 28 new; the 7 are the
+known live-transport set, name-identical - zero regressions; log
+~/team04-w03-contracts.log). Merged tree is byte-identical to the tested team
+tree (git diff de3a95806c..merge is empty). README untouched (sha256
+336813d11bbe...). Bug fixed in scope: a YAML front-matter closing --- was
+promoting its last line to a Setext heading, corrupting section identity -
+fixed in the ingester with regression tests. Ticketed remainders: serialisable
+parser-state checkpoints (W04 refinement if subspan work needs them) and the
+ulimit -v low-memory honesty case not yet exercised. W04 prep draft (Team 05)
+is complete and uncommitted in ~/hermes-team-05 (P2_DESIGN_DRAFT.md, 45,403 B,
+sha256 8fa79f40...) - W04 implementation follows now that W03 has banked; its
+steps 2+ consume W03 manifest/byte ranges per that draft. Teams 07/08
+worktrees mustered this tick at b5c6743a22 (yrsa/hermes-team-07/08), prep-only
+until their waves base. W00.03-ENC still awaits Volmarr word.
