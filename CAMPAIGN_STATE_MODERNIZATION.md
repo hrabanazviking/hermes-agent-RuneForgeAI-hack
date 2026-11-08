@@ -338,3 +338,41 @@ draft (41,557 B, sha256 dd263480...) now that W05 has banked;
 Team 08 W07/P6 prep draft complete and uncommitted in
 ~/hermes-team-08 (44,531 B, sha256 27d91eea...), prep-only until
 its wave's base banks. W00.03-ENC still awaits Volmarr word.
+
+## W06 / P5 BANKED — 2026-11-08 ~02:57 EST (keeper banking)
+Team 07 branch yrsa/hermes-team-07 banked: merge 8dd843d5ec
+of 420a9af46b onto main dad0e25d42; closure commit follows this
+entry. Keeper verified from logs on the laptop before banking:
+contracts 128 files = 1,029 passed / 7 failed / 1 skipped
+(1,029 = 991 W05 baseline + 38 new W06; the 7 are the known
+live-transport set, name-identical - zero regressions; log
+~/team07-w06-contracts.log); new W06 tests 38/38 across corpus,
+digest, adapter, bridge+CLI and gate logs; P.016 gate: 20 MB
+MEMORY.md (2,500 sections) + 2 MB USER.md imported byte-identical
+(sha256), 6 buried needles exact-recalled with hash-verified
+citations, paged-read concatenation byte-exact, zero source loss
+across sync/reindex/repair; neighbours 97 passed / 5 failed
+(live-transport members only); stock memory control 230/230.
+Merged tree byte-identical to the tested team tree (git diff
+420a9af46b..merge is empty). README untouched (sha256
+336813d11bbe...). What W06 delivered: memory_corpus.py (W03
+library rooted at the profile, dry-run-first verbatim import,
+transactional scoped writes, backup/restore with index rebuild),
+memory_digest.py (deterministic source-linked digest; section 41
+overwrite guard's first live caller), memory_adapter.py
+(stock-shaped tool surface with truthful full-store vs hot-view
+status; overflow lands in the full store, never silently cut),
+memory_bridge.py (PresentState packet source; PresentState stays
+sole prompt owner; P.018 double-gated cloud egress, private
+sources refused and named on receipts); plugin.yaml hygiene fix
+(mempalace/openviking bridge flags declared). Bugs fixed in
+scope: adapter entry-model flaw (entry edits now refused against
+free-form authored documents); CLI contract namespace mismatch
+(test-side). Honest remainders (in W06_P5_IMPLEMENTATION.md, NOT
+declared complete): M6 Desktop/API editor surface, M7 separate
+consolidation-link record, ChatIndex deferred, no Bifrost read
+path, multi-process concurrency battery not run, backup
+encryption inherits open W00.03-ENC. Next per WAVE_PLAN: Team 08
+W07/P6 implementation from its prep draft (44,531 B, sha256
+27d91eea...) now that W06 has banked; Team 09 W08/E0 next in
+order. W00.03-ENC still awaits Volmarr word.
