@@ -220,3 +220,28 @@ promotion (Team 09 / W08), and the 7-failure real-socket diagnosis
 (W05 carries the live wiring). Next per WAVE_PLAN: Team 03 W02/U2
 continues from its audit draft; Teams 04-08 muster gradually, 2-3
 team leads per tick, prep-only until their wave's base banks.
+
+Banking closure (keeper, 2026-11-07 ~23:10 EST): W02 / Phase U2 BANKED to main.
+Team 03 branch yrsa/hermes-team-03 (5 commits over banked 1cd7d59015:
+2e809aba89 PM release-age gate scoped to registry sources, 492aedf008
+ravens staging comment, e1e031461a launch recipe + cold-install script,
+05a445d8c0 SBOM + adapter matrix, 5ddd716ceb audit/completion/ledger)
+merged --no-ff by the keeper as 4c676d0587, conflict-free; closure commit
+follows this entry. Keeper verified from logs on the laptop before
+banking: contracts 117 files = 929 passed / 7 failed / 1 skipped (the 7
+are the known live-transport set, name-identical to the freeze baseline -
+zero regressions; log ~/team03-contracts.log); PM suites 9 new + 53
+existing passed, 0 failed; cold-install gate PASSED from a throwaway
+profile under $HOME (evidence ~/hermes-cold-evidence-20261107-230016/),
+closing W00.07; ravens selected in cold install: muninn 36 + huginn 27
+passed. SBOM committed: 358 components (352 registry, 3 editable-local,
+2 git, 1 archive-url). README untouched (sha256 336813d11bbe... = banked
+main). Ticketed beyond W02 (recorded in U2_COMPLETION.md): T1 from-scratch
+relock fails on spacy 2.0.17 sdist under Python 3.14 (committed lock is
+load-bearing - needs a dependency decision); T2 PyYAML ARM64 wheel smoke
+on Mimir open; T3 first-party ravens publication route design-only;
+T4 automated license/leak sweep beyond the SBOM not built. W00.03-ENC
+still awaits Volmarr's key/passphrase word. Next per WAVE_PLAN: Team 04
+W03 prep draft (P0P1_DESIGN_DRAFT.md) is complete and uncommitted in
+~/hermes-team-04 - W03 implementation follows in roadmap order; Teams
+05-08 muster gradually, prep-only until their wave's base banks.
