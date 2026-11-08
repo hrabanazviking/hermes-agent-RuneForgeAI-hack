@@ -92,7 +92,7 @@ Other important current boundaries: many advanced agency and persona components 
 
 ### 🔄 New modernization and unrestricted-persona roadmap
 
-**[Read the massive modernization and unbounded persona roadmap](ROADMAP_HERMES_MODERNIZATION_UNBOUNDED_PERSONA_2026-11-07.md)** for the next development campaign: 34 numbered sections, source/version inventory, guarded upstream integration, all current external engine upgrades, newly created RuneForgeAI app candidates, huge-file persona/memory architecture, plugin/service contracts, privacy, hardware qualification and actionable implementation/release gates.
+**[Read the massive modernization and unbounded persona roadmap](ROADMAP_HERMES_MODERNIZATION_UNBOUNDED_PERSONA_2026-11-07.md)** for the next development campaign: 35 numbered sections (0–34), source/version inventory, guarded upstream integration, all current external engine upgrades, newly created RuneForgeAI app candidates, huge-file persona/memory architecture, plugin/service contracts, privacy, hardware qualification and actionable implementation/release gates.
 
 Upstream status: the latest documented intake took official Hermes through the **30 October 2026** snapshot (`6bb377a5`). Official Hermes subsequently published **[v0.23.0, the Hearth Release, on 5 November 2026](https://github.com/NousResearch/hermes-agent/releases/tag/v0.23.0)**. This fork has **not** been merged to that newer release as part of this documentation update.
 
