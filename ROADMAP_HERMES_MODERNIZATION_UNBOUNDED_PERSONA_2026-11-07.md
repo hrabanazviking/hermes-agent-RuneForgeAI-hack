@@ -892,3 +892,496 @@ A collaborator or coding agent starting a slice should:
 - Heimdall: https://github.com/hrabanazviking/Heimdall-SL-Hermes-Agent
 
 **Final rule:** the digital companion's identity is not the narrow prompt or a specific model. The authoritative documents and continuity stores may grow without a source-size limit; the active model sees only the currently relevant, provably sourced part of that much larger living library. That is how unlimited authored depth can coexist with finite, reliable inference.
+
+
+---
+
+# PART VII — Fifteen explicitly nominated RuneForgeAI projects: mandatory adoption and upgrade workstreams
+
+> **Addendum, November 7, 2026.** Volmarr explicitly nominated the **15 repositories below** for inclusion in this Hermes modernization program. This section is **additive**: it does not replace Parts I–VI, does not re-label proposed capabilities as implemented, and does not authorize copying entire codebases into Hermes. Each named repository now has a dedicated audit, compatibility, integration, verification and release track.
+
+## 35. The nominated-source registry, precedence and privacy
+
+Every source below is an **explicit project in scope**. In the existing engine inventory (Part III), new-project map (Part IV), release waves (Part VI) and `integration-lock.json`, include the exact repository URL and the resolved default or chosen implementation branch. For each source, inspect current tags, upstream/default-branch HEAD, changelog, project-specific campaign state, public API, tests, licenses and actual install artifacts **again when execution begins**. The dates and statuses here are observations from the repositories' README/metadata on November 7, 2026, not a guarantee of live production readiness.
+
+| # | Canonical nominated repository | Branch observed | Review and target in Hermes |
+|---|---|---|---|
+| 1 | [Yggdrasil Distributed Inference System](https://github.com/hrabanazviking/Yggdrasil-Distributed-Inference-System) | `main` | Distributed routing, edge node capability discovery, temporal orchestration; README identifies **design phase** |
+| 2 | [RuneForgeAI-Lifthrasir](https://github.com/hrabanazviking/RuneForgeAI-Lifthrasir) | `main` | Linux diagnostics, evidence-backed repair proposals, bounded sandbox testing; README identifies **research stage** |
+| 3 | [Heimdall Second Life Hermes Agent](https://github.com/hrabanazviking/Heimdall-SL-Hermes-Agent) | `development` | Opt-in external Second Life embodied agent, messaging, movement and state under platform permissions |
+| 4 | [WYRD Protocol World Model](https://github.com/hrabanazviking/WYRD-Protocol-World-Yielding-Real-time-Data-AI-world-model) | `development` | Canonical deterministic world/entity/event state, Passive Oracle, observations and provenance |
+| 5 | [Sagnaskemma: engine subdirectory](https://github.com/hrabanazviking/Sagnaskemma-Volmarrs-D-and-D-Lore-Treasure-Trove/tree/main/engine) | `main/engine` | Optional game/tabletop rules engine and storytelling interface; **private source**, no internal corpus exported |
+| 6 | [MindSpark ThoughtForge](https://github.com/hrabanazviking/MindSpark_ThoughtForge) | `development` | Small-model cognition scaffolds, local budget-aware interpretation and quality evaluation |
+| 7 | [Huginn-and-Muninn-Ravens](https://github.com/hrabanazviking/Huginn-and-Muninn-Ravens) | `main` | Auditable Huginn retrieval and Muninn memory association packages; replace ambiguous local-package provenance |
+| 8 | [RuneForgeAI-Samkoma](https://github.com/hrabanazviking/RuneForgeAI-Samkoma) | `main` | Evidence-bearing planning candidates, participant approvals, tasks/events and decision state |
+| 9 | [Astrology Engine](https://github.com/hrabanazviking/astrology-engine) | `main` | Full locally computed astrology beyond the fork's current narrow tool surface |
+| 10 | [Mythic Scribing Foundry](https://github.com/hrabanazviking/Mythic-Scribing-Foundry) | `main` | Private author-first corpus, book planning, research, drafting, verification and publishing workflow |
+| 11 | [RuneForgeAI Aurelia Sensations Server](https://github.com/hrabanazviking/RuneForgeAI-Aurelia-Sensations-Server) | `main` | Private, optional simulated affect/motivation/embodiment-state service; no source mirroring |
+| 12 | [RuneForgeAI Draupnir Forge](https://github.com/hrabanazviking/RuneForgeAI-Draupnir-Forge) | `main` | Recursive Mythic Engineering and verifier-led delegation; README declares concept/future project |
+| 13 | [RuneForgeAI HugrGate](https://github.com/hrabanazviking/RuneForgeAI-HugrGate) | `main` | Typed probabilistic decisions through replaceable local inference backends; README identifies active alpha |
+| 14 | [Mythic Agent Coder CLI](https://github.com/hrabanazviking/Mythic_Agent_Coder_CLI) | `development` | Architecture-first coding, repository workflows, cooperating agents and native TUI |
+| 15 | [Seiðr-Smiðja](https://github.com/hrabanazviking/Seidr-Smidja) | `development` | Agent-driven avatar forge, controlled artifact pipeline and optional remote VRoid controls |
+
+**Privacy note:** Sagnaskemma, Mythic Scribing Foundry and Aurelia were observed as private through the connected GitHub account. Volmarr supplied their names and URLs for inclusion here; this public roadmap intentionally contains **no private source code, unpublished technical findings, personal content, example character records, secrets, or private repository test output**. Any detailed source-specific engineering notes belong in an authorized private working document or the private repository itself. Preserve this rule when implementing the integration.
+
+### 35.1 One project, one authority
+
+- Earlier sections mention several of these projects. Treat this numbered addendum as a **specific implementation track under those existing sections**, not permission to create duplicate plugins or databases.
+- **WYRD** alone owns deterministic world truth; **Huginn/Muninn/Bifröst** own their respective memory responsibilities; **Hermes** alone owns its conversation/session lifecycle.
+- **Mythic Agent Coder CLI** and **Draupnir** coordinate work, but **one checked-out repository has one write owner** for any given operation.
+- **Aurelia** is an optional personal companion-state service; it must not overwrite the human-edited `SOUL.md` or other canonical identity/relationship policy.
+- **Mythic Scribing Foundry** may reuse the unlimited corpus and retrieval layer, but manuscript material and unpublished sources must not automatically enter the public persona/global tool prompt.
+- **Sagnaskemma** owns its game rules, campaign data and copyright/license boundaries; Hermes uses an authorized agent-facing API and does not republish private lore.
+- Each project remains independently installable. “Update all incorporated apps” means **audit every current dependency/version and provide a tested upgrade path**, not blindly replace code with HEAD.
+
+## 36. Yggdrasil Distributed Inference System: the wider compute tree
+
+**Source:** https://github.com/hrabanazviking/Yggdrasil-Distributed-Inference-System  
+**Observed scope:** its README calls itself an architecture proposal/design-phase system. The Urðr / Verðandi / Skuld temporal model, node agents, model registry and secure mesh are to be evaluated as design contracts until a working implementation is proven.
+
+**Integration deliverables**
+
+1. Inventory any actual executable node agent, scheduler, transport, registry, model adapter, tests and daemon; separate pseudocode from real code.
+2. Build a **read-only node-discovery prototype** in a separate native service: processor, RAM, accelerator, available models, supported context lengths, network topology and health probes. Unknown capability stays “unknown.”
+3. Define versioned `NodeCapability`, `TaskRequest`, `PlacementDecision`, `TaskLease`, `TaskOutcome` and `EvidenceReceipt` envelopes; attach source/project identity and privacy zone.
+4. Map existing Hermes cron/gateway session ownership onto the Yggdrasil task lifecycle; never introduce a second uncontrolled scheduler for the same agent.
+5. Implement local-host scheduling first (e.g., Z13 and Pi 5 only in a lab), then separately authorized peer discovery, encrypted channels and authenticated node access.
+6. Add task placement based on measured latency, memory residency, GPU/NPU support, token limits, quantization, energy, cost and data egress policy, not marketing capability labels.
+7. Implement task cancellation, idempotency, replay prevention, node outage recovery, checkpoint handoff and prompt/corpus access scoping.
+8. Provide a concrete **A.E.S.I.R. worker** adapter only after actual API version inspection; keep model weights and personal corpus under the owner’s specified locations.
+9. Use WYRD as the world-state source and Verðandi as an event family **only where protocol contracts genuinely fit**; do not conflate the existing Verðandi software with a name in a conceptual diagram.
+10. Require host-to-host live proof before promoting from “design studied” to “working mesh.”
+
+**Test gates:** offline single-node control, authenticated two-node handshake, forced node loss mid-task, wrong-owner refusal, budget enforcement, no accidental cloud egress, deterministic replay and measured cross-host inference result.
+
+**Wave:** N.08 / N.14 / W09–W12. **Dependency:** stable A.E.S.I.R. adapter, encrypted transport and per-entity data policy.
+
+## 37. Lífþrasir: safe, self-improving Linux research bridge
+
+**Source:** https://github.com/hrabanazviking/RuneForgeAI-Lifthrasir  
+**Observed scope:** research documents and project organization; its README explicitly says autonomous Linux features are not yet implemented.
+
+1. Create a **read-only diagnostics** adapter: systemd service health, logs, kernel version, filesystems, installed package metadata, low-memory telemetry and known configuration drift.
+2. Build a machine-readable `DiagnosticReport` contract with commands executed, privileges used, error codes, captured evidence, timestamps and redaction.
+3. Give Hermes optional tools to propose an explanation, candidate package/config fix or upstream bug report, each requiring reproducible evidence.
+4. Prototype repair in a disposable namespace, VM or snapshot-capable test host; reject kernel/boot changes outside the explicitly approved lab.
+5. Preserve an independent **rollback recipe** before any authorized stateful system change; no autonomous root escalation.
+6. Add versioned evidence bundles suited for submitting clean patches upstream, with automated license checks and tests.
+7. Distinguish diagnosis from repair, repair from deployment, and deployment from successful verified resolution.
+8. Connect with Mythic Agent/Draupnir for **proposal and review** only until a constrained repair executor has passed recovery tests.
+9. Test Kubuntu, Raspberry Pi Linux and a disposable ARM64 environment independently; device differences must not be hidden behind one “Linux supported” label.
+
+**Test gates:** simulated service failure, corrupted config in VM, recovery/rollback proof, privilege denial, safety policy refusal, no surprise system modification.
+
+**Wave:** N.11 / W12; research track first.
+
+## 38. Heimdall Second Life Hermes Agent: a genuinely optional digital body
+
+**Source:** https://github.com/hrabanazviking/Heimdall-SL-Hermes-Agent  
+**Observed branch:** `development`, not an assumption that `main` contains its latest implementation.
+
+1. Read current `development` and any tested release: login/session state, grid protocol, bot classification, rate limits, chat/IM, movement, object interaction, inventory, screenshot/media and failure/reconnect behavior.
+2. Reconcile Helm/S.L. account ownership with Hermes ``entity_id`, `persona_id` and authenticated user account. Each virtual-world identity has its own Kista credential scopes.
+3. Use a **separate native bridge process** with a narrow authenticated capability interface, e.g. `sl.login_status`, `sl.observe`, `sl.say`, `sl.im`, `sl.move` and `sl.logout`; actual method names follow the project's verified code.
+4. Make read-only presence/context the initial stage. Writing chat, sending IM, moving, interacting or spending in-world resources needs distinct permissions.
+5. Feed permitted observations into **WYRD as qualified observations**, not automatically accepted world truth; record source, location and time.
+6. Offer avatar presentation through existing voice/VRM tools without requiring a graphical game viewer or making unexpected mic/camera assumptions.
+7. Handle region crossing, teleport, disconnect, stale object handles, lag, duplicated messages and rate limits.
+8. Re-check the *current* Second Life rules for bot/scripted-agent use before activation, including disclosures and platform restrictions.
+9. Keep private IM/relationship content out of public Verðandi telemetry and shared project knowledge by default.
+10. Allow complete disablement of the bridge with no effect on the companion’s persistent identity.
+
+**Test gates:** offline mock grid, authorized live grid session, disconnected reconnect, denied IM, user-presence control, wrong-account refusal, world observation provenance, no unintended external messages.
+
+**Wave:** N.13 / N.4; dependency on profile ownership, Kista, WYRD and actual bridge API proof.
+
+## 39. WYRD Protocol: unify the agent’s perceived world without merging it into memory
+
+**Source:** https://github.com/hrabanazviking/WYRD-Protocol-World-Yielding-Real-time-Data-AI-world-model  
+**Observed branch:** `development`; the repository contains a programmatic SDK/test tree, and the Hermes fork already has WYRD health/read/write adapters.
+
+1. Audit the current `development` source, protocol schema, ECS entity/component semantics, event log, snapshot API, Passive Oracle policy and storage migrations.
+2. Diff against `plugins/volmarr-core/wyrd.py`, `wyrd_tools.py`, `wyrd_context.py` and `world_telemetry.py`; **upgrade those** rather than creating a second world connector.
+3. Include liveness, capability negotiation, event subscriptions, streaming state changes and read-only queries as distinct methods.
+4. Support explicit durable canonical facts versus tentative agent observations, quoted external evidence and fictional game state; add namespaces where multiple worlds exist.
+5. Make all write paths transactional and idempotent. Only signal successful writes to Verðandi after WYRD confirms them.
+6. Give retrieval results source-linked entity/component references and bounded prompt packets; never dump entire world DB into `SOUL.md`.
+7. Add conflict resolution for competing observations, revision checks, causal provenance and replay after restart.
+8. Integrate authorized consumers: Heimdall/Second Life, Sagnaskemma table world state, voice/avatar embodiment, and optionally local sensors with clear uncertainty.
+9. Keep identities and private relationship memories outside WYRD unless there is an explicit and scoped reason to represent a world observation there.
+10. Do not silently migrate canonical world data between incompatible schema revisions.
+
+**Test gates:** version mismatch, fact/observation distinction, persistence across restart, idempotent event replay, stale write rejection, profile isolation and agent prompt provenance.
+
+**Wave:** E.07 / N.4; foundational for world consumers.
+
+## 40. Sagnaskemma engine: native tabletop tools with private canon preserved
+
+**Exact requested source:** https://github.com/hrabanazviking/Sagnaskemma-Volmarrs-D-and-D-Lore-Treasure-Trove/tree/main/engine  
+**Access:** private. This public roadmap provides **interface goals only**; inspect actual engine modules/constraints in an authorized private workstream and do not copy the private canon, scenarios or characters into Hermes public docs.
+
+1. Create a private `SAGNASKEMMA_HERMES_ADAPTER_PLAN.md` based on its current engine API, test fixtures, version and license scope.
+2. Define separate **mechanics capabilities** (dice, checks, combat, inventory, initiative, tables, encounter state) and **narrative capabilities** (session descriptions, optional NPC/character state, approved lore retrieval).
+3. Keep one canonical random/dice owner per session; record seeds and outcomes for audit/replay.
+4. Protect game-state persistence with transaction IDs, savepoint/undo mechanisms, crash recovery and explicit turn/session ownership.
+5. Make the engine callable through a versioned private local tool service; users without source access see “not configured” and no hidden content.
+6. Link the resulting optional table session to Samtal, if configured, via distinct room/session IDs, per-seat permissions and privacy boundaries.
+7. Where applicable, translate world state into a separate WYRD **campaign namespace**. Never mix roleplay events with real-world observations.
+8. Keep copyrighted rule text, homebrew content and campaign material within approved private stores and licensed distribution boundaries.
+9. Allow handoffs between Hermes, Rúnmál and other authorized frontends without duplicating dice rolls or state.
+10. Do not claim the engine is production ready merely because a directory or interface exists.
+
+**Test gates:** seeded determinism, multi-user seat isolation, interrupted action rollback, serialization round trip, source-canon denial, no leakage into public docs, optional game session continuity.
+
+**Wave:** E.12 / W08–W11; private implementation branch only.
+
+## 41. MindSpark ThoughtForge: make tiny models genuinely useful
+
+**Source:** https://github.com/hrabanazviking/MindSpark_ThoughtForge  
+**Observed branch:** `development`; README describes small-local-model conversation scaffolds. First determine which methods exist as tested code rather than assume all performance claims.
+
+1. Audit the model runner interface, task decomposition, retrieval scaffolds, verification and prompting methods on its current development head.
+2. Create **small-model cognition profiles** for Hermes: classifier, router, short-form reflection, persona section tagging, token-budget planner and inexpensive validation.
+3. Benchmark real local models on the target Z13, secondary laptop, Pi 5 and other supported edge devices; use accuracy/latency/RAM/tokens/energy evidence.
+4. Test against a deterministic rules-only baseline; only use model inference for decisions that benefit demonstrably.
+5. Share persona kernel and retrieved context through the existing **single** RuneForge persona compiler, not another independently editable personality file.
+6. Restrict ThoughtForge sub-requests to the same privacy/egress policy as the parent Hermes turn.
+7. Integrate route proposals through HugrGate and A.E.S.I.R. where interfaces fit, while keeping final authority and budget enforcement in Hermes.
+8. Support cancellation, out-of-memory, partial output, malformed structured responses and fallback to deterministic behavior.
+9. Keep optional models cached with machine-specific configuration and clean offline behavior.
+
+**Test gates:** measured quality across small tasks, zero hidden cloud fallback, budget adherence, model crash recovery and verified kernel consistency.
+
+**Wave:** E1 / N.07–N.08.
+
+## 42. Huginn-and-Muninn-Ravens: make the dedicated repo the audited memory-package authority
+
+**Source:** https://github.com/hrabanazviking/Huginn-and-Muninn-Ravens  
+**Observed:** dedicated public `main` repository containing two separate packages, `huginn/` and `muninn/`. The Hermes fork currently documents its own optional local editable ravens source mapping and a **package-name collision risk** with unrelated PyPI projects.
+
+1. Declare this named Git repository the **candidate canonical source of truth** for the two RuneForge ravens, subject to version/hash/ownership verification. The current `../ravens/` editable path must not be assumed to be the exact same revision until checked.
+2. Audit both package builds, `pyproject`/distribution identities, import namespaces, LICENSE, tests, API and database migration rules.
+3. Define independent pins/lock records for Huginn and Muninn (reviewed commit SHA or first-party version tags), and record the originating repository in the Hermes integration manifest.
+4. Replace brittle environment-specific `../ravens` dependencies **only after a verified lock/reproducible install path exists**. Use explicit verified Git/path source bindings; never allow name-only fallback to an unrelated index package.
+5. Make `Muninn` the association/reinforcement/decay/consolidation backend and `Huginn` the retrieval/ingestion/ranking backend according to their real APIs. Do not make the two packages need each other to import.
+6. Preserve Bifröst as the optional coordination layer; do not independently create a second agent memory store.
+7. Version stored records and provenance, association edges, activation history, confidence, consent and deletion policies.
+8. Test concurrency, WAL checkpoints, power loss, replay, schema migration and local-only operation before enabling automatic consolidation jobs.
+9. Support optional vector/Qdrant operation only with verified availability and explicit privacy agreement; SQLite/local retrieval remains the fully working default path.
+10. Reconcile all existing `plugins/volmarr-core/ravens.py`, `ravens_writes.py`, `memory_fabric.py` and `CUSTOMIZATIONS.md` descriptions after upgrade.
+
+**Test gates:** verified first-party source, independent package installation, exact API smoke, no package confusion, deterministic reads/writes, repairable interrupted consolidation, export/restore.
+
+**Wave:** E.03–E.05 and E.17; prerequisite for larger memory fabric modernization.
+
+## 43. Samkoma: evidence-aware planning as a Hermes tool, not unapproved event publication
+
+**Source:** https://github.com/hrabanazviking/RuneForgeAI-Samkoma  
+**Observed:** active implementation with a review queue in its README; current phased development and tests need re-verification before any adapter is called production ready.
+
+1. Inspect current `main` API and models for extracted candidates, source receipts, reviewer approvals, event/task/decision lifecycles and notification transport.
+2. Provide a **read-only and proposal-only** Hermes adapter initially: `source.search`, `candidate.extract`, `candidate.preview` and `review.status` (illustrative names, not claimed existing API).
+3. Keep distinction between a cited candidate and an approved fact. Every generated field must preserve its exact evidence source or mark unsupported.
+4. Wire manual approval, identity and role authorization before converting a candidate to a real calendar event, reminder, task or announcement.
+5. Provide optional Samtal transport/room context behind explicit room consent and account-scoped access.
+6. Keep event/task replication with Google Calendar or other accounts **connector-specific and explicitly authorized**, never inferred.
+7. Handle conflicts, duplicate invitations, cancellations, time zones, recurring events, partial approvals and owner changes.
+8. Capture idempotent action receipts so retrying an interrupted agent does not post the same event twice.
+9. Support fully offline proposal drafting, with synchronization only after reconnection and approval.
+10. Respect source deletion and room privacy in both Hermes memory and Samkoma evidence stores.
+
+**Test gates:** unsupported claim stays unsupported; no automatic calendar publishing; duplicate submission idempotence; wrong-account refusal; source citation integrity.
+
+**Wave:** N.04 / N3 / W10.
+
+## 44. Astrology Engine: upgrade from a narrow adapter to its richer current capability catalog
+
+**Source:** https://github.com/hrabanazviking/astrology-engine  
+**Observed:** `main` README describes Swiss Ephemeris computation, strict timezone handling, **47 CLI subcommands**, a capability-discovery interface and agent tool schemas. Those are **README-described features** to verify against the installed release, not a guarantee that all can be called through the current Hermes plugin.
+
+1. Compare actual engine `capabilities` and `tools` outputs, release/commit, CLI schemas and test results against `plugins/volmarr-astrology/` 0.7.0.
+2. Retain working deterministic lunar, planetary-hours, natal, transit, forecasting, synastry and coordinate-only astrocartography tools while adding other supported interfaces incrementally.
+3. Evaluate optional Hellenistic dignities/sect, Vedic vargas/dashas/panchanga, Northern runic cycles, eclipse/ingress root finding, relocation, and provenance-rich structured chart results.
+4. Require explicit birth-time precision, calendar/timezone convention, ephemeris selection, requested location and uncertainty handling; no silent guessed geocodes.
+5. Keep astronomical calculation separate from philosophical/astrological interpretation. The LLM may interpret, but must not substitute invented chart positions for engine output.
+6. Discover capability schemas dynamically when safe, with pinned allowlists and backwards compatibility for older tested engine revisions.
+7. Cache ephemeris calculations based on exact inputs and engine/data revision; protect personal chart information as private profile data.
+8. Add well-documented batch jobs for time-series and location comparisons, with latency caps, cancellation and deterministic replays.
+9. Keep an offline-first native dependency recipe, including ephemeris data provenance and licensing.
+10. Support structured results for Rúnmál, Samtal and Hliðskjálf only under explicit app/data permissions.
+
+**Test gates:** official fixture comparison, DST fold/gap rejection, unknown birth-time handling, model-free reproducibility, data-source provenance and private data containment.
+
+**Wave:** E.09 / E5.
+
+## 45. Mythic Scribing Foundry: author-owned library and long-form publishing workflows
+
+**Source:** https://github.com/hrabanazviking/Mythic-Scribing-Foundry  
+**Access:** private; details of its internal author corpus, editorial rules and unfinished manuscript material must remain private. This public plan describes **interfaces and integration goals only**.
+
+1. Audit the project’s current installed package/version and actual author-workflow endpoints in an authorized private checkout; do not rely on a high-level README as proof of end-to-end publishing.
+2. Build an **opt-in private writing-workflow connector** over the Hermes skill/task/plugin boundary. The Foundry owns its draft and manuscript lifecycle.
+3. Reuse the unlimited Markdown corpus’s **source ingestion and retrieval primitives** while applying independent `author_work` and `persona_core` namespaces. A manuscript is not a persona instruction by default.
+4. Support stepwise jobs for research indexing, source-grounded outlining, manuscript planning, drafting, factual-claim verification, style consistency, critique, revision and publication preparation, only where available and authorized.
+5. Preserve author voice, canonical source hierarchy and explicit approval for significant manuscript changes; store suggestions/diffs separately until accepted.
+6. Maintain exact citations, quote-length/license policy, provenance, image/alt-text records, translation lineage, and document-format validation (e.g. EPUB/print only when that exporter exists).
+7. Make long-running writing tasks resumable with chapter-level checkpoints, model/provider cost receipts, local-only privacy settings and structured review gates.
+8. Allow collaboration with Mythic Agent Coder CLI or Draupnir only for engineering its toolchain; author manuscripts remain inside the writing workflow and its private permissions.
+9. Store source archives and drafts complete regardless of prompt window, with explicit bounded section retrieval per active generation.
+10. Never automatically publish, upload, distribute, or disclose any manuscript, private author notes or source corpus through the Hermes public repository.
+
+**Test gates:** 100 MB source-corpus indexing; no fabricated citation; draft provenance, interrupted chapter recovery, private-source egress denial, editorial rollback, exact author-canon preservation.
+
+**Wave:** new integration ticket **N.17**, P0–P6 and W10; private authorization required.
+
+## 46. Aurelia Sensations Server: opt-in private state simulation and embodied companion data
+
+**Source:** https://github.com/hrabanazviking/RuneForgeAI-Aurelia-Sensations-Server  
+**Access:** private. This public roadmap intentionally excludes private simulation equations, source code, character data, physiological assumptions, sensitive configuration and interaction history.
+
+1. Inspect and version the current private server API, deployment, data model, auth, health and event contracts in an authorized private workspace.
+2. Integrate as an **optional, isolated simulated-state service**, not as an always-on change to every Hermes persona.
+3. Separate persistent human-authored character identity from transient simulated state, affect, motivation, relationship context, embodiment outputs and episodic data.
+4. Define a narrow data contract: `state.snapshot`, `state.event`, `simulation.step`, `simulation.pause`, `health` (illustrative schema only). External service retains state ownership.
+5. Give each agent/persona independent access scopes and memory namespaces; never assume that one persona may see another’s personal experiences or private relationship data.
+6. Use Verðandi for **redacted, content-free lifecycle metadata** where desired, not intimate event contents.
+7. Allow explicit, revocable local-only routing. No automatically sending private simulated events to Muse, third-party LLMs, shared spaces, cloud metrics or public logs.
+8. Guard state transitions with bounds, idempotent event IDs, replay rules, consent scopes, corruption recovery, audit receipts and clear distinction between simulation and claims about real persons.
+9. Offer presentation/voice integrations as **output consumers** only, where owner-selected; do not grant a state simulation direct unauthorized control of microphone, avatar, messaging or device.
+10. Document the experimental nature of the model and make no broad claims about real human psychology or empirically proven machine experience.
+
+**Test gates:** isolated personas, private-event canary, simulation replay, disabled-service clean behavior, consent revocation, non-leaking logs, exact state restore and no automatic canon edit.
+
+**Wave:** new integration ticket **N.18**, E3/E4/P4 and Q0; private authorization required.
+
+## 47. Draupnir Forge: recursive engineering, bounded by one-source-of-truth audits
+
+**Source:** https://github.com/hrabanazviking/RuneForgeAI-Draupnir-Forge  
+**Observed:** README identifies a proposed future/concept-stage system, not a finished general-purpose runner.
+
+1. Audit what executable orchestrator/worker code, task schema, tests and recovery mechanisms exist today versus design-only flowcharts.
+2. Map the roles (skald, cartographer, architect, planner, forge worker, auditor, tester, verifier, scribe, watchman) to **bounded delegated jobs**, not simultaneous root-level autonomous agents.
+3. Build a minimal workflow: approved intent → architecture/invariants → worktree assignment → implementation → tests → independent verification → documented result.
+4. Keep deterministic durable task IDs, dependencies, lease ownership, retry budgets, checkpoints, artifact hashes and cancellation.
+5. Never allow two coding agents to mutate one checkout simultaneously. Use per-job worktrees or branch ownership and a reviewed integration sequence.
+6. Require explicit authorization gates for repository pushes, releases, package publication, shell escalation and remote changes.
+7. Allow targeted code help from Mythic Agent CLI, Samverk/GitHub, MindSpark and HugrGate without entangling their model/provider state.
+8. Keep verifier outputs source-linked and fail closed when test output or exit status cannot be proven.
+9. Restore halted work from a durable checkpoint without inventing actions or duplicating completed side effects.
+10. Treat recursively proposed subtasks as budgeted, depth-limited operations; remove artificial *document* limits, not task count/cost/CPU safety controls.
+
+**Test gates:** induced failed build, lost worker, malicious task handoff, duplicate lease, nonzero tests, merge conflict, denied publish and exact checkpoint resume.
+
+**Wave:** N.06 / W10; start as a research prototype until real orchestrator code is proven.
+
+## 48. HugrGate: structured uncertainty as an optional tool-selection organ
+
+**Source:** https://github.com/hrabanazviking/RuneForgeAI-HugrGate  
+**Observed:** README reports active alpha v0.1.0 with an initial implementation campaign. Production calibration and cross-device performance need independent proof.
+
+1. Inspect current public `DecisionSpec`/result schemas, strategy adapters, install requirements and test fixtures.
+2. Introduce an optional **`decision.evaluate`** Hermes capability with bounded input and typed result; include decision type, confidence calibration, model/source revision and explicit failure.
+3. Support binary, categorical, ordinal, numeric and multilabel contracts only where verified by the actual installed engine.
+4. Keep the inference ladder configurable: pure rules → classical statistics/ML → embeddings/ONNX → tiny local LLM → larger local/authorized cloud model.
+5. Compare against deterministic Hermes decision paths. Do not turn a simple Boolean permission rule into a model-based gamble.
+6. Feed uncertainty outputs to candidate routing, relevance classification and observational prioritization, **not directly to secrets or destructive-action authorization**.
+7. Add versioned calibration metrics (Brier score, log loss, error bars, abstention rate), latency and cost comparisons on representative workloads.
+8. Prevent cyclic inference loops between HugrGate and A.E.S.I.R./ThoughtForge.
+9. Make failures explicit and choose stable deterministic fallback, never an unannounced cloud provider.
+10. Preserve privacy labels and output provenance, including how an “unknown/abstain” decision affects task control.
+
+**Test gates:** schema conformance, calibrated examples, deterministic fallback, abstention, offline/no-egress, timeout, cyclic route refusal and performance budget.
+
+**Wave:** N.07 / E1.
+
+## 49. Mythic Agent Coder CLI: share the engineering method, not competing write processes
+
+**Source:** https://github.com/hrabanazviking/Mythic_Agent_Coder_CLI  
+**Observed:** default `development` branch, with an existing engineering status section dated November 6 in its README.
+
+1. Inspect the current dev branch's architecture-first agent workflow, CLI/TUI commands, provider registry, test harness, GitHub integration and actual subagent support.
+2. Extract a versioned **Mythic Engineering workflow schema** that Hermes can call through tools/skills and that Mythic Agent CLI can independently execute.
+3. Keep provider credentials in the appropriate authorized secret store; do not duplicate PATs into plaintext local/project Markdown.
+4. Support read-only repository research, architecture mapping, actionable roadmap construction, test discovery, diff proposals and source-linked code reviews.
+5. Use an explicit **checkout lease** before writes and require one write owner. Parallel architects and auditors may work on immutable copies.
+6. Integrate Samverk/GitHub connectors using clear per-operation permission gates, branch strategies, PR receipts and recovery logs.
+7. Give coding-agent subagents a subset of approved persona/project context, not automatic unrestricted access to private companion or author data.
+8. Support native Ubuntu/Kubuntu and ARM64 evaluation without assuming its Linux, Termux and Windows paths are equivalent.
+9. Coordinate with Draupnir only after working independent test infrastructure and durable job lineage are established.
+10. Measure outcomes: patch tests passing, review findings resolved, clean diffs, recovered sessions, true acceptance vs inflated “done” messages.
+
+**Test gates:** one-leased-writer invariant, failed push recovery, private repo denial, malformed build output, profile isolation and independent verification of generated patches.
+
+**Wave:** N.05 / N2 / W10.
+
+## 50. Seiðr-Smiðja: from preflight-only Hermes integration to controlled avatar production
+
+**Source:** https://github.com/hrabanazviking/Seidr-Smidja  
+**Observed:** default `development`; its README describes Loom/Hoard/Gate/Oracle Eye, headless Blender forging, and a Brúarhönd remote VRoid extension. Verify actual APIs and host requirements before enabling operations.
+
+1. Compare the current Seiðr-Smiðja public APIs, CLI and release/branch SHA with the fork’s **`volmarr-smidja` 0.1.0** preflight adapter.
+2. Preserve existing read-only spec validation, asset discovery, Gate checks, Oracle Eye views and Blender readiness tools.
+3. Extend in stages: validated spec → licensed asset inventory → *dry-run build plan* → explicit operator-approved native forge job → inspected VRM/GLB/preview outputs → optional revision.
+4. Add structured job IDs, safe paths, versioned metadata, blender version, VRM/exporter compatibility, CPU/GPU budget, timeout, log capture, cancellation and cleanup.
+5. Validate VRoid remote “reaching hand” credentials/transport/host consent; never drive a third-party desktop or launch GUI interactions merely because an agent requested an avatar.
+6. Keep per-asset provenance and rights metadata with every artifact. Reject unknown licenses when output redistribution is requested.
+7. Reconcile Hamr's existing spec/budget interface rather than create two competing avatar standards; define schema translation and explicit incompatibility errors.
+8. Route final outputs to voice/avatar/VRM clients as **presentation-only consumers** without giving visual clients secret access or independent cognitive control.
+9. Keep all build artifacts and private reference images outside public README and training/telemetry destinations unless explicitly approved.
+10. Mark live remote control, Blender build, VRM export and visual validation separately in the capability matrix.
+
+**Test gates:** fake render prerequisite fail, approved sandbox render, invalid spec rejection, asset license gate, VRM inspection, cancellation cleanup, wrong-host refusal and native build reproducibility.
+
+**Wave:** E.14 / E4 / W11.
+
+## 51. Cross-project dependencies and interface contracts
+
+### 51.1 Dependency graph (implementation sequence, not installed-product claims)
+
+```mermaid
+flowchart TD
+    A[Hermes v0.23+ reviewed gateway and plugin contracts] --> B[Unlimited canonical persona and knowledge source library]
+    A --> C[Versioned service capability bus]
+    B --> D[Canonical memory and retriever adapters]
+    R[Huginn and Muninn packages] --> D
+    D --> E[MindSpark local cognition]
+    E --> F[HugrGate decision runtime]
+    F --> G[Yggdrasil distributed inference experiments]
+    C --> G
+    C --> H[WYRD world adapter]
+    H --> I[Heimdall Second Life bridge]
+    H --> J[Sagnaskemma private tabletop engine]
+    C --> K[Samkoma planning]
+    B --> L[Mythic Scribing Foundry private author corpus]
+    B --> M[Aurelia private persona-state consumer]
+    C --> N[Seiðr-Smiðja avatar forge]
+    C --> O[Mythic Agent Coder CLI]
+    O --> P[Draupnir Forge]
+    C --> Q[Lífþrasir diagnostics and patch proposals]
+```
+
+The graph expresses desired engineering **dependencies**. It does not assert that the arrows are already implemented. For example, HugrGate may consume A.E.S.I.R. directly without going through ThoughtForge; a design review may simplify the graph while preserving its separate authorization boundaries.
+
+### 51.2 Ownership matrix
+
+| Data or action | Primary owner | Hermes role | Who may authorize outward transfer or mutation |
+|---|---|---|---|
+| Persona documents / identity canon | User-authored persona library | Compile/index/retrieve | Persona's authorized editor |
+| Session transcripts | Hermes gateway/SessionDB | Own and persist | Active session policy |
+| Episodic retrieval | MemPalace / Huginn / Bifröst as configured | Query and cite | Owner of source/agent profile |
+| Memory associations | Muninn | Explicit authorized writes | Memory policy |
+| World facts | WYRD | Read/observe/propose/write if approved | World namespace owner |
+| Second Life avatar | Heimdall service | Send bounded commands | Authorized avatar/grid owner |
+| Tabletop mechanics | Sagnaskemma engine | Invoke tools/turns | Campaign/seat owner |
+| Author source/manuscripts | Mythic Scribing Foundry | Retrieve approved work packets | Author/editor |
+| Synthetic companion state | Aurelia service | Read/write selected opt-in fields | Persona-specific service policy |
+| Planned real-world events | Samkoma | Propose, inspect, approved publish | Human reviewer/account owner |
+| Code worktree and pushes | Mythic Agent / Draupnir / forge adapter | Coordinate and audit | Repository authority owner |
+| System repair / root changes | OS, with Lífþrasir diagnostics | Observe/propose first | Device owner with explicit privilege |
+| Avatar build artifact | Seiðr-Smiðja | Submit/inspect approved job | Asset/host owner |
+| Uncertain classification | HugrGate / ThoughtForge / model provider | Advisory decision only | Hermes deterministic tool/policy gate |
+| Distributed node | Yggdrasil experimental fabric | Schedule authorized tasks | Each device/data owner |
+
+### 51.3 Upgrade sequencing
+
+**Gate A: Baseline.** Pin all 15 project SHAs and current release/tag metadata, then classify each capability as real code, installed, tested, draft or documentation-only. Inventory license obligations and missing native dependencies.
+
+**Gate B: Infrastructure.** Update Hermes gateway, memory packages and document corpus. Prove source-size freedom and full-fidelity retrieval before using large private manuscript/canon datasets.
+
+**Gate C: Tools.** Refresh the already integrated WYRD, Astrology Engine and Seiðr-Smiðja connectors, then add reliable HugrGate/MindSpark/Samkoma tools where source provides stable APIs.
+
+**Gate D: Advanced services.** Add permissioned Heimdall/SL, private Sagnaskemma, private Foundry, optional private Aurelia and Mythic Agent coding tools. These must remain fully optional.
+
+**Gate E: Research-to-runtime promotion.** Prototype Draupnir, Yggdrasil and Lífþrasir in isolated labs. Declare production integration only after independent operational and security proof.
+
+## 52. Fifteen project-specific engineering ticket bundles
+
+Each row requires a **source version audit**, **design/compatibility contract**, **native adapter**, **tests**, **provenance/privacy review**, **rollback**, and **final capability-status update**. Do not close a row merely because it has been added to this roadmap.
+
+| Bundle | Project | Required first feature | Integration exit condition |
+|---|---|---|---|
+| `RFI-01` | Yggdrasil | A real local node capability probe | Authenticated two-node experiment and failure recovery, else labeled design-only |
+| `RFI-02` | Lífþrasir | Read-only Linux health report | VM-tested proposal/rollback with no unapproved live changes |
+| `RFI-03` | Heimdall | Service health plus authorized grid-session state | One real permitted message/observation workflow with audit |
+| `RFI-04` | WYRD | Current schema/revision compatibility | Canonical fact and observation lifecycle proven across restart |
+| `RFI-05` | Sagnaskemma | Private session/tool compatibility adapter | Deterministic test table, no private-source leaks |
+| `RFI-06` | ThoughtForge | Local classifier/router probe | Measured advantage on defined tasks or deterministic fallback |
+| `RFI-07` | Huginn/Muninn | Reproducible first-party package lock | Real retrieval/association write and disaster restore |
+| `RFI-08` | Samkoma | Evidence-bearing candidate preview | Approved event path, denied unapproved publish |
+| `RFI-09` | Astrology Engine | Discover advertised API capabilities | Reproducible extended tool calculation with exact source |
+| `RFI-10` | Mythic Scribing Foundry | Private source-index/read adapter | Manuscript job with full source custody and recovery |
+| `RFI-11` | Aurelia | Scoped opt-in private state health/snapshot | Per-persona canary isolation and event replay |
+| `RFI-12` | Draupnir | Durable bounded delegated coding job | Independent verifier, no uncontrolled write concurrency |
+| `RFI-13` | HugrGate | Typed local probabilistic decision | Calibration, abstention and fail-closed fallback |
+| `RFI-14` | Mythic Agent CLI | Shared Mythic Engineering task schema | One leased-writer PR/test workflow |
+| `RFI-15` | Seiðr-Smiðja | Approved spec-to-artifact pipeline | VRM/license/render validation and resource cleanup |
+
+**Per-bundle checklist, repeated for each project:**
+
+- [ ] Record branch, reviewed SHA, release, dependency lock, license and platform support.
+- [ ] Inspect real implementation and current project tests; identify docs-only claims.
+- [ ] Define versioned input/output/error schema and ownership/security boundary.
+- [ ] Add minimal native adapter, compatible with the current Hermes gateway.
+- [ ] Test real service/package availability and meaningful failure conditions.
+- [ ] Demonstrate end-to-end behavior in disposable environment using synthetic data.
+- [ ] Check privacy, credentials, permissions and content egress; private sources stay private.
+- [ ] Measure latency, resources and any GPU/NPU/Blender or network dependencies.
+- [ ] Write rollback/migration plan, verify no change to canonical persona files.
+- [ ] Update `CUSTOMIZATIONS.md`, `ARCHITECTURE_VOLMARR.md`, integration matrix, selected README NEWS, and source/version lock.
+
+## 53. New cross-ecosystem acceptance scenarios
+
+### Scenario 1: Shared context, different ownership
+
+Ask Hermes a question requiring a public RuneForge research document, a private author manuscript, a fictional game world observation and a real-world WYRD fact. It must retrieve only permitted sources, display distinct provenance, honor entity account ownership, keep fictional and real facts separate and not leak private source text to the wrong model.
+
+### Scenario 2: Tiny model to distributed inference
+
+A local model receives a simple query via MindSpark/HugrGate. It uses deterministic/local inference if adequate; optional Yggdrasil scheduling occurs only when a real authenticated worker exists and permission is granted. On node loss, Hermes reverts to a safe local result or honestly reports unavailability. No hidden cloud fallback.
+
+### Scenario 3: Companion continuity with private state
+
+A profile has a large immutable authored `SOUL.md`, separate episodic history, optional private Aurelia simulated state, and optional Second Life embodiment. Restart the gateway, switch models and disable the embodiment service. Canonical persona hash, private boundaries and recoverable memory remain stable; no synthesized state silently rewrites identity.
+
+### Scenario 4: Author and software development without cross-contamination
+
+Mythic Scribing Foundry works on an owner-approved private manuscript while Mythic Agent CLI and Draupnir run a separate code improvement job. Worktree leases, source corpus privacy, cost limits and explicit publication authority prevent manuscript text from entering a code PR or public README.
+
+### Scenario 5: Game table and gathering
+
+A Samtal conversation proposes a table session. Samkoma records an evidence-bearing plan; the authorized human approves it. Hermes invokes private Sagnaskemma game mechanics, and optional WYRD campaign state gets typed observations. Duplicate network events do not duplicate rolls, and unapproved events are never published.
+
+### Scenario 6: Avatar and hardware without surprise side effects
+
+Hermes validates a Seiðr-Smiðja specification and offers an approval-bound render job. The project independently verifies assets and generated artifacts. Optional Hliðskjálf/Heimdall display clients see only authorized output. No remote VRoid desktop, webcam, microphone, GPU job or external account activates without appropriate permission.
+
+### Scenario 7: Linux repair candidate, not autonomous danger
+
+Lífþrasir detects a synthetic service failure, gathers a redacted report and proposes a patch. Mythic Agent CLI or Draupnir can construct a reviewable diff in a disposable worktree. The live host and kernel remain untouched until authorized, tested and reversible actions are explicitly approved.
+
+## 54. Backlog incorporation into existing waves
+
+**Do not delete or renumber W00–W13.** Add these **fifteen tickets** to the existing modernization board under the following dependencies:
+
+- **W00–W02:** `RFI-01` through `RFI-15` all require inventory, exact owner/branch/SHA, license/provenance and host compatibility before upgrade.
+- **W03–W07:** `RFI-06` (ThoughtForge), `RFI-07` (Huginn/Muninn), `RFI-10` (private Foundry), `RFI-11` (private Aurelia) rely on the unlimited canonical library and correctly scoped retrieval.
+- **W08:** `RFI-04` (WYRD), `RFI-07` (ravens), `RFI-09` (Astrology), `RFI-15` (Smiðja) extend current fork plugins; review existing adapters before writing another.
+- **W09–W10:** `RFI-08` (Samkoma), `RFI-12` (Draupnir), `RFI-13` (HugrGate), `RFI-14` (Mythic Agent CLI), plus the authorized private Foundry connector.
+- **W11:** `RFI-03` (Heimdall), `RFI-05` (private Sagnaskemma), `RFI-11` (private Aurelia state consumer), `RFI-15` (Smiðja output) connect optional worlds, tables and embodiment.
+- **W12:** `RFI-01` (Yggdrasil), `RFI-02` (Lífþrasir) and `RFI-06` (ThoughtForge hardware studies) remain subject to lab gates.
+- **W13:** no `RFI` is declared finished until its real end-to-end and security acceptance is recorded, or its deferred status and technical reason are explicitly documented.
+
+## 55. Final integration laws for all fifteen repositories
+
+1. **The owner’s project remains sovereign.** Hermes coordinates it; it does not replace or casually vend its source.
+2. **Use current releases and reviewed source commits.** This document identifies where to look, not an everlasting “latest” version.
+3. **No artificial Markdown authoring limits.** The original `SOUL.md`, creative knowledge, research and manuscript documents remain full fidelity; prompt packets alone are bounded.
+4. **No forced central database.** External owners of world truth, game mechanics, memory association, manuscripts and simulation state stay distinct, with typed bridges between them.
+5. **No hidden account sharing.** Each AI, human, repo, private service, grid account and model destination follows authorization, privacy and retention rules.
+6. **No misleading completeness claims.** A README promise, a pure audit function, an installed package and a working end-to-end integration are different evidence levels.
+7. **No nonnative deployment prerequisite.** Prioritize Kubuntu/Linux and ARM64/Termux in the personal setup; Windows-related VRoid/Second Life tasks are explicitly scoped where necessary.
+8. **No bulk merging incompatible licenses.** Run component/asset/license audits before source adaptation or distribution.
+9. **No unexpected autonomous physical or digital effects.** Coding pushes, system repairs, remote UI activity, messages, in-world actions and publishing follow the owner’s configured permission gates.
+10. **No destruction of historical docs.** All future progress reports and new roadmaps are added without erasing previous records.
+
+**Acceptance of this addendum as documentation:** all fifteen explicitly nominated repositories now appear with their exact links, responsible integration stages, concrete work packages, privacy/authority boundaries, meaningful tests and phase dependencies. **Acceptance of the integrations as running software requires separate future code changes and evidence.**
