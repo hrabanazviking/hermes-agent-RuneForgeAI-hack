@@ -20,6 +20,7 @@ from .intrinsic_goals import IntrinsicGoalBridge
 from .lifecycle import LifecycleBridge
 from .local_autonomy import LocalAutonomyBridge
 from .mempalace_retrieval import MemPalaceRetrievalBridge
+from .memory_bridge import MemoryBridge
 from .metacognition import MetacognitionBridge
 from .openviking_retrieval import OpenVikingRetrievalBridge
 from .present_state import PresentStateBridge
@@ -111,6 +112,7 @@ def register(ctx) -> None:
     wyrd_context = WyrdContextBridge(ctx)
     mempalace_retrieval = MemPalaceRetrievalBridge(ctx)
     openviking_retrieval = OpenVikingRetrievalBridge(ctx)
+    memory_bridge = MemoryBridge(ctx)
     turn_signals: dict = {}
     persona_live = PersonaLiveBridge(ctx, turn_signals=turn_signals)
     present_state = PresentStateBridge(
@@ -122,6 +124,7 @@ def register(ctx) -> None:
             wyrd_context.packet_items,
             mempalace_retrieval.packet_items,
             openviking_retrieval.packet_items,
+            memory_bridge.packet_items,
             self_model.packet_items,
             drives.packet_items,
             metacognition.packet_items,

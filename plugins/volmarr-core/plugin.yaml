@@ -613,3 +613,27 @@ config_schema:
     type: str
     default: entity/consolidation.json
     description: "Non-destructive consolidation checkpoint path relative to the active Hermes profile."
+  mempalace_retrieval_enabled:
+    type: bool
+    default: false
+    description: "Enable the MemPalace retrieval packet source (key read by mempalace_retrieval.py since its first slice; declared in the schema by W06 flag hygiene, draft P5 section 4.8). Disabled by default."
+  openviking_retrieval_enabled:
+    type: bool
+    default: false
+    description: "Enable the OpenViking retrieval packet source (key read by openviking_retrieval.py since its first slice; declared in the schema by W06 flag hygiene, draft P5 section 4.8). Disabled by default."
+  memory_corpus_enabled:
+    type: bool
+    default: false
+    description: "Enable the W06 unbounded memory corpus (P.014): the profile's MEMORY.md and USER.md held complete in a W03 canonical library rooted at the profile, retrieved through the W04 persona index, and served to turns only as PresentState packet items via the memory bridge. Disabled by default; a disabled profile is byte-for-byte stock and no corpus work happens on any path."
+  memory_corpus_digest_enabled:
+    type: bool
+    default: false
+    description: "Second, separate opt-in (draft P5 section 4.3): allow the derived hot digest of the memory corpus -- bounded, verbatim source sections only, generation-bound, never a paraphrase and never written back over the authored sources. A corpus-enabled profile may run retrieval-only with this off."
+  memory_corpus_root:
+    type: str
+    default: ""
+    description: "Memory corpus root: empty means the active Hermes profile home itself (the corpus library roots at the profile and reads memories/MEMORY.md and memories/USER.md in place). A relative value resolves under the profile home and is refused if it escapes it."
+  memory_corpus_cloud_egress_enabled:
+    type: bool
+    default: false
+    description: "P.018 egress gate: allow the memory bridge to serve a cloud-bound turn at all. Even when enabled, private-classified memory sources are refused before cloud egress and the refusals are named on the bridge receipt. Disabled by default; local turns never egress."
