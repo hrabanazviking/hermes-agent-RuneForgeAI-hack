@@ -161,3 +161,24 @@ row 24).
 - tests/plugins/test_volmarr_capability_bus.py (new, 342 lines)
 - docs/modernization/W09_N0N1_IMPLEMENTATION.md (this record)
 - CUSTOMIZATIONS.md (one W09 ledger row added)
+
+## Addendum (keeper continuation, 2026-11-08): N0 triage delivered
+
+The N0 triage document whose loss is recorded in the "N0 half -
+status" section above, and which honest remainder 6 of this
+record lists as not delivered, is now delivered:
+docs/modernization/N0_PROJECT_TRIAGE.md, 20,135 bytes, sha256
+bfce53005189bdf746dc93cac9cad5dd3e52db662b692592340032084fa6258d.
+It triages all 18 roadmap section 19 projects into the four
+section 19 categories on in-repo document evidence only
+(section 19, the W08 INTEGRATION_MATRIX.md, campaign state and
+CUSTOMIZATIONS.md), cross-references A.E.S.I.R. to matrix row 2
+and Sagnaskemma to the blocked matrix row 24, and carries the
+remainders the brief requires (discovery job not built;
+document-evidence only; section 19 source/tests/branch/release
+inspection still owed per project before adoption). The
+document was authored directly on purplelongship in this
+worktree; no file transfer was involved. The N0 remainder in
+the earlier sections of this record is now CLOSED. The other
+honest remainders (1-5 and 7-8) stand unchanged. README.md
+untouched throughout (sha256 336813d11bbe...).
