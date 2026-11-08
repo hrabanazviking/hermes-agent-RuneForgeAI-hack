@@ -393,6 +393,21 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     productivity_bridge = productivity_subcommands.add_parser(
         "bridge-status", help="Samtal bridge + Samkoma contract status (no live connection)")
     productivity_bridge.add_argument("--json", action="store_true", dest="json_output")
+    world_bridge = subcommands.add_parser(
+        "world-bridge",
+        help="N4 embodiment/world (W11): interchange, presence, HUD status; read-only",
+    )
+    world_bridge_subcommands = world_bridge.add_subparsers(dest="world_bridge_action")
+    world_bridge_status = world_bridge_subcommands.add_parser(
+        "status", help="World bridge descriptor + availability status (no live connection)")
+    world_bridge_status.add_argument("--json", action="store_true", dest="json_output")
+    world_bridge_presence = world_bridge_subcommands.add_parser(
+        "presence-check", help="Authorize a remote-presence read through the W09 policy")
+    world_bridge_presence.add_argument("--caller", required=True)
+    world_bridge_presence.add_argument("--data-owner", required=True)
+    world_bridge_presence.add_argument("--data-class", default="local-private")
+    world_bridge_presence.add_argument("--approved", action="store_true")
+    world_bridge_presence.add_argument("--json", action="store_true", dest="json_output")
     agency = subcommands.add_parser(
         "agency",
         help="Manage the proposal-only agency review routine (Phase 7)",
@@ -928,6 +943,24 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
         except ProjectContextError as exc:
             print(json.dumps({"error": exc.name, "detail": exc.detail}, sort_keys=True), file=sys.stderr)
             return 1
+    elif action == "world-bridge":
+        from .world_bridge import HEIMDALL_DESCRIPTOR, RUNMAL_DESCRIPTOR, authorize_presence, availability as _wb_availability
+        _waction = getattr(args, "world_bridge_action", None)
+        if _waction == "status":
+            _record = {"runmal": {"service": RUNMAL_DESCRIPTOR["service"], "availability": RUNMAL_DESCRIPTOR["availability"]}, "heimdall": {"service": HEIMDALL_DESCRIPTOR["service"], "availability": HEIMDALL_DESCRIPTOR["availability"]}, "availability": _wb_availability(None), "live_connection": "not-claimed"}
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                print(f"Runmal interchange: {RUNMAL_DESCRIPTOR['service']} / {RUNMAL_DESCRIPTOR['availability']}")
+                print(f"Heimdall presence: {HEIMDALL_DESCRIPTOR['service']} / {HEIMDALL_DESCRIPTOR['availability']} / live connection not-claimed")
+            return 0
+        elif _waction == "presence-check":
+            _decision = authorize_presence(caller=getattr(args, "caller", ""), action="read", data_owner=getattr(args, "data_owner", ""), data_class=getattr(args, "data_class", "local-private"), approved=bool(getattr(args, "approved", False)))
+            print(json.dumps(_decision, sort_keys=True))
+            return 0 if _decision["allowed"] else 1
+        else:
+            print("Usage: hermes volmarr world-bridge {status|presence-check} [--json]")
+            return 2
     elif action == "persona":
         from pathlib import Path as _Path
         from .persona_ops import PersonaOps, PersonaOpsError
@@ -986,7 +1019,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge} ...")
         return 2
 
     if getattr(args, "json_output", False):
