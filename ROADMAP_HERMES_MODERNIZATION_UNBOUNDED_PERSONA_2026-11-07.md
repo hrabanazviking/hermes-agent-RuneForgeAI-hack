@@ -372,3 +372,523 @@ Reconcile the already banked ``19–94 contracts with *real* CLI, TUI, Web and A
 **Acceptance:** all commands operate on a real temporary gateway profile, not just return predetermined example dictionaries.
 
 ---
+
+
+# PART III — Refresh every already-integrated engine
+
+## 13. Phase E0: versioned integration ledger and ownership policy
+
+**Do not interpret “incorporated” as “source code copied.”** Existing connectors include health probes, read-only adapters, optional offline bridges, subprocess tools, metadata contracts, background-state records, and live write paths. They must be classified separately.
+
+Maintain `docs/modernization/INTEGRATION_MATRIX.md` and `integration-lock.json` with, **for every entry**:
+- first-party fork plugin name/version, file paths, interface owner and status at baseline;
+- upstream official repo URL, owner, latest stable release/commit, current installed package/version/SHA, branch and timestamp;
+- license, artifact/content license, attribution, transitive dependencies and redistribution implications;
+- current adapter mode: documented, probe-only, read-only, deterministic tool, full read/write, realtime, prototype, design-only;
+- compatibility delta, exact schema, error handling, auth, allowed transport, privacy and permission scope;
+- platform coverage for x86_64 Linux, ARM64 Linux, Termux and Windows where meaningful;
+- installed verification result, absent-dependency result, upgrade needed, rollback plan and responsible roadmap phase.
+
+Do not guess at versions from stale documentation or plugin manifests. Read the **current** canonical source and release notes in the original project's repo at execution time; if there is no release, pin reviewed Git SHAs. Never silently “upgrade” an external engine to an unreviewed moving branch.
+
+### Core existing-integration matrix
+
+| Engine / component | Present fork capability evidenced by code/ledger | Upgrade and integration goal |
+|---|---|---|
+| **Verðandi** | Opt-in lifecycle metadata bridge, profile-local health, affective stimulus catch-up and event families; Unix socket transport | Compare current socket/event schemas, add replay/ack/reconnect, optionally portable native Windows transport, real latency and privacy tests |
+| **Project A.E.S.I.R.** | Loopback health/model catalog, tool-free local reflex execution, deterministic/local/cloud route metadata and telemetry | Reconcile current OpenAI-compatible API, new models/quantizations/multimodal support, GPU/NPU capabilities, streaming, cancellation, benchmarks and local-first provider selection |
+| **MindSpark / ThoughtForge** | Referenced as a small-model/reflex concept; no claim of a complete direct runtime adapter | Audit latest native status, extract tested decision interfaces, integrate only where it outperforms deterministic routing |
+| **Bifröst/Mímir** | Profile-local read-only probe plus context packet/memory fabric integration | Update to current bridge API; unify precise source IDs, retrieval receipts, dedupe, provenance and consistency |
+| **Muninn/Huginn (“ravens”)** | Explicit read/write operations behind optional opt-in flags, local editable packages and schema probes | Publish/lock canonical packages safely, modernize reinforcement, ingestion, association and consolidation with transaction/replay contracts |
+| **MemPalace** | Version-checked health probe and optional SQLite BM25 episodic retrieval | Verify latest store schema/official API, add robust incrementals, source citation, deterministic fallbacks and freshness receipts; do not silently activate heavy vector backends |
+| **OpenViking** | Catalog provider health and optional memories-only HTTP retrieval | Verify official latest server protocol, provider registration, auth and schema; avoid duplicate provider ownership |
+| **Hermes SessionDB** | Read-only preservation/health; Hermes owns transcript | Test v0.23 single-gateway ownership, shared session access, rewind/fork lineage, robust FTS queries |
+| **WYRD Protocol** | Health, read-only world get/query, bounded world context, confirmed set/observe with event notifications, restart acceptance verifier | Compare latest official world-model schema, oracle policies and async subscriptions; maintain single source of deterministic world truth |
+| **Kista** | Secret-source plugin, exact-value redaction, permission/ACL verification, credential containment tests | Audit latest Kista CLI/library/vault schema; support profile/account separation, rotation and health without exposing secrets |
+| **Astrology Engine** | Deterministic lunar, planetary-hours, natal/transit/prediction, synastry and geo-coordinate calculations via subprocess | Refresh engine/ephemeris dependencies and timezone semantics; add opt-in charts and provenance of calculations |
+| **RuneTarotEngine** | Seeded reproducible draws, fixed layouts, Golden Dawn correspondences, dignities/balance, no model interpretation in adapter | Refresh official deck/CLI API and tested spreads; add compatible interpretation overlay at agent level, not hidden random replacement |
+| **Seiðr Engine** | Seeded Old Norse-inspired metrical composition and validation plus catalog tools | Refresh meter/kenning API and lexicon; preserve repeatability and language-source provenance |
+| **RPG/SRD & Norse Saga** | Dice, checks, binary oracles, user-owned random tables, character skeleton, lookup and repeatable mechanics | Integrate current Sagnaskemma engine behind clear license boundary, combat/encounter and stateful table sessions |
+| **Hamr** | Read-only spec/preset/budget/artifact preflight | Audit current VRM/GLB exporter contracts, Blender compatibility, artifact inspection and opt-in render jobs with cleanup |
+| **Seiðr-Smiðja** | Read-only Loom/Hoard/Gate/Oracle Eye and Blender readiness adapter | Reconcile official forge pipeline, validate assets/licenses and implement opt-in artifact builds with explicit costs |
+| **AIAvatarKit presentation** | Versioned outbound envelope and loopback/manual runner contract | Consume **output-only** avatar animation/render interface when supported; never start an unwanted microphone or duplicate conversation agent |
+| **Open-LLM-VTuber** | Documented architecture audit, no admissible output-only embed at last audit | Reevaluate current upstream; if still owns ASR/TTS/agent loops, do not graft it into an incompatible stack; propose separate display adapter |
+| **OmniVoice / native Hermes voice** | Voice readiness reports and transport/presentation adapter | Pin compatible STT/TTS/VAD, low-latency audio, interruption, streaming avatar visemes and privacy |
+| **Persistent identity / affect / goals / agency** | Many explicit versioned state modules, contract tests and bounded default-off jobs | Consolidate integration points, eliminate redundant stores, connect truthfully to live turns and prove restart continuity |
+
+### Per-engine upgrade protocol
+
+For **each row** above perform the same sequence:
+
+1. Fetch remote tags/releases, project metadata, current branch SHA, migration guides and test fixtures.
+2. Compare against the pinned revision referenced in the Hermes adapter or documentation; enumerate changed public APIs, schemas, CLI flags and return formats.
+3. Run the external engine's **own** tests in its own reproducible native environment before touching Hermes.
+4. Publish a versioned compatibility fixture or service contract with representative good/bad samples.
+5. Update the Hermes adapter with adapters for old and new stable versions where feasible. Prefer a clean capability negotiation over guessing versions.
+6. Exercise real end-to-end calls in a disposable profile with synthetic data; prove no side effects when a health-only operation is requested.
+7. Measure latency, memory, CPU/GPU/NPU usage, subprocess spawn cost and failure behavior.
+8. Write an integration-specific `MIGRATION.md` entry and new lock revision. No “compatible” badge until a real installed test passes.
+9. Promote versions one engine at a time; keep a rolling last-known-good set for rollback.
+10. Leave optional features disabled on unsupported devices; never substitute a fake success.
+
+## 14. Phase E1: local cognition and accelerator-aware routing
+
+**Owners:** Hermes providers + Project A.E.S.I.R. + optional HugrGate + optional ThoughtForge + Yggdrasil compute.
+
+- Define provider capability discovery: context window, tokenization, model family, vision/audio, embeddings, streaming, JSON/tool calling, quantization, NPU/GPU/CPU paths and backend health.
+- Build native A.E.S.I.R. adapter for the fork's current APIs; use bounded loopback or authenticated native network where selected. Avoid hardcoded assumptions that the Z13 and Pi 5 expose the same accelerator.
+- Maintain explicit routing modes: `auto`, `local-only`, `cloud-approved`, `deep`, `offline` and `deterministic`. A request marked local-only must fail closed against unexpected external inference.
+- Feed HugrGate's typed, model-agnostic probability/decision contract into tasks where uncertainty is meaningful; retain deterministic rules for straightforward routing.
+- Compare small/medium models with objective workloads: profile retrieval, section tagging, code triage, summarization, action proposal and conversation continuity. Evaluate output accuracy before choosing the lowest energy/latency tier.
+- Make routing policy sensitive to costs, thermal state, memory pressure, context length, current host and available accelerator, but never pretend to execute on unavailable NPU hardware.
+- Dispatch long jobs via Hermes' existing delegates or scheduler, not a competing daemon.
+- Support optional device-spanning Yggdrasil RPC workers only after auth, encryption, content-consent and ownership tests. Do not treat design-phase Yggdrasil as existing production transport.
+- Support generation interruption and cancellation without orphaned GPU contexts; resume/retry must distinguish exactly-once commitments from replay-safe reads.
+- Preserve prompt generation SHA and model/version/cost receipts with each turn.
+
+**Acceptance:** a real, private local-only turn never creates an external LLM request; fallback decisions are visible; quality/performance comparisons reproduce across model revisions.
+
+## 15. Phase E2: one memory fabric, many proven sources
+
+- Hermes SessionDB owns raw Hermes transcripts. Do not rewrite it from another service.
+- MemPalace owns its exact episodic records; OpenViking owns its structured context; Bifröst brokers memory routing; Muninn/Huginn own association/ingestion; persona canon owns identity declarations; WYRD owns world truth.
+- Introduce a **universal typed memory envelope**: `source_id`, `record_id`, `persona_id`, `user_scope`, `kind`, `timestamp`, `confidence`, `privacy`, `content_hash`, `source_revision`, `read_authority`, `write_authority`.
+- Centralize retrieval ranking and deduplication but avoid centralizing all writes into an opaque mega-database.
+- Explicitly separate **document canon**, **user memory**, **episodic conversation**, **world state**, **working memory**, **entity self state**, **tool-generated records** and **derivative summaries**.
+- Store sources without artificial size ceilings; **only context packets** receive model-specific budgets.
+- Add read receipts for every retrieved memory and write receipts for every intended durable change.
+- Keep user deletion/export/pause rules; implement source-specific retention and per-provider egress filters.
+- Support reconciling observations against user-authored facts without automatic personality replacement.
+- Add backup/restore verification and migration between devices using source manifests plus integrity hashes.
+- Make indexing asynchronous, resumable and robust under power loss, partial network outage and stalled external backends.
+
+**Acceptance:** exact full-history record retrieval, privacy isolation, full byte recovery, no double-write and consistent original source references after restore.
+
+## 16. Phase E3: real-time events, affect, goals, background life and continuity
+
+- Upgrade Verðandi's event schema with explicit publisher identity, event version, idempotency key, sequencing, acknowledgements, backpressure and subscriber replay cursor.
+- Keep affective regulatory state, synthetic PAD coordinates and self-description as distinct from medical/biological or verified consciousness claims. Do not auto-assert private inner experiences as proven facts.
+- Map completed tasks to goals, causal outcomes, feedback signals, memory consolidation proposals and continuity metadata.
+- Build an optional background-life controller over Hermes cron and existing profile-owned 10-minute routine: **no competing scheduler and no duplicate timers**.
+- Resume work from durable checkpoints after failure; never claim a task completed just because it was attempted.
+- Default local autonomy to inspect/propose; expanding into writes, publishing, purchases, messages or system modifications needs explicit scope and operator-authorized policy.
+- Make sleep/consolidation cycles observable, interruptible, replay-safe and testable without an active LLM.
+- Audit self-improvement proposals in a sandboxed native checkout; tests, review and controlled promotions remain mandatory for code changes.
+- Preserve current persona and world-truth source ownership across restarts and provider/model swaps.
+
+**Acceptance:** induced reboot at each lifecycle phase yields no duplicate durable action, no lost identity and no fabricated “success” event.
+
+## 17. Phase E4: voice, realtime avatar and multimodal embodiment
+
+- Use Hermes' current native voice facilities as the **single** speech conversation owner. Do not embed a second uncontrolled agent/ASR/TTS loop.
+- Refresh `volmarr-voice`'s output-only presentation protocol, frame clock, phonemes/visemes, expressions, subtitles, interruption signals, cancellation and cleanup.
+- Audit AIAvatarKit, Open-LLM-VTuber and similar display projects at current HEAD for **presentation-only**, externally driven render APIs. If none exist, keep integration deferred rather than bypassing their lifecycle or licensing restrictions.
+- Route STT/TTS per device and policy; support offline TTS and selectable voices, wake controls, mute, push-to-talk, echo management and explicit microphone permissions.
+- Provide desktop screen avatar, browser avatar, future robotics/mini-screen targets and VRM-capable output as interchangeable embodiment adapters. Physical devices are optional and must not become requirements for core agent identity.
+- Integrate Hamr and Smiðja as *artifact creation tools*: operator-provided specs, checked assets, licensing metadata, bounded native Blender jobs, approved output folder and no hidden web fetch.
+- Use signed/capability-limited commands to drive existing avatar clients; avoid coupling pose and TTS generation to the decision model.
+- Add real-time network metrics: audio latency, visual sync, dropped frames, consent flag, device ownership and offline fallback.
+
+**Acceptance:** voice call and avatar can run on supported hardware without surprise microphone activation or a second hidden reasoning agent; cancellation releases every device handle.
+
+## 18. Phase E5: spiritual, creative and tabletop engines
+
+- Keep calculation/interpretation boundaries: the astrology engine supplies reproducible astronomical/astrological calculations; the agent interprets with source attribution.
+- Keep tarot seed and deck/spread provenance, reversal choices and reproducibility. Add multiple decks only if legitimately licensed and engine-supported.
+- Update Seiðr verse engines and Old Norse language references, with explicit “inspired” vs historically attested distinction.
+- Replace ad hoc RPG branching with modular Sagnaskemma-compatible deterministic rolls, rules, characters, encounters, campaigns, maps and session state. Import SRD/open-license text only under its terms.
+- Add Samtal “long table” integration via approved bot/API client, not by importing the whole chat server into Hermes.
+- Build reusable tool interfaces, not chatbot-specific bespoke replies: `calculate_astrology`, `draw_tarot`, `compose_seidr`, `roll_dice`, `query_rules`, `session_state` and `generate_avatar_asset`.
+- Use a shared structured result envelope: tool/engine/version/SHA, inputs, explicit randomness, outputs, warnings, citations/attribution, failure semantics, and privacy classification.
+- Make lorebooks and the Heathen Third Path canon available through **authorized read-only persona knowledge collections**, never silently alter their human-authored source material.
+
+**Acceptance:** seeded deterministic tools are byte-for-byte reproducible, licensed content is identified, and games/rituals can proceed without external network.
+
+---
+
+# PART IV — Add newer RuneForgeAI projects selectively
+
+## 19. Phase N0: project discovery and maturity triage
+
+The projects below were found in Volmarr's GitHub collection/README documentation as of November 7. **A public README is a direction, not evidence that every described capability works.** Before adoption inspect source/tests/branch/release and assign:
+
+- **Operational adapter candidate:** public API/code already proven end to end.
+- **Research prototype:** use in disposable experiments only.
+- **Design proposal:** import *ideas and research*, not runtime code.
+- **Private collaboration surface:** use only behind owner-specific secrets, privacy, consent and explicit account scopes.
+
+### New project adoption map
+
+| Project | Main contribution worth evaluating | Current caution / integration path |
+|---|---|---|
+| **Rúnmál** | Sovereign Python chat UI, persona/lorebook editor, memory UX, real-time voice/VR companion frontends | Keep Hermes as turn owner; use Rúnmál as optional frontend via authenticated API/ACP/MCP; reconcile persona schema rather than separate competing truths |
+| **MimirAlloc** | ARM64/Android/Mojo-friendly memory allocation, pooling, GPU/NPU host coordination, KV-cache research | Experimental v0.1.0 in its November 7 progress note; no substitution for production allocator before correctness/sanitizer/performance gates |
+| **Samverk** | Independent code forge: repositories, issues, PRs, reviews, project work and eventual Samtal embedding | Integrate via stable typed API/tool plugin; avoid assuming parity with GitHub or shipping in-progress source |
+| **Samtal** | Sovereign human/agent chat village, live streams, files, agent identities, community room/TTRPG venue | Connect a HermES gateway transport/bot with account-scoped keys; avoid duplicate messaging stores, verify actual deployed version and encryption lifecycle |
+| **Samkoma** | Evidence-backed planning candidates, events, decisions, approvals, review queue | Offer a tool adapter to draft proposals, never auto-publish unapproved events or convert unverified content to fact |
+| **Mythic Agent Coder CLI** | Architecture-first Mythic Engineering, code-work planning, multi-provider TUI, GitHub workflows | Share skills, planning schema and task handoffs; avoid two autonomous writers in one Git checkout |
+| **Draupnir Forge** | Recursive multi-agent software development architecture, audits and verification | Design-stage at latest README; prototype a bounded delegate controller with operator gates instead of claiming a ready service |
+| **HugrGate** | Model-agnostic probabilistic choices in traditional programs | Active alpha; adopt typed decision contracts for uncertainty routing behind deterministic fallbacks |
+| **Yggdrasil Distributed Inference System** | Edge compute mesh, temporal routing, task and state placement | Its README describes a design phase; begin with a safe capability registry and benchmark, no assumed production mesh |
+| **Project Hliðskjálf** | Pi 5 + Hailo HUD/edge display, telemetry, local co-processor | Use native typed read-only monitoring initially; keep wake/audio and accelerator claims behind physical proof |
+| **Project Lífþrasir** | Self-diagnosing Linux, verified repair proposals and upstream patch contribution | Research-stage; diagnostic plugin and human-reviewed patch proposals only, no autonomous kernel modifications |
+| **Tvíheimr** | Private dual-world multi-agent continuity and authorized shared/private knowledge | **Privacy-first** integration: distinct account owners, per-provider destination rules, local-only material never silently passed to Muse/cloud; no private repo data in this public roadmap |
+| **Project A.E.S.I.R. recent development** | New models, inference paths, multimodal work, accelerator/quantization improvements | Pin actual engine capabilities from its current capability ledger; never claim an NPU/text-generation path without hardware proof |
+| **Heimdall Second Life Agent** | World-facing avatar client, navigation/IM/embodiment ideas | Opt-in separate bot service and credential store; obey platform terms, rate limits and explicit world actions |
+| **Norse Saga / Sagnaskemma** | Deterministic tabletop rules engine and reusable group-table backend | Prefer actual Sagnaskemma version/API; do not import incompatible or third-party-licensed rules wholesale |
+| **OpenClaw personal patches** | Previously studied agent enhancements and migrations | Compare behavior against current Hermes importer and plugin APIs; reimplement useful designs at an approved boundary rather than bulk copying |
+| **Runa digital-being experiments** | Companion lifecycle, agency, identity and experience continuity | Compare schemas with existing entity stores; only add missing, demonstrably useful capabilities |
+| **Bifröst Reach / broader edge projects** | Device discovery, networking, messaging and edge resource orchestration | Require signed nodes, authorized peers and replay-safe transports before exposing personal memory |
+
+Other current or newly created RuneForgeAI apps should be added to this table by a **GitHub discovery job that writes a proposed diff**, not by hardcoded assumptions. Approved changes enter the next reviewed integration-lock revision. Do not let an automatic repo scan import unvetted source, install code or expose private repo names/content.
+
+## 20. Phase N1: a shared capability bus rather than a monolith
+
+Adopt a versioned, lightweight JSON/CBOR-style **Capability Descriptor** for native tools/services:
+
+```json
+{
+  "schema": "runeforge.capability.v1",
+  "service": "example",
+  "version": "reviewed-version-or-git-sha",
+  "owner": "authorized-identity",
+  "actions": ["read", "propose"],
+  "transport": "loopback-http",
+  "auth": "scoped",
+  "side_effects": false,
+  "privacy_classes": ["public", "local-private"],
+  "availability": "proven-by-live-probe",
+  "timeout_ms": 2000
+}
+```
+
+- This is a **proposed interface**, not an existing API. Do not falsely publish it as implemented.
+- Central tool registry discovers available actions lazily, caches signed descriptors, expires them when services change and refuses malformed contracts.
+- Runtime tool permission policy answers **who** may call **which action** on **whose data**, on **which device**, with **what human approval**, and **where outputs may travel**.
+- Long-running work is a separately tracked job with receipt, idempotency key, status, cancellation and progress stream.
+- Each service retains its own deployment, dependency lock, database and lifecycle; Hermes is the coordination shell.
+- Define uniform error categories: unavailable, unauthorized, validation failure, version mismatch, resource exhausted, timeout, partial result and completed result.
+- Every result includes provenance (service revision, source link/record ID, time, confidentiality class); no anonymous magical tool results.
+- Prefer on-host Unix sockets or loopback HTTP for native Linux; use explicit authenticated transport for cross-host calls.
+- Enforce per-service start/stop ownership so two clients do not independently spawn a GPU model, audio input or write-capable server.
+- Add generated API client fixtures and compatibility probes for Python, TypeScript and optionally Mojo/Rust.
+
+**Acceptance:** at least three real heterogeneous apps participate without importing each other's source or crossing private account boundaries; service absence fails gracefully.
+
+## 21. Phase N2: coding and project-management ecosystem
+
+**Goal:** make Hermes useful as a collaborative engineering mind across the owner's many repositories, without uncontrolled concurrent modifications.
+
+- Import Mythic Engineering as an explicit optional workflow/skill: natural-language intent → invariants → architecture → sources/research → small executable tasks → code/test/verify → evidence and ledger → release.
+- Share task schema with Mythic Agent CLI and future Draupnir, but keep one **write authority per repository checkout**. Agents may plan in parallel, not race to write to `main`.
+- Connect GitHub and later Samverk via adapters with capability checks. Support repo inventory, file search, issues, pull requests, review, build receipts, releases and diff summaries.
+- Create “external project context packets” retrieved from the current README/ROADMAP/CAMPAIGN_STATE and source, rather than stale single hardcoded project facts.
+- Support detached asynchronous tasks and resumable jobs with checkpoints on disk; prioritize current user instruction and avoid hidden surprise publication.
+- Incorporate reproducible local test runner, static analysis and contract tests for each language; capture failing tests as action items with logs, not invented passes.
+- For code-gen proposals, produce human-readable diffs and classify source copyright/licensing; preserve README and protected path invariants.
+- Add doc import/export adapters for local Markdown and LibreOffice-compatible artifacts; authorized Google Drive/Docs integration remains explicitly connected and access-scoped.
+- Provide a multi-project dashboard with status **observed from repo code/tests**, latest commit/time, blockers, next action, and a per-repo authority owner.
+
+**Acceptance:** Hermes can inspect, plan and prepare a patch against Samverk, Mythic Agent CLI or Rúnmál without writing to another active agent's checkout, and cannot publish without the permitted workflow.
+
+## 22. Phase N3: social communication and planning
+
+- Define a Samtal-native bridge: agents join a hall as agents, retain individual identities, send/receive messages with cursors, share files with authorization, handle disconnect and recover missed messages.
+- Preserve Samtal's own authentication/encryption/key rotation as the security boundary. Avoid bypassing server access checks through a “trusted agent” backdoor.
+- Implement user-controlled notification/availability policy; protect against unbounded group-message feedback loops.
+- Integrate Samkoma as reviewable event/task extraction: input receipts → candidate → evidence → operator approval → published event and subsequent edits.
+- Extend future Samverk hooks to link a Samtal conversation with an issue/PR through explicit user action, without leaking closed-room content to public issues.
+- Offer bot-to-bot communication without treating another AI participant as the human account owner. Distinguish participant IDs and sender provenance.
+- Keep Gmail, calendar and Drive integrations scoped to the account explicitly authorized for each AI/entity. **Do not infer that two agents share an account just because both are connected to the same app name.**
+- Defer voice rooms and 3D rooms until the upstream services have real tested interfaces and required authorization.
+
+**Acceptance:** tests cover agent identity impersonation, duplicate delivery, missing cursor recovery, private-to-public leak prevention and unapproved planning proposals.
+
+## 23. Phase N4: local knowledge, worlds and spatial/embodied interfaces
+
+- Provide Rúnmál import/export for personas and lorebooks with versioned schema translation; keep full source docs and exact authorship.
+- Use WYRD as canonical world-state service: observed environment data, map/location state and action outcomes are typed events, never blended into fictional memory as unquestioned facts.
+- For Heimdall/Second Life, require explicit permission/credential scope, action logs, rate limits and compliance with applicable in-world platform terms.
+- For Hliðskjálf, expose display-safe events and metrics from Hermes and external tools; avoid sensitive transcript content in a shared visible HUD unless explicitly selected.
+- For avatar/VR clients, separate view, gesture and simulated emotion animation from actual decisions.
+- Support connected/offline mode changes with work queues and source availability status. No false implication that a device or virtual world has sensors it does not expose.
+- Keep shared cultural research and project knowledge read-only by default. The owner may explicitly promote a proposed revision.
+
+**Acceptance:** retrieving a world fact yields source/provenance, user-editable roleplay content remains separate, and remote presence cannot read private persona documents without authorization.
+
+## 24. Phase N5: infrastructure and self-repair research
+
+- Evaluate MimirAlloc first as an independent library on test machines. Correctness, sanitizer/ASan/TSan-style evidence where supported, fragmentation, ABI alignment, allocation failure, thread safety, ARM64 platform proofs and OOM recovery precede any drop-in replacement.
+- Benchmark ordinary allocator + OS page cache + GPU/NPU buffers + GGUF mmap + model KV cache against proposed pooled strategies. Do not claim unified addressability across hardware without documented transport and coherence costs.
+- Build Yggdrasil node inventory and safe schedulability experiments using static benchmark fixtures, then authenticated peers, then real inference.
+- For Lífþrasir, initial Hermes tooling is **observe/report/propose** only. Bootloader, kernel and destructive filesystem changes are outside unattended scope until extensive VM and recovery proof.
+- Introduce a machine resource meter: free/committed RAM, VRAM/unified memory, CPU/GPU/NPU utilization when measurable, temperatures, disk wear and service health; mark unknown fields as unavailable.
+- Keep hardware diagnostics private and opt-in; do not transmit host telemetry into third-party chatrooms or cloud models by default.
+
+**Acceptance:** low-resource failure tests never corrupt the persona corpus or the Hermes state database; proposed self-repair patches never apply automatically in the early stages.
+
+---
+
+# PART V — Privacy, resilience and quality at production scale
+
+## 25. Phase Q0: private/public boundary and AI-to-AI account ownership
+
+This is essential for Tvíheimr, multi-persona Hermes and any Muse/cloud bridge.
+
+- Each authorized participant owns separate account/secret descriptors, e.g. `agent_identity_id` and `credential_owner_id`. This is independent of the account's display name and of the human owner's accounts.
+- Store the universal personal knowledge library in a neutral, content-agnostic layer, but apply **provider-specific inference/routing and sharing policies** when sending data outward.
+- Local-private conversations may be indexed/retrieved locally without automatically being transmitted to Meta Muse, Google, other cloud models, hosted memory providers or external bots.
+- When the authorized owner intentionally elects a provider to access particular local-private information, require scoped, reversible policy with logs, not global accidental mirroring.
+- Connected Docs, email and calendar are individually authorized scopes, **not** omniscient resources. One agent cannot silently inherit another's Google Drive access.
+- Sensitive source paths, tokens and account metadata stay out of public README/status reports, chat widgets and tool telemetry.
+- Embed provenance and destination labels in retrieval packets; filters run before a cloud request is constructed, not after it is sent.
+- Provide per-account disconnection/export/delete and a data-flow audit showing what left each device.
+- A provider's own terms and storage policies continue to apply to data explicitly sent there; local consent rules do not override external legal/contractual policies.
+
+**Acceptance:** automated canaries prove that public queries cannot retrieve local-private source text, and local-only sessions emit zero external requests, including embeddings, logging and model fallback.
+
+## 26. Phase Q1: security and threat model
+
+Cover:
+- prompt injection from GitHub README, Samtal room, external web pages, imported Markdown and tool outputs;
+- malicious heading/role metadata attempting to impersonate system authority;
+- path escapes, symlink swaps, Markdown includes, malformed UTF-8 and giant-file denial of service;
+- dependency supply-chain attacks, unsigned plugins, package confusion and release substitution;
+- secret exposure via exception logs, output previews, persona export, telemetry or environment inheritance;
+- profile leakage during gateway session switching, background tasks or host migration;
+- command execution privilege escalation, autonomous write actions, unauthorized community posts;
+- local audio activation, avatar camera/mic ownership and network egress;
+- database corruption, race conditions, WAL desync and stale index pointer attacks;
+- compromised external services and replayed signed capability descriptors.
+
+**Controls:** strict schema admission, path containment, owner-only permissions, scoped tokens, Kista integration, subprocess environment scrubbing, exact-value redaction, opt-in network permissions, time/resource quotas, immutable receipts, malware/dependency checks, native sandboxing where feasible, least-privilege service users and emergency kill switches.
+
+**Acceptance:** dedicated penetration/fuzz tests against the canonical document loader and plugin transport; no secret content appears in logs, databases, traces, reports, crash bundles or unapproved cloud calls.
+
+## 27. Phase Q2: performance, availability and indexing durability
+
+- Establish baseline latency on all target machines before optimization.
+- Index asynchronously; journal batch progress; auto-resume when power/network is restored. Never need to reread a 100 MB file into a single memory allocation to search it.
+- Streaming hash/parse, low-memory bounded queues, incremental DB transactions and read-only snapshot handles during reindex.
+- Track P50/P95/P99: corpus index throughput, query latency, persona compile, prompt preparation, first-token time, tool invocation, audio latency and gateway restart recovery.
+- Expose cache hit ratios, source hash generation, section count, FTS size, embedding provider, reindex backlog and receipt store size.
+- Test degenerate corpora (one million headings, huge code fence, a single enormous line, repeated Markdown anchors, nested directory trees, deeply chained includes).
+- Benchmark on fast internal SSD and slower SD card while preserving durability, with optional moving index storage to external SSD.
+- Avoid nonessential embeddings on power-limited Pi/Android devices; rely on FTS as the always-available baseline.
+- Use memory mapped or streamed reads where the OS supports them; guard against OOM and avoid excessive writes on flash media.
+- Every indexing failure reports a retryable reason and leaves last-known-good indexes/source docs intact.
+
+**Acceptance:** durable source continuity after sudden power cut; restart time bounded by checkpoint size rather than whole corpus size; configured resource budgets respected.
+
+## 28. Phase Q3: testing matrix and evidence hierarchy
+
+### 28.1 Test layers
+
+1. Static metadata/version/license and vulnerability audit.
+2. Deterministic pure contracts and schema migration tests.
+3. Plugin discovery/registration in a disposable real Hermes profile.
+4. Installed external engine test with actual subprocess or loopback service.
+5. Gateway-level prompt owner, route and durable-state tests.
+6. End-to-end CLI/TUI/Web/Desktop sessions and actual tool invocation.
+7. Cross-device migration, resume, persona switch and backup restore.
+8. Offline/online/partially degraded networks, secret failure and service restart.
+9. Performance soak, large corpus, fault injection and hardware-specific run.
+10. Human evaluation of sustained character consistency and authorized tool behavior.
+
+### 28.2 Named regressions from the frozen build
+
+- Reproduce and diagnose the previously reported **five core-plugin**, **one Verðandi socket** and **one voice loopback** failures with real services, not stubs.
+- Preserve full `CUSTOMIZATIONS.md` contract coverage as the current source of truth.
+- Verify imported persona docs do not hit old head/tail truncation during the new path; verify stock Hermes still retains its documented behavior when the RuneForge plugin is off.
+- Run profile A→B→A tests for every adapter, new memory index and credential source.
+- Repeat genuine memory writes/reads, world observations, tarot draws, verse validation, avatar preflight, real gateway turn and backup restore.
+
+### 28.3 Evidence policy
+
+| Status | Minimum proof |
+|---|---|
+| **Documented only** | Design/README/API sketch |
+| **Contract implemented** | Module + deterministic passing tests |
+| **Installed integration** | Real dependency + discovery + compatibility probe |
+| **End-to-end working** | Actual user-facing call, output, side effects and failure path tested |
+| **Production qualified** | Security, persistence, performance, operating limits, rollback, cross-platform targets |
+| **Deferred/blocked** | Explicit reason, scope and condition for reconsideration |
+
+Never promote a feature by renaming its stage. Record precise test command, SHAs, host OS, hardware and result.
+
+## 29. Phase Q4: operator experience and documentation
+
+- Add a “RuneForgeAI Extensions” dashboard or command group showing services, versions, capabilities, linked profile, current offline status, model location, source privacy and next required action.
+- Persona editor/browser must support enormous Markdown **through virtualization/paging** rather than a single giant DOM textbox. Provide search, source hierarchy, diff, preview, undo, hash, reload and per-section priority.
+- Add a source transparency panel: “What defines this persona?” vs “What does it remember?” vs “What does the external world model say?”.
+- Offer user-controlled quick presets (offline, local-fast, hybrid, deep, writing, coding, divination, roleplay, virtual world) without silently changing core identity.
+- Add native GUI/CLI installation and diagnostics for Kubuntu and ARM64 hosts. Keep headless paths first-class.
+- Document credential provisioning through Kista and externally authorized account connectors, not plaintext pasted into project MD files.
+- Provide concise beginner setup plus expert references, full developer API, migration guide, threat model, troubleshooting and benchmark instructions.
+- Maintain a dated README NEWS history that distinguishes working features from planned improvements.
+
+**Acceptance:** a non-developer can inspect all enabled modules, understand any unavailable engine, edit a large persona file and validate the result without changing Python source.
+
+---
+
+# PART VI — Phased implementation sequence and release gates
+
+## 30. Implementation waves (dependency-ordered, independently shippable)
+
+| Wave | Work packages | Proof gate |
+|---|---|---|
+| **W00: Freeze** | U0 inventory, data export, backup, SHA/lock, baseline report | reproduce source + rollback |
+| **W01: Upstream** | U1 version intake, v0.23 gateway behavior, conflict audits | selected upstream suite and Volmarr contracts |
+| **W02: Dependency safety** | U2 lockfile, Python/Node/Rust native plans, licenses | reproducible cold install |
+| **W03: Unbounded canon** | P0/P1 source loader and manifest, streaming full-fidelity files | 100 MB byte-identical corpus |
+| **W04: Retrieval** | P2 FTS index, stable section IDs, read paging, optional embeddings | buried-section recall, zero source loss |
+| **W05: Live persona** | P3/P4 kernel + gateway prompt insertion + A/B profiles | real conversations across surfaces |
+| **W06: Memory** | P5 full `MEMORY.md` and `USER.md` backing corpus; old tool compatibility | large-memory retrieval + restart |
+| **W07: Persona controls** | P6 real CLI/UI reload, diff, inspection and drift tests | no stub command or invented result |
+| **W08: Existing engines** | E0 version audits + E1–E5 upgrades in dependency order | installed real engine for every claimed green row |
+| **W09: New projects** | N0 project review, N1 capability bus | 3 live heterogeneous tools |
+| **W10: Productivity** | N2 coding and project management, N3 Samtal/Samkoma | permissioned, replay-safe workflows |
+| **W11: Embodiment/world** | N4 integrations, local voice/avatar/SL and hardware displays | owner-authorized end-to-end behavior |
+| **W12: Edge + research** | N5 MimirAlloc/Yggdrasil/Lífþrasir experimental opt-ins | proof, no unsafe production promotion |
+| **W13: Production** | Q0–Q4 audits, packaging, performance, docs | release-qualifying scorecard |
+
+This is a **work-breakdown order**, not a fabricated calendar deadline. Multiple low-risk research tracks can progress concurrently, but **source/authority contracts precede live writes**.
+
+## 31. Detailed engineering tickets and dependencies
+
+### W00 tickets
+- [ ] W00.01 Snapshot current remote SHA and integration branches.
+- [ ] W00.02 Record service/plugin/source/API version matrix.
+- [ ] W00.03 Export user-owned persona and state with encrypted verified backup.
+- [ ] W00.04 Baseline tests and reproduce seven recorded environment failures.
+- [ ] W00.05 Produce compatibility fixture archive and external source provenance.
+- [ ] W00.06 Review every public/private repository boundary.
+- [ ] W00.07 Capture a native offline install recipe.
+
+### W01 tickets
+- [ ] W01.01 Pin v0.23.0 official release + review any newer upstream SHA.
+- [ ] W01.02 Guarded no-commit merge, preserving personal README automatically.
+- [ ] W01.03 Single gateway session ownership integration.
+- [ ] W01.04 Bot/group-chat/remote gateway identity routing.
+- [ ] W01.05 Rewind/fork consistency.
+- [ ] W01.06 Plugin API, registration, update lifecycle, compatibility.
+- [ ] W01.07 Paid tools spending/permission gates.
+- [ ] W01.08 Native smoke and regressions.
+- [ ] W01.09 Merge/release notes and changed-path ownership audit.
+
+### W03–W07 persona tickets
+- [ ] P.001 Define source roles/trust/authority/secret policy.
+- [ ] P.002 Build streamer and byte-exact canonical source ingestion.
+- [ ] P.003 Migrate `SOUL.md` and auxiliary role documents with a dry-run.
+- [ ] P.004 Implement transactional digest/manifest updates.
+- [ ] P.005 Complete Markdown AST and stable section/span identity rules.
+- [ ] P.006 Implement incremental SQLite FTS5 index and versioned offsets.
+- [ ] P.007 Optional embeddings behind local/cloud consent gate.
+- [ ] P.008 Tune identity kernel with protected source provenance.
+- [ ] P.009 Wire one official gateway prompt injection owner.
+- [ ] P.010 Remove duplicate legacy persona injection on opt-in profile only.
+- [ ] P.011 Preserve model-specific context packet budgets and receipts.
+- [ ] P.012 Wire real persona reload/diff/inspect/explain commands.
+- [ ] P.013 Implement user-facing huge-file editor/pager and export.
+- [ ] P.014 Bridge large `MEMORY.md` / `USER.md` to full backing stores.
+- [ ] P.015 Test user-authored canon protection against generated summaries.
+- [ ] P.016 Test 1 MB, 20 MB, 100 MB, interrupted import and index repair.
+- [ ] P.017 Test 1000-turn drift, model switch, multi-persona and subagent.
+- [ ] P.018 Test private/public source filters before cloud inference.
+- [ ] P.019 Test cross-machine backup/restore and schema migrations.
+- [ ] P.020 Publish system diagnostics and stable how-to docs.
+
+### W08 engine tickets (repeat E0 protocol for each)
+- [ ] E.01 Verðandi current event protocol and bridge regression.
+- [ ] E.02 A.E.S.I.R. inference/quantization/model catalog API.
+- [ ] E.03 Bifröst/Mímir current retrieval and write contracts.
+- [ ] E.04 Muninn/Huginn independent package distribution and safe lock.
+- [ ] E.05 MemPalace latest verified store adapter.
+- [ ] E.06 OpenViking latest verified catalog/provider/server.
+- [ ] E.07 WYRD latest canonical-fact API, provenance and events.
+- [ ] E.08 Kista vault/CLI/permissions/rotation and redaction.
+- [ ] E.09 Astrology tool current interface + evidence fixtures.
+- [ ] E.10 RuneTarot engine layouts and seeded correspondences.
+- [ ] E.11 Seiðr poetry meters/kennings/validation.
+- [ ] E.12 RPG/Sagnaskemma verified rule adapter.
+- [ ] E.13 Hamr spec/asset/preflight current version.
+- [ ] E.14 Seiðr-Smiðja Loom/Hoard/Gate/Forge current version.
+- [ ] E.15 Voice + avatar adapter, output-only boundary check.
+- [ ] E.16 Reconcile identity/agency and prompt live hooks with gateway.
+- [ ] E.17 Run per-engine failure/timeout/partial response and consent tests.
+- [ ] E.18 Verify build/docs/versions at two named hardware targets.
+
+### W09–W12 extension tickets
+- [ ] N.01 Audit Rúnmál frontend/API and persona import/export.
+- [ ] N.02 Audit Samverk stable forge API and permissioned tool adapter.
+- [ ] N.03 Audit Samtal agent transport and encryption/room permissions.
+- [ ] N.04 Audit Samkoma evidence/proposal/approval lifecycle.
+- [ ] N.05 Audit Mythic Agent CLI and share approved workflow schemas.
+- [ ] N.06 Prototype Draupnir bounded delegate jobs in disposable checkouts.
+- [ ] N.07 Integrate HugrGate behind deterministic decision fallback.
+- [ ] N.08 Prototype Yggdrasil worker capability registry, not claimed mesh.
+- [ ] N.09 Verify Hliðskjálf Pi 5 telemetry and real accelerator capabilities.
+- [ ] N.10 Evaluate MimirAlloc in independent testbed only.
+- [ ] N.11 Keep Lífþrasir observe/report/propose-only initial workflow.
+- [ ] N.12 Implement private Tvíheimr connector with strict data routing.
+- [ ] N.13 Review Heimdall/Second Life platform terms and actual bot API.
+- [ ] N.14 Design standardized tool descriptor and service registry.
+- [ ] N.15 Run three-service live interoperability demonstration.
+- [ ] N.16 Update integration-lock from reviewed source SHAs.
+
+## 32. Release scorecard
+
+A candidate is releasable when:
+
+- [ ] Target upstream SHA/release and personal revision are recorded.
+- [ ] Personal README and all source Markdown are protected and backed up.
+- [ ] Source files have no artificial hard size cutoff in the RuneForge persona corpus.
+- [ ] Full persona/memory byte-identity has been tested under real upgrades and restores.
+- [ ] Actual gateway prompts contain the pinned persona kernel and relevant retrieved sections with receipts.
+- [ ] Cross-profile, cross-persona, remote and delegate isolation tests pass.
+- [ ] Critical security tests pass, including secret/exfiltration and prompt-injection cases.
+- [ ] All enabled external engine versions have passing installed smoke tests.
+- [ ] All disabled/unavailable/design-only engines are labeled honestly.
+- [ ] Offline-only session sends no cloud model, vector or telemetry request.
+- [ ] Any file-write or high-impact action has correctly scoped authorization.
+- [ ] Native deploy/rollback is demonstrated on supported hardware.
+- [ ] Performance/energy budgets have reproducible measurements.
+- [ ] No regressions remain hidden behind a “test environment” explanation.
+- [ ] Docs, code and actual capability matrix agree.
+
+## 33. Maintainer handoff protocol
+
+A collaborator or coding agent starting a slice should:
+
+1. Read `AGENTS.md`, `CAMPAIGN_STATE.md`, `CUSTOMIZATIONS.md`, `ARCHITECTURE_VOLMARR.md`, `UPSTREAM_SYNC.md` and this roadmap.
+2. Fetch and diff the **current** relevant upstreams; do not trust a pinned version listed here as eternally current.
+3. Choose one bounded issue/ticket, note dependencies and write a short design of what changes and what must stay invariant.
+4. Implement against existing domain owners; no shadow compiler, second memory owner or duplicate scheduler.
+5. Add real contract tests and at least one proof at the appropriate evidence level.
+6. Run the targeted suite, then the appropriate upstream and personal regression suite; report commands and raw counts.
+7. Record source SHA, plugin version, test host, migration notes, license changes and unresolved limitations in the integration ledger.
+8. Extend README NEWS **additively**, preserving historic news and project disclaimer. Do not replace the page with generated hype.
+9. Write a durable campaign checkpoint after a verified slice. Never publish a claim of completion when no live caller exists.
+10. Stop on permission, credential, destructive migration or other owner-authority boundary and obtain the specified authorization before proceeding.
+
+## 34. Source pointers and verification entrypoints
+
+- Hermes official: https://github.com/NousResearch/hermes-agent
+- v0.23.0 official release: https://github.com/NousResearch/hermes-agent/releases/tag/v0.23.0
+- Official docs (memory, plugins, gateway, providers and profiles): https://hermes-agent.nousresearch.com/docs
+- This fork: https://github.com/hrabanazviking/hermes-agent-RuneForgeAI-hack
+- Project A.E.S.I.R.: https://github.com/hrabanazviking/RuneForgeAI-Project-Aesir
+- Rúnmál: https://github.com/hrabanazviking/RuneForgeAI-Runmal
+- MimirAlloc: https://github.com/hrabanazviking/RuneForgeAI-MimirAlloc
+- Samverk: https://github.com/hrabanazviking/RuneForgeAI-Samverk
+- Samkoma: https://github.com/hrabanazviking/RuneForgeAI-Samkoma
+- Samtal: https://github.com/hrabanazviking/RuneForgeAI_Samtal
+- Mythic Agent CLI: https://github.com/hrabanazviking/Mythic_Agent_Coder_CLI
+- HugrGate: https://github.com/hrabanazviking/RuneForgeAI-HugrGate
+- Draupnir Forge: https://github.com/hrabanazviking/RuneForgeAI-Draupnir-Forge
+- Yggdrasil Distributed Inference: https://github.com/hrabanazviking/Yggdrasil-Distributed-Inference-System
+- Hliðskjálf: https://github.com/hrabanazviking/RuneForgeAI-Project-Hlidhskjalf
+- Lífþrasir: https://github.com/hrabanazviking/RuneForgeAI-Lifthrasir
+- Heimdall: https://github.com/hrabanazviking/Heimdall-SL-Hermes-Agent
+
+**Final rule:** the digital companion's identity is not the narrow prompt or a specific model. The authoritative documents and continuity stores may grow without a source-size limit; the active model sees only the currently relevant, provably sourced part of that much larger living library. That is how unlimited authored depth can coexist with finite, reliable inference.
