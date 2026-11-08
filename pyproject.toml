@@ -697,11 +697,15 @@ exclude-newer-package = { certifi = false }
 
 [tool.uv.sources]
 # Local-only sources for Volmarr's unpublished raven packages (see the
-# volmarr-ravens extra above). The paths are relative to this checkout
-# and name the canonical ravens tree on Volmarr's machines
-# (~/workspace/ravens beside this checkout). On a machine without that
-# sibling tree, simply never select the volmarr-ravens extra — nothing
-# else in the lock needs these entries.
+# volmarr-ravens extra above). The paths are relative to this checkout:
+# the canonical ravens tree must be this checkout's SIBLING (../ravens).
+# On purplelongship that is ~/ravens beside the ~/hermes-* checkouts; on
+# the VM it is ~/workspace/ravens beside the checkouts there. A checkout
+# staged anywhere else (deeper, or without the sibling) breaks this
+# binding whenever the volmarr-ravens extra is selected — stage checkouts
+# and test envs from trees that sit beside the ravens tree. On a machine
+# without that sibling tree, simply never select the volmarr-ravens
+# extra — nothing else in the lock needs these entries.
 muninn = { path = "../ravens/muninn", editable = true }
 huginn = { path = "../ravens/huginn", editable = true }
 
