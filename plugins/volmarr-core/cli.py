@@ -424,6 +424,20 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     edge_research_propose.add_argument("--title", required=True)
     edge_research_propose.add_argument("--detail", default="")
     edge_research_propose.add_argument("--json", action="store_true", dest="json_output")
+    production = subcommands.add_parser(
+        "production",
+        help="Q0-Q4 production (W13): status, release scorecard, boundary/threat audit; read-only",
+    )
+    production_subcommands = production.add_subparsers(dest="production_action")
+    production_status_p = production_subcommands.add_parser(
+        "status", help="Production status from disk + W08 ledger + W09 registry (no live connection)")
+    production_status_p.add_argument("--json", action="store_true", dest="json_output")
+    production_scorecard = production_subcommands.add_parser(
+        "scorecard", help="Section 32 release scorecard (honest: releasable only when every item is met)")
+    production_scorecard.add_argument("--json", action="store_true", dest="json_output")
+    production_audit_p = production_subcommands.add_parser(
+        "audit", help="Q0 policy + Q1 threat gaps + Q2 unmeasured performance record")
+    production_audit_p.add_argument("--json", action="store_true", dest="json_output")
     agency = subcommands.add_parser(
         "agency",
         help="Manage the proposal-only agency review routine (Phase 7)",
@@ -1013,6 +1027,46 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
         except EdgeError as exc:
             print(json.dumps({"error": exc.name, "detail": exc.detail}, sort_keys=True), file=sys.stderr)
             return 1
+    elif action == "production":
+        from datetime import datetime as _dt3, timezone as _tz3
+        from .production import KNOWN_DEFERRED, ProductionError, evaluate_scorecard, production_audit, production_status
+        _paction = getattr(args, "production_action", None)
+        _now3 = _dt3.now(_tz3.utc).isoformat()
+        try:
+            if _paction == "status":
+                _record = production_status(recorded_at=_now3)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Production: {_record['service']} {_record['version']} / {_record['availability']} / live connection not-claimed")
+                    print(f"Engines: {_record['engines']['engine_count']} rows, {_record['engines']['working_count']} end-to-end working")
+                    print(f"Docs: {_record['docs_present']}/{len(_record['docs'])} present; next: {_record['next_required_action']}")
+                return 0
+            elif _paction == "scorecard":
+                _record = evaluate_scorecard({}, deferred=dict(KNOWN_DEFERRED))
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Release scorecard: {_record['met_count']}/15 met; releasable: {_record['releasable']}")
+                    for _item in _record["items"]:
+                        if _item["status"] != "met":
+                            print(_item["verdict"])
+                return 0 if _record["releasable"] else 1
+            elif _paction == "audit":
+                _record = production_audit(recorded_at=_now3)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    _threat = _record["outputs"]["threat"]
+                    print(f"Threat checklist: {_threat['present_count']}/12 with evidence; gaps: {', '.join(_threat['gaps'])}")
+                    print("Performance: structure only, all fields unmeasured (no benchmark run)")
+                return 0
+            else:
+                print("Usage: hermes volmarr production {status|scorecard|audit} [--json]")
+                return 2
+        except ProductionError as exc:
+            print(json.dumps({"error": exc.name, "detail": exc.detail}, sort_keys=True), file=sys.stderr)
+            return 1
     elif action == "persona":
         from pathlib import Path as _Path
         from .persona_ops import PersonaOps, PersonaOpsError
@@ -1071,7 +1125,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production} ...")
         return 2
 
     if getattr(args, "json_output", False):
