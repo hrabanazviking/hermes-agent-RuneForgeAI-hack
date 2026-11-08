@@ -364,10 +364,16 @@ class PresentStateBridge:
         ctx,
         *,
         packet_sources: Iterable[Callable[[str, Any], Iterable[ContextItem]]] = (),
+        turn_signals: dict | None = None,
     ) -> None:
         self._store = PresentStateStore(ctx)
         self._packet = ContextPacketBuilder(ctx)
         self._packet_sources = (self._store.packet_items, *tuple(packet_sources))
+        # W05 (P.009): shared holder filled with this turn's hook
+        # kwargs before sources run, so the persona source can
+        # route on model/platform/parent signals core passes to
+        # pre_llm_call. PresentState stays the sole assembler.
+        self._turn_signals = turn_signals
         self._pending: OrderedDict[tuple[str, str, str], dict[str, Any]] = OrderedDict()
         self._pending_lock = threading.Lock()
 
@@ -393,8 +399,19 @@ class PresentStateBridge:
         session_id: str = "",
         turn_id: str = "",
         user_message: Any = "",
-        **_: Any,
+        **kwargs: Any,
     ) -> dict[str, str] | None:
+        if self._turn_signals is not None:
+            self._turn_signals.clear()
+            self._turn_signals.update({
+                "session_id": session_id,
+                "turn_id": turn_id,
+                "task_id": kwargs.get("task_id", ""),
+                "model": kwargs.get("model", ""),
+                "platform": kwargs.get("platform", ""),
+                "parent_session_id": kwargs.get("parent_session_id", ""),
+                "sender_id": kwargs.get("sender_id", ""),
+            })
         key = self._key(session_id, turn_id)
         with self._pending_lock:
             self._pending[key] = {"user": user_message, "assistant": ""}
