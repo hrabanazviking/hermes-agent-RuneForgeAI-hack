@@ -161,3 +161,39 @@ E.01 (peripheral surface; hub protocol fully live-proven here), the
 pin move itself is a small, fully prepared step: lock row +
 COMPONENT_LICENSES + matrix row + pin-guard test, then engines
 validate + full contracts at zero regressions.
+
+## Execution — Volmarr ruling 2026-11-10 03:29 EST (ticket E01-T1 resolved)
+
+Volmarr ruled: MOVE THE PIN NOW AND FIX THE TEST ALONGSIDE. Executed
+2026-11-10 by the keeper:
+
+- Pin moved in this banking: integration-lock.json Verdandi row,
+  COMPONENT_LICENSES.md line 10, INTEGRATION_MATRIX.md row 1, and the
+  pin-guard assertion in tests/plugins/test_volmarr_integration_ledger.py
+  now read 2fc9db8bf555546ab96084f74b1d442b8e1c7a63; lock update_needed
+  is false and the verdict reads current — E.01 executed.
+- Verdandi-side fix (its own repo, hrabanazviking/Verdandi):
+  conversation_logger.get_context_for_cron read the nerve feed from
+  Path.home() and inserted Path.home() state dir for the reactor import;
+  both now read from the module STATE_DIR, consistent with every other
+  path in the module. The test fixture already isolates STATE_DIR, so
+  the test is hermetic. Single-file check in a pristine disposable HOME:
+  tests/test_context_injector.py 18 passed (previously 1 failed /
+  17 passed). Fix banked in the Verdandi repo: commit
+  3140de1095daf3d230336906b203b64fb6aa7c3d on main (explicit refspec
+  push, ls-remote verified). Full Verdandi suite at that commit in a
+  pristine disposable HOME: 1,065 passed / 0 failed / 4 skipped
+  (log ~/team09-e01-verdandi-suite-fixed.log) - proof 1 now PASSES.
+  Full fork contracts on the pin-moved tree: 137 files = 1,171 passed
+  / 7 failed / 1 skipped, the 7 name-identical to the known
+  live-transport set - zero regressions (log
+  ~/team09-e01-contracts.log). Counts also recorded in the banking
+  closure in CAMPAIGN_STATE_MODERNIZATION.md.
+- Waiter note: the first suite waiter deadlocked on its own launcher
+  (the launching shell's command line carried the pgrep patterns - the
+  W13-recorded failure class); the launcher was killed, the waiter
+  reparented and fired in the first clear window. No other campaign's
+  work was touched.
+- Proofs 2-5 from the blocked record above stand unchanged (they ran
+  against the real hub binary from the target tree). No fork adapter
+  code changed; README.md untouched.

@@ -253,7 +253,7 @@ def test_cli_engines_status_json(mods, capsys):
 def test_cli_engines_show_and_unknown(mods, capsys):
     assert _run_cli(mods, ["engines", "show", "Verdandi"]) == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["pinned"] == "dc7139416ef4bb67c9ba29c1148615d0d259b7db"
+    assert payload["pinned"] == "2fc9db8bf555546ab96084f74b1d442b8e1c7a63"
     assert _run_cli(mods, ["engines", "show", "NoSuchEngine"]) == 1
     capsys.readouterr()
 

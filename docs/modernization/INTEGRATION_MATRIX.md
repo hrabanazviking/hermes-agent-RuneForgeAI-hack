@@ -67,7 +67,7 @@ instead of rotting silently.
 
 | # | Engine / project | Repo | Fork pin (source) | Current HEAD (re-measured 2026-11-08) | License | Adapter in this fork (plugin + mode) | Evidence stage (§28.3) | Verification | Verdict |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | Verdandi | hrabanazviking/Verdandi | dc7139416ef4bb67c9ba29c1148615d0d259b7db (COMPONENT_LICENSES.md) | 2fc9db8bf555546ab96084f74b1d442b8e1c7a63 | MIT | volmarr-core 0.26.0 — realtime: opt-in fail-open lifecycle publish over Unix socket + health/stimuli | contract implemented | verified | update — E.01 |
+| 1 | Verdandi | hrabanazviking/Verdandi | 2fc9db8bf555546ab96084f74b1d442b8e1c7a63 (COMPONENT_LICENSES.md) | 3140de1095daf3d230336906b203b64fb6aa7c3d (pin + E01-T1 test-fix commit, test-only) | MIT | volmarr-core 0.26.0 — realtime: opt-in fail-open lifecycle publish over Unix socket + health/stimuli | contract implemented | verified | current — E.01 executed 2026-11-10 |
 | 2 | Project A.E.S.I.R. | hrabanazviking/RuneForgeAI-Project-Aesir | c1a4410ca254fa388e45936b02230999d0906a4c (COMPONENT_LICENSES.md) | d9f88b9a65531dfaf48b22df167d75d45d43ca50 | AGPL-3.0 | volmarr-core 0.26.0 — deterministic tool: bounded loopback OpenAI-compatible health/catalog/completion + route decisions | contract implemented | verified | update — E.02 |
 | 3 | Bifrost / Mimir | hrabanazviking/bifrost | b66e98cc8a79d4dede22ba11d68a1a5ecd22ebd6, v1.0.0 (COMPONENT_LICENSES.md) | 99988dbb638d1b4f35f4a07590d61ad08b72ebd8 | MIT | volmarr-core 0.26.0 — probe-only: profile-local read-only probes; bridge construct-only, every write flag forced False | contract implemented | verified | update — E.03 |
 | 4 | Muninn (ravens) | NO GitHub repo (Volmarr's alone to create) | local ravens tree fc761f020b39 (pkg 4eafc31, v1.0.0) | fc761f020b39f9be875310d271aac7423239d5f8 — tree HEAD == pin, ON purplelongship (corrected) | MIT | volmarr-core 0.26.0 — full read-write behind default-off operator flags | installed integration | verified (corrected) | pin-first — E.04 distribution blocker |
@@ -134,6 +134,7 @@ been run for any engine yet, so every pin below stays where it is.
 ### E.01 Verdandi — current event protocol and bridge regression
 
 - Delta: pin dc7139416ef4 → current 2fc9db8bf555 = 67 commits
+- EXECUTED 2026-11-10 (Volmarr ruling 03:29 EST, ticket E01-T1): pin moved dc7139416ef4 → 2fc9db8bf555; the one proof-1 failure was an engine-side test-isolation defect, fixed in the Verdandi repo itself (get_context_for_cron now reads the nerve feed and reactor from STATE_DIR, not the ambient home), after which the Verdandi suite runs clean in a pristine environment. Full record: docs/modernization/E01_VERDANDI_UPDATE.md.
   (blobless-clone count at E0). The nerve hub was hardened repeatedly:
   over-limit structured rejects, subscriber keepalive, SIGTERM
   graceful shutdown, supervisor + PID-reuse-safe health checks;
