@@ -90,6 +90,8 @@ _STREAM_TAIL_MARKERS = _RESOLVER_MARKERS + (_BYTECODE_COMPILE_MARKER, *_BUILD_MA
 # not purged before, so this bounds a cache with several damaged entries, never
 # a loop on one broken wheel.
 _CACHE_RECOVERY_ROUNDS = 3
+# The pyvenv.cfg key every PM-built environment carries; site ignores keys it does not know.
+PM_BUILT_KEY = "hermes-pm-built"
 
 
 class ResolutionConflict(InstallError):
@@ -492,6 +494,10 @@ class PythonEnvironment:
         )
         if result.returncode:
             raise InstallError("venv", f"uv venv failed: {result.stderr[-600:]}")
+        # Marks the environment as PM's whatever interpreter it runs: a checkout `.venv` built by
+        # `pm.build_env --python <any>` is never read as a pre-PM install (pm.extras._built_by_pm).
+        with (self.destination / "pyvenv.cfg").open("a", encoding="utf-8") as cfg:
+            cfg.write(f"{PM_BUILT_KEY} = true\n")
 
     def _lock_command(self, source: Path, *, upgrade: bool = False, check: bool = False) -> list[str]:
         """The `uv lock` argv for *source*, release-age gate scoped to registry sources.
@@ -519,8 +525,19 @@ class PythonEnvironment:
                                       local_packages=local_source_packages(source))
 
     def check_lock(self, source: Path) -> None:
-        result = self._run(self._lock_command(source, check=True),
-                           cwd=source, timeout=1800)
+        # Combined resolution (Volmarr ruling 2026-11-09): the command comes from
+        # _lock_command so the fork release-age gate stays scoped to registry
+        # sources (local-path packages exempted by name), and upstream offline-first
+        # behaviour is preserved on that same command.
+        # Online, uv re-downloads every direct-URL wheel even when the lock already satisfies
+        # the manifest, so one unreachable release asset (kittentts) failed every CI job setup.
+        # Offline answers a current lock from the lock alone; only a lock it cannot
+        # vouch for goes online, where uv names what is stale.
+        command = self._lock_command(source, check=True)
+        if not self.offline and replace(self, offline=True, output=None)._run(
+                command, cwd=source, timeout=1800).returncode == 0:
+            return
+        result = self._run(command, cwd=source, timeout=1800)
         if result.returncode:
             raise classify_uv_failure("lock", result.returncode, result.stderr or result.stdout,
                                       local_packages=local_source_packages(source))
