@@ -236,3 +236,15 @@ which case the pin move is a small, fully prepared step:
 lock row + COMPONENT_LICENSES + matrix row, then full
 contracts at zero regressions against the banked baseline.
 No ruling is recorded here and none is invented.
+
+## Execution - Volmarr rulings 2026-11-13 (ticket E02-T1 resolved)
+
+Volmarr ruled 2026-11-13 ~10:08 EST: FIX THE ENGINE'S FIVE DEFECTS FIRST (option a). Defect 4's ledger half was ruled 2026-11-13 ~11:01 EST: teach the checker the old format - the 175 older-format Hailo entries stay untouched.
+
+All five defects were fixed in ~/aesir-e02fix on branch yrsa/e02-t1-fixes (based on the E.02 target d9f88b9a6553), HEAD bd4d7362: defect 1 a00274b7, defect 2 6d3fe9d6, defect 5 3e036c26, defect 4 hygiene 2e0bcfaa, defects 3+4 bd4d7362 (check_doc_drift PASSED exit 0, ledger_schema valid 504 entries). The fix branch is NOT pushed; banking it in the A.E.S.I.R. repo is that project's own line.
+
+Proof 1 re-run (log ~/e02t1-proof1.log, completed 2026-11-13 12:26 EST): builds PASS, negative control failed as designed, all 55 python proofs exit 0. Its Grand Proving run_all timed out at F009 with CUDA visible (known RTX 2060 CUDAGate hang, comparator artifact). The serialized CPU-mode waiter run (~/e02t1-runall-cpu.log, 2026-11-13 13:01 EST) reported 276 passed / 2 failed / 2 skipped - the two cli.* failures were unable to locate tracked aesir.config.json because that harness launched run_all outside the repo root, a harness cwd artifact. Corrected re-run by the keeper, CPU mode (CUDA_VISIBLE_DEVICES=) from the repo root ~/aesir-e02fix (log ~/e02t1-runall-cpu2.log): Grand Proving 278 passed / 0 failed / 2 skipped, Status PASS, exit 0 - F009 passes on the CPU fallback path. Proof 1 is therefore CLEAN. Proofs 2-5 stand from the blocked record above.
+
+Pin moved in this execution: c1a4410ca254fa388e45936b02230999d0906a4c -> d9f88b9a65531dfaf48b22df167d75d45d43ca50 in integration-lock.json (A.E.S.I.R. row: update_needed false, verdict current - E.02 executed), COMPONENT_LICENSES.md, INTEGRATION_MATRIX.md row 2, and the pin-guard assertion in tests/plugins/test_volmarr_integration_ledger.py (engines show Project A.E.S.I.R.).
+
+Fork gate: full contract set on this pin-moved tree via scripts/run_tests.sh - counts recorded in the banking closure in CAMPAIGN_STATE_MODERNIZATION.md (gate requirement: 137 files = 1,171 passed / 7 failed / 1 skipped, the 7 name-identical to the known live-transport set, zero regressions). README untouched (sha256 336813d11bbe5aa2ff745b4a4bc3abcf2a283cd13971c0c11d061377129db7f3).
