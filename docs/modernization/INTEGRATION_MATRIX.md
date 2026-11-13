@@ -70,8 +70,8 @@ instead of rotting silently.
 | 1 | Verdandi | hrabanazviking/Verdandi | 2fc9db8bf555546ab96084f74b1d442b8e1c7a63 (COMPONENT_LICENSES.md) | 3140de1095daf3d230336906b203b64fb6aa7c3d (pin + E01-T1 test-fix commit, test-only) | MIT | volmarr-core 0.26.0 — realtime: opt-in fail-open lifecycle publish over Unix socket + health/stimuli | contract implemented | verified | current — E.01 executed 2026-11-10 |
 | 2 | Project A.E.S.I.R. | hrabanazviking/RuneForgeAI-Project-Aesir | d9f88b9a65531dfaf48b22df167d75d45d43ca50 (COMPONENT_LICENSES.md) | d9f88b9a65531dfaf48b22df167d75d45d43ca50 | AGPL-3.0 | volmarr-core 0.26.0 — deterministic tool: bounded loopback OpenAI-compatible health/catalog/completion + route decisions | contract implemented | verified | current — E.02 executed 2026-11-13 |
 | 3 | Bifrost / Mimir | hrabanazviking/bifrost | 99988dbb638d1b4f35f4a07590d61ad08b72ebd8, v1.0.0 (COMPONENT_LICENSES.md) | 99988dbb638d1b4f35f4a07590d61ad08b72ebd8 | MIT | volmarr-core 0.26.0 — probe-only: profile-local read-only probes; bridge construct-only, every write flag forced False | contract implemented | verified | current — E.03 executed 2026-11-13 |
-| 4 | Muninn (ravens) | NO GitHub repo (Volmarr's alone to create) | local ravens tree fc761f020b39 (pkg 4eafc31, v1.0.0) | fc761f020b39f9be875310d271aac7423239d5f8 — tree HEAD == pin, ON purplelongship (corrected) | MIT | volmarr-core 0.26.0 — full read-write behind default-off operator flags | installed integration | verified (corrected) | pin-first — E.04 distribution blocker |
-| 5 | Huginn (ravens) | NO GitHub repo (Volmarr's alone to create) | local ravens tree fc761f020b39 (pkg 54dd839, v1.0.0) | fc761f020b39f9be875310d271aac7423239d5f8 — tree HEAD == pin, ON purplelongship (corrected) | MIT | volmarr-core 0.26.0 — full read-write behind default-off flags, constructed DIRECTLY only; through-Bifrost path is NO-GO | installed integration | verified (corrected) | pin-first — E.04 distribution blocker |
+| 4 | Muninn (ravens) | hrabanazviking/Huginn-and-Muninn-Ravens (created by Volmarr 2026-10-31; 1.0.0 published at f12fb39, byte-identical to the pinned tree) | local ravens tree fc761f020b39 (pkg 4eafc31, v1.0.0) | fc761f020b39f9be875310d271aac7423239d5f8 — tree HEAD == pin, ON purplelongship (corrected) | MIT | volmarr-core 0.26.0 — full read-write behind default-off operator flags | installed integration | verified (corrected) | current — E.04 executed 2026-11-13 (distribution proven; pin stays local tree HEAD; repo-HEAD growth at unchanged 1.0.0 = future update E04-T1) |
+| 5 | Huginn (ravens) | hrabanazviking/Huginn-and-Muninn-Ravens (created by Volmarr 2026-10-31; 1.0.0 published at f12fb39, byte-identical to the pinned tree) | local ravens tree fc761f020b39 (pkg 54dd839, v1.0.0) | fc761f020b39f9be875310d271aac7423239d5f8 — tree HEAD == pin, ON purplelongship (corrected) | MIT | volmarr-core 0.26.0 — full read-write behind default-off flags, constructed DIRECTLY only; through-Bifrost path is NO-GO | installed integration | verified (corrected) | current — E.04 executed 2026-11-13 (distribution proven; pin stays local tree HEAD; repo-HEAD growth at unchanged 1.0.0 = future update E04-T1) |
 | 6 | MemPalace (official) | MemPalace/mempalace | v3.10.0 at 22fd87f09c19d5ffb2d6966486483353937931c0 (COMPONENT_LICENSES.md) | fa6ae179d852dd145d33cfee2a37db5b346c45b3 | MIT | volmarr-core 0.26.0 — read-only: version-checked probe (MINIMUM_PACKAGE_VERSION 3.10.0) + opt-in default-off SQLite BM25 retrieval | contract implemented | verified | update — E.05 |
 | 7 | MemPalace (Volmarr mirror) | hrabanazviking/mempalace | ff1bdf03407bc5d6c571fa85f8c621d7177de616 (COMPONENT_LICENSES.md) | ff1bdf03407bc5d6c571fa85f8c621d7177de616 — MATCHES pin | MIT | none — mirror held as reference/fallback source only | documented only | verified | reference-only |
 | 8 | OpenViking (official) | volcengine/OpenViking | v0.4.21 at 3fca2577520f00b7f580d85d4ac6ae42bb9ba6f1 (COMPONENT_LICENSES.md); Slice 84 audit pinned server 0.5.x at e855796c83f9 (= tag v0.5.1) | 9ac008f9b86c91b79d6e93eb8df8ea7f4d48cecb | AGPL-3.0 | volmarr-core 0.26.0 — probe-only + read-only: loopback /health probe (MINIMUM_SERVER_VERSION 0.4.21) + opt-in memories-only /find retrieval | contract implemented | verified | update — E.06 |
@@ -274,8 +274,14 @@ been run for any engine yet, so every pin below stays where it is.
 3. Per-engine upgrades E.01–E.18: none executed in W08. Each starts
    with the engine's own suite in its own tree (§13 step 3); pins
    move one engine at a time, each with its own lock revision.
-4. Ravens distribution (E.04): no repo, no publication route —
-   design-only per W02 T3; the tree itself is present and pinned.
+4. Ravens distribution (E.04): RESOLVED 2026-11-13 — the W08-era
+   "no repo" record was stale: hrabanazviking/Huginn-and-Muninn-Ravens
+   was created by Volmarr on 2026-10-31 with the 1.0.0 packages
+   published the same day, byte-identical to the pinned tree; the
+   new-machine route (clone as sibling `ravens`, select the
+   `volmarr-ravens` extra) is proven in E04_RAVENS_DISTRIBUTION.md.
+   Remaining: repo-HEAD package growth at unchanged version 1.0.0
+   (E04-T1) and the pin tree having no git remote (E04-T3).
 5. COMPAT_MANIFEST.md: still absent from the tree (Phase 0
    find-verified; W00.05 fixture archive remains open) — this
    matrix + lock are the living compatibility record meanwhile, and
