@@ -205,3 +205,19 @@ trees only, excluding `__pycache__` and `*.egg-info` (generated).
   ravens-line action; this slice did not touch `~/ravens`.
 - The §32 release scorecard still reads NOT releasable; E.04
   changes distribution truth only, nothing else.
+
+## Fork gate — full contract set on this tree: PASS
+
+- `scripts/run_tests.sh` (`tests/plugins/test_volmarr_*.py`
+  `tests/plugins/test_kista_*.py`) on the committed E.04 tree,
+  serialized behind other campaigns' suites by waiter:
+  **137 files = 1,171 passed / 7 failed / 1 skipped** — the 7
+  failures are exactly the known live-transport set
+  (5x test_volmarr_core_plugin.py, 1x
+  test_volmarr_verdandi_stimuli.py, 1x
+  test_volmarr_voice_runner.py), name-identical to the banked
+  baseline; zero regressions (log
+  `~/team01-e04-fullcontracts.log`). The pin-guard battery
+  (test_volmarr_integration_ledger.py) passes on the updated
+  lock inside this run. Worktree clean at the end; README
+  sha256 unchanged before and after.
