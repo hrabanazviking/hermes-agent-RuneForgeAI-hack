@@ -113,8 +113,8 @@ def test_status_ok_against_this_tree(mods):
     assert report["engine_count"] == 26
     counts = report["verification_counts"]
     assert counts.get("blocked") == 1  # Sagnaskemma, honestly blocked
-    assert counts.get("partially_verified") == 3  # license-text rows (E.06 verified the OpenViking mirror text)
-    assert counts.get("verified") == 22
+    assert counts.get("partially_verified") == 2  # license-text rows (E.06 verified the OpenViking mirror text; E.07 verified the WYRD declaration)
+    assert counts.get("verified") == 23
     assert report["status"] == "ok", report["problems"]
     assert all(row["adapter_paths_present"] for row in report["engines"])
 
@@ -266,6 +266,9 @@ def test_cli_engines_show_and_unknown(mods, capsys):
     assert _run_cli(mods, ["engines", "show", "OpenViking"]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["pinned"] == "90f4edcede4c6a665fccb747417ebe6c1db56f4d"
+    assert _run_cli(mods, ["engines", "show", "WYRD Protocol"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["pinned"] == "89ed09394c7e13b2e63f91e342fbab8ff9890cbc"
     assert _run_cli(mods, ["engines", "show", "NoSuchEngine"]) == 1
     capsys.readouterr()
 
