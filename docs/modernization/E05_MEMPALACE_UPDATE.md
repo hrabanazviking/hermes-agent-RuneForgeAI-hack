@@ -206,3 +206,28 @@ hand-writing the sqlite schema.
 - The §32 release scorecard still reads NOT releasable; E.05
   changes engine currency only, nothing else.
 - Next in roadmap order: E.06 (OpenViking update).
+
+## Fork gate — full contract set on this tree: PASS
+
+- Targeted batteries after the pin move (`test_volmarr_mempalace.py`,
+  `test_volmarr_mempalace_retrieval.py`,
+  `test_volmarr_integration_ledger.py`): **3 files, 31 tests
+  passed / 0 failed** — the ledger battery carries the new
+  `engines show MemPalace` pin-guard assertion.
+- Full contract set via `scripts/run_tests.sh`
+  (`tests/plugins/test_volmarr_*.py` + `tests/plugins/test_kista_*.py`)
+  on the committed E.05 tree: **137 files = 1,171 passed /
+  7 failed / 1 skipped** — the 7 failures are exactly the known
+  live-transport set (5x test_volmarr_core_plugin.py, 1x
+  test_volmarr_verdandi_stimuli.py, 1x
+  test_volmarr_voice_runner.py), name-identical to the banked
+  baseline; zero regressions (log
+  `~/team01-e05-fullcontracts.log`, which also carries the
+  targeted run above). Scheduling note, honestly recorded: the
+  gate's waiter watched a fully clear window for ~25 minutes
+  while successive Samverk/Mythic-Coder slices kept starting
+  single-core suites; the gate (a ~95-second parallel run) was
+  then launched at load 1.54 with one single-core Samverk suite
+  in parallel, and its counts are baseline-exact.
+- Worktree clean at the end; README sha256 unchanged before
+  and after (`336813d11bbe…`).
