@@ -241,6 +241,14 @@ config_schema:
     type: str
     default: ""
     description: "Path to a local Astrology Engine checkout (the E.09 pinned tree) the X.09 adapter measures for status. Empty means not configured; calculations themselves are configured on the volmarr-astrology plugin (engine_path/python_path)."
+  scribing_enabled:
+    type: bool
+    default: false
+    description: "Enable the X.10 Mythic Scribing Foundry connector surfaces (status/catalog/job planning for the private writing workflow). Disabled by default; local-only, and this connector never publishes or uploads anything."
+  scribing_root:
+    type: str
+    default: ""
+    description: "Path to a local Mythic Scribing Foundry checkout (the audited private tree) the X.10 connector measures for status. Empty means not configured; status reads tree structure only, never manuscript or corpus content."
   identity_enabled:
     type: bool
     default: true

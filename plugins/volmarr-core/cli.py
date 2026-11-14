@@ -281,6 +281,20 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     astrology_batch_p = astrology_subcommands.add_parser(
         "batch", help="X.09 batch plan on a labelled synthetic item set: deterministic replay keys, caps, per-item refusals; runs no engine")
     astrology_batch_p.add_argument("--json", action="store_true", dest="json_output")
+    scribing = subcommands.add_parser(
+        "scribing",
+        help="Inspect the Mythic Scribing Foundry connector (X.10, private writing workflow, local-only)",
+    )
+    scribing_subcommands = scribing.add_subparsers(dest="scribing_action")
+    scribing_status_p = scribing_subcommands.add_parser(
+        "status", help="X.10 Scribing status: audited HEAD, staged Foundry tree measurement, privacy limits")
+    scribing_status_p.add_argument("--json", action="store_true", dest="json_output")
+    scribing_catalog_p = scribing_subcommands.add_parser(
+        "catalog", help="X.10 section 45 step catalog: supported vs unsupported step kinds, refused publish verbs")
+    scribing_catalog_p.add_argument("--json", action="store_true", dest="json_output")
+    scribing_plan_p = scribing_subcommands.add_parser(
+        "plan", help="X.10 job plan on a labelled synthetic step set: provenance, checkpoints, refusals by name; runs no Foundry code")
+    scribing_plan_p.add_argument("--json", action="store_true", dest="json_output")
     identity = subcommands.add_parser(
         "identity",
         help="Inspect the active profile's stable entity identity",
@@ -1039,6 +1053,39 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 0
         print("Usage: hermes volmarr astrology {status|catalog|batch} [--json]")
         return 2
+    elif action == "scribing":
+        _kaction = getattr(args, "scribing_action", None)
+        if _kaction in {"status", "catalog", "plan"}:
+            from datetime import datetime as _dt_k, timezone as _tz_k
+            from .scribing import (SYNTHETIC_STEPS, build_job_plan,
+                                   scribing_status, steps_catalog)
+            _now_k = _dt_k.now(_tz_k.utc).isoformat()
+            if _kaction == "status":
+                _record = scribing_status(ctx, recorded_at=_now_k)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    _tree = _record["tree"]
+                    print(f"Scribing: volmarr-scribing / repo hrabanazviking/Mythic-Scribing-Foundry (private) / audited {_record['audited_head'][:12]} / tree {_tree.get('status')} / mode local-only private writing workflow, publishes nothing - X.10 connector")
+                return 0
+            if _kaction == "catalog":
+                _record = steps_catalog()
+                _record["recorded_at"] = _now_k
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print("Scribing steps: " + "; ".join(f"{s['kind']} [{'supported' if s['supported'] else 'unsupported'}]" for s in _record["steps"]) + " / publish verbs refused: " + ", ".join(_record["publish_verbs_refused"]))
+                return 0
+            _record = build_job_plan(SYNTHETIC_STEPS, book_ref="synthetic", created_by="cli-plan")
+            _record["recorded_at"] = _now_k
+            _record["source_label"] = "synthetic (labelled plan steps, not a real manuscript)"
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                print(f"Scribing plan: {_record['step_count']} steps / {_record['refused_count']} refused / key {_record['plan_key'][:12]} / runs_foundry: False")
+            return 0
+        print("Usage: hermes volmarr scribing {status|catalog|plan} [--json]")
+        return 2
     elif action == "identity":
         if getattr(args, "identity_action", None) != "health":
             print("Usage: hermes volmarr identity health [--json]")
@@ -1617,7 +1664,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|scribing|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
         return 2
 
     if getattr(args, "json_output", False):
