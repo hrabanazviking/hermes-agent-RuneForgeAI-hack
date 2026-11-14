@@ -323,6 +323,20 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     draupnir_plan_p = draupnir_subcommands.add_parser(
         "plan", help="X.12 workflow plan on a labelled synthetic task set: leases, gates, handoff and publish refusals by name; runs no orchestrator")
     draupnir_plan_p.add_argument("--json", action="store_true", dest="json_output")
+    hugrgate = subcommands.add_parser(
+        "hugrgate",
+        help="Inspect the HugrGate connector (X.13, structured uncertainty evaluation, local-only)",
+    )
+    hugrgate_subcommands = hugrgate.add_subparsers(dest="hugrgate_action")
+    hugrgate_status_p = hugrgate_subcommands.add_parser(
+        "status", help="X.13 HugrGate status: audited HEAD, staged engine tree measurement, evaluation limits")
+    hugrgate_status_p.add_argument("--json", action="store_true", dest="json_output")
+    hugrgate_catalog_p = hugrgate_subcommands.add_parser(
+        "catalog", help="X.13 section 48 catalog: verified vs unverified contract types, inference ladder, refused subjects")
+    hugrgate_catalog_p.add_argument("--json", action="store_true", dest="json_output")
+    hugrgate_evaluate_p = hugrgate_subcommands.add_parser(
+        "evaluate", help="X.13 decision.evaluate on labelled synthetic requests: one deterministic decision, one abstention; runs no engine")
+    hugrgate_evaluate_p.add_argument("--json", action="store_true", dest="json_output")
     identity = subcommands.add_parser(
         "identity",
         help="Inspect the active profile's stable entity identity",
@@ -1184,6 +1198,46 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 0
         print("Usage: hermes volmarr draupnir {status|catalog|plan} [--json]")
         return 2
+    elif action == "hugrgate":
+        _kaction = getattr(args, "hugrgate_action", None)
+        if _kaction in {"status", "catalog", "evaluate"}:
+            from datetime import datetime as _dt_k, timezone as _tz_k
+            from .hugrgate import (SYNTHETIC_ABSTAIN_REQUEST,
+                                   SYNTHETIC_REQUEST, decision_catalog,
+                                   evaluate_decision, hugrgate_status)
+            _now_k = _dt_k.now(_tz_k.utc).isoformat()
+            if _kaction == "status":
+                _record = hugrgate_status(ctx, recorded_at=_now_k)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    _tree = _record["tree"]
+                    print(f"HugrGate: volmarr-hugrgate / repo hrabanazviking/RuneForgeAI-HugrGate / audited {_record['audited_head'][:12]} / tree {_tree.get('status')} / mode local-only deterministic decision evaluation, runs no engine - X.13 connector")
+                return 0
+            if _kaction == "catalog":
+                _record = decision_catalog()
+                _record["recorded_at"] = _now_k
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print("HugrGate contracts: " + "; ".join(f"{c['type']} [{'verified' if c['verified_at_audited_head'] else 'unverified'}]" for c in _record["contracts"]) + " / refused subjects: " + ", ".join(_record["refused_subjects"]))
+                return 0
+            _record = {"schema": "runeforge.hugrgate.evaluate.v1",
+                       "service": "volmarr-hugrgate",
+                       "decision": evaluate_decision(SYNTHETIC_REQUEST),
+                       "abstention_case": evaluate_decision(SYNTHETIC_ABSTAIN_REQUEST),
+                       "recorded_at": _now_k,
+                       "source_label": "synthetic (labelled requests, not a real workload)",
+                       "runs_engine": False,
+                       "production_ready": False}
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                _d = _record["decision"]
+                print(f"HugrGate evaluate: decision {_d['value']} p={_d['probability']} / abstention {_record['abstention_case']['abstain_reason']} / runs_engine: False")
+            return 0
+        print("Usage: hermes volmarr hugrgate {status|catalog|evaluate} [--json]")
+        return 2
     elif action == "identity":
         if getattr(args, "identity_action", None) != "health":
             print("Usage: hermes volmarr identity health [--json]")
@@ -1762,7 +1816,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|scribing|aurelia|draupnir|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|scribing|aurelia|draupnir|hugrgate|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
         return 2
 
     if getattr(args, "json_output", False):
