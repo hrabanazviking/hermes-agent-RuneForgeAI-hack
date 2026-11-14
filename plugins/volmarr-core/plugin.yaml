@@ -265,6 +265,14 @@ config_schema:
     type: str
     default: ""
     description: "Path to a local Draupnir Forge checkout (the audited tree) the X.12 connector measures for status. Empty means not configured; status reads tree structure only and copies no Forge source."
+  hugrgate_enabled:
+    type: bool
+    default: false
+    description: "Enable the X.13 HugrGate connector surfaces (status/catalog/decision evaluation for structured uncertainty). Disabled by default; local-only deterministic pure-rules evaluation - this connector runs no engine code and sends nothing external."
+  hugrgate_root:
+    type: str
+    default: ""
+    description: "Path to a local HugrGate checkout (the audited tree) the X.13 connector measures for status. Empty means not configured; status reads tree structure only and copies no HugrGate source."
   identity_enabled:
     type: bool
     default: true
