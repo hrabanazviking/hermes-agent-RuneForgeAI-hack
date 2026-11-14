@@ -257,6 +257,14 @@ config_schema:
     type: str
     default: ""
     description: "Path to a local Aurelia Sensations Server checkout (the audited private tree) the X.11 connector measures for status. Empty means not configured; status reads tree structure only, never data/ or config/ content."
+  draupnir_enabled:
+    type: bool
+    default: false
+    description: "Enable the X.12 Draupnir Forge connector surfaces (status/catalog/workflow planning for bounded delegated engineering jobs). Disabled by default; local-only planning only - this connector runs no orchestrator and mutates no checkout."
+  draupnir_root:
+    type: str
+    default: ""
+    description: "Path to a local Draupnir Forge checkout (the audited tree) the X.12 connector measures for status. Empty means not configured; status reads tree structure only and copies no Forge source."
   identity_enabled:
     type: bool
     default: true

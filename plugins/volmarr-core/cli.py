@@ -309,6 +309,20 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     aurelia_plan_p = aurelia_subcommands.add_parser(
         "plan", help="X.11 guarded event plan on a labelled synthetic event set: consent scopes, idempotency, refusals by name; runs no server")
     aurelia_plan_p.add_argument("--json", action="store_true", dest="json_output")
+    draupnir = subcommands.add_parser(
+        "draupnir",
+        help="Inspect the Draupnir Forge connector (X.12, bounded delegated workflow planning, local-only)",
+    )
+    draupnir_subcommands = draupnir.add_subparsers(dest="draupnir_action")
+    draupnir_status_p = draupnir_subcommands.add_parser(
+        "status", help="X.12 Draupnir status: audited HEAD, staged Forge tree measurement, planning limits")
+    draupnir_status_p.add_argument("--json", action="store_true", dest="json_output")
+    draupnir_catalog_p = draupnir_subcommands.add_parser(
+        "catalog", help="X.12 section 47 role catalog: ten bounded delegated jobs, workflow stages, authorization gates")
+    draupnir_catalog_p.add_argument("--json", action="store_true", dest="json_output")
+    draupnir_plan_p = draupnir_subcommands.add_parser(
+        "plan", help="X.12 workflow plan on a labelled synthetic task set: leases, gates, handoff and publish refusals by name; runs no orchestrator")
+    draupnir_plan_p.add_argument("--json", action="store_true", dest="json_output")
     identity = subcommands.add_parser(
         "identity",
         help="Inspect the active profile's stable entity identity",
@@ -1135,6 +1149,41 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 0
         print("Usage: hermes volmarr aurelia {status|catalog|plan} [--json]")
         return 2
+    elif action == "draupnir":
+        _kaction = getattr(args, "draupnir_action", None)
+        if _kaction in {"status", "catalog", "plan"}:
+            from datetime import datetime as _dt_k, timezone as _tz_k
+            from .draupnir import (SYNTHETIC_INTENT, SYNTHETIC_TASKS,
+                                   build_workflow_plan, draupnir_status,
+                                   role_catalog)
+            _now_k = _dt_k.now(_tz_k.utc).isoformat()
+            if _kaction == "status":
+                _record = draupnir_status(ctx, recorded_at=_now_k)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    _tree = _record["tree"]
+                    print(f"Draupnir: volmarr-draupnir / repo hrabanazviking/RuneForgeAI-Draupnir-Forge / audited {_record['audited_head'][:12]} / tree {_tree.get('status')} / mode local-only bounded delegated workflow planning, runs no orchestrator - X.12 connector")
+                return 0
+            if _kaction == "catalog":
+                _record = role_catalog()
+                _record["recorded_at"] = _now_k
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print("Draupnir roles: " + "; ".join(f"{r['role']} [bounded job]" for r in _record["roles"]) + " / authorization gates: " + ", ".join(_record["authorization_gates"]))
+                return 0
+            _record = build_workflow_plan(SYNTHETIC_TASKS, intent=SYNTHETIC_INTENT,
+                                          intent_approved=True)
+            _record["recorded_at"] = _now_k
+            _record["source_label"] = "synthetic (labelled plan tasks, not a real workflow)"
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                print(f"Draupnir plan: {_record['job_count']} jobs / {_record['refused_count']} refused / key {_record['plan_key'][:12]} / runs_orchestrator: False")
+            return 0
+        print("Usage: hermes volmarr draupnir {status|catalog|plan} [--json]")
+        return 2
     elif action == "identity":
         if getattr(args, "identity_action", None) != "health":
             print("Usage: hermes volmarr identity health [--json]")
@@ -1713,7 +1762,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|scribing|aurelia|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|scribing|aurelia|draupnir|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
         return 2
 
     if getattr(args, "json_output", False):
