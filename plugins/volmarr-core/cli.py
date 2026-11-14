@@ -239,6 +239,20 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     mindspark_bench = mindspark_subcommands.add_parser(
         "benchmark", help="Measure the deterministic baseline on synthetic cases, on this machine")
     mindspark_bench.add_argument("--json", action="store_true", dest="json_output")
+    ravens = subcommands.add_parser(
+        "ravens",
+        help="Inspect the Huginn-and-Muninn-Ravens authority adapter (X.07)",
+    )
+    ravens_subcommands = ravens.add_subparsers(dest="ravens_action")
+    ravens_status = ravens_subcommands.add_parser(
+        "status", help="X.07 ravens authority: dedicated repo, independent package pins, truthful package presence")
+    ravens_status.add_argument("--json", action="store_true", dest="json_output")
+    ravens_roles = ravens_subcommands.add_parser(
+        "roles", help="X.07 section 42 role split: Muninn association backend, Huginn retrieval backend")
+    ravens_roles.add_argument("--json", action="store_true", dest="json_output")
+    ravens_smoke = ravens_subcommands.add_parser(
+        "smoke", help="X.07 exact API smoke on disposable stores (never a profile store)")
+    ravens_smoke.add_argument("--json", action="store_true", dest="json_output")
     identity = subcommands.add_parser(
         "identity",
         help="Inspect the active profile's stable entity identity",
@@ -895,6 +909,40 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 0
         print("Usage: hermes volmarr mindspark {status|profiles|classify|benchmark} [--json]")
         return 2
+    elif action == "ravens":
+        _raction = getattr(args, "ravens_action", None)
+        if _raction in {"status", "roles", "smoke"}:
+            from datetime import datetime as _dt_r, timezone as _tz_r
+            from .ravens_authority import (ravens_authority_status,
+                                           role_catalog, run_ravens_smoke)
+            _now_r = _dt_r.now(_tz_r.utc).isoformat()
+            if _raction == "status":
+                _record = ravens_authority_status(ctx, recorded_at=_now_r)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Ravens: volmarr-ravens / authority hrabanazviking/Huginn-and-Muninn-Ravens / tree pin {_record['tree_head_pinned'][:12]} / packages {'present' if _record['all_packages_present'] else 'MISSING (reported truthfully)'} - X.07 adapter")
+                return 0
+            if _raction == "roles":
+                _record = role_catalog()
+                _record["recorded_at"] = _now_r
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print("Ravens roles: " + "; ".join(f"{p['package']} = {p['role']}" for p in _record["packages"]))
+                return 0
+            import tempfile as _tempfile_r
+            with _tempfile_r.TemporaryDirectory(prefix="ravens-x07-smoke-") as _tmp_r:
+                _record = run_ravens_smoke(__import__("pathlib").Path(_tmp_r))
+            _record["recorded_at"] = _now_r
+            _record["stores"] = "disposable (created under a temporary directory and deleted)"
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                print(f"Ravens smoke: {_record['status']} (Muninn association/decay/consolidation + Huginn ingestion/ranking on disposable stores; independence {'proven' if _record.get('independence', {}).get('independent') else 'NOT proven'})")
+            return 0 if _record.get("ok") or _record.get("status") == "package_missing" else 1
+        print("Usage: hermes volmarr ravens {status|roles|smoke} [--json]")
+        return 2
     elif action == "identity":
         if getattr(args, "identity_action", None) != "health":
             print("Usage: hermes volmarr identity health [--json]")
@@ -1473,7 +1521,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
         return 2
 
     if getattr(args, "json_output", False):

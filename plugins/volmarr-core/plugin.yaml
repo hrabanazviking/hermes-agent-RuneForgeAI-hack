@@ -205,6 +205,14 @@ config_schema:
     type: int
     default: 1024
     description: "Parent token budget ceiling the X.06 budget planner clamps profile grants against (Hermes enforces; the planner only proposes)."
+  ravens_authority_enabled:
+    type: bool
+    default: false
+    description: "Enable the X.07 ravens authority surfaces (dedicated-repo pins, role split, exact API smoke). Disabled by default; status reporting stays truthful either way and the existing ravens bindings are unaffected."
+  ravens_qdrant_agreed:
+    type: bool
+    default: false
+    description: "Explicit privacy agreement for optional Huginn Qdrant/vector operation (roadmap section 42 item 9). Default false and NOT enabled by X.07: Huginn is constructed with the local backend only; this key only records whether agreement was ever given."
   identity_enabled:
     type: bool
     default: true
