@@ -189,6 +189,22 @@ config_schema:
     type: bool
     default: false
     description: "Approved private canon store gate for lore retrieval. Disabled by default: lore retrieval is denied (canon_denied) and no private canon content is ever served through this adapter."
+  mindspark_enabled:
+    type: bool
+    default: false
+    description: "Enable the X.06 MindSpark ThoughtForge cognition adapter surfaces. Disabled by default; the deterministic profiles are the default behaviour either way."
+  mindspark_model_base_url:
+    type: str
+    default: ""
+    description: "Optional loopback-only OpenAI-compatible base URL for a local small model (plain HTTP on 127.0.0.1 with an explicit port). Empty means not configured: no model is ever called and there is no cloud fallback."
+  mindspark_model_name:
+    type: str
+    default: ""
+    description: "Optional local model name for the X.06 adapter. Machine-specific; empty means not configured."
+  mindspark_token_budget:
+    type: int
+    default: 1024
+    description: "Parent token budget ceiling the X.06 budget planner clamps profile grants against (Hermes enforces; the planner only proposes)."
   identity_enabled:
     type: bool
     default: true

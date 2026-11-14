@@ -221,6 +221,24 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     table_caps = table_subcommands.add_parser(
         "capabilities", help="X.05 capability split: mechanics vs narrative, with the canon-denial gate")
     table_caps.add_argument("--json", action="store_true", dest="json_output")
+    mindspark = subcommands.add_parser(
+        "mindspark",
+        help="Inspect the MindSpark ThoughtForge cognition adapter (X.06)",
+    )
+    mindspark_subcommands = mindspark.add_subparsers(dest="mindspark_action")
+    mindspark_status = mindspark_subcommands.add_parser(
+        "status", help="X.06 MindSpark status: deterministic-first design + truthful not-configured model behaviour")
+    mindspark_status.add_argument("--json", action="store_true", dest="json_output")
+    mindspark_profiles = mindspark_subcommands.add_parser(
+        "profiles", help="X.06 six small-model cognition profiles (deterministic-first)")
+    mindspark_profiles.add_argument("--json", action="store_true", dest="json_output")
+    mindspark_classify = mindspark_subcommands.add_parser(
+        "classify", help="Run the deterministic classifier profile on one text (no model call)")
+    mindspark_classify.add_argument("text")
+    mindspark_classify.add_argument("--json", action="store_true", dest="json_output")
+    mindspark_bench = mindspark_subcommands.add_parser(
+        "benchmark", help="Measure the deterministic baseline on synthetic cases, on this machine")
+    mindspark_bench.add_argument("--json", action="store_true", dest="json_output")
     identity = subcommands.add_parser(
         "identity",
         help="Inspect the active profile's stable entity identity",
@@ -839,6 +857,44 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 0
         print("Usage: hermes volmarr table {status|capabilities} [--json]")
         return 2
+    elif action == "mindspark":
+        _maction = getattr(args, "mindspark_action", None)
+        if _maction in {"status", "profiles", "classify", "benchmark"}:
+            from datetime import datetime as _dt_m, timezone as _tz_m
+            from .mindspark import (benchmark_deterministic, mindspark_status,
+                                    profile_catalog, run_profile)
+            _now_m = _dt_m.now(_tz_m.utc).isoformat()
+            if _maction == "status":
+                _record = mindspark_status(ctx, recorded_at=_now_m)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"MindSpark: volmarr-mindspark / audited head {_record['source_head_audited'][:12]} / deterministic-first / model {'configured' if _record['model_configured'] else 'not configured (reported truthfully)'} - X.06 adapter")
+                return 0
+            if _maction == "profiles":
+                _record = profile_catalog()
+                _record["recorded_at"] = _now_m
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print("MindSpark profiles: " + ", ".join(p["name"] for p in _record["profiles"]))
+                return 0
+            if _maction == "classify":
+                _record = run_profile("classifier", getattr(args, "text", ""))
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"MindSpark classify: {_record['intent']} (deterministic, no model call)")
+                return 0
+            _record = benchmark_deterministic()
+            _record["recorded_at"] = _now_m
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                print(f"MindSpark benchmark: {_record['correct']}/{_record['cases']} synthetic cases, mean {_record['latency_ms_mean']:.3f} ms on this machine (deterministic baseline; no model numbers claimed)")
+            return 0
+        print("Usage: hermes volmarr mindspark {status|profiles|classify|benchmark} [--json]")
+        return 2
     elif action == "identity":
         if getattr(args, "identity_action", None) != "health":
             print("Usage: hermes volmarr identity health [--json]")
@@ -1417,7 +1473,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|table|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
         return 2
 
     if getattr(args, "json_output", False):
