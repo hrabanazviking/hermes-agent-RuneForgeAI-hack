@@ -287,6 +287,9 @@ def test_cli_engines_show_and_unknown(mods, capsys):
     assert _run_cli(mods, ["engines", "show", "Hamr"]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["pinned"] == "f77aa588601b38a69b6c1fc0a6733ed5e95dffa8"
+    assert _run_cli(mods, ["engines", "show", "Seidr-Smidja"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["pinned"] == "32cdbd7a87358bc1f6f046c4e1449c35f4d5d40a"
     assert _run_cli(mods, ["engines", "show", "NoSuchEngine"]) == 1
     capsys.readouterr()
 
