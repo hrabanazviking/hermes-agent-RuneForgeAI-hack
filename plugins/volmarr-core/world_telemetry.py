@@ -32,3 +32,15 @@ class WorldChangeTelemetry:
             schema=WORLD_CHANGE_SCHEMA,
             schema_version=WORLD_CHANGE_SCHEMA_VERSION,
         )
+
+    def record_write(self, ctx, change_kind: str, *,
+                     revision: int | None = None) -> bool:
+        """X.04: content-free signal for one journal-committed write.
+
+        Called by the WYRD adapter only after the server has
+        confirmed the write and the adapter journal has committed
+        it (section 39 item 5). The payload carries the change
+        kind and the journal revision number only -- no entity,
+        key, value, or namespace ever rides to Verdandi."""
+        return self.record(ctx, change_kind, revision=revision,
+                           journal_committed=True)
