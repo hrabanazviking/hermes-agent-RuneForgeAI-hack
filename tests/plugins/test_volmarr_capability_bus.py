@@ -274,7 +274,7 @@ def test_builtin_seeds_are_real_fork_tools(mods):
     bus = mods["capability_bus"]
     status = bus.builtin_status()
     assert status["status"] == "ok", status["problems"]
-    assert status["service_count"] == 8
+    assert status["service_count"] == 9
     by_service = {row["service"]: row for row in status["services"]}
     assert by_service["volmarr-astrology"]["version"] == "0.8.0"
     assert by_service["volmarr-scribing"]["version"] == "0.1.0"
@@ -282,6 +282,7 @@ def test_builtin_seeds_are_real_fork_tools(mods):
     assert by_service["volmarr-draupnir"]["version"] == "0.1.0"
     assert by_service["volmarr-hugrgate"]["version"] == "0.1.0"
     assert by_service["volmarr-mythic"]["version"] == "0.1.0"
+    assert by_service["volmarr-smidja-forge"]["version"] == "0.1.0"
     assert by_service["volmarr-tarot"]["version"] == "0.3.0"
     assert by_service["volmarr-seidr"]["version"] == "0.4.0"
     assert all(row["adapter_present"] for row in status["services"])
@@ -311,7 +312,7 @@ def _run_cli(mods, argv):
 def test_cli_capabilities_list_show_validate(mods, capsys):
     assert _run_cli(mods, ["volmarr", "capabilities", "list", "--json"]) == 0
     out = json.loads(capsys.readouterr().out)
-    assert out["service_count"] == 8
+    assert out["service_count"] == 9
     assert _run_cli(mods, ["volmarr", "capabilities", "validate"]) == 0
     assert "valid" in capsys.readouterr().out
     assert _run_cli(

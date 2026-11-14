@@ -351,6 +351,20 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     mythic_plan_p = mythic_subcommands.add_parser(
         "plan", help="X.14 read-only workflow plan on a labelled synthetic request: staged plan under the workflow schema; executes nothing")
     mythic_plan_p.add_argument("--json", action="store_true", dest="json_output")
+    smidja_forge = subcommands.add_parser(
+        "smidja-forge",
+        help="Inspect the Seidr-Smidja forge connector (X.15, controlled avatar production records, local-only)",
+    )
+    smidja_forge_subcommands = smidja_forge.add_subparsers(dest="smidja_forge_action")
+    smidja_forge_status_p = smidja_forge_subcommands.add_parser(
+        "status", help="X.15 Smidja forge status: audited pin, staged tree measurement, license conflict, limits")
+    smidja_forge_status_p.add_argument("--json", action="store_true", dest="json_output")
+    smidja_forge_catalog_p = smidja_forge_subcommands.add_parser(
+        "catalog", help="X.15 section 50 catalog: forge spec v1 schema, capability matrix, Hamr reconciliation, gates")
+    smidja_forge_catalog_p.add_argument("--json", action="store_true", dest="json_output")
+    smidja_forge_plan_p = smidja_forge_subcommands.add_parser(
+        "plan", help="X.15 dry-run build plan on a labelled synthetic spec: licensed inventory, gates; executes nothing")
+    smidja_forge_plan_p.add_argument("--json", action="store_true", dest="json_output")
     identity = subcommands.add_parser(
         "identity",
         help="Inspect the active profile's stable entity identity",
@@ -1285,6 +1299,43 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 0
         print("Usage: hermes volmarr mythic {status|catalog|plan} [--json]")
         return 2
+    elif action == "smidja-forge":
+        _kaction = getattr(args, "smidja_forge_action", None)
+        if _kaction in {"status", "catalog", "plan"}:
+            from datetime import datetime as _dt_k, timezone as _tz_k
+            from .smidja_forge import (SYNTHETIC_REQUEST, forge_catalog,
+                                        plan_build, smidja_forge_status,
+                                        synthetic_spec)
+            _now_k = _dt_k.now(_tz_k.utc).isoformat()
+            if _kaction == "status":
+                _record = smidja_forge_status(ctx, recorded_at=_now_k)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    _tree = _record["tree"]
+                    print(f"Smidja forge: volmarr-smidja-forge / repo hrabanazviking/Seidr-Smidja / pin {_record['audited_pin'][:12]} / tree {_tree.get('status')} / license {_record['license_conflict']} / mode local-only controlled production records, executes no build - X.15 connector")
+                return 0
+            if _kaction == "catalog":
+                _record = forge_catalog()
+                _record["recorded_at"] = _now_k
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print("Smidja forge spec: " + _record["forge_spec_schema"]["version"] + " / capabilities: " + ", ".join(f"{c['capability']}={'live' if c['live'] else 'NOT live'}" for c in _record["capability_matrix"]))
+                return 0
+            _root = str(ctx.get_config("smidja_forge_root", "") or "").strip() or "/tmp"
+            _request = dict(SYNTHETIC_REQUEST)
+            _request["spec"] = synthetic_spec(_root)
+            _record = plan_build(_request, approved_roots=[_root])
+            _record["recorded_at"] = _now_k
+            _record["source_label"] = "synthetic (labelled spec, not a real workload)"
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                print(f"Smidja forge plan: {_record.get('job_id')} / state {_record.get('job_state')} / dry_run: True / executes_operations: False")
+            return 0
+        print("Usage: hermes volmarr smidja-forge {status|catalog|plan} [--json]")
+        return 2
     elif action == "identity":
         if getattr(args, "identity_action", None) != "health":
             print("Usage: hermes volmarr identity health [--json]")
@@ -1863,7 +1914,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|scribing|aurelia|draupnir|hugrgate|mythic|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|scribing|aurelia|draupnir|hugrgate|mythic|smidja-forge|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
         return 2
 
     if getattr(args, "json_output", False):
