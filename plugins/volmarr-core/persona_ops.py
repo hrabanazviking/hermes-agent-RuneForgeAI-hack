@@ -913,7 +913,16 @@ class PersonaOps:
         verbatim (read from disk this run, hash-checked against
         the manifest), so a bundle is self-contained evidence,
         not a pointer back to this profile.
+
+        E18-T1: the library is ensured first. On a profile whose
+        corpus was never ingested the manifest is empty, and an
+        export read straight from it silently bundled ZERO
+        sources while reporting ok. ``ensure_library`` is
+        idempotent and preserves existing records' privacy class
+        and destinations, so ensuring here changes nothing for an
+        already-ingested profile.
         """
+        self.ensure_library()
         compiled = self.compile_from_disk()
         if compiled is None:
             return {"command": "export", "status": "no_persona_config"}
@@ -931,6 +940,11 @@ class PersonaOps:
                             "privacy_class": row.get("privacy_class"),
                             "destinations": list(row.get("destinations") or []),
                             "text": data.decode("utf-8")})
+        if not sources and (compiled.get("documents") or []):
+            raise PersonaOpsError(
+                "export_empty",
+                "persona config declares documents but none could be "
+                "ingested from disk; refusing to write an empty bundle")
         bundle = {"schema": OPS_SCHEMA, "kind": "persona-bundle",
                   "record": record, "sources": sources,
                   "exported_at": _utc_now()}
@@ -1014,6 +1028,7 @@ class PersonaOps:
         self.store.journal("backup", {"dest": str(dest), "files": len(files)})
         return {"command": "backup", "status": "ok", "path": str(dest),
                 "encryption": ENCRYPTION_STATUS, "files": files,
+                "sources": exported.get("sources"),
                 "manifest": manifest}
 
     def restore(self, backup_dir: Path, target_home: Path) -> dict[str, Any]:
@@ -1038,8 +1053,14 @@ class PersonaOps:
         if target.is_dir() and probe.probe_gateway().get("state") == "running":
             raise PersonaOpsError("restore_target_live", str(target))
         bundle = self._load_bundle(src / "bundle.persona.json")
+        sources = bundle.get("sources") or []
+        if not sources:
+            # E18-T1: pre-fix backups of never-ingested profiles
+            # carry zero sources; restoring one wrote nothing yet
+            # reported ok. Refuse whole, before any write.
+            raise PersonaOpsError("backup_empty", str(src))
         written = []
-        for source in bundle.get("sources") or []:
+        for source in sources:
             data = str(source["text"]).encode("utf-8")
             if _sha256_bytes(data) != source["sha256"]:
                 raise PersonaOpsError("backup_integrity_failed", str(source["path"]))
