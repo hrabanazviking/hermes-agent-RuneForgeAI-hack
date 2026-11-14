@@ -113,8 +113,8 @@ def test_status_ok_against_this_tree(mods):
     assert report["engine_count"] == 26
     counts = report["verification_counts"]
     assert counts.get("blocked") == 1  # Sagnaskemma, honestly blocked
-    assert counts.get("partially_verified") == 2  # license-text rows (E.06 verified the OpenViking mirror text; E.07 verified the WYRD declaration)
-    assert counts.get("verified") == 23
+    assert counts.get("partially_verified") == 1  # Hamr only (E.06 verified the OpenViking mirror text; E.07 verified the WYRD declaration; E.12 verified the SRD LICENSE text)
+    assert counts.get("verified") == 24
     assert report["status"] == "ok", report["problems"]
     assert all(row["adapter_paths_present"] for row in report["engines"])
 
@@ -281,6 +281,9 @@ def test_cli_engines_show_and_unknown(mods, capsys):
     assert _run_cli(mods, ["engines", "show", "Seidr Engine"]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["pinned"] == "fdc2b3c85c62982a4550dfe476751287d723519d"
+    assert _run_cli(mods, ["engines", "show", "SRD data (dnd-5e-srd)"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["pinned"] == "2e62e0413061c2443e21369cdc074c7a7356a857"
     assert _run_cli(mods, ["engines", "show", "NoSuchEngine"]) == 1
     capsys.readouterr()
 
