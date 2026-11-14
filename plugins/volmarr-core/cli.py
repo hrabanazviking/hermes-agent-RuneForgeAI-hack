@@ -337,6 +337,20 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     hugrgate_evaluate_p = hugrgate_subcommands.add_parser(
         "evaluate", help="X.13 decision.evaluate on labelled synthetic requests: one deterministic decision, one abstention; runs no engine")
     hugrgate_evaluate_p.add_argument("--json", action="store_true", dest="json_output")
+    mythic = subcommands.add_parser(
+        "mythic",
+        help="Inspect the Mythic Agent Coder CLI connector (X.14, Mythic Engineering workflow planning, local-only)",
+    )
+    mythic_subcommands = mythic.add_subparsers(dest="mythic_action")
+    mythic_status_p = mythic_subcommands.add_parser(
+        "status", help="X.14 Mythic status: audited HEAD, staged CLI tree measurement, planning limits")
+    mythic_status_p.add_argument("--json", action="store_true", dest="json_output")
+    mythic_catalog_p = mythic_subcommands.add_parser(
+        "catalog", help="X.14 section 49 catalog: versioned workflow schema, read-only operations, lease + permission gates, refused operations")
+    mythic_catalog_p.add_argument("--json", action="store_true", dest="json_output")
+    mythic_plan_p = mythic_subcommands.add_parser(
+        "plan", help="X.14 read-only workflow plan on a labelled synthetic request: staged plan under the workflow schema; executes nothing")
+    mythic_plan_p.add_argument("--json", action="store_true", dest="json_output")
     identity = subcommands.add_parser(
         "identity",
         help="Inspect the active profile's stable entity identity",
@@ -1238,6 +1252,39 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 0
         print("Usage: hermes volmarr hugrgate {status|catalog|evaluate} [--json]")
         return 2
+    elif action == "mythic":
+        _kaction = getattr(args, "mythic_action", None)
+        if _kaction in {"status", "catalog", "plan"}:
+            from datetime import datetime as _dt_k, timezone as _tz_k
+            from .mythic_coder import (SYNTHETIC_REQUEST, mythic_status,
+                                        plan_research, workflow_catalog)
+            _now_k = _dt_k.now(_tz_k.utc).isoformat()
+            if _kaction == "status":
+                _record = mythic_status(ctx, recorded_at=_now_k)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    _tree = _record["tree"]
+                    print(f"Mythic: volmarr-mythic / repo hrabanazviking/Mythic_Agent_Coder_CLI / audited {_record['audited_head'][:12]} / tree {_tree.get('status')} / mode local-only Mythic Engineering workflow planning, executes no operation - X.14 connector")
+                return 0
+            if _kaction == "catalog":
+                _record = workflow_catalog()
+                _record["recorded_at"] = _now_k
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print("Mythic workflow: " + "; ".join(f"{s['stage']} [{s['role']}]" for s in _record["workflow_schema"]["stages"]) + " / read-only: " + ", ".join(_record["read_only_operations"]) + " / refused: " + ", ".join(_record["refused_operations"]))
+                return 0
+            _record = plan_research(SYNTHETIC_REQUEST)
+            _record["recorded_at"] = _now_k
+            _record["source_label"] = "synthetic (labelled request, not a real workload)"
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                print(f"Mythic plan: {_record['operation']} / {_record['step_count']} steps / key {_record['plan_key'][:12]} / executes_operations: False")
+            return 0
+        print("Usage: hermes volmarr mythic {status|catalog|plan} [--json]")
+        return 2
     elif action == "identity":
         if getattr(args, "identity_action", None) != "health":
             print("Usage: hermes volmarr identity health [--json]")
@@ -1816,7 +1863,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|scribing|aurelia|draupnir|hugrgate|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|scribing|aurelia|draupnir|hugrgate|mythic|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
         return 2
 
     if getattr(args, "json_output", False):
