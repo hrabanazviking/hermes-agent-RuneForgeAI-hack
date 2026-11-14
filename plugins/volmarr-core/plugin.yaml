@@ -249,6 +249,14 @@ config_schema:
     type: str
     default: ""
     description: "Path to a local Mythic Scribing Foundry checkout (the audited private tree) the X.10 connector measures for status. Empty means not configured; status reads tree structure only, never manuscript or corpus content."
+  aurelia_enabled:
+    type: bool
+    default: false
+    description: "Enable the X.11 Aurelia Sensations Server connector surfaces (status/catalog/guarded event planning for the private state simulation). Disabled by default; local-only, interfaces and schemas only - no sensation or interaction content is ever read."
+  aurelia_root:
+    type: str
+    default: ""
+    description: "Path to a local Aurelia Sensations Server checkout (the audited private tree) the X.11 connector measures for status. Empty means not configured; status reads tree structure only, never data/ or config/ content."
   identity_enabled:
     type: bool
     default: true

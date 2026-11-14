@@ -295,6 +295,20 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     scribing_plan_p = scribing_subcommands.add_parser(
         "plan", help="X.10 job plan on a labelled synthetic step set: provenance, checkpoints, refusals by name; runs no Foundry code")
     scribing_plan_p.add_argument("--json", action="store_true", dest="json_output")
+    aurelia = subcommands.add_parser(
+        "aurelia",
+        help="Inspect the Aurelia Sensations Server connector (X.11, private state simulation, local-only)",
+    )
+    aurelia_subcommands = aurelia.add_subparsers(dest="aurelia_action")
+    aurelia_status_p = aurelia_subcommands.add_parser(
+        "status", help="X.11 Aurelia status: audited HEAD, staged server tree measurement, privacy limits")
+    aurelia_status_p.add_argument("--json", action="store_true", dest="json_output")
+    aurelia_catalog_p = aurelia_subcommands.add_parser(
+        "catalog", help="X.11 section 46 contract catalog: supported vs refused contract kinds, refused egress verbs and content fields")
+    aurelia_catalog_p.add_argument("--json", action="store_true", dest="json_output")
+    aurelia_plan_p = aurelia_subcommands.add_parser(
+        "plan", help="X.11 guarded event plan on a labelled synthetic event set: consent scopes, idempotency, refusals by name; runs no server")
+    aurelia_plan_p.add_argument("--json", action="store_true", dest="json_output")
     identity = subcommands.add_parser(
         "identity",
         help="Inspect the active profile's stable entity identity",
@@ -1086,6 +1100,41 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 0
         print("Usage: hermes volmarr scribing {status|catalog|plan} [--json]")
         return 2
+    elif action == "aurelia":
+        _kaction = getattr(args, "aurelia_action", None)
+        if _kaction in {"status", "catalog", "plan"}:
+            from datetime import datetime as _dt_k, timezone as _tz_k
+            from .aurelia import (SYNTHETIC_CONSENT, SYNTHETIC_EVENTS,
+                                  SYNTHETIC_PERSONA, aurelia_status,
+                                  build_event_plan, contract_catalog)
+            _now_k = _dt_k.now(_tz_k.utc).isoformat()
+            if _kaction == "status":
+                _record = aurelia_status(ctx, recorded_at=_now_k)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    _tree = _record["tree"]
+                    print(f"Aurelia: volmarr-aurelia / repo hrabanazviking/RuneForgeAI-Aurelia-Sensations-Server (private) / audited {_record['audited_head'][:12]} / tree {_tree.get('status')} / mode local-only private state simulation, sends nothing external, edits no canon - X.11 connector")
+                return 0
+            if _kaction == "catalog":
+                _record = contract_catalog()
+                _record["recorded_at"] = _now_k
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print("Aurelia contracts: " + "; ".join(f"{s['kind']} [{'supported' if s['supported'] else 'refused'}]" for s in _record["contracts"]) + " / egress verbs refused: " + ", ".join(_record["egress_verbs_refused"]))
+                return 0
+            _record = build_event_plan(SYNTHETIC_EVENTS, persona=SYNTHETIC_PERSONA,
+                                       consent_scopes=SYNTHETIC_CONSENT)
+            _record["recorded_at"] = _now_k
+            _record["source_label"] = "synthetic (labelled plan events, not real persona state)"
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                print(f"Aurelia plan: {_record['event_count']} events / {_record['refused_count']} refused / key {_record['plan_key'][:12]} / runs_server: False")
+            return 0
+        print("Usage: hermes volmarr aurelia {status|catalog|plan} [--json]")
+        return 2
     elif action == "identity":
         if getattr(args, "identity_action", None) != "health":
             print("Usage: hermes volmarr identity health [--json]")
@@ -1664,7 +1713,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|scribing|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|scribing|aurelia|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
         return 2
 
     if getattr(args, "json_output", False):
