@@ -283,3 +283,78 @@ def test_backup_restore_and_corruption_refusal(ops, tmp_path):
     victim.write_bytes(bytes(data))
     with pytest.raises(ops.__class__.__mro__[1].__class__ if False else Exception):
         ops.restore(backup_dir, tmp_path / "restored2")
+
+
+# -- E18-T1: fresh-profile backup must never be silently hollow --------
+
+def _fresh_ops(mods, tmp_path):
+    """A PersonaOps over a brand-new home: persona files on disk,
+    config present (the shared test home carries it for the
+    ctx-rooted config store/compiler), but the fresh home's own
+    library manifest was NEVER ingested -- the E18-T1 shape."""
+    _write_persona(get_hermes_home())
+    fresh = tmp_path / "fresh-home"
+    _write_persona(fresh)
+    store = mods["canonical_library"].ManifestStore(fresh)
+    assert not (store.load().get("documents") or {}), \
+        "precondition failed: fresh profile manifest is not empty"
+    return mods["persona_ops"].PersonaOps(_Ctx(), home=fresh), fresh
+
+
+def test_backup_fresh_profile_bundles_real_sources(mods, tmp_path):
+    fresh_ops, fresh = _fresh_ops(mods, tmp_path)
+    backup_dir = tmp_path / "snap"
+    out = fresh_ops.backup(backup_dir)
+    assert out["status"] == "ok"
+    assert out["sources"] == 3
+    bundle = json.loads(
+        (backup_dir / "bundle.persona.json").read_text(encoding="utf-8"))
+    assert sorted(s["path"] for s in bundle["sources"]) == [
+        "persona/bible.md", "persona/core.md", "persona/diary.md"]
+    for source in bundle["sources"]:
+        assert source["sha256"] == _sha(
+            (fresh / source["path"]).read_bytes())
+        assert source["text"].encode("utf-8") == \
+            (fresh / source["path"]).read_bytes()
+    # And the fresh backup restores byte-identically.
+    target = tmp_path / "restored-fresh"
+    restored = fresh_ops.restore(backup_dir, target)
+    assert restored["status"] == "ok"
+    assert sorted(restored["written"]) == [
+        "persona/bible.md", "persona/core.md", "persona/diary.md"]
+    for name in ("core.md", "bible.md", "diary.md"):
+        assert (target / "persona" / name).read_bytes() == \
+            (fresh / "persona" / name).read_bytes()
+
+
+def test_export_fresh_profile_bundles_real_sources(mods, tmp_path):
+    fresh_ops, fresh = _fresh_ops(mods, tmp_path)
+    exported = fresh_ops.export_bundle(tmp_path / "fresh.persona")
+    assert exported["status"] == "ok"
+    assert exported["sources"] == 3
+
+
+def test_restore_empty_bundle_refused(mods, tmp_path):
+    fresh_ops, fresh = _fresh_ops(mods, tmp_path)
+    backup_dir = tmp_path / "snap"
+    assert fresh_ops.backup(backup_dir)["status"] == "ok"
+    # Forge the pre-fix hollow shape: zero sources, with the
+    # backup manifest recomputed so integrity checks PASS --
+    # exactly what a hollow backup created before the fix holds.
+    bundle_path = backup_dir / "bundle.persona.json"
+    bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+    bundle["sources"] = []
+    bundle_path.write_text(json.dumps(bundle, indent=2) + "\n",
+                           encoding="utf-8")
+    manifest_path = backup_dir / "BACKUP_MANIFEST.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["files"]["bundle.persona.json"] = _sha(
+        bundle_path.read_bytes())
+    manifest_path.write_text(json.dumps(manifest, indent=2,
+                                        sort_keys=True) + "\n",
+                             encoding="utf-8")
+    target = tmp_path / "restored-empty"
+    with pytest.raises(mods["persona_ops"].PersonaOpsError) as excinfo:
+        fresh_ops.restore(backup_dir, target)
+    assert excinfo.value.name == "backup_empty"
+    assert not target.exists(), "empty restore must write nothing"
