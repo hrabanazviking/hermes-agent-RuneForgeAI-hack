@@ -424,6 +424,22 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     edge_research_propose.add_argument("--title", required=True)
     edge_research_propose.add_argument("--detail", default="")
     edge_research_propose.add_argument("--json", action="store_true", dest="json_output")
+    yggdrasil = subcommands.add_parser(
+        "yggdrasil",
+        help="X.01 Yggdrasil local (section 36): local-host discovery + placement records; no mesh claimed",
+    )
+    yggdrasil_subcommands = yggdrasil.add_subparsers(dest="yggdrasil_action")
+    ygg_status = yggdrasil_subcommands.add_parser(
+        "status", help="Yggdrasil local status + audited source facts (no live mesh)")
+    ygg_status.add_argument("--json", action="store_true", dest="json_output")
+    ygg_discover = yggdrasil_subcommands.add_parser(
+        "discover", help="Read-only local-host node discovery (unknown stays unknown)")
+    ygg_discover.add_argument("--json", action="store_true", dest="json_output")
+    ygg_place = yggdrasil_subcommands.add_parser(
+        "place", help="Place one task request JSON against this host (local only)")
+    ygg_place.add_argument("--request", required=True)
+    ygg_place.add_argument("--caller", required=True)
+    ygg_place.add_argument("--json", action="store_true", dest="json_output")
     production = subcommands.add_parser(
         "production",
         help="Q0-Q4 production (W13): status, release scorecard, boundary/threat audit; read-only",
@@ -1027,6 +1043,46 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
         except EdgeError as exc:
             print(json.dumps({"error": exc.name, "detail": exc.detail}, sort_keys=True), file=sys.stderr)
             return 1
+    elif action == "yggdrasil":
+        from datetime import datetime as _dt_y, timezone as _tz_y
+        from .yggdrasil_local import (
+            YggdrasilLocalError, build_task_request, discover_local_node,
+            place_task, yggdrasil_status)
+        _yaction = getattr(args, "yggdrasil_action", None)
+        _now_y = _dt_y.now(_tz_y.utc).isoformat()
+        try:
+            if _yaction == "status":
+                _record = yggdrasil_status(recorded_at=_now_y)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Yggdrasil local: {_record['service']} / {_record['availability']} / mesh not claimed, live peers 0")
+                return 0
+            elif _yaction == "discover":
+                _record = discover_local_node(recorded_at=_now_y)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Node {_record['node_id']}: {_record['architecture']} / accelerator {_record['accelerator']} / models {_record['models']}")
+                return 0
+            elif _yaction == "place":
+                _payload = _load_json_request(getattr(args, "request"), max_bytes=64 * 1024)
+                _req = build_task_request(recorded_at=_now_y, **_payload)
+                _cap = discover_local_node(recorded_at=_now_y)
+                _record = place_task(_cap, _req, caller=getattr(args, "caller"), recorded_at=_now_y)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Placement {_record['request_id']}: {_record['decision']} on {_record['node_id']}")
+                return 0
+            else:
+                print("Usage: hermes volmarr yggdrasil {status|discover|place} [--json]")
+                return 2
+        except (YggdrasilLocalError, RoutingRequestError) as exc:
+            _name = getattr(exc, "name", "request_invalid")
+            _detail = getattr(exc, "detail", str(exc))
+            print(json.dumps({"error": _name, "detail": _detail}, sort_keys=True), file=sys.stderr)
+            return 1
     elif action == "production":
         from datetime import datetime as _dt3, timezone as _tz3
         from .production import KNOWN_DEFERRED, ProductionError, evaluate_scorecard, production_audit, production_status
@@ -1125,7 +1181,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil} ...")
         return 2
 
     if getattr(args, "json_output", False):
