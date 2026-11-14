@@ -189,6 +189,27 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
         help="Validate the official WYRD loopback liveness contract read-only",
     )
     world_health.add_argument("--json", action="store_true", dest="json_output")
+    world_status = world_subcommands.add_parser(
+        "status", help="X.04 WYRD status: audited pin facts + truthful liveness + negotiated capabilities (absent server reported truthfully)")
+    world_status.add_argument("--json", action="store_true", dest="json_output")
+    world_caps = world_subcommands.add_parser(
+        "capabilities", help="X.04 capability negotiation against the configured WYRD server (distinct from liveness)")
+    world_caps.add_argument("--json", action="store_true", dest="json_output")
+    world_snap = world_subcommands.add_parser(
+        "snapshot", help="Read-only world snapshot with source-linked entity references")
+    world_snap.add_argument("--json", action="store_true", dest="json_output")
+    world_facts = world_subcommands.add_parser(
+        "facts", help="Read-only canonical facts for one entity, with source-linked references")
+    world_facts.add_argument("entity_id")
+    world_facts.add_argument("--json", action="store_true", dest="json_output")
+    world_packet = world_subcommands.add_parser(
+        "packet", help="Bounded provenance-bearing prompt packet from a read-only Passive Oracle query")
+    world_packet.add_argument("persona_id")
+    world_packet.add_argument("query")
+    world_packet.add_argument("--json", action="store_true", dest="json_output")
+    world_consumers = world_subcommands.add_parser(
+        "consumers", help="Authorized WYRD consumer seams (Heimdall, Sagnaskemma, voice/avatar, local sensors); seams only")
+    world_consumers.add_argument("--json", action="store_true", dest="json_output")
     identity = subcommands.add_parser(
         "identity",
         help="Inspect the active profile's stable entity identity",
@@ -716,11 +737,74 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
         report = probe_verdandi(ctx)
         label = "Verðandi"
     elif action == "world":
-        if getattr(args, "world_action", None) != "health":
-            print("Usage: hermes volmarr world health [--json]")
+        _waction = getattr(args, "world_action", None)
+        if _waction == "health":
+            report = probe_wyrd(ctx)
+            label = "WYRD"
+        elif _waction in {"status", "capabilities", "snapshot", "facts", "packet", "consumers"}:
+            from datetime import datetime as _dt_w, timezone as _tz_w
+            from .wyrd import (WyrdAdapter, WyrdError, WyrdProtocolError,
+                               build_prompt_packet, consumer_seams, wyrd_status)
+            _now_w = _dt_w.now(_tz_w.utc).isoformat()
+            try:
+                if _waction == "status":
+                    _record = wyrd_status(ctx, recorded_at=_now_w)
+                    if getattr(args, "json_output", False):
+                        print(json.dumps(_record, sort_keys=True, default=str))
+                    else:
+                        print(f"WYRD: volmarr-wyrd / pin { _record['source_pin'][:12] } / server {'present' if _record['server_present'] else 'absent (reported truthfully)'} - X.04 adapter")
+                    return 0
+                elif _waction == "capabilities":
+                    _record = WyrdAdapter(ctx).capabilities()
+                    if getattr(args, "json_output", False):
+                        print(json.dumps(_record, sort_keys=True, default=str))
+                    else:
+                        print(f"WYRD capabilities: contract {_record['api_contract']} / compatible {_record['compatible']} / methods {', '.join(_record['methods'])}")
+                    return 0
+                elif _waction == "snapshot":
+                    _record = WyrdAdapter(ctx).snapshot()
+                    if getattr(args, "json_output", False):
+                        print(json.dumps(_record, sort_keys=True, default=str))
+                    else:
+                        print(f"WYRD snapshot: world {_record['world_id']} / {len(_record['references'])} entity references")
+                    return 0
+                elif _waction == "facts":
+                    _record = WyrdAdapter(ctx).facts(getattr(args, "entity_id", ""))
+                    if getattr(args, "json_output", False):
+                        print(json.dumps(_record, sort_keys=True, default=str))
+                    else:
+                        print(f"WYRD facts: entity {_record['entity_id']} / {len(_record['facts'])} facts")
+                    return 0
+                elif _waction == "packet":
+                    _answer = WyrdAdapter(ctx).query(getattr(args, "persona_id", ""), getattr(args, "query", ""))
+                    _record = build_prompt_packet(
+                        [{"ref": f"wyrd://context/{_answer['persona_id']}",
+                          "text": _answer["context"],
+                          "provenance": _answer["provenance"],
+                          "truth_class": "quoted_evidence"}],
+                        max_chars=4000, max_items=1)
+                    if getattr(args, "json_output", False):
+                        print(json.dumps(_record, sort_keys=True, default=str))
+                    else:
+                        print(_record["items"][0]["text"] if _record["items"] else "")
+                    return 0
+                else:  # consumers
+                    _record = {"schema": "runeforge.wyrd.consumers.v1", "service": "volmarr-wyrd", "consumers": consumer_seams(), "recorded_at": _now_w}
+                    if getattr(args, "json_output", False):
+                        print(json.dumps(_record, sort_keys=True, default=str))
+                    else:
+                        for _seam in _record["consumers"]:
+                            print(f"{_seam['name']}: allowed {', '.join(_seam['allowed'])} / refused {', '.join(_seam['refused'])}")
+                    return 0
+            except WyrdError as exc:
+                print(json.dumps({"error": exc.name, "detail": exc.detail}, sort_keys=True), file=sys.stderr)
+                return 1
+            except WyrdProtocolError as exc:
+                print(json.dumps({"error": "wyrd_protocol_error", "detail": str(exc)}, sort_keys=True), file=sys.stderr)
+                return 1
+        else:
+            print("Usage: hermes volmarr world {health|status|capabilities|snapshot|facts|packet|consumers} [--json]")
             return 2
-        report = probe_wyrd(ctx)
-        label = "WYRD"
     elif action == "identity":
         if getattr(args, "identity_action", None) != "health":
             print("Usage: hermes volmarr identity health [--json]")

@@ -7,7 +7,8 @@ import re
 from typing import Any
 
 from .context_packet import ContextItem
-from .wyrd import WyrdProtocolError, request_wyrd_json
+from .wyrd import (WyrdProtocolError, build_prompt_packet,
+                   request_wyrd_json)
 
 
 _ENTITY_ID_RE = re.compile(r"^[a-z0-9](?:[a-z0-9_]{0,63})$")
@@ -78,9 +79,22 @@ class WyrdContextBridge:
             256,
             4000,
         )
-        context = context.strip()
-        if len(context) > budget:
-            context = context[: budget - 1].rstrip() + "…"
+        # X.04: bounding and provenance go through the shared
+        # prompt-packet builder (section 39 item 6) -- the item
+        # text budget is exactly the historical render budget,
+        # and the packet keeps the Passive Oracle provenance
+        # attached to the text it bounds.
+        packet = build_prompt_packet(
+            [{"ref": f"wyrd://context/{persona_id}",
+              "text": context.strip(),
+              "provenance": {"source": "wyrd/passive_oracle",
+                             "persona_id": persona_id,
+                             "writeback": False},
+              "truth_class": "quoted_evidence"}],
+            max_chars=budget, max_items=1)
+        if not packet["items"]:
+            return []
+        context = packet["items"][0]["text"]
         record_id = hashlib.sha256(context.encode("utf-8")).hexdigest()[:16]
         return [
             ContextItem(

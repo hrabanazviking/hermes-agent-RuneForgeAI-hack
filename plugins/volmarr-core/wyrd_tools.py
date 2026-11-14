@@ -8,7 +8,8 @@ from urllib.parse import urlencode
 
 from tools.registry import tool_error, tool_result
 
-from .wyrd import WyrdProtocolError, request_wyrd_json
+from .wyrd import (WyrdProtocolError, make_ref, negotiate_capabilities,
+                   request_wyrd_json)
 from .world_telemetry import WorldChangeTelemetry
 
 
@@ -23,15 +24,17 @@ WORLD_GET_SCHEMA = {
     "name": "world_get",
     "description": (
         "Read grounded state from the configured local WYRD world model. "
-        "Use mode=snapshot for the current world packet or mode=facts with an "
-        "entity_id for canonical facts. This tool never changes world state."
+        "Use mode=snapshot for the current world packet, mode=facts with an "
+        "entity_id for canonical facts, or mode=capabilities for the "
+        "negotiated X.04 capability record. This tool never changes "
+        "world state."
     ),
     "parameters": {
         "type": "object",
         "properties": {
             "mode": {
                 "type": "string",
-                "enum": ["snapshot", "facts"],
+                "enum": ["snapshot", "facts", "capabilities"],
                 "description": "Read the world snapshot (default) or one entity's facts.",
             },
             "entity_id": {
@@ -152,8 +155,19 @@ def build_world_get_handler(ctx):
                 required = {"world_id", "formatted_for_llm"}
                 if not required.issubset(payload):
                     raise WyrdProtocolError("WYRD world response is missing required fields")
+                references = []
+                for row in payload.get("present_entities") or []:
+                    entity = row if isinstance(row, str) else (
+                        row.get("entity_id") if isinstance(row, dict) else None)
+                    if isinstance(entity, str):
+                        try:
+                            references.append(
+                                make_ref(str(payload["world_id"]), entity))
+                        except Exception:
+                            pass
                 return tool_result(
-                    {"success": True, "mode": "snapshot", "world": payload}
+                    {"success": True, "mode": "snapshot", "world": payload,
+                     "references": references}
                 )
             if mode == "facts":
                 entity_id = _entity_id(args.get("entity_id"))
@@ -168,15 +182,35 @@ def build_world_get_handler(ctx):
                 facts = payload.get("facts")
                 if not isinstance(facts, list) or len(facts) > _MAX_FACTS:
                     raise WyrdProtocolError("WYRD facts response is invalid or oversized")
+                references = [
+                    {"entity_id": entity_id,
+                     "record_id": row.get("record_id")
+                     if isinstance(row, dict) else None,
+                     "source": "wyrd/facts"}
+                    for row in facts
+                ]
                 return tool_result(
                     {
                         "success": True,
                         "mode": "facts",
                         "entity_id": entity_id,
                         "facts": facts,
+                        "references": references,
                     }
                 )
-            return tool_error("mode must be snapshot or facts")
+            if mode == "capabilities":
+                health_payload = request_wyrd_json(ctx, "/health")
+                healthy = health_payload.get("status") == "ok"
+                caps = negotiate_capabilities(
+                    {"healthy": healthy,
+                     "status": "healthy" if healthy else "server_unhealthy",
+                     "server_version": health_payload.get("version")},
+                    server_version=health_payload.get("version"))
+                return tool_result(
+                    {"success": True, "mode": "capabilities",
+                     "capabilities": caps}
+                )
+            return tool_error("mode must be snapshot, facts, or capabilities")
         except WyrdProtocolError as exc:
             return tool_error(str(exc))
 
@@ -216,6 +250,9 @@ def build_world_query_handler(ctx):
                     "persona_id": persona_id,
                     "context": response,
                     "writeback": False,
+                    "provenance": {"source": "wyrd/passive_oracle",
+                                   "persona_id": persona_id,
+                                   "writeback": False},
                 }
             )
         except WyrdProtocolError as exc:
