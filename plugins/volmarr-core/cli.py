@@ -460,6 +460,20 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     lift_propose.add_argument("--rationale", default="")
     lift_propose.add_argument("--candidate-change", default="")
     lift_propose.add_argument("--json", action="store_true", dest="json_output")
+    heimdall = subcommands.add_parser(
+        "heimdall",
+        help="X.03 Heimdall (section 38): read-only Second Life presence/context; every write action refused by name",
+    )
+    heimdall_subcommands = heimdall.add_subparsers(dest="heimdall_action")
+    heim_status = heimdall_subcommands.add_parser(
+        "status", help="Heimdall bridge status + audited source facts (absent reported truthfully; no login attempted)")
+    heim_status.add_argument("--json", action="store_true", dest="json_output")
+    heim_presence = heimdall_subcommands.add_parser(
+        "presence", help="One qualified presence/context observation from the bridge (never accepted world truth)")
+    heim_presence.add_argument("--json", action="store_true", dest="json_output")
+    heim_perms = heimdall_subcommands.add_parser(
+        "permissions", help="Action permission matrix: reads allowed, every write refused by name in this stage")
+    heim_perms.add_argument("--json", action="store_true", dest="json_output")
     production = subcommands.add_parser(
         "production",
         help="Q0-Q4 production (W13): status, release scorecard, boundary/threat audit; read-only",
@@ -1149,6 +1163,44 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             _detail = getattr(exc, "detail", str(exc))
             print(json.dumps({"error": _name, "detail": _detail}, sort_keys=True), file=sys.stderr)
             return 1
+    elif action == "heimdall":
+        from datetime import datetime as _dt_h, timezone as _tz_h
+        from .heimdall import (
+            HeimdallError, heimdall_status, permission_matrix,
+            presence, validate_presence)
+        _haction = getattr(args, "heimdall_action", None)
+        _now_h = _dt_h.now(_tz_h.utc).isoformat()
+        try:
+            if _haction == "status":
+                _record = heimdall_status(recorded_at=_now_h)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Heimdall: {_record['service']} / {_record['availability']} / bridge {_record['bridge']['state']} - read-only presence only, every write refused")
+                return 0
+            elif _haction == "presence":
+                _record = presence(recorded_at=_now_h)
+                validate_presence(_record)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Presence: bridge {_record['bridge']['state']} / session {_record['session']['state']} / region {_record['location']['region'] or 'unknown'} (qualified observation, not world truth)")
+                return 0
+            elif _haction == "permissions":
+                _rows = permission_matrix()
+                _record = {"schema": "runeforge.heimdall.permission-matrix.v1", "service": "volmarr-heimdall", "actions": _rows, "recorded_at": _now_h}
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    for _row in _rows:
+                        print(f"{_row['action']}: {_row['class']} / {'allowed' if _row['allowed'] else 'REFUSED'} ({_row['bridge_command']})")
+                return 0
+            else:
+                print("Usage: hermes volmarr heimdall {status|presence|permissions} [--json]")
+                return 2
+        except HeimdallError as exc:
+            print(json.dumps({"error": exc.name, "detail": exc.detail}, sort_keys=True), file=sys.stderr)
+            return 1
     elif action == "production":
         from datetime import datetime as _dt3, timezone as _tz3
         from .production import KNOWN_DEFERRED, ProductionError, evaluate_scorecard, production_audit, production_status
@@ -1247,7 +1299,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
         return 2
 
     if getattr(args, "json_output", False):
