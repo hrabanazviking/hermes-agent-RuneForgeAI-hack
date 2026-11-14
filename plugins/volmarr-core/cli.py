@@ -210,6 +210,17 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     world_consumers = world_subcommands.add_parser(
         "consumers", help="Authorized WYRD consumer seams (Heimdall, Sagnaskemma, voice/avatar, local sensors); seams only")
     world_consumers.add_argument("--json", action="store_true", dest="json_output")
+    table = subcommands.add_parser(
+        "table",
+        help="Inspect the Sagnaskemma private tabletop engine adapter (X.05)",
+    )
+    table_subcommands = table.add_subparsers(dest="table_action")
+    table_status = table_subcommands.add_parser(
+        "status", help="X.05 Sagnaskemma status: audited engine facts + truthful not-configured behaviour when no engine is configured")
+    table_status.add_argument("--json", action="store_true", dest="json_output")
+    table_caps = table_subcommands.add_parser(
+        "capabilities", help="X.05 capability split: mechanics vs narrative, with the canon-denial gate")
+    table_caps.add_argument("--json", action="store_true", dest="json_output")
     identity = subcommands.add_parser(
         "identity",
         help="Inspect the active profile's stable entity identity",
@@ -805,6 +816,29 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
         else:
             print("Usage: hermes volmarr world {health|status|capabilities|snapshot|facts|packet|consumers} [--json]")
             return 2
+    elif action == "table":
+        _taction = getattr(args, "table_action", None)
+        if _taction in {"status", "capabilities"}:
+            from datetime import datetime as _dt_t, timezone as _tz_t
+            from .sagnaskemma import capability_catalog, service_record
+            _now_t = _dt_t.now(_tz_t.utc).isoformat()
+            if _taction == "status":
+                _record = service_record(ctx, recorded_at=_now_t)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Sagnaskemma: volmarr-sagnaskemma / audited head {_record['source_head_audited'][:12]} / engine {'configured' if _record['configured'] else 'not configured (reported truthfully)'} - X.05 adapter")
+                return 0
+            _record = {"schema": "runeforge.sagnaskemma.capabilities.v1", "service": "volmarr-sagnaskemma", "capabilities": capability_catalog(), "recorded_at": _now_t}
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                _caps = _record["capabilities"]
+                print(f"Sagnaskemma mechanics: {', '.join(_caps['mechanics'])}")
+                print(f"Sagnaskemma narrative: {', '.join(_caps['narrative'])} (lore retrieval denied by default)")
+            return 0
+        print("Usage: hermes volmarr table {status|capabilities} [--json]")
+        return 2
     elif action == "identity":
         if getattr(args, "identity_action", None) != "health":
             print("Usage: hermes volmarr identity health [--json]")
@@ -1383,7 +1417,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|table|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
         return 2
 
     if getattr(args, "json_output", False):
