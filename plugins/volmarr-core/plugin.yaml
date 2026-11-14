@@ -273,6 +273,14 @@ config_schema:
     type: str
     default: ""
     description: "Path to a local HugrGate checkout (the audited tree) the X.13 connector measures for status. Empty means not configured; status reads tree structure only and copies no HugrGate source."
+  mythic_enabled:
+    type: bool
+    default: false
+    description: "Enable the X.14 Mythic Agent Coder CLI connector surfaces (status/catalog/workflow planning for the Mythic Engineering method). Disabled by default; local-only planning and lease/gate records only - this connector runs no Mythic code and executes no operation."
+  mythic_root:
+    type: str
+    default: ""
+    description: "Path to a local Mythic Agent Coder CLI checkout (the audited development-branch tree) the X.14 connector measures for status. Empty means not configured; status reads tree structure only and copies no Mythic source."
   identity_enabled:
     type: bool
     default: true
