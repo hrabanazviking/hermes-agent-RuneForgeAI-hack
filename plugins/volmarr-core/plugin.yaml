@@ -281,6 +281,14 @@ config_schema:
     type: str
     default: ""
     description: "Path to a local Mythic Agent Coder CLI checkout (the audited development-branch tree) the X.14 connector measures for status. Empty means not configured; status reads tree structure only and copies no Mythic source."
+  smidja_forge_enabled:
+    type: bool
+    default: false
+    description: "Enable the X.15 Seidr-Smidja forge connector surfaces (status/catalog/dry-run build planning for controlled avatar production). Disabled by default; local-only record-level planning only - this connector launches no Blender build, drives no remote VRoid control and executes no operation."
+  smidja_forge_root:
+    type: str
+    default: ""
+    description: "Path to a local Seidr-Smidja checkout (the audited pin tree) the X.15 connector measures for status and uses as an approved root for synthetic dry-run plans. Empty means not configured; status reads tree structure only and copies no Seidr-Smidja source."
   identity_enabled:
     type: bool
     default: true
