@@ -213,6 +213,26 @@ config_schema:
     type: bool
     default: false
     description: "Explicit privacy agreement for optional Huginn Qdrant/vector operation (roadmap section 42 item 9). Default false and NOT enabled by X.07: Huginn is constructed with the local backend only; this key only records whether agreement was ever given."
+  samkoma_enabled:
+    type: bool
+    default: false
+    description: "Enable the X.08 Samkoma adapter surfaces (read-only + proposal-only: source search, citation-verified candidate preview, review gate). Disabled by default; status reporting stays truthful either way and nothing is ever published by this adapter."
+  samkoma_root:
+    type: str
+    default: ""
+    description: "Path to a local Samkoma checkout (audited tree) the X.08 adapter measures for status. Empty means not configured; the adapter binds no live Samkoma service in this slice."
+  samkoma_account:
+    type: str
+    default: ""
+    description: "The account identity the X.08 review gate expects approvals to act under; an approval from any other account is refused as wrong_account. Empty means no account configured."
+  samkoma_room_consent:
+    type: bool
+    default: false
+    description: "Explicit room consent for optional Samtal transport/room context (roadmap section 43 item 5). Default false; this adapter reads no room either way in this slice - the key only records whether consent was ever given."
+  samkoma_connector_authorized:
+    type: bool
+    default: false
+    description: "Explicit authorization record for connector-specific event/task replication (Google Calendar or other accounts, section 43 item 6). Default false and NOT acted on by X.08: no sync is performed; the key only records whether authorization was ever given."
   identity_enabled:
     type: bool
     default: true

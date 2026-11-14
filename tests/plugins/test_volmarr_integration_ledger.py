@@ -84,7 +84,7 @@ def test_promoted_lock_loads_and_validates(mods):
 
 def test_promoted_lock_covers_every_section13_row(mods):
     names = {row["name"] for row in _real_lock(mods)["engines"]}
-    assert len(names) == 29
+    assert len(names) == 30
     for required in (
         "Verdandi", "Project A.E.S.I.R.", "Bifrost", "Muninn", "Huginn",
         "MemPalace", "OpenViking", "WYRD Protocol", "Kista",
@@ -110,11 +110,11 @@ def test_status_ok_against_this_tree(mods):
     il = mods["integration_ledger"]
     # Default home: on purplelongship ~/ravens is present at the pin.
     report = il.integration_status()
-    assert report["engine_count"] == 29
+    assert report["engine_count"] == 30
     counts = report["verification_counts"]
     assert counts.get("blocked", 0) == 0  # none left (X.05 verified the Sagnaskemma staged-tree proof and took its first pin)
     assert counts.get("partially_verified", 0) == 0  # none left (E.13 verified the Hamr LICENSE text; E.06/E.07/E.12 verified OpenViking/WYRD/SRD earlier)
-    assert counts.get("verified") == 29
+    assert counts.get("verified") == 30
     assert report["status"] == "ok", report["problems"]
     assert all(row["adapter_paths_present"] for row in report["engines"])
 
@@ -244,7 +244,7 @@ def _run_cli(mods, argv):
 def test_cli_engines_status_json(mods, capsys):
     assert _run_cli(mods, ["engines", "status", "--json"]) == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["engine_count"] == 29
+    assert payload["engine_count"] == 30
     assert payload["status"] == "ok"
     assert payload["first_pins"]["Hamr"] == (
         "f77aa588601b38a69b6c1fc0a6733ed5e95dffa8")
