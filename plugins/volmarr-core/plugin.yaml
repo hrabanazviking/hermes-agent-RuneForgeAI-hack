@@ -169,6 +169,26 @@ config_schema:
     type: int
     default: 1800
     description: "Maximum WYRD source characters offered to the central context packet (clamped to 256-4000)."
+  sagnaskemma_enabled:
+    type: bool
+    default: false
+    description: "Enable the X.05 Sagnaskemma private tabletop adapter surfaces. Disabled by default."
+  sagnaskemma_engine_root:
+    type: str
+    default: ""
+    description: "Absolute path to the staged private Sagnaskemma engine checkout (the tree holding engine/api.py). Empty means not configured: every engine-facing surface reports not configured and serves no hidden content."
+  sagnaskemma_python:
+    type: str
+    default: ""
+    description: "Python interpreter used to call the staged engine (needs the engine's sole dependency d20). Empty uses the Hermes interpreter."
+  sagnaskemma_session_db:
+    type: str
+    default: state/sagnaskemma_sessions.db
+    description: "Adapter-side durable table-session store path, absolute or relative to the active Hermes profile."
+  sagnaskemma_canon_access:
+    type: bool
+    default: false
+    description: "Approved private canon store gate for lore retrieval. Disabled by default: lore retrieval is denied (canon_denied) and no private canon content is ever served through this adapter."
   identity_enabled:
     type: bool
     default: true

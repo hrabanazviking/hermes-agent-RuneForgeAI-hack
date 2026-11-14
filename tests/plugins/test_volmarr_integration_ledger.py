@@ -112,9 +112,9 @@ def test_status_ok_against_this_tree(mods):
     report = il.integration_status()
     assert report["engine_count"] == 29
     counts = report["verification_counts"]
-    assert counts.get("blocked") == 1  # Sagnaskemma, honestly blocked
+    assert counts.get("blocked", 0) == 0  # none left (X.05 verified the Sagnaskemma staged-tree proof and took its first pin)
     assert counts.get("partially_verified", 0) == 0  # none left (E.13 verified the Hamr LICENSE text; E.06/E.07/E.12 verified OpenViking/WYRD/SRD earlier)
-    assert counts.get("verified") == 28
+    assert counts.get("verified") == 29
     assert report["status"] == "ok", report["problems"]
     assert all(row["adapter_paths_present"] for row in report["engines"])
 
@@ -284,6 +284,9 @@ def test_cli_engines_show_and_unknown(mods, capsys):
     assert _run_cli(mods, ["engines", "show", "SRD data (dnd-5e-srd)"]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["pinned"] == "2e62e0413061c2443e21369cdc074c7a7356a857"
+    assert _run_cli(mods, ["engines", "show", "Sagnaskemma engine"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["pinned"] == "a1f474f4b8803b7003b35b09f486a53145545685"
     assert _run_cli(mods, ["engines", "show", "Hamr"]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["pinned"] == "f77aa588601b38a69b6c1fc0a6733ed5e95dffa8"
