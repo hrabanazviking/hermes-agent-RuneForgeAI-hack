@@ -267,6 +267,20 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     samkoma_preview_p = samkoma_subcommands.add_parser(
         "preview", help="X.08 candidate preview on a labelled synthetic receipt: supported vs unsupported fields, nothing published")
     samkoma_preview_p.add_argument("--json", action="store_true", dest="json_output")
+    astrology = subcommands.add_parser(
+        "astrology",
+        help="Inspect the Astrology Engine adapter (X.09, deterministic calculation only)",
+    )
+    astrology_subcommands = astrology.add_subparsers(dest="astrology_action")
+    astrology_status_p = astrology_subcommands.add_parser(
+        "status", help="X.09 Astrology status: E.09 pin, staged engine tree measurement, privacy handling")
+    astrology_status_p.add_argument("--json", action="store_true", dest="json_output")
+    astrology_catalog_p = astrology_subcommands.add_parser(
+        "catalog", help="X.09 section 44 catalog: measured engine surface vs exposed Hermes tools, offline recipe")
+    astrology_catalog_p.add_argument("--json", action="store_true", dest="json_output")
+    astrology_batch_p = astrology_subcommands.add_parser(
+        "batch", help="X.09 batch plan on a labelled synthetic item set: deterministic replay keys, caps, per-item refusals; runs no engine")
+    astrology_batch_p.add_argument("--json", action="store_true", dest="json_output")
     identity = subcommands.add_parser(
         "identity",
         help="Inspect the active profile's stable entity identity",
@@ -992,6 +1006,39 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 0
         print("Usage: hermes volmarr samkoma {status|catalog|preview} [--json]")
         return 2
+    elif action == "astrology":
+        _aaction = getattr(args, "astrology_action", None)
+        if _aaction in {"status", "catalog", "batch"}:
+            from datetime import datetime as _dt_a, timezone as _tz_a
+            from .astrology import (SYNTHETIC_BATCH, astrology_status,
+                                    build_batch_plan, capability_catalog)
+            _now_a = _dt_a.now(_tz_a.utc).isoformat()
+            if _aaction == "status":
+                _record = astrology_status(ctx, recorded_at=_now_a)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    _tree = _record["tree"]
+                    print(f"Astrology: volmarr-astrology {_record['plugin_version']} / repo hrabanazviking/astrology-engine / pin {_record['engine_pin'][:12]} / tree {_tree.get('status')} / mode deterministic calculation, interpretation excluded - X.09 adapter")
+                return 0
+            if _aaction == "catalog":
+                _record = capability_catalog()
+                _record["recorded_at"] = _now_a
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print("Astrology tools: " + ", ".join(t["tool"] for t in _record["exposed_tools"]))
+                return 0
+            _record = build_batch_plan(SYNTHETIC_BATCH)
+            _record["recorded_at"] = _now_a
+            _record["source_label"] = "synthetic (labelled plan items, not real chart data)"
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                print(f"Astrology batch plan: {_record['item_count']} items / {_record['refused_count']} refused / replay {_record['replay_key'][:12]} / runs_engine: False")
+            return 0
+        print("Usage: hermes volmarr astrology {status|catalog|batch} [--json]")
+        return 2
     elif action == "identity":
         if getattr(args, "identity_action", None) != "health":
             print("Usage: hermes volmarr identity health [--json]")
@@ -1570,7 +1617,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|astrology|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
         return 2
 
     if getattr(args, "json_output", False):

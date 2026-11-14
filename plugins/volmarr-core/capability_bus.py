@@ -401,7 +401,7 @@ class JobBook:
 
 
 # Built-in seed descriptors: tools that already exist in this fork.
-# Versions are the plugin.yaml versions at W09 (2026-11-08); adapter
+# Versions are the plugin.yaml versions (astrology updated to 0.8.0 in X.09, 2026-11-14; the others are as at W09, 2026-11-08); adapter
 # paths are stat-checked by builtin_status(). Availability is
 # contract-implemented, honestly -- the engines behind them are local
 # checkouts resolved per profile, so no live probe is claimed here.
@@ -409,7 +409,7 @@ BUILTIN_DESCRIPTORS: tuple[dict, ...] = (
     {
         "schema": SCHEMA,
         "service": "volmarr-astrology",
-        "version": "0.7.0",
+        "version": "0.8.0",
         "owner": "volmarr",
         "actions": ["calculate_astrology"],
         "transport": "subprocess",
