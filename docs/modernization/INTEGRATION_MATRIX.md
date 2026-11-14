@@ -63,7 +63,7 @@ instead of rotting silently.
    was created as `yrsa/hermes-team-09` per the launch brief and all
    W08 work lands there.
 
-## Ledger (27 rows)
+## Ledger (28 rows)
 
 | # | Engine / project | Repo | Fork pin (source) | Current HEAD (re-measured 2026-11-08) | License | Adapter in this fork (plugin + mode) | Evidence stage (§28.3) | Verification | Verdict |
 |---|---|---|---|---|---|---|---|---|---|
@@ -94,8 +94,9 @@ instead of rotting silently.
 | 25 | Hermes SessionDB *(added at promotion)* | fork-internal — Hermes owns the transcript store | n/a (no external engine) | n/a | n/a | volmarr-core 0.26.0 — read-only: preservation/health probe (sessiondb.py), contracts in the baseline set | contract implemented | verified | internal — §13 completeness row |
 | 26 | Persistent identity / affect / goals / agency *(added at promotion)* | fork-internal volmarr-core modules | n/a (no external engine) | n/a | n/a | volmarr-core 0.26.0 — read-only surfaces + contract modules; W05 gave several their first live callers; the rest stay contract-only and are NOT declared complete (§28.2) | contract implemented | verified | current — E.16 executed 2026-11-14 (reconciliation in E16_IDENTITY_AGENCY_UPDATE.md; remainders E16-T1..T4) |
 | 27 | Yggdrasil Distributed Inference System | hrabanazviking/Yggdrasil-Distributed-Inference-System | NONE - no pin taken at X.01 (contract-level prototype only; audited HEAD recorded in the lock) | 1af750f1ad2fb7b3f39776f7cefb56a68359772a (main, ls-remote 2026-11-14; no tags) | MIT (LICENSE text verified in X.01, 2026-11-14, sha256 c006b7010fa0) | volmarr-core 0.26.0 - prototype: local-host read-only discovery + versioned envelopes + pure placement records (yggdrasil_local.py); NO mesh, NO peer discovery | contract implemented | verified | current - X.01 executed 2026-11-14 (section 36 workstream 1 of 15; host-to-host live proof outstanding = X01-T2) |
+| 28 | Lifthrasir | hrabanazviking/RuneForgeAI-Lifthrasir | NONE - no pin taken at X.02 (research-stage source; no installable package; audited HEAD recorded in the lock) | 69fb1ed99cb238cacd9f35c057c6936137041724 (main, ls-remote 2026-11-14; no tags) | GPL-2.0-only (LICENSE text verified in X.02, 2026-11-14, sha256 8177f9751321) | volmarr-core 0.26.0 - prototype: read-only local diagnostics adapter + DiagnosticReport contract + proposal-only layer (lifthrasir.py); NO repair execution, NO deployment | contract implemented | verified | current - X.02 executed 2026-11-14 (section 37 workstream 2 of 15; prototype repair/rollback outstanding = X02-T1) |
 
-Verification tally: **22 verified / 4 partially verified (rows 9, 10,
+Verification tally: **23 verified / 4 partially verified (rows 9, 10,
 15, 22 — all license-text questions, named per row) / 1 blocked
 (row 24)**. Every "verified" above means the row's pin, current HEAD,
 plugin version, adapter mode and adapter files were each read from a
