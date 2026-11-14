@@ -233,6 +233,14 @@ config_schema:
     type: bool
     default: false
     description: "Explicit authorization record for connector-specific event/task replication (Google Calendar or other accounts, section 43 item 6). Default false and NOT acted on by X.08: no sync is performed; the key only records whether authorization was ever given."
+  astrology_enabled:
+    type: bool
+    default: false
+    description: "Enable the X.09 Astrology Engine adapter surfaces (status/catalog/batch planning for the volmarr-astrology 0.8.0 deterministic tools). Disabled by default; status reporting stays truthful either way."
+  astrology_root:
+    type: str
+    default: ""
+    description: "Path to a local Astrology Engine checkout (the E.09 pinned tree) the X.09 adapter measures for status. Empty means not configured; calculations themselves are configured on the volmarr-astrology plugin (engine_path/python_path)."
   identity_enabled:
     type: bool
     default: true

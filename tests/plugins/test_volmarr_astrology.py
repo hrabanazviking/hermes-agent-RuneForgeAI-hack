@@ -73,6 +73,15 @@ def test_real_discovery_runs_lunar_with_fixed_argv_and_scrubbed_environment(
             "astrology_predict",
             "astrology_synastry",
             "astrology_astrocartography",
+            "astrology_vedic",
+            "astrology_vargas",
+            "astrology_dashas",
+            "astrology_panchanga",
+            "astrology_relocation",
+            "astrology_hellenistic",
+            "astrology_dignity",
+            "astrology_runic",
+            "astrology_capabilities",
         }
         result = json.loads(
             registry.dispatch("astrology_lunar", {}, scope=manager.scope_key)

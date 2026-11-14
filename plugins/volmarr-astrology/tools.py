@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 import os
 import re
 import shutil
 import subprocess
 import sys
-from datetime import date
+from datetime import date, datetime, time, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +31,86 @@ _BASE_ENV = (
     "LANG",
     "LC_ALL",
 )
+
+
+ENGINE_REPO = "hrabanazviking/astrology-engine"
+ENGINE_PIN = "bb4ede4fbb326d21df34a5ca0ca6e343f4f49fbe"
+ENGINE_VERSION = "4.0.0"
+EPHEMERIS_PROVENANCE = (
+    "Swiss Ephemeris via pyswisseph 2.10.3.2; when the optional Swiss "
+    ".se1 data files are absent the engine falls back to its Moshier "
+    "backend and says so in its own provenance block (E09-T3)"
+)
+# Pinned allowlist: the capability ids the engine's own `capabilities`
+# output reported at the E.09 pin, re-measured in X.09 (28 ids).
+# Dynamic discovery may only ever surface ids on this list (s.44.6).
+CAPABILITY_ALLOWLIST = (
+    "chart", "vedic", "vargas", "dashas", "panchanga",
+    "relationship", "location", "western", "legacy",
+    "advanced-jyotisha", "chinese-tibetan-other", "runic", "wheel",
+    "solar-arc", "profection", "watch", "elect", "stars",
+    "asteroids", "midpoints", "draconic", "dossier", "forecast",
+    "mantras", "yogas", "shadbala", "ashtakavarga", "jaimini",
+)
+_AYANAMSAS = ("lahiri", "raman", "krishnamurti", "fagan-bradley")
+_CACHE: dict[str, str] = {}
+_CACHE_MAX = 128
+
+
+def _iana_zone(value: Any):
+    if not isinstance(value, str) or not value.strip() or "\x00" in value:
+        return None
+    try:
+        return ZoneInfo(value.strip())
+    except (KeyError, ValueError):
+        return None
+
+
+def _local_time_status(raw_date: str, raw_time: str, zone: ZoneInfo) -> str:
+    """Classify a wall time in a zone: ok / fold / gap (stdlib only)."""
+    naive = datetime.combine(
+        date.fromisoformat(raw_date), time.fromisoformat(raw_time))
+
+    def _roundtrips(fold: int) -> bool:
+        aware = naive.replace(tzinfo=zone, fold=fold)
+        back = aware.astimezone(timezone.utc).astimezone(zone)
+        return back.replace(tzinfo=None) == naive
+
+    if _roundtrips(0) and _roundtrips(1):
+        off0 = naive.replace(tzinfo=zone, fold=0).utcoffset()
+        off1 = naive.replace(tzinfo=zone, fold=1).utcoffset()
+        return "fold" if off0 != off1 else "ok"
+    return "gap"
+
+
+def _timezone_arg(args: dict, key: str = "timezone"):
+    """Return (name, zone, error); (None, None, None) when absent."""
+    raw = args.get(key)
+    if raw is None:
+        return None, None, None
+    zone = _iana_zone(raw)
+    if zone is None:
+        return None, None, f"{key} must be a valid IANA timezone name"
+    return raw.strip(), zone, None
+
+
+def _dst_error(raw_date, raw_time, zone, tz_name):
+    if raw_time is None or zone is None:
+        return None
+    status = _local_time_status(raw_date, raw_time, zone)
+    if status == "fold":
+        return (f"local time {raw_time} on {raw_date} is ambiguous in "
+                f"{tz_name} (DST fold); supply an unambiguous time")
+    if status == "gap":
+        return (f"local time {raw_time} on {raw_date} does not exist in "
+                f"{tz_name} (DST gap); supply a valid local time")
+    return None
+
+
+def _cache_key(argv: list) -> str:
+    canonical = json.dumps(
+        {"engine_pin": ENGINE_PIN, "argv": list(argv)}, sort_keys=True)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 ASTROLOGY_LUNAR_SCHEMA = {
     "name": "astrology_lunar",
@@ -104,6 +187,7 @@ ASTROLOGY_NATAL_SCHEMA = {
                 "minimum": -180,
                 "maximum": 180,
             },
+            "timezone": {"type": "string", "description": "Optional explicit IANA timezone; with a time, DST fold/gap local times are rejected."},
         },
         "required": ["date", "latitude", "longitude"],
         "additionalProperties": False,
@@ -147,6 +231,7 @@ ASTROLOGY_TRANSIT_SCHEMA = {
                 "minimum": -180,
                 "maximum": 180,
             },
+            "timezone": {"type": "string", "description": "Optional explicit IANA timezone; with a time, DST fold/gap local times are rejected."},
         },
         "required": ["natal_date", "transit_date", "latitude", "longitude"],
         "additionalProperties": False,
@@ -176,6 +261,7 @@ ASTROLOGY_PREDICT_SCHEMA = {
                 "exclusiveMaximum": 90,
             },
             "longitude": {"type": "number", "minimum": -180, "maximum": 180},
+            "timezone": {"type": "string", "description": "Optional explicit IANA timezone; with a time, DST fold/gap local times are rejected."},
         },
         "required": [
             "natal_date",
@@ -183,6 +269,7 @@ ASTROLOGY_PREDICT_SCHEMA = {
             "end_date",
             "latitude",
             "longitude",
+            "natal_time",
         ],
         "additionalProperties": False,
     },
@@ -220,6 +307,8 @@ ASTROLOGY_SYNASTRY_SCHEMA = {
                 "exclusiveMaximum": 90,
             },
             "longitude_b": {"type": "number", "minimum": -180, "maximum": 180},
+            "timezone_a": {"type": "string"},
+            "timezone_b": {"type": "string"},
         },
         "required": [
             "date_a",
@@ -260,8 +349,9 @@ ASTROLOGY_ASTROCARTOGRAPHY_SCHEMA = {
                 "exclusiveMaximum": 90,
             },
             "query_longitude": {"type": "number", "minimum": -180, "maximum": 180},
+            "timezone": {"type": "string", "description": "Optional explicit IANA timezone; with a time, DST fold/gap local times are rejected."},
         },
-        "required": ["date", "latitude", "longitude"],
+        "required": ["date", "time", "latitude", "longitude"],
         "additionalProperties": False,
     },
 }
@@ -367,6 +457,43 @@ def _run_calculation(
     return report, None
 
 
+def _run_cached(ctx, argv, **kwargs):
+    """s.44.7: cache keyed on exact inputs + engine revision.
+
+    The key is a sha256 over the pinned engine revision and the
+    exact fixed argv; a hit replays the stored report byte-for-byte
+    (deterministic replay) and never re-runs the engine. Chart
+    contents live only in this process memory - never logged,
+    never written to disk, never sent anywhere (s.44.7 privacy).
+    """
+    key = _cache_key(argv)
+    if key in _CACHE:
+        return _CACHE[key], None, key, True
+    report, error = _run_calculation(ctx, argv, **kwargs)
+    if error is None and report is not None:
+        if len(_CACHE) >= _CACHE_MAX:
+            _CACHE.clear()
+        _CACHE[key] = report
+    return report, error, key, False
+
+
+def _envelope(calculation, report, key, hit, *, timezone_name=None,
+              time_precision="exact"):
+    return {
+        "success": True,
+        "engine": ENGINE_REPO,
+        "engine_pin": ENGINE_PIN,
+        "engine_version": ENGINE_VERSION,
+        "calculation": calculation,
+        "interpretation_included": False,
+        "ephemeris": EPHEMERIS_PROVENANCE,
+        "timezone": timezone_name,
+        "time_precision": time_precision,
+        "cache_key": key,
+        "cache_hit": hit,
+        "report": report,
+    }
+
 def _run_lunar(ctx) -> tuple[str | None, str | None]:
     return _run_calculation(ctx, ["lunar"])
 
@@ -471,10 +598,10 @@ def build_planetary_hours_handler(ctx):
 
 def build_natal_handler(ctx):
     def handle(args: dict[str, Any], **_kwargs: Any) -> str:
-        allowed = {"date", "time", "latitude", "longitude"}
+        allowed = {"date", "time", "latitude", "longitude", "timezone"}
         if not {"date", "latitude", "longitude"}.issubset(args) or not set(args) <= allowed:
             return tool_error(
-                "date, latitude, and longitude are required; only optional time is accepted"
+                "date, latitude, and longitude are required; only optional time and timezone are accepted"
             )
         raw_date = _calendar_date(args.get("date"))
         if raw_date is None:
@@ -484,6 +611,12 @@ def build_natal_handler(ctx):
             raw_time = _clock_time(raw_time)
             if raw_time is None:
                 return tool_error("time must use 24-hour HH:MM form")
+        tz_name, zone, tz_error = _timezone_arg(args)
+        if tz_error is not None:
+            return tool_error(tz_error)
+        dst = _dst_error(raw_date, raw_time, zone, tz_name)
+        if dst is not None:
+            return tool_error(dst)
         latitude = _number(args.get("latitude"), minimum=-90.0, maximum=90.0)
         longitude = _number(args.get("longitude"), minimum=-180.0, maximum=180.0)
         if latitude is None or not -90.0 < latitude < 90.0:
@@ -501,11 +634,12 @@ def build_natal_handler(ctx):
         ]
         if raw_time is not None:
             argv.extend(["--time", raw_time])
+        if tz_name is not None:
+            argv.extend(["--timezone", tz_name])
         report, error = _run_calculation(ctx, argv)
         if error is not None:
             return tool_error(error)
-        return tool_result(
-            {
+        payload = {
                 "success": True,
                 "engine": "hrabanazviking/astrology-engine",
                 "calculation": "natal",
@@ -516,7 +650,9 @@ def build_natal_handler(ctx):
                 "longitude": longitude,
                 "report": report,
             }
-        )
+        if tz_name is not None:
+            payload["timezone"] = tz_name
+        return tool_result(payload)
 
     return handle
 
@@ -524,11 +660,11 @@ def build_natal_handler(ctx):
 def build_transit_handler(ctx):
     def handle(args: dict[str, Any], **_kwargs: Any) -> str:
         required = {"natal_date", "transit_date", "latitude", "longitude"}
-        allowed = required | {"natal_time", "transit_time"}
+        allowed = required | {"natal_time", "transit_time", "timezone"}
         if not required.issubset(args) or not set(args) <= allowed:
             return tool_error(
                 "natal_date, transit_date, latitude, and longitude are required; "
-                "only natal_time and transit_time are optional"
+                "only natal_time, transit_time, and timezone are optional"
             )
         natal_date = _calendar_date(args.get("natal_date"))
         transit_date = _calendar_date(args.get("transit_date"))
@@ -544,6 +680,12 @@ def build_transit_handler(ctx):
             transit_time = _clock_time(transit_time)
             if transit_time is None:
                 return tool_error("transit_time must use 24-hour HH:MM form")
+        tz_name, zone, tz_error = _timezone_arg(args)
+        if tz_error is not None:
+            return tool_error(tz_error)
+        dst = _dst_error(natal_date, natal_time, zone, tz_name)
+        if dst is not None:
+            return tool_error(dst)
         latitude = _number(args.get("latitude"), minimum=-90.0, maximum=90.0)
         longitude = _number(args.get("longitude"), minimum=-180.0, maximum=180.0)
         if latitude is None or not -90.0 < latitude < 90.0:
@@ -565,11 +707,12 @@ def build_transit_handler(ctx):
             argv.extend(["--time", natal_time])
         if transit_time is not None:
             argv.extend(["--transit-time", transit_time])
+        if tz_name is not None:
+            argv.extend(["--timezone", tz_name])
         report, error = _run_calculation(ctx, argv)
         if error is not None:
             return tool_error(error)
-        return tool_result(
-            {
+        payload = {
                 "success": True,
                 "engine": "hrabanazviking/astrology-engine",
                 "calculation": "transit",
@@ -582,7 +725,9 @@ def build_transit_handler(ctx):
                 "longitude": longitude,
                 "report": report,
             }
-        )
+        if tz_name is not None:
+            payload["timezone"] = tz_name
+        return tool_result(payload)
 
     return handle
 
@@ -591,16 +736,18 @@ def build_predict_handler(ctx):
     def handle(args: dict[str, Any], **_kwargs: Any) -> str:
         required = {
             "natal_date",
+            "natal_time",
             "start_date",
             "end_date",
             "latitude",
             "longitude",
         }
-        allowed = required | {"natal_time"}
+        allowed = required | {"timezone"}
         if not required.issubset(args) or not set(args) <= allowed:
             return tool_error(
-                "natal_date, start_date, end_date, latitude, and longitude are required; "
-                "only natal_time is optional"
+                "natal_date, natal_time, start_date, end_date, latitude, and "
+                "longitude are required (the E.09 engine requires a known "
+                "birth time for predict); only timezone is optional"
             )
         natal_date = _calendar_date(args.get("natal_date"))
         start_date = _calendar_date(args.get("start_date"))
@@ -610,11 +757,17 @@ def build_predict_handler(ctx):
         window_days = (date.fromisoformat(end_date) - date.fromisoformat(start_date)).days
         if not 0 <= window_days <= 366:
             return tool_error("prediction window must be forward-moving and no longer than 366 days")
-        natal_time = args.get("natal_time")
-        if natal_time is not None:
-            natal_time = _clock_time(natal_time)
-            if natal_time is None:
-                return tool_error("natal_time must use 24-hour HH:MM form")
+        natal_time = _clock_time(args.get("natal_time"))
+        if natal_time is None:
+            return tool_error(
+                "natal_time is required: predict requires a known birth "
+                "time at the E.09 engine pin (E09-T2)")
+        tz_name, zone, tz_error = _timezone_arg(args)
+        if tz_error is not None:
+            return tool_error(tz_error)
+        dst = _dst_error(natal_date, natal_time, zone, tz_name)
+        if dst is not None:
+            return tool_error(dst)
         latitude = _number(args.get("latitude"), minimum=-90.0, maximum=90.0)
         longitude = _number(args.get("longitude"), minimum=-180.0, maximum=180.0)
         if latitude is None or not -90.0 < latitude < 90.0:
@@ -634,19 +787,19 @@ def build_predict_handler(ctx):
             "--lon",
             _coordinate(longitude),
         ]
-        if natal_time is not None:
-            argv.extend(["--time", natal_time])
+        argv.extend(["--time", natal_time])
+        if tz_name is not None:
+            argv.extend(["--timezone", tz_name])
         report, error = _run_calculation(ctx, argv)
         if error is not None:
             return tool_error(error)
-        return tool_result(
-            {
+        payload = {
                 "success": True,
                 "engine": "hrabanazviking/astrology-engine",
                 "calculation": "prediction",
                 "interpretation_included": False,
                 "natal_date": natal_date,
-                "natal_time_known": natal_time is not None,
+                "natal_time_known": True,
                 "start_date": start_date,
                 "end_date": end_date,
                 "window_days": window_days,
@@ -654,7 +807,9 @@ def build_predict_handler(ctx):
                 "longitude": longitude,
                 "report": report,
             }
-        )
+        if tz_name is not None:
+            payload["timezone"] = tz_name
+        return tool_result(payload)
 
     return handle
 
@@ -669,10 +824,10 @@ def build_synastry_handler(ctx):
             "latitude_b",
             "longitude_b",
         }
-        allowed = required | {"time_a", "time_b"}
+        allowed = required | {"time_a", "time_b", "timezone_a", "timezone_b"}
         if not required.issubset(args) or not set(args) <= allowed:
             return tool_error(
-                "both dates and coordinate pairs are required; only time_a and time_b are optional"
+                "both dates and coordinate pairs are required; only time_a, time_b, timezone_a, and timezone_b are optional"
             )
         date_a = _calendar_date(args.get("date_a"))
         date_b = _calendar_date(args.get("date_b"))
@@ -688,6 +843,18 @@ def build_synastry_handler(ctx):
             time_b = _clock_time(time_b)
             if time_b is None:
                 return tool_error("time_b must use 24-hour HH:MM form")
+        tz_a, zone_a, tz_err_a = _timezone_arg(args, "timezone_a")
+        if tz_err_a is not None:
+            return tool_error(tz_err_a)
+        tz_b, zone_b, tz_err_b = _timezone_arg(args, "timezone_b")
+        if tz_err_b is not None:
+            return tool_error(tz_err_b)
+        dst = _dst_error(date_a, time_a, zone_a, tz_a)
+        if dst is not None:
+            return tool_error(dst)
+        dst = _dst_error(date_b, time_b, zone_b, tz_b)
+        if dst is not None:
+            return tool_error(dst)
         latitude_a = _number(args.get("latitude_a"), minimum=-90.0, maximum=90.0)
         longitude_a = _number(args.get("longitude_a"), minimum=-180.0, maximum=180.0)
         latitude_b = _number(args.get("latitude_b"), minimum=-90.0, maximum=90.0)
@@ -717,6 +884,10 @@ def build_synastry_handler(ctx):
             argv.extend(["--time1", time_a])
         if time_b is not None:
             argv.extend(["--time2", time_b])
+        if tz_a is not None:
+            argv.extend(["--timezone1", tz_a])
+        if tz_b is not None:
+            argv.extend(["--timezone2", tz_b])
         report, error = _run_calculation(ctx, argv)
         if error is not None:
             return tool_error(error)
@@ -741,11 +912,11 @@ def build_synastry_handler(ctx):
 
 def build_astrocartography_handler(ctx):
     def handle(args: dict[str, Any], **_kwargs: Any) -> str:
-        required = {"date", "latitude", "longitude"}
-        allowed = required | {"time", "query_latitude", "query_longitude"}
+        required = {"date", "time", "latitude", "longitude"}
+        allowed = required | {"timezone", "query_latitude", "query_longitude"}
         if not required.issubset(args) or not set(args) <= allowed:
             return tool_error(
-                "date, latitude, and longitude are required; only time and a query pair are optional"
+                "date, time, latitude, and longitude are required (the E.09 engine requires a known birth time for geoastrology); only timezone and a query pair are optional"
             )
         has_query_lat = "query_latitude" in args
         has_query_lon = "query_longitude" in args
@@ -754,11 +925,17 @@ def build_astrocartography_handler(ctx):
         raw_date = _calendar_date(args.get("date"))
         if raw_date is None:
             return tool_error("date must be a real calendar date in YYYY-MM-DD form")
-        raw_time = args.get("time")
-        if raw_time is not None:
-            raw_time = _clock_time(raw_time)
-            if raw_time is None:
-                return tool_error("time must use 24-hour HH:MM form")
+        raw_time = _clock_time(args.get("time"))
+        if raw_time is None:
+            return tool_error(
+                "time is required: geoastrology requires a known birth "
+                "time at the E.09 engine pin (E09-T2)")
+        tz_name, zone, tz_error = _timezone_arg(args)
+        if tz_error is not None:
+            return tool_error(tz_error)
+        dst = _dst_error(raw_date, raw_time, zone, tz_name)
+        if dst is not None:
+            return tool_error(dst)
         latitude = _number(args.get("latitude"), minimum=-90.0, maximum=90.0)
         longitude = _number(args.get("longitude"), minimum=-180.0, maximum=180.0)
         if latitude is None or not -90.0 < latitude < 90.0:
@@ -789,8 +966,9 @@ def build_astrocartography_handler(ctx):
             "--lon",
             _coordinate(longitude),
         ]
-        if raw_time is not None:
-            argv.extend(["--time", raw_time])
+        argv.extend(["--time", raw_time])
+        if tz_name is not None:
+            argv.extend(["--timezone", tz_name])
         if query_latitude is not None and query_longitude is not None:
             argv.extend(
                 [
@@ -810,7 +988,7 @@ def build_astrocartography_handler(ctx):
                 "calculation": "astrocartography",
                 "interpretation_included": False,
                 "date": raw_date,
-                "time_known": raw_time is not None,
+                "time_known": True,
                 "query_included": query_latitude is not None,
                 "latitude": latitude,
                 "longitude": longitude,
@@ -818,6 +996,293 @@ def build_astrocartography_handler(ctx):
             }
         )
 
+    return handle
+
+
+def _structured_schema(name, description, *, query=False, ayanamsa=True):
+    props = {
+        "date": {"type": "string", "pattern": r"^\d{4}-\d{2}-\d{2}$"},
+        "time": {"type": "string", "pattern": r"^(?:[01]\d|2[0-3]):[0-5]\d$"},
+        "latitude": {"type": "number", "exclusiveMinimum": -90, "exclusiveMaximum": 90},
+        "longitude": {"type": "number", "minimum": -180, "maximum": 180},
+        "timezone": {"type": "string", "description": "Explicit IANA timezone (required by the engine structured family); DST fold/gap local times are rejected."},
+    }
+    required = ["date", "time", "latitude", "longitude", "timezone"]
+    if ayanamsa:
+        props["ayanamsa"] = {"type": "string", "enum": list(_AYANAMSAS)}
+    if query:
+        props["query_latitude"] = {"type": "number", "exclusiveMinimum": -90, "exclusiveMaximum": 90}
+        props["query_longitude"] = {"type": "number", "minimum": -180, "maximum": 180}
+        required += ["query_latitude", "query_longitude"]
+    return {"name": name, "description": description, "parameters": {
+        "type": "object", "properties": props, "required": required,
+        "additionalProperties": False}}
+
+
+ASTROLOGY_VEDIC_SCHEMA = _structured_schema(
+    "astrology_vedic",
+    "Calculate a Vedic (Jyotisha) D1 chart with nakshatras via the local "
+    "Astrology Engine structured family. Explicit IANA timezone and a "
+    "known birth time are required; returns the engine's structured "
+    "result with its provenance, never an interpretation.")
+ASTROLOGY_VARGAS_SCHEMA = _structured_schema(
+    "astrology_vargas",
+    "Calculate the sixteen classical Vedic divisional charts (vargas) "
+    "via the local Astrology Engine. Explicit timezone and known birth "
+    "time required; structured engine output only.")
+ASTROLOGY_DASHAS_SCHEMA = _structured_schema(
+    "astrology_dashas",
+    "Calculate the Vimshottari dasha chronology via the local Astrology "
+    "Engine. Explicit timezone and known birth time required; the "
+    "engine's chronology facts only, no interpretation.")
+ASTROLOGY_PANCHANGA_SCHEMA = _structured_schema(
+    "astrology_panchanga",
+    "Calculate panchanga elements (tithi, nakshatra, yoga, karana) for "
+    "an explicit instant via the local Astrology Engine. Explicit "
+    "timezone required; structured engine output only.")
+ASTROLOGY_RELOCATION_SCHEMA = _structured_schema(
+    "astrology_relocation", query=True,
+    description="Calculate fixed-instant relocation lines for a query "
+    "location via the local Astrology Engine structured `location` "
+    "command. Explicit timezone, known birth time, and an explicit "
+    "query coordinate pair are required; no geocoding.")
+
+
+def _legacy_schema(name, description):
+    return {"name": name, "description": description, "parameters": {
+        "type": "object",
+        "properties": {
+            "date": {"type": "string", "pattern": r"^\d{4}-\d{2}-\d{2}$"},
+            "time": {"type": "string", "pattern": r"^(?:[01]\d|2[0-3]):[0-5]\d$"},
+            "latitude": {"type": "number", "exclusiveMinimum": -90, "exclusiveMaximum": 90},
+            "longitude": {"type": "number", "minimum": -180, "maximum": 180},
+            "timezone": {"type": "string", "description": "Optional explicit IANA timezone; with a time, DST fold/gap local times are rejected."},
+        },
+        "required": ["date", "time", "latitude", "longitude"],
+        "additionalProperties": False}}
+
+
+ASTROLOGY_HELLENISTIC_SCHEMA = _legacy_schema(
+    "astrology_hellenistic",
+    "Calculate Hellenistic analysis (sect, bonification, joys) via the "
+    "local Astrology Engine. A known birth time is required (sect is "
+    "time-dependent); engine report only, no interpretation.")
+ASTROLOGY_DIGNITY_SCHEMA = _legacy_schema(
+    "astrology_dignity",
+    "Calculate the essential-dignities table with scoring and mutual "
+    "receptions via the local Astrology Engine. Known birth time "
+    "required; engine report only.")
+
+ASTROLOGY_RUNIC_SCHEMA = {
+    "name": "astrology_runic",
+    "description": (
+        "Calculate Northern runic cycle layers (half-month, hour, tide, "
+        "station, weekday) for an explicit ISO datetime and longitude "
+        "via the local Astrology Engine (Pennick 2023, a modern "
+        "synthesis - the engine labels it as such). Explicit IANA "
+        "timezone required; the engine's computation output only - "
+        "its interpretive --reading mode is never invoked."),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "datetime": {"type": "string", "pattern": r"^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d$"},
+            "longitude": {"type": "number", "minimum": -180, "maximum": 180},
+            "timezone": {"type": "string"},
+            "age": {"type": "number", "minimum": 0, "maximum": 150},
+        },
+        "required": ["datetime", "longitude", "timezone"],
+        "additionalProperties": False,
+    },
+}
+
+ASTROLOGY_CAPABILITIES_SCHEMA = {
+    "name": "astrology_capabilities",
+    "description": (
+        "Discover the configured Astrology Engine's capability catalog "
+        "dynamically: runs the engine's own `capabilities` and `tools` "
+        "commands and intersects the result with the pinned X.09 "
+        "allowlist for the E.09-tested engine revision. Anything the "
+        "engine reports that is not on the allowlist is named as "
+        "unvetted and never exposed as a tool."),
+    "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
+}
+
+
+def _coords(args, lat_key="latitude", lon_key="longitude"):
+    latitude = _number(args.get(lat_key), minimum=-90.0, maximum=90.0)
+    longitude = _number(args.get(lon_key), minimum=-180.0, maximum=180.0)
+    if latitude is None or not -90.0 < latitude < 90.0:
+        return None, None, f"{lat_key} must be a finite number strictly between -90 and 90"
+    if longitude is None:
+        return None, None, f"{lon_key} must be a finite number from -180 to 180"
+    return latitude, longitude, None
+
+
+def _build_structured_handler(ctx, subcommand, calculation, *, query=False):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        required = {"date", "time", "latitude", "longitude", "timezone"}
+        allowed = required | {"ayanamsa"}
+        if query:
+            required |= {"query_latitude", "query_longitude"}
+            allowed |= {"query_latitude", "query_longitude"}
+        if not required.issubset(args) or not set(args) <= allowed:
+            return tool_error(
+                f"{calculation} requires date, time, latitude, longitude, "
+                "and an explicit IANA timezone; no other fields are accepted")
+        raw_date = _calendar_date(args.get("date"))
+        raw_time = _clock_time(args.get("time"))
+        if raw_date is None:
+            return tool_error("date must be a real calendar date in YYYY-MM-DD form")
+        if raw_time is None:
+            return tool_error(
+                "time is required and must use 24-hour HH:MM form: this "
+                "engine family requires a known birth time")
+        tz_name, zone, tz_error = _timezone_arg(args)
+        if tz_error is not None or tz_name is None:
+            return tool_error(tz_error or "timezone must be a valid IANA timezone name")
+        dst = _dst_error(raw_date, raw_time, zone, tz_name)
+        if dst is not None:
+            return tool_error(dst)
+        latitude, longitude, coord_error = _coords(args)
+        if coord_error is not None:
+            return tool_error(coord_error)
+        argv = [subcommand, "--date", raw_date, "--time", raw_time,
+                "--lat", _coordinate(latitude), "--lon", _coordinate(longitude),
+                "--timezone", tz_name]
+        ayanamsa = args.get("ayanamsa")
+        if ayanamsa is not None:
+            if ayanamsa not in _AYANAMSAS:
+                return tool_error("ayanamsa must be one of: " + ", ".join(_AYANAMSAS))
+            argv.extend(["--ayanamsa", ayanamsa])
+        if query:
+            q_lat, q_lon, q_error = _coords(args, "query_latitude", "query_longitude")
+            if q_error is not None:
+                return tool_error(q_error)
+            argv.extend(["--query-lat", _coordinate(q_lat), "--query-lon", _coordinate(q_lon)])
+        report, error, key, hit = _run_cached(ctx, argv)
+        if error is not None:
+            return tool_error(error)
+        return tool_result(_envelope(calculation, report, key, hit, timezone_name=tz_name))
+    return handle
+
+
+def _build_legacy_handler(ctx, subcommand, calculation):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        required = {"date", "time", "latitude", "longitude"}
+        allowed = required | {"timezone"}
+        if not required.issubset(args) or not set(args) <= allowed:
+            return tool_error(
+                f"{calculation} requires date, time, latitude, and "
+                "longitude; only timezone is optional")
+        raw_date = _calendar_date(args.get("date"))
+        raw_time = _clock_time(args.get("time"))
+        if raw_date is None:
+            return tool_error("date must be a real calendar date in YYYY-MM-DD form")
+        if raw_time is None:
+            return tool_error(
+                "time is required and must use 24-hour HH:MM form: "
+                f"{calculation} is birth-time dependent")
+        tz_name, zone, tz_error = _timezone_arg(args)
+        if tz_error is not None:
+            return tool_error(tz_error)
+        dst = _dst_error(raw_date, raw_time, zone, tz_name)
+        if dst is not None:
+            return tool_error(dst)
+        latitude, longitude, coord_error = _coords(args)
+        if coord_error is not None:
+            return tool_error(coord_error)
+        argv = [subcommand, "--date", raw_date, "--time", raw_time,
+                "--lat", _coordinate(latitude), "--lon", _coordinate(longitude)]
+        if tz_name is not None:
+            argv.extend(["--timezone", tz_name])
+        report, error, key, hit = _run_cached(ctx, argv)
+        if error is not None:
+            return tool_error(error)
+        return tool_result(_envelope(calculation, report, key, hit, timezone_name=tz_name))
+    return handle
+
+
+def build_runic_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        required = {"datetime", "longitude", "timezone"}
+        allowed = required | {"age"}
+        if not required.issubset(args) or not set(args) <= allowed:
+            return tool_error(
+                "datetime, longitude, and timezone are required; only age is optional")
+        raw_dt = args.get("datetime")
+        if not isinstance(raw_dt, str) or not re.fullmatch(
+                r"\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d", raw_dt):
+            return tool_error("datetime must use YYYY-MM-DDTHH:MM form")
+        raw_date, raw_time = raw_dt.split("T", 1)
+        if _calendar_date(raw_date) is None or _clock_time(raw_time) is None:
+            return tool_error("datetime must be a real calendar date and time")
+        tz_name, zone, tz_error = _timezone_arg(args)
+        if tz_error is not None or tz_name is None:
+            return tool_error(tz_error or "timezone must be a valid IANA timezone name")
+        dst = _dst_error(raw_date, raw_time, zone, tz_name)
+        if dst is not None:
+            return tool_error(dst)
+        longitude = _number(args.get("longitude"), minimum=-180.0, maximum=180.0)
+        if longitude is None:
+            return tool_error("longitude must be a finite number from -180 to 180")
+        argv = ["runic", "--datetime", raw_dt, "--lon", _coordinate(longitude),
+                "--timezone", tz_name, "--json"]
+        age = args.get("age")
+        if age is not None:
+            age_value = _number(age, minimum=0.0, maximum=150.0)
+            if age_value is None:
+                return tool_error("age must be a finite number from 0 to 150")
+            argv.extend(["--age", format(age_value, ".12g")])
+        report, error, key, hit = _run_cached(ctx, argv)
+        if error is not None:
+            return tool_error(error)
+        return tool_result(_envelope("runic", report, key, hit, timezone_name=tz_name))
+    return handle
+
+
+def build_capabilities_handler(ctx):
+    def handle(args: dict[str, Any], **_kwargs: Any) -> str:
+        if args:
+            return tool_error("astrology_capabilities does not accept arguments")
+        cap_report, cap_error, _k1, _h1 = _run_cached(ctx, ["capabilities"])
+        if cap_error is not None:
+            return tool_error(cap_error)
+        tool_report, tool_error_msg, _k2, _h2 = _run_cached(ctx, ["tools"])
+        if tool_error_msg is not None:
+            return tool_error(tool_error_msg)
+        try:
+            cap_doc = json.loads(cap_report)
+            tool_doc = json.loads(tool_report)
+        except (TypeError, ValueError):
+            return tool_error("The local Astrology Engine returned an unparseable capability catalog.")
+        allow = set(CAPABILITY_ALLOWLIST)
+        capabilities = []
+        for entry in cap_doc.get("capabilities") or []:
+            if not isinstance(entry, dict):
+                continue
+            cid = entry.get("id")
+            if cid in allow:
+                capabilities.append({"id": cid, "status": entry.get("status"),
+                                     "scope": entry.get("scope")})
+        reported = {c["id"] for c in capabilities}
+        engine_tools = []
+        for entry in tool_doc.get("tools") or []:
+            if isinstance(entry, dict) and entry.get("capability_id") in allow:
+                engine_tools.append(entry["capability_id"])
+        return tool_result({
+            "success": True,
+            "engine": ENGINE_REPO,
+            "engine_pin": ENGINE_PIN,
+            "engine_version": ENGINE_VERSION,
+            "calculation": "capabilities",
+            "interpretation_included": False,
+            "ephemeris": EPHEMERIS_PROVENANCE,
+            "allowlist": list(CAPABILITY_ALLOWLIST),
+            "capabilities": capabilities,
+            "engine_tools": engine_tools,
+            "allowlisted_but_unreported": sorted(allow - reported),
+            "production_ready": False,
+        })
     return handle
 
 
@@ -865,6 +1330,24 @@ def register_tools(ctx) -> None:
             build_astrocartography_handler(ctx),
             "🗺️",
         ),
+        ("astrology_vedic", ASTROLOGY_VEDIC_SCHEMA,
+         _build_structured_handler(ctx, "vedic", "vedic"), "🪔"),
+        ("astrology_vargas", ASTROLOGY_VARGAS_SCHEMA,
+         _build_structured_handler(ctx, "vargas", "vargas"), "🧩"),
+        ("astrology_dashas", ASTROLOGY_DASHAS_SCHEMA,
+         _build_structured_handler(ctx, "dashas", "dashas"), "⏳"),
+        ("astrology_panchanga", ASTROLOGY_PANCHANGA_SCHEMA,
+         _build_structured_handler(ctx, "panchanga", "panchanga"), "📅"),
+        ("astrology_relocation", ASTROLOGY_RELOCATION_SCHEMA,
+         _build_structured_handler(ctx, "location", "relocation", query=True), "🧭"),
+        ("astrology_hellenistic", ASTROLOGY_HELLENISTIC_SCHEMA,
+         _build_legacy_handler(ctx, "hellenistic", "hellenistic"), "🏛️"),
+        ("astrology_dignity", ASTROLOGY_DIGNITY_SCHEMA,
+         _build_legacy_handler(ctx, "dignity", "dignity"), "⚖️"),
+        ("astrology_runic", ASTROLOGY_RUNIC_SCHEMA,
+         build_runic_handler(ctx), "ᚱ"),
+        ("astrology_capabilities", ASTROLOGY_CAPABILITIES_SCHEMA,
+         build_capabilities_handler(ctx), "📚"),
     ):
         ctx.register_tool(
             name=name,

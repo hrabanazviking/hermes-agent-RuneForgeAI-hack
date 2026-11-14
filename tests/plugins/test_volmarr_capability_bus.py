@@ -276,7 +276,7 @@ def test_builtin_seeds_are_real_fork_tools(mods):
     assert status["status"] == "ok", status["problems"]
     assert status["service_count"] == 3
     by_service = {row["service"]: row for row in status["services"]}
-    assert by_service["volmarr-astrology"]["version"] == "0.7.0"
+    assert by_service["volmarr-astrology"]["version"] == "0.8.0"
     assert by_service["volmarr-tarot"]["version"] == "0.3.0"
     assert by_service["volmarr-seidr"]["version"] == "0.4.0"
     assert all(row["adapter_present"] for row in status["services"])
