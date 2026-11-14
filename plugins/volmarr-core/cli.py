@@ -253,6 +253,20 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     ravens_smoke = ravens_subcommands.add_parser(
         "smoke", help="X.07 exact API smoke on disposable stores (never a profile store)")
     ravens_smoke.add_argument("--json", action="store_true", dest="json_output")
+    samkoma = subcommands.add_parser(
+        "samkoma",
+        help="Inspect the Samkoma evidence-aware planning adapter (X.08, proposal-only)",
+    )
+    samkoma_subcommands = samkoma.add_subparsers(dest="samkoma_action")
+    samkoma_status_p = samkoma_subcommands.add_parser(
+        "status", help="X.08 Samkoma status: audited repo, staged tree measurement, hard proposal-only limits")
+    samkoma_status_p.add_argument("--json", action="store_true", dest="json_output")
+    samkoma_catalog_p = samkoma_subcommands.add_parser(
+        "catalog", help="X.08 section 43 operations catalog with modes and refused publish verbs")
+    samkoma_catalog_p.add_argument("--json", action="store_true", dest="json_output")
+    samkoma_preview_p = samkoma_subcommands.add_parser(
+        "preview", help="X.08 candidate preview on a labelled synthetic receipt: supported vs unsupported fields, nothing published")
+    samkoma_preview_p.add_argument("--json", action="store_true", dest="json_output")
     identity = subcommands.add_parser(
         "identity",
         help="Inspect the active profile's stable entity identity",
@@ -943,6 +957,41 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             return 0 if _record.get("ok") or _record.get("status") == "package_missing" else 1
         print("Usage: hermes volmarr ravens {status|roles|smoke} [--json]")
         return 2
+    elif action == "samkoma":
+        _saction = getattr(args, "samkoma_action", None)
+        if _saction in {"status", "catalog", "preview"}:
+            from datetime import datetime as _dt_s, timezone as _tz_s
+            from .samkoma import (SYNTHETIC_FIELDS, SYNTHETIC_SOURCE,
+                                  build_candidate, operations_catalog,
+                                  preview_candidate, samkoma_status)
+            _now_s = _dt_s.now(_tz_s.utc).isoformat()
+            if _saction == "status":
+                _record = samkoma_status(ctx, recorded_at=_now_s)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    _tree = _record["tree"]
+                    print(f"Samkoma: volmarr-samkoma / repo hrabanazviking/RuneForgeAI-Samkoma / audited {_record['audited_head'][:12]} / tree {_tree.get('status')} / mode read-only + proposal-only / publishes nothing - X.08 adapter")
+                return 0
+            if _saction == "catalog":
+                _record = operations_catalog()
+                _record["recorded_at"] = _now_s
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print("Samkoma operations: " + "; ".join(f"{o['name']} [{o['mode']}]" for o in _record["operations"]) + " / publish verbs refused: " + ", ".join(_record["publish_verbs_refused"]))
+                return 0
+            _cand = build_candidate(SYNTHETIC_SOURCE, SYNTHETIC_FIELDS, kind="event", title="Table session", created_by="cli-preview")
+            _record = preview_candidate(_cand)
+            _record["recorded_at"] = _now_s
+            _record["source_label"] = "synthetic (labelled test receipt, not real Samkoma data)"
+            if getattr(args, "json_output", False):
+                print(json.dumps(_record, sort_keys=True, default=str))
+            else:
+                print(f"Samkoma preview: candidate (not a fact) / unsupported fields: {', '.join(_record['unsupported_fields']) or 'none'} / published: False")
+            return 0
+        print("Usage: hermes volmarr samkoma {status|catalog|preview} [--json]")
+        return 2
     elif action == "identity":
         if getattr(args, "identity_action", None) != "health":
             print("Usage: hermes volmarr identity health [--json]")
@@ -1521,7 +1570,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|table|mindspark|ravens|samkoma|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir|heimdall} ...")
         return 2
 
     if getattr(args, "json_output", False):

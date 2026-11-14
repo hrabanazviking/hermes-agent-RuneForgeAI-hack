@@ -461,7 +461,7 @@ def test_cli_production_status_scorecard_audit(mods, capsys):
     assert rc == 0
     status = json.loads(capsys.readouterr().out)
     assert status["live_connection"] == "not-claimed"
-    assert status["engines"]["engine_count"] == 29
+    assert status["engines"]["engine_count"] == 30
     assert status["engines"]["working_count"] == 0
     docs = {d["deliverable"]: d["present"] for d in status["docs"]}
     assert docs["beginner_setup"] is True
