@@ -440,6 +440,26 @@ def register_cli(parser: argparse.ArgumentParser) -> None:
     ygg_place.add_argument("--request", required=True)
     ygg_place.add_argument("--caller", required=True)
     ygg_place.add_argument("--json", action="store_true", dest="json_output")
+    lifthrasir = subcommands.add_parser(
+        "lifthrasir",
+        help="X.02 Lifthrasir (section 37): read-only local diagnostics + proposals never executed",
+    )
+    lifthrasir_subcommands = lifthrasir.add_subparsers(dest="lifthrasir_action")
+    lift_status = lifthrasir_subcommands.add_parser(
+        "status", help="Lifthrasir status + audited source facts (research stage, no autonomous features)")
+    lift_status.add_argument("--json", action="store_true", dest="json_output")
+    lift_diag = lifthrasir_subcommands.add_parser(
+        "diagnose", help="Run the read-only local diagnostics adapter and emit a DiagnosticReport")
+    lift_diag.add_argument("--json", action="store_true", dest="json_output")
+    lift_propose = lifthrasir_subcommands.add_parser(
+        "propose", help="Record an unexecuted proposal from a DiagnosticReport JSON file")
+    lift_propose.add_argument("--report", required=True)
+    lift_propose.add_argument("--proposal-id", required=True)
+    lift_propose.add_argument("--kind", required=True)
+    lift_propose.add_argument("--summary", required=True)
+    lift_propose.add_argument("--rationale", default="")
+    lift_propose.add_argument("--candidate-change", default="")
+    lift_propose.add_argument("--json", action="store_true", dest="json_output")
     production = subcommands.add_parser(
         "production",
         help="Q0-Q4 production (W13): status, release scorecard, boundary/threat audit; read-only",
@@ -1083,6 +1103,52 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
             _detail = getattr(exc, "detail", str(exc))
             print(json.dumps({"error": _name, "detail": _detail}, sort_keys=True), file=sys.stderr)
             return 1
+    elif action == "lifthrasir":
+        from datetime import datetime as _dt_l, timezone as _tz_l
+        from .lifthrasir import (
+            LifthrasirError, build_proposal, lifthrasir_status,
+            run_diagnostics, validate_report)
+        _laction = getattr(args, "lifthrasir_action", None)
+        _now_l = _dt_l.now(_tz_l.utc).isoformat()
+        try:
+            if _laction == "status":
+                _record = lifthrasir_status(recorded_at=_now_l)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Lifthrasir: {_record['service']} / {_record['availability']} / read-only diagnostics, proposals never executed")
+                return 0
+            elif _laction == "diagnose":
+                _record = run_diagnostics(recorded_at=_now_l)
+                validate_report(_record)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"DiagnosticReport {_record['report_id']}: stage diagnosed / findings {len(_record['findings'])} / redactions {_record['redactions_applied']}")
+                return 0
+            elif _laction == "propose":
+                _payload = _load_json_request(getattr(args, "report"), max_bytes=4 * 1024 * 1024)
+                _record = build_proposal(
+                    _payload,
+                    proposal_id=getattr(args, "proposal_id"),
+                    kind=getattr(args, "kind"),
+                    summary=getattr(args, "summary"),
+                    rationale=getattr(args, "rationale", "") or "",
+                    candidate_change=getattr(args, "candidate_change", "") or "",
+                    recorded_at=_now_l)
+                if getattr(args, "json_output", False):
+                    print(json.dumps(_record, sort_keys=True, default=str))
+                else:
+                    print(f"Proposal {_record['proposal_id']}: {_record['status']} / never executed")
+                return 0
+            else:
+                print("Usage: hermes volmarr lifthrasir {status|diagnose|propose} [--json]")
+                return 2
+        except (LifthrasirError, RoutingRequestError) as exc:
+            _name = getattr(exc, "name", "request_invalid")
+            _detail = getattr(exc, "detail", str(exc))
+            print(json.dumps({"error": _name, "detail": _detail}, sort_keys=True), file=sys.stderr)
+            return 1
     elif action == "production":
         from datetime import datetime as _dt3, timezone as _tz3
         from .production import KNOWN_DEFERRED, ProductionError, evaluate_scorecard, production_audit, production_status
@@ -1181,7 +1247,7 @@ def health_command(args: argparse.Namespace, *, ctx) -> int:
                     print(f"{_key}: {_record[_key]}")
         return 0 if _record.get("status") in {"ok", "dry_run"} else 1
     else:
-        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil} ...")
+        print("Usage: hermes volmarr {health|cognition|memory|world|identity|self|awareness|reflection|motivation|curiosity|autonomy|agency|persona|engines|capabilities|productivity|world-bridge|edge-research|production|yggdrasil|lifthrasir} ...")
         return 2
 
     if getattr(args, "json_output", False):
