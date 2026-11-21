@@ -11,7 +11,10 @@ from hermes_constants import (
     reset_hermes_home_override,
     set_hermes_home_override,
 )
-from hermes_state_common import SCHEMA_SQL, SCHEMA_VERSION
+# v0.23.3 intake (2026-11-21): upstream relocated the SessionDB schema from
+# hermes_state_common to persistence.sqlite._schema_ddl (same v33 schema,
+# plus the new sessions.prompt_cache_clock column); import it from there.
+from persistence.sqlite._schema_ddl import SCHEMA_SQL, SCHEMA_VERSION
 
 
 def _write_profile(home) -> None:
