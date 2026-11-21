@@ -360,7 +360,7 @@ def managed_environment(destination: Path, *, python: Path | None = None,
                         cache: Path | None = None, env: Mapping[str, str] | None = None,
                         offline: bool = False, explicit: bool = False,
                         output: TextIO | None = None, realize: bool = True) -> PythonEnvironment:
-    from pm._uv import _toolchain
+    from pm._uv import _toolchain  # noqa: TID251
     from pm.packages import uv_cache_dir
 
     tools = _toolchain(explicit=explicit, realize=realize)
@@ -499,7 +499,8 @@ class PythonEnvironment:
         with (self.destination / "pyvenv.cfg").open("a", encoding="utf-8") as cfg:
             cfg.write(f"{PM_BUILT_KEY} = true\n")
 
-    def _lock_command(self, source: Path, *, upgrade: bool = False, check: bool = False) -> list[str]:
+    def _lock_command(self, source: Path, *, upgrade: bool = False, check: bool = False,
+                      upgrade_packages: Sequence[str] = ()) -> list[str]:
         """The `uv lock` argv for *source*, release-age gate scoped to registry sources.
 
         Every name the project's ``[tool.uv.sources]`` binds to a local path is
@@ -508,18 +509,29 @@ class PythonEnvironment:
         derived from the table so it can never cover an index package. The
         ``[tool.uv] exclude-newer`` policy itself is untouched and keeps
         applying to every registry package exactly as before.
+
+        Combined resolution (v0.23.3 intake, 2026-11-21, under Volmarr's
+        combine-both ruling of 2026-11-09 for this file): upstream's
+        ``upgrade_packages`` (one ``--upgrade-package`` per requirement) rides
+        on this same command, so the fork gate scoping and the upstream
+        targeted-upgrade behaviour both hold.
         """
         command = ["lock", "--python", str(self.python)]
         if check:
             command.insert(1, "--check")
         if upgrade:
             command.append("--upgrade")
+        for requirement in upgrade_packages:
+            command += ["--upgrade-package", requirement]
         for name in local_source_packages(source):
             command += ["--exclude-newer-package", f"{name}=false"]
         return command
 
-    def lock(self, source: Path, *, upgrade: bool = False, timeout: int = 1800) -> None:
-        result = self._run(self._lock_command(source, upgrade=upgrade), cwd=source, timeout=timeout)
+    def lock(self, source: Path, *, upgrade: bool = False, upgrade_packages: Sequence[str] = (),
+             timeout: int = 1800) -> None:
+        result = self._run(self._lock_command(source, upgrade=upgrade,
+                                              upgrade_packages=upgrade_packages),
+                           cwd=source, timeout=timeout)
         if result.returncode:
             raise classify_uv_failure("lock", result.returncode, result.stderr or result.stdout,
                                       local_packages=local_source_packages(source))
@@ -545,14 +557,15 @@ class PythonEnvironment:
     def sync(self, source: Path, *, extras: Sequence[str] = (), groups: Sequence[str] = (),
              timeout: int = 1800, frozen: bool = True, all_extras: bool = False,
              no_install_project: bool = False, locked: bool = False,
-             no_default_groups: bool = False) -> None:
+             no_default_groups: bool = False, upgrade: Sequence[str] = ()) -> None:
         """Install the root and every member; resolve only in a writable workspace.
 
         ``frozen=False`` is reserved for the caller-owned generated workspace,
-        never the original project's lock. Seed/replay policy belongs to PM.
+        never the original project's lock. Seed/replay policy belongs to PM;
+        *upgrade* is that policy's ``uv lock -P`` list.
         """
         if not frozen:
-            self.lock(source, timeout=timeout)
+            self.lock(source, upgrade_packages=upgrade, timeout=timeout)
         # Locking members alone is insufficient: plain sync only installs root deps.
         # uv writes no __pycache__ (pip does): without --compile-bytecode the first import
         # of every module in the foreground of a user request compiles it (#100461).
